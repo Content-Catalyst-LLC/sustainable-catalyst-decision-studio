@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Applied sustainability decision-support workflows for project intake, four-pillar scoring, scenarios, risk, reports, and Workbench integration.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.1';
     const OPTION_KEY = 'scds_settings';
     const NONCE_ACTION = 'wp_rest';
     const PROJECTS_TABLE = 'scds_projects';
@@ -141,6 +141,7 @@ class Sustainable_Catalyst_Decision_Studio {
             'backend_url' => '',
             'backend_api_key' => '',
             'backend_enabled' => '0',
+            'ai_briefing_enabled' => '1',
             'workbench_integration' => '1',
             'default_display' => 'full',
             'allow_save_projects' => '1',
@@ -190,8 +191,11 @@ class Sustainable_Catalyst_Decision_Studio {
             'restAnalyzeUrl' => esc_url_raw(rest_url('scds/v1/analyze')),
             'restSaveUrl' => esc_url_raw(rest_url('scds/v1/projects')),
             'restTemplatesUrl' => esc_url_raw(rest_url('scds/v1/templates')),
+            'restBriefUrl' => esc_url_raw(rest_url('scds/v1/ai-brief')),
+            'restBackendStatusUrl' => esc_url_raw(rest_url('scds/v1/backend-status')),
             'nonce' => wp_create_nonce(self::NONCE_ACTION),
             'backendEnabled' => $settings['backend_enabled'] === '1' && !empty($settings['backend_url']),
+            'aiBriefingEnabled' => $settings['ai_briefing_enabled'] === '1',
             'workbenchIntegration' => $settings['workbench_integration'] === '1',
             'methodologyNote' => sanitize_text_field($settings['methodology_note']),
         ]);
@@ -205,7 +209,7 @@ class Sustainable_Catalyst_Decision_Studio {
             <?php endif; ?>
 
             <header class="scds-hero">
-                <p class="scds-kicker">Sustainable Catalyst Platform · Decision Studio v1.0.0</p>
+                <p class="scds-kicker">Sustainable Catalyst Platform · Decision Studio v1.0.1</p>
                 <h2><?php echo esc_html($atts['title']); ?></h2>
                 <p><?php echo esc_html($settings['brand_subtitle']); ?></p>
                 <div class="scds-note"><strong>Boundary:</strong> <?php echo esc_html($settings['methodology_note']); ?></div>
@@ -226,6 +230,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <?php $this->render_panel_risk($mode); ?>
                 <?php $this->render_panel_scenario($mode); ?>
                 <?php $this->render_panel_report($mode); ?>
+                <?php $this->render_panel_ai($mode); ?>
                 <?php $this->render_panel_audit($mode); ?>
             </div>
 
@@ -295,7 +300,11 @@ class Sustainable_Catalyst_Decision_Studio {
     <?php }
 
     private function render_panel_report($mode) { ?>
-        <section class="scds-panel" data-scds-panel="report"><div class="scds-panel-head"><p class="scds-section-kicker">Decision brief</p><h3>Exportable decision-support report</h3><p>Generate an executive-style brief with assumptions, scores, scenarios, risk, limits, and next questions.</p></div><div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-run>Generate Brief</button><button type="button" class="scds-button" data-scds-export-json>Download JSON</button><button type="button" class="scds-button" data-scds-export-csv>Download CSV</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div><div class="scds-report" data-scds-report></div></section>
+        <section class="scds-panel" data-scds-panel="report"><div class="scds-panel-head"><p class="scds-section-kicker">Decision brief</p><h3>Exportable decision-support report</h3><p>Generate an executive-style brief with assumptions, scores, scenarios, risk, limits, and next questions.</p></div><div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-run>Generate Brief</button><button type="button" class="scds-button" data-scds-ai-brief>Generate AI Decision Brief</button><button type="button" class="scds-button" data-scds-export-json>Download JSON</button><button type="button" class="scds-button" data-scds-export-csv>Download CSV</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div><div class="scds-report" data-scds-report></div></section>
+    <?php }
+
+    private function render_panel_ai($mode) { ?>
+        <section class="scds-panel" data-scds-panel="ai"><div class="scds-panel-head"><p class="scds-section-kicker">AI Decision Briefing Layer</p><h3>Assumption critique, risk interpretation, and decision caveats</h3><p>Generate a cautious, site-scoped decision-support brief through the configured backend AI provider when available. If the backend or provider is unavailable, Decision Studio returns a deterministic fallback brief.</p></div><div class="scds-note"><strong>AI boundary:</strong> AI output is a drafting and interpretation aid. It does not approve, certify, assure, or replace professional judgment.</div><div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-ai-brief>Generate AI Decision Brief</button><button type="button" class="scds-button" data-scds-backend-status>Check Backend / AI Status</button></div><div class="scds-ai-output" data-scds-ai-output></div></section>
     <?php }
 
     private function render_panel_audit($mode) { ?>
@@ -308,6 +317,7 @@ class Sustainable_Catalyst_Decision_Studio {
         add_submenu_page('scds-dashboard', 'Scenario Templates', 'Scenario Templates', 'manage_options', 'scds-templates', [$this, 'render_admin_templates']);
         add_submenu_page('scds-dashboard', 'Scorecard Builder', 'Scorecard Builder', 'manage_options', 'scds-scorecard', [$this, 'render_admin_scorecard']);
         add_submenu_page('scds-dashboard', 'Report Templates', 'Report Templates', 'manage_options', 'scds-reports', [$this, 'render_admin_reports']);
+        add_submenu_page('scds-dashboard', 'AI Briefing Layer', 'AI Briefing Layer', 'manage_options', 'scds-ai-briefing', [$this, 'render_admin_ai_briefing']);
         add_submenu_page('scds-dashboard', 'Validation Dashboard', 'Validation Dashboard', 'manage_options', 'scds-validation', [$this, 'render_admin_validation']);
         add_submenu_page('scds-dashboard', 'Export Center', 'Export Center', 'manage_options', 'scds-export', [$this, 'render_admin_export']);
         add_submenu_page('scds-dashboard', 'Methodology Settings', 'Methodology Settings', 'manage_options', 'scds-settings', [$this, 'render_admin_settings']);
@@ -317,7 +327,7 @@ class Sustainable_Catalyst_Decision_Studio {
     private function admin_wrap_end() { echo '</div>'; }
 
     public function render_admin_dashboard() {
-        $this->admin_wrap_start('Sustainable Catalyst Decision Studio v1.0.0', 'Applied decision-support workflows for sustainability projects, policy choices, scenarios, risk, and four-pillar reports.');
+        $this->admin_wrap_start('Sustainable Catalyst Decision Studio v1.0.1', 'Applied decision-support workflows for sustainability projects, policy choices, scenarios, risk, and four-pillar reports.');
         echo '<div class="scds-admin-grid">';
         $cards = [
             ['Projects', 'Track project drafts and generated decision briefs.', 'admin.php?page=scds-projects'],
@@ -345,6 +355,27 @@ class Sustainable_Catalyst_Decision_Studio {
     public function render_admin_scorecard() { $this->admin_wrap_start('Scorecard Builder', 'Default indicators and weights for four-pillar decision support.'); $this->render_csv_table($this->scorecard_rows()); $this->admin_wrap_end(); }
     public function render_admin_reports() { $this->admin_wrap_start('Report Templates', 'Decision brief structure used by the public interface and backend.'); echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html($this->report_template_markdown()) . '</pre>'; $this->admin_wrap_end(); }
 
+    public function render_admin_ai_briefing() {
+        $s = $this->settings();
+        $this->admin_wrap_start('AI Decision Briefing Layer', 'Backend-routed AI decision briefs with deterministic fallback, assumption critique, and responsible-use caveats.');
+        echo '<div class="notice notice-info"><p><strong>Backend-only key pattern:</strong> Store Gemini/OpenAI keys in Render or server environment variables, not in WordPress. WordPress only calls the Decision Studio backend.</p></div>';
+        echo '<table class="widefat striped"><tbody>';
+        echo '<tr><th>AI briefing enabled</th><td>' . esc_html($s['ai_briefing_enabled'] === '1' ? 'Yes' : 'No') . '</td></tr>';
+        echo '<tr><th>Backend URL</th><td><code>' . esc_html($s['backend_url'] ?: 'Not configured') . '</code></td></tr>';
+        echo '<tr><th>Backend enabled</th><td>' . esc_html($s['backend_enabled'] === '1' ? 'Yes' : 'No') . '</td></tr>';
+        echo '<tr><th>Frontend fallback</th><td>Deterministic WordPress brief if backend or AI provider is unavailable.</td></tr>';
+        echo '</tbody></table>';
+        echo '<h2>Backend environment variables</h2><pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">SCDS_AI_PROVIDER=gemini
+SCDS_GEMINI_API_KEY=&lt;set-in-render&gt;
+SCDS_GEMINI_MODEL=&lt;your-model&gt;
+
+# or
+SCDS_AI_PROVIDER=openai
+SCDS_OPENAI_API_KEY=&lt;set-in-render&gt;
+SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
+        $this->admin_wrap_end();
+    }
+
     public function render_admin_validation() {
         global $wpdb; $table = $wpdb->prefix . self::VALIDATION_TABLE; $rows = $wpdb->get_results("SELECT * FROM $table ORDER BY FIELD(status,'needs_review','experimental','validated'), module_name", ARRAY_A);
         $this->admin_wrap_start('Validation Dashboard', 'Module status, sample inputs, warnings, and validation readiness.');
@@ -370,6 +401,7 @@ class Sustainable_Catalyst_Decision_Studio {
         $this->settings_row('backend_url', 'FastAPI backend URL', $s['backend_url']);
         $this->settings_row('backend_api_key', 'Backend API key', $s['backend_api_key']);
         echo '<tr><th>Backend enabled</th><td><label><input type="checkbox" name="scds_settings[backend_enabled]" value="1" ' . checked($s['backend_enabled'], '1', false) . '> Use backend when available</label></td></tr>';
+        echo '<tr><th>AI Decision Briefing</th><td><label><input type="checkbox" name="scds_settings[ai_briefing_enabled]" value="1" ' . checked($s['ai_briefing_enabled'], '1', false) . '> Enable AI briefing UI and backend calls when configured</label><p class="description">Provider keys should live only in the backend environment.</p></td></tr>';
         echo '<tr><th>Workbench integration</th><td><label><input type="checkbox" name="scds_settings[workbench_integration]" value="1" ' . checked($s['workbench_integration'], '1', false) . '> Show related Workbench shortcodes and calculators</label></td></tr>';
         echo '<tr><th>Default display</th><td><select name="scds_settings[default_display]"><option value="full" ' . selected($s['default_display'], 'full', false) . '>Full</option><option value="compact" ' . selected($s['default_display'], 'compact', false) . '>Compact</option><option value="drawer" ' . selected($s['default_display'], 'drawer', false) . '>Drawer</option></select></td></tr>';
         echo '</tbody></table><p><button class="button button-primary" type="submit" name="scds_save_settings" value="1">Save Settings</button></p></form>'; $this->admin_wrap_end();
@@ -383,6 +415,7 @@ class Sustainable_Catalyst_Decision_Studio {
         $settings = $this->settings();
         foreach (['brand_title','brand_subtitle','methodology_note','backend_url','backend_api_key','default_display'] as $key) if (isset($incoming[$key])) $settings[$key] = sanitize_text_field($incoming[$key]);
         $settings['backend_enabled'] = isset($incoming['backend_enabled']) ? '1' : '0';
+        $settings['ai_briefing_enabled'] = isset($incoming['ai_briefing_enabled']) ? '1' : '0';
         $settings['workbench_integration'] = isset($incoming['workbench_integration']) ? '1' : '0';
         update_option(self::OPTION_KEY, $settings);
         add_action('admin_notices', function(){ echo '<div class="notice notice-success"><p>Decision Studio settings saved.</p></div>'; });
@@ -392,6 +425,8 @@ class Sustainable_Catalyst_Decision_Studio {
         register_rest_route('scds/v1', '/health', ['methods'=>'GET','callback'=>[$this,'rest_health'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/analyze', ['methods'=>'POST','callback'=>[$this,'rest_analyze'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/templates', ['methods'=>'GET','callback'=>[$this,'rest_templates'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/backend-status', ['methods'=>'GET','callback'=>[$this,'rest_backend_status'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/ai-brief', ['methods'=>'POST','callback'=>[$this,'rest_ai_brief'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/projects', ['methods'=>'POST','callback'=>[$this,'rest_save_project'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
         register_rest_route('scds/v1', '/export/validation.csv', ['methods'=>'GET','callback'=>[$this,'rest_export_validation_csv'],'permission_callback'=>function(){ return current_user_can('manage_options'); }]);
         register_rest_route('scds/v1', '/export/templates.csv', ['methods'=>'GET','callback'=>[$this,'rest_export_templates_csv'],'permission_callback'=>function(){ return current_user_can('manage_options'); }]);
@@ -401,6 +436,75 @@ class Sustainable_Catalyst_Decision_Studio {
     public function rest_health() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio']); }
     public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
+
+    public function rest_backend_status() {
+        $s = $this->settings();
+        if ($s['backend_enabled'] !== '1' || empty($s['backend_url'])) {
+            return rest_ensure_response(['ok'=>true,'backend_enabled'=>false,'ai_configured'=>false,'source'=>'wordpress_settings']);
+        }
+        $response = $this->backend_request('/ai/status', [], 'GET');
+        if (is_wp_error($response)) {
+            return rest_ensure_response(['ok'=>false,'backend_enabled'=>true,'error'=>$response->get_error_message(),'source'=>'wordpress_proxy']);
+        }
+        return rest_ensure_response($response);
+    }
+
+    public function rest_ai_brief(WP_REST_Request $request) {
+        $payload = $request->get_json_params(); if (!is_array($payload)) $payload = [];
+        $inputs = isset($payload['inputs']) && is_array($payload['inputs']) ? $payload['inputs'] : [];
+        $results = isset($payload['results']) && is_array($payload['results']) ? $payload['results'] : $this->analyze_inputs($inputs);
+        $s = $this->settings();
+        if ($s['ai_briefing_enabled'] === '1' && $s['backend_enabled'] === '1' && !empty($s['backend_url'])) {
+            $backend = $this->backend_request('/brief', ['inputs'=>$inputs, 'results'=>$results, 'useAI'=>true, 'audience'=>'Sustainable Catalyst decision reviewer']);
+            if (!is_wp_error($backend) && is_array($backend)) {
+                $backend['source_proxy'] = 'wordpress_to_backend';
+                return rest_ensure_response($backend);
+            }
+        }
+        return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'source'=>'wordpress_deterministic_ai_brief_fallback','brief'=>$this->deterministic_ai_brief($inputs,$results),'results'=>$results]);
+    }
+
+    private function backend_request($path, $payload=[], $method='POST') {
+        $s = $this->settings();
+        $url = rtrim($s['backend_url'], '/') . $path;
+        $args = ['timeout'=>25, 'headers'=>['Content-Type'=>'application/json']];
+        if (!empty($s['backend_api_key'])) $args['headers']['X-SCDS-API-Key'] = $s['backend_api_key'];
+        if ($method === 'GET') {
+            $response = wp_remote_get($url, $args);
+        } else {
+            $args['body'] = wp_json_encode($payload);
+            $response = wp_remote_post($url, $args);
+        }
+        if (is_wp_error($response)) return $response;
+        $code = wp_remote_retrieve_response_code($response);
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        if ($code < 200 || $code >= 300 || !is_array($body)) return new WP_Error('scds_backend_error', 'Backend request failed or returned invalid JSON.');
+        return $body;
+    }
+
+    private function deterministic_ai_brief($inputs, $results) {
+        $scores = isset($results['scores']) && is_array($results['scores']) ? $results['scores'] : [];
+        $risk = isset($results['risk']) && is_array($results['risk']) ? $results['risk'] : [];
+        $finance = isset($results['finance']) && is_array($results['finance']) ? $results['finance'] : [];
+        $emissions = isset($results['emissions']) && is_array($results['emissions']) ? $results['emissions'] : [];
+        $name = sanitize_text_field($inputs['projectName'] ?? 'This decision');
+        $weighted = floatval($scores['weighted'] ?? 0);
+        $risk_score = floatval($risk['risk_score'] ?? 0);
+        $status = sanitize_text_field($results['status'] ?? 'Decision requires review');
+        return [
+            'ai_used'=>false,
+            'source'=>'wordpress_deterministic_fallback',
+            'executive_summary'=>$name . ' is assessed as: ' . $status . '. Weighted score: ' . round($weighted,1) . '/100. Risk score: ' . round($risk_score,1) . '/100.',
+            'assumption_critique'=>['Verify baseline, adoption, cost, savings, time horizon, discount rate, and data confidence.', 'Clarify whether environmental, social, economic, and governance indicators are measured or estimated.', 'Document assumptions so the brief can be audited later.'],
+            'risk_interpretation'=>'Risk should be read as a screen combining exposure, vulnerability, stakeholder sensitivity, resilience, governance readiness, and data confidence.',
+            'scenario_interpretation'=>'Scenario results should be interpreted as sensitivity comparisons rather than forecasts.',
+            'stakeholder_impact_summary'=>'Review affected workers, customers, communities, suppliers, public institutions, and long-term users before implementation.',
+            'governance_readiness'=>'Confirm accountability, monitoring, data ownership, escalation paths, and post-implementation review.',
+            'recommendation_caveats'=>['Educational decision support only.', 'Not legal, financial, engineering, medical, tax, compliance, ESG/SDG assurance, or investment advice.', 'AI-generated text must remain subordinate to human review and professional judgment.'],
+            'metrics_snapshot'=>['weighted_score'=>$weighted,'risk_score'=>$risk_score,'npv'=>$finance['npv'] ?? null,'annual_avoided_tco2e'=>$emissions['annual_avoided_tco2e'] ?? null],
+            'workbench_handoffs'=>$this->recommended_workbench_shortcodes(),
+        ];
+    }
 
     public function rest_save_project(WP_REST_Request $request) {
         global $wpdb; $payload = $request->get_json_params(); if (!is_array($payload)) $payload = [];

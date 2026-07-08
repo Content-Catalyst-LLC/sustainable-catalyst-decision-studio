@@ -1,0 +1,5 @@
+module_id,module_name,status,sample_inputs,expected_outputs
+project-intake,Project Intake,validated,demo project fields,structured decision question
+four-pillar-scorecard,Four-Pillar Scorecard,validated,pillar weights and indicators,0-100 pillar scores
+risk-resilience-matrix,Risk and Resilience Matrix,needs_review,"exposure, vulnerability, resilience",risk score and level
+decision-brief-generator,Decision Brief Generator,validated,inputs and results,HTML/JSON/CSV/printable report

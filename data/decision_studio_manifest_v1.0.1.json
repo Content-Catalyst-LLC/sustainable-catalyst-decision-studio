@@ -1,0 +1,37 @@
+{
+  "name": "Sustainable Catalyst Decision Studio",
+  "version": "1.0.1",
+  "release": "AI Decision Briefing Layer",
+  "features": [
+    "backend AI provider status",
+    "AI-generated decision brief",
+    "deterministic fallback brief",
+    "assumption critique",
+    "risk interpretation",
+    "scenario interpretation",
+    "stakeholder summary",
+    "governance readiness",
+    "Workbench handoffs",
+    "backend-only API key pattern"
+  ],
+  "shortcodes": [
+    "[sc_decision_studio mode=\"full\"]",
+    "[sc_decision_studio mode=\"report\"]",
+    "[sc_decision_studio mode=\"drawer\" title=\"Open Decision Studio\"]"
+  ],
+  "backend_endpoints": [
+    "/health",
+    "/ai/status",
+    "/analyze",
+    "/brief",
+    "/report",
+    "/templates"
+  ],
+  "wordpress_rest": [
+    "/wp-json/scds/v1/health",
+    "/wp-json/scds/v1/backend-status",
+    "/wp-json/scds/v1/ai-brief",
+    "/wp-json/scds/v1/analyze"
+  ],
+  "boundary": "Educational decision support only; not professional advice or certification."
+}

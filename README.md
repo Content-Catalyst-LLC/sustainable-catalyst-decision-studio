@@ -1,6 +1,6 @@
-# Sustainable Catalyst Decision Studio v1.0.0
+# Sustainable Catalyst Decision Studio v1.0.1
 
-Sustainable Catalyst Decision Studio is an applied sustainability decision-support layer for Content Catalyst LLC / Sustainable Catalyst. It upgrades the earlier Sustainable Catalyst 1.0 prototype into a modular WordPress + FastAPI-ready platform for project intake, four-pillar scoring, scenarios, risk, reports, validation, exports, and Workbench integration.
+Sustainable Catalyst Decision Studio is an applied sustainability decision-support layer for Content Catalyst LLC / Sustainable Catalyst. It upgrades the earlier Sustainable Catalyst 1.0 prototype into a modular WordPress + FastAPI-ready platform for project intake, four-pillar scoring, scenarios, risk, reports, validation, exports, Workbench integration, and backend-routed AI decision briefing.
 
 ## Positioning
 
@@ -41,3 +41,16 @@ Legacy compatibility is included:
 ## Boundary
 
 Educational decision support only. Not legal, financial, engineering, medical, ESG/SDG assurance, tax, compliance, or investment advice.
+
+
+## AI Decision Briefing Layer
+
+v1.0.1 adds cautious AI decision briefs through the FastAPI backend. Provider keys are configured in backend environment variables, not WordPress. If AI is unavailable, the system returns a deterministic fallback brief with assumption critique, risk interpretation, scenario interpretation, stakeholder notes, governance readiness, caveats, and Workbench handoffs.
+
+Backend endpoints:
+
+```text
+GET /ai/status
+POST /brief
+POST /report
+```
