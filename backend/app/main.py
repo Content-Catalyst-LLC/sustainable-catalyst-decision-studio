@@ -9,7 +9,7 @@ import os
 import urllib.request
 import urllib.error
 
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
 
 class DecisionInputs(BaseModel):
@@ -90,13 +90,44 @@ def analyze(inputs: DecisionInputs) -> Dict[str, Any]:
     return {"scores":{"environmental":env,"social":social,"economic":econ,"governance":gov,"weighted":weighted},"finance":{"npv":npv_value,"payback_years":payback if math.isfinite(payback) else None,"roi_percent":roi},"emissions":{"annual_avoided_tco2e":annual_avoided,"total_avoided_tco2e":annual_avoided*inputs.modelYears},"risk":{"risk_score":risk,"risk_level":"High" if risk>=70 else "Medium" if risk>=45 else "Low"},"status":status,"scenarios":scenarios,"warnings":["Educational decision support only. Not professional advice or certification."],"workbench_handoffs":["risk-resilience-impact-matrix","economics-forecasting-and-scenario-tool","environmental-monitoring-qaqc-tool","systems-modeling-tool"]}
 
 
+def _env_first(*names: str) -> str:
+    """Return the first non-empty environment variable from a list of accepted names."""
+    for name in names:
+        value = os.getenv(name)
+        if value and value.strip():
+            return value.strip()
+    return ""
+
+
 def ai_provider_status() -> Dict[str, Any]:
-    provider = os.getenv("SCDS_AI_PROVIDER", "none").strip().lower()
-    gemini_key = bool(os.getenv("SCDS_GEMINI_API_KEY"))
-    openai_key = bool(os.getenv("SCDS_OPENAI_API_KEY"))
-    model = os.getenv("SCDS_AI_MODEL") or os.getenv("SCDS_GEMINI_MODEL") or os.getenv("SCDS_OPENAI_MODEL") or ""
+    requested_provider = os.getenv("SCDS_AI_PROVIDER", "").strip().lower()
+    gemini_key = bool(_env_first("SCDS_GEMINI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"))
+    openai_key = bool(_env_first("SCDS_OPENAI_API_KEY", "OPENAI_API_KEY"))
+
+    if requested_provider in {"gemini", "openai", "none"}:
+        provider = requested_provider
+    elif gemini_key:
+        provider = "gemini"
+    elif openai_key:
+        provider = "openai"
+    else:
+        provider = "none"
+
+    model = _env_first("SCDS_AI_MODEL", "SCDS_GEMINI_MODEL", "GEMINI_MODEL", "SCDS_OPENAI_MODEL", "OPENAI_MODEL")
+    if not model and provider == "gemini":
+        model = "gemini-2.5-flash"
+    elif not model and provider == "openai":
+        model = "gpt-5.5"
+
     configured = (provider == "gemini" and gemini_key) or (provider == "openai" and openai_key)
-    return {"provider": provider, "configured": configured, "model": model, "gemini_key_set": gemini_key, "openai_key_set": openai_key, "backend_only": True}
+    return {
+        "provider": provider,
+        "configured": configured,
+        "model": model,
+        "gemini_key_set": gemini_key,
+        "openai_key_set": openai_key,
+        "backend_only": True,
+    }
 
 
 def deterministic_brief(inputs: DecisionInputs, results: Dict[str, Any], reason: str = "deterministic_fallback") -> Dict[str, Any]:
@@ -164,10 +195,17 @@ def parse_json_or_wrap(text: str) -> Dict[str, Any]:
 
 
 def call_gemini(prompt: str) -> Dict[str, Any]:
-    key = os.getenv("SCDS_GEMINI_API_KEY", "")
-    model = os.getenv("SCDS_GEMINI_MODEL") or os.getenv("SCDS_AI_MODEL") or "gemini-3.5-flash"
+    key = _env_first("SCDS_GEMINI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY")
+    model = _env_first("SCDS_GEMINI_MODEL", "GEMINI_MODEL", "SCDS_AI_MODEL") or "gemini-2.5-flash"
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
-    body = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.25, "maxOutputTokens": 1600}}
+    body = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "temperature": 0.25,
+            "maxOutputTokens": 1600,
+            "responseMimeType": "application/json",
+        },
+    }
     req = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"), headers={"Content-Type": "application/json"}, method="POST")
     with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.loads(resp.read().decode("utf-8"))
@@ -179,8 +217,8 @@ def call_gemini(prompt: str) -> Dict[str, Any]:
 
 
 def call_openai(prompt: str) -> Dict[str, Any]:
-    key = os.getenv("SCDS_OPENAI_API_KEY", "")
-    model = os.getenv("SCDS_OPENAI_MODEL") or os.getenv("SCDS_AI_MODEL") or "gpt-5.5"
+    key = _env_first("SCDS_OPENAI_API_KEY", "OPENAI_API_KEY")
+    model = _env_first("SCDS_OPENAI_MODEL", "OPENAI_MODEL", "SCDS_AI_MODEL") or "gpt-5.5"
     url = "https://api.openai.com/v1/responses"
     body = {"model": model, "input": prompt, "temperature": 0.25, "max_output_tokens": 1600}
     req = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"), headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"}, method="POST")

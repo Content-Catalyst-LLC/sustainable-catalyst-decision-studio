@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Applied sustainability decision-support workflows for project intake, four-pillar scoring, scenarios, risk, reports, and Workbench integration.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.0.1';
+    const VERSION = '1.0.2';
     const OPTION_KEY = 'scds_settings';
     const NONCE_ACTION = 'wp_rest';
     const PROJECTS_TABLE = 'scds_projects';

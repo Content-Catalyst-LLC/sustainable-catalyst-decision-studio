@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2
+- Pinned Render Python runtime to 3.12.11 at both repository root and backend root.
+- Added Gemini environment variable aliases: GEMINI_API_KEY, GOOGLE_API_KEY, and GEMINI_MODEL.
+- Added automatic Gemini provider detection when a Gemini key is present.
+- Updated the default Gemini model to gemini-2.5-flash and kept deterministic fallback behavior.
+
 ## 1.0.1
 - Added AI Decision Briefing Layer with backend-routed Gemini/OpenAI provider support.
 - Added deterministic fallback briefs when provider credentials or backend are unavailable.

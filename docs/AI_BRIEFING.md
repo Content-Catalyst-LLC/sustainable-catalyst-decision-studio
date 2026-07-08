@@ -1,6 +1,6 @@
 # AI Decision Briefing Layer
 
-Decision Studio v1.0.1 adds a backend-routed AI briefing layer for cautious decision-support drafting. The deterministic four-pillar model remains the source of calculation. AI is used only to summarize, critique assumptions, interpret risk, describe scenarios, and surface caveats.
+Decision Studio v1.0.2 adds a backend-routed AI briefing layer for cautious decision-support drafting. The deterministic four-pillar model remains the source of calculation. AI is used only to summarize, critique assumptions, interpret risk, describe scenarios, and surface caveats.
 
 ## Backend-only API key pattern
 
@@ -9,7 +9,12 @@ Do not store provider keys in WordPress. Configure provider credentials in the F
 ```text
 SCDS_AI_PROVIDER=gemini
 SCDS_GEMINI_API_KEY=<set-in-render>
-SCDS_GEMINI_MODEL=<your-model>
+SCDS_GEMINI_MODEL=gemini-2.5-flash
+
+# accepted aliases
+GEMINI_API_KEY=<set-in-render>
+GOOGLE_API_KEY=<set-in-render>
+GEMINI_MODEL=gemini-2.5-flash
 
 # or
 SCDS_AI_PROVIDER=openai
