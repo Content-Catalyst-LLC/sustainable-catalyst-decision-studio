@@ -1,0 +1,33 @@
+{
+  "name": "Sustainable Catalyst Decision Studio",
+  "version": "1.0.0",
+  "shortcodes": [
+    "[sc_decision_studio mode=\"full\"]",
+    "[sc_decision_studio mode=\"project-intake\"]",
+    "[sc_decision_studio mode=\"scorecard\"]",
+    "[sc_decision_studio mode=\"risk\"]",
+    "[sc_decision_studio mode=\"scenario\"]",
+    "[sc_decision_studio mode=\"report\"]",
+    "[sc_decision_studio mode=\"drawer\"]"
+  ],
+  "modules": [
+    "project_intake",
+    "four_pillar_scorecard",
+    "emissions_calculator",
+    "npv_roi_payback",
+    "risk_resilience_matrix",
+    "scenario_comparison",
+    "stakeholder_impact_matrix",
+    "governance_readiness_review",
+    "sdg_planetary_boundary_mapping",
+    "decision_brief_generator",
+    "audit_trail_assumptions_log"
+  ],
+  "workbench_integration": [
+    "risk-resilience-impact-matrix",
+    "economics-forecasting-and-scenario-tool",
+    "environmental-monitoring-qaqc-tool",
+    "systems-modeling-tool",
+    "global-impact-assessment-matrix"
+  ]
+}
