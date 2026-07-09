@@ -52,3 +52,10 @@
 }
 .scds-import-result .scds-packet-card details { margin-top: 12px; }
 .scds-import-result .scds-packet-card summary { cursor: pointer; font-weight: 700; }
+
+
+/* v1.3.0 Integrated Brief Generator */
+.scds-integrated-brief{background:#fffdf8;border:1px solid rgba(0,0,0,.12);border-radius:18px;padding:22px;margin-top:16px;box-shadow:0 2px 14px rgba(0,0,0,.04)}
+.scds-integrated-brief h4{margin-top:22px;margin-bottom:8px}
+.scds-integrated-brief ul{margin-top:8px}
+.scds-integrated-brief li{margin-bottom:6px}

@@ -1,4 +1,4 @@
-# Sustainable Catalyst Decision Studio v1.1.1
+# Sustainable Catalyst Decision Studio v1.3.0
 
 Sustainable Catalyst Decision Studio is an applied sustainability decision-support layer for Content Catalyst LLC / Sustainable Catalyst. It upgrades the earlier Sustainable Catalyst 1.0 prototype into a modular WordPress + FastAPI-ready platform for project intake, four-pillar scoring, scenarios, risk, reports, validation, exports, Workbench integration, and backend-routed AI decision briefing.
 
@@ -77,3 +77,20 @@ WordPress routes:
 - `/wp-json/scds/v1/integrations/adapters`
 - `/wp-json/scds/v1/integrations/import`
 - `/wp-json/scds/v1/decision-packet/import`
+
+
+## v1.3.0 Integrated Brief Generator
+
+Decision Studio can now generate a professional integrated decision memo from the full Decision Packet, including module artifact imports, audit/provenance records, four-pillar scores, scenario comparison, finance, impact, narrative risk, recovery, and Workbench handoffs.
+
+Endpoints:
+
+- `POST /integrated-brief`
+- `POST /decision-packet/brief`
+
+Exports:
+
+- Markdown
+- HTML
+- JSON
+- Print/PDF through the browser

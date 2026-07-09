@@ -1,0 +1,29 @@
+{
+  "version": "1.3.0",
+  "feature": "Integrated Brief Generator",
+  "endpoints": [
+    "/integrated-brief",
+    "/decision-packet/brief"
+  ],
+  "exports": [
+    "markdown",
+    "html",
+    "json",
+    "print_pdf"
+  ],
+  "sections": [
+    "executive_summary",
+    "decision_question",
+    "problem_framing",
+    "four_pillar_analysis",
+    "scenario_comparison",
+    "financial_tradeoffs",
+    "impact_measurement",
+    "claim_and_narrative_risk",
+    "execution_and_recovery",
+    "assumptions_and_uncertainties",
+    "evidence_and_source_ledger",
+    "audit_appendix_summary",
+    "next_review_actions"
+  ]
+}

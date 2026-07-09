@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Integrated sustainability decision-support workflow for framing, evidence, scenarios, impact, claims, finance, recovery, four-pillar synthesis, and reports.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.2.0';
+    const VERSION = '1.3.0';
     const OPTION_KEY = 'scds_settings';
     const NONCE_ACTION = 'wp_rest';
     const PROJECTS_TABLE = 'scds_projects';
@@ -201,6 +201,7 @@ class Sustainable_Catalyst_Decision_Studio {
             'restDecisionPacketImportUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/import')),
             'restAuditTemplateUrl' => esc_url_raw(rest_url('scds/v1/audit/template')),
             'restAuditGenerateUrl' => esc_url_raw(rest_url('scds/v1/audit/generate')),
+            'restIntegratedBriefUrl' => esc_url_raw(rest_url('scds/v1/integrated-brief')),
             'nonce' => wp_create_nonce(self::NONCE_ACTION),
             'backendEnabled' => $settings['backend_enabled'] === '1' && !empty($settings['backend_url']),
             'aiBriefingEnabled' => $settings['ai_briefing_enabled'] === '1',
@@ -296,7 +297,7 @@ class Sustainable_Catalyst_Decision_Studio {
                     </article>
                 <?php endforeach; ?>
             </div>
-            <div class="scds-note"><strong>v1.2.0 boundary:</strong> this release adds Module Artifact Adapters. Paste or import a JSON export from a module and Decision Studio will normalize it into the correct Decision Packet section.</div>
+            <div class="scds-note"><strong>v1.3.0 boundary:</strong> this release adds Module Artifact Adapters. Paste or import a JSON export from a module and Decision Studio will normalize it into the correct Decision Packet section.</div>
             <div class="scds-import-box">
                 <div class="scds-panel-head scds-panel-head-small">
                     <p class="scds-section-kicker">Module artifact import</p>
@@ -328,7 +329,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-import-artifact>Import Artifact</button><button type="button" class="scds-button" data-scds-load-sample-artifact>Load Sample Artifact</button><button type="button" class="scds-button" data-scds-download-packet>Download Decision Packet JSON</button></div>
                 <div class="scds-import-result" data-scds-import-result></div>
             </div>
-            <div class="scds-note"><strong>v1.2.0 boundary:</strong> Module Artifact Adapters normalize structured exports into a Decision Packet. They map fields and preserve provenance, but they do not verify source truth, professional compliance, certification, or decision approval.</div>
+            <div class="scds-note"><strong>v1.3.0 boundary:</strong> Module Artifact Adapters normalize structured exports into a Decision Packet. They map fields and preserve provenance, but they do not verify source truth, professional compliance, certification, or decision approval.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-packet-template>Preview Decision Packet</button><button type="button" class="scds-button" data-scds-run>Run Current Decision Analysis</button></div>
             <div class="scds-packet-preview" data-scds-packet-preview></div>
         </section>
@@ -373,7 +374,24 @@ class Sustainable_Catalyst_Decision_Studio {
     <?php }
 
     private function render_panel_report($mode) { ?>
-        <section class="scds-panel" data-scds-panel="report"><div class="scds-panel-head"><p class="scds-section-kicker">Decision brief</p><h3>Exportable decision-support report</h3><p>Generate an executive-style brief with assumptions, scores, scenarios, risk, limits, and next questions.</p></div><div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-run>Generate Brief</button><button type="button" class="scds-button" data-scds-ai-brief>Generate AI Decision Brief</button><button type="button" class="scds-button" data-scds-export-json>Download JSON</button><button type="button" class="scds-button" data-scds-export-csv>Download CSV</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div><div class="scds-report" data-scds-report></div></section>
+        <section class="scds-panel" data-scds-panel="report">
+            <div class="scds-panel-head">
+                <p class="scds-section-kicker">Integrated brief generator</p>
+                <h3>Professional decision memo from the full Decision Packet</h3>
+                <p>Generate a structured brief that synthesizes framing, evidence, scenarios, impact records, claim review, finance, recovery, four-pillar scores, audit/provenance, and Workbench handoffs.</p>
+            </div>
+            <div class="scds-note"><strong>v1.3.0:</strong> the brief generator now produces a professional memo with executive summary, recommendation posture, readiness status, module-derived findings, audit appendix summary, and Markdown/HTML/JSON exports.</div>
+            <div class="scds-actions">
+                <button type="button" class="scds-button scds-button-primary" data-scds-integrated-brief>Generate Integrated Brief</button>
+                <button type="button" class="scds-button" data-scds-run>Generate Basic Brief</button>
+                <button type="button" class="scds-button" data-scds-ai-brief>Generate AI Decision Brief</button>
+                <button type="button" class="scds-button" data-scds-export-integrated-md>Download Markdown</button>
+                <button type="button" class="scds-button" data-scds-export-integrated-html>Download HTML</button>
+                <button type="button" class="scds-button" data-scds-export-integrated-json>Download JSON</button>
+                <button type="button" class="scds-button" data-scds-print>Print / Save PDF</button>
+            </div>
+            <div class="scds-report" data-scds-report></div>
+        </section>
     <?php }
 
     private function render_panel_ai($mode) { ?>
@@ -387,7 +405,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Decision packet ledger, sources, assumptions, calculations, claims, changes, and review status</h3>
                 <p>Generate a structured audit appendix that shows what was entered, which module artifacts are present, which sources support the decision, which calculations were used, and which assumptions still require review.</p>
             </div>
-            <div class="scds-note"><strong>v1.2.0 upgrade:</strong> audit now includes a provenance ledger, source ledger, assumptions register, calculation trace, claim trace, change log, review status, and exportable audit appendix.</div>
+            <div class="scds-note"><strong>v1.3.0 upgrade:</strong> audit now includes a provenance ledger, source ledger, assumptions register, calculation trace, claim trace, change log, review status, and exportable audit appendix.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-audit-generate>Generate Audit Appendix</button><button type="button" class="scds-button" data-scds-export-audit-json>Download Audit JSON</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div>
             <div class="scds-audit-list" data-scds-audit></div>
             <div class="scds-workbench-links" data-scds-workbench-links></div>
@@ -429,7 +447,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
 
     public function render_admin_integrations() {
-        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.2.0 maps specialized Sustainable Catalyst modules into one Decision Packet.');
+        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.3.0 maps specialized Sustainable Catalyst modules into one Decision Packet.');
         echo '<p>Use this map as the integration contract for the next build: module artifact exports should feed the Decision Packet sections listed below.</p>';
         echo '<table class="widefat striped"><thead><tr><th>Step</th><th>Module</th><th>Role</th><th>Feeds Decision Packet</th><th>URL</th></tr></thead><tbody>';
         foreach ($this->module_integrations() as $m) {
@@ -530,6 +548,8 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/decision-packet/template', ['methods'=>'GET','callback'=>[$this,'rest_decision_packet_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/audit/template', ['methods'=>'GET','callback'=>[$this,'rest_audit_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/audit/generate', ['methods'=>'POST','callback'=>[$this,'rest_audit_generate'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/integrated-brief', ['methods'=>'POST','callback'=>[$this,'rest_integrated_brief'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/brief', ['methods'=>'POST','callback'=>[$this,'rest_integrated_brief'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/backend-status', ['methods'=>'GET','callback'=>[$this,'rest_backend_status'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/ai-brief', ['methods'=>'POST','callback'=>[$this,'rest_ai_brief'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/projects', ['methods'=>'POST','callback'=>[$this,'rest_save_project'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
@@ -563,6 +583,19 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     public function rest_decision_packet_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_packet'=>$this->decision_packet_template(),'modules'=>$this->module_integrations()]); }
     public function rest_audit_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'audit'=>$this->audit_provenance_template()]); }
     public function rest_audit_generate(WP_REST_Request $request) { $payload = $request->get_json_params(); if (!is_array($payload)) $payload = []; $inputs = isset($payload['inputs']) && is_array($payload['inputs']) ? $payload['inputs'] : []; $results = isset($payload['results']) && is_array($payload['results']) ? $payload['results'] : $this->analyze_inputs($inputs); return rest_ensure_response($this->generate_audit_provenance($inputs, $results, $payload)); }
+
+    public function rest_integrated_brief(WP_REST_Request $request) {
+        $payload = $request->get_json_params(); if (!is_array($payload)) $payload = [];
+        $inputs = isset($payload['inputs']) && is_array($payload['inputs']) ? $payload['inputs'] : [];
+        $results = isset($payload['results']) && is_array($payload['results']) ? $payload['results'] : $this->analyze_inputs($inputs);
+        $packet = isset($payload['packet']) && is_array($payload['packet']) ? $payload['packet'] : $this->decision_packet_template();
+        $audit = isset($payload['audit']) && is_array($payload['audit']) ? $payload['audit'] : [];
+        if ($this->settings()['backend_enabled'] === '1' && !empty($this->settings()['backend_url'])) {
+            $backend = $this->backend_request('/integrated-brief', ['inputs'=>$inputs,'results'=>$results,'packet'=>$packet,'audit'=>$audit,'moduleArtifacts'=>isset($payload['moduleArtifacts'])?$payload['moduleArtifacts']:[],'includeAI'=>false]);
+            if (!is_wp_error($backend) && is_array($backend)) return rest_ensure_response($backend);
+        }
+        return rest_ensure_response($this->generate_integrated_brief($inputs, $results, $packet, $audit));
+    }
 
     public function rest_health() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio']); }
     public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map()]); }
@@ -671,9 +704,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function recommended_workbench_shortcodes() { return ['[sc_workbench mode="tool" display="compact" tool="risk-resilience-impact-matrix"]','[sc_workbench mode="tool" display="compact" tool="economics-forecasting-and-scenario-tool"]','[sc_workbench mode="tool" display="drawer" tool="environmental-monitoring-qaqc-tool"]']; }
 
     private function csv_response($filename, $rows) { $fh = fopen('php://temp','w+'); if ($rows) { fputcsv($fh, array_keys($rows[0])); foreach($rows as $row) fputcsv($fh, $row); } rewind($fh); $csv = stream_get_contents($fh); fclose($fh); return new WP_REST_Response($csv, 200, ['Content-Type'=>'text/csv; charset=utf-8','Content-Disposition'=>'attachment; filename="'.$filename.'"']); }
-    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.2.0.csv', $this->scenario_templates()); }
-    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.2.0.csv', $this->workbench_tool_map()); }
-    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.2.0.csv', $rows ?: []); }
+    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.3.0.csv', $this->scenario_templates()); }
+    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.3.0.csv', $this->workbench_tool_map()); }
+    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.3.0.csv', $rows ?: []); }
 
 
     private function artifact_adapter_catalog() {
@@ -764,7 +797,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function import_artifact_into_packet($artifact, $module_id='', $packet=[]) {
         $normalized = $this->normalize_artifact($artifact, $module_id);
         $updated = $this->apply_packet_patch($packet, $normalized['packet_patch']);
-        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.2.0']];
+        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.3.0']];
     }
 
     private function module_integrations() {
@@ -782,7 +815,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function decision_packet_template() {
         return [
-            'packet_version'=>'1.2.0',
+            'packet_version'=>'1.3.0',
             'workflow'=>'Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio',
             'project'=>['project_name'=>'','organization_type'=>'','sector'=>'','location'=>'','time_horizon'=>'','decision_question'=>''],
             'framing'=>[],
@@ -806,7 +839,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function audit_provenance_template() {
         return [
-            'audit_version'=>'1.2.0',
+            'audit_version'=>'1.3.0',
             'decision_packet_id'=>'SCDS-DRAFT',
             'review_status'=>[
                 'status'=>'draft',
@@ -879,10 +912,101 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         return ['ok'=>true,'version'=>self::VERSION,'audit'=>$audit,'audit_summary'=>['module_artifact_completeness_percent'=>round(100*$attached/max(1,count($ledger)),1),'sources_count'=>count($source_ledger),'assumptions_count'=>count($assumptions),'calculation_trace_count'=>count($calcs),'claim_trace_count'=>count($claim_trace),'review_status'=>$audit['review_status']['status'],'high_priority_reviews'=>['Verify source records and data confidence.','Review high-sensitivity financial assumptions.','Attach Narrative Risk claim review before external use.','Use professional review for regulated or safety-critical decisions.']]];
     }
 
+
+    private function records_from_packet($packet, $section, $legacy='') {
+        if (isset($packet[$section]) && is_array($packet[$section])) {
+            if (isset($packet[$section]['records']) && is_array($packet[$section]['records'])) return $packet[$section]['records'];
+            if (array_keys($packet[$section]) === range(0, count($packet[$section])-1)) return $packet[$section];
+        }
+        if ($legacy && isset($packet[$legacy]) && is_array($packet[$legacy])) {
+            if (array_keys($packet[$legacy]) === range(0, count($packet[$legacy])-1)) return $packet[$legacy];
+            return [$packet[$legacy]];
+        }
+        return [];
+    }
+
+    private function text_or_default($value, $default='Not specified') {
+        if ($value === null || $value === '' || $value === [] || $value === false) return $default;
+        if (is_array($value)) {
+            foreach (['name','title','label','summary','description','value'] as $k) if (isset($value[$k]) && $value[$k] !== '') return sanitize_text_field(strval($value[$k]));
+            return substr(wp_json_encode($value), 0, 220);
+        }
+        return sanitize_text_field(strval($value));
+    }
+
+    private function brief_num($value, $suffix='') {
+        if (is_numeric($value)) return rtrim(rtrim(number_format((float)$value, abs((float)$value) >= 1000 ? 0 : 1), '0'), '.') . $suffix;
+        return $this->text_or_default($value, 'n/a');
+    }
+
+    private function brief_money($value) { return is_numeric($value) ? '$' . number_format((float)$value, 0) : $this->text_or_default($value, 'n/a'); }
+
+    private function integrated_brief_markdown($brief) {
+        $bullets = function($items) { if (!is_array($items) || !$items) return "- None recorded."; return implode("\n", array_map(function($x){ return '- ' . (is_array($x) ? wp_json_encode($x) : sanitize_text_field(strval($x))); }, $items)); };
+        $md = [];
+        $md[] = '# ' . ($brief['title'] ?? 'Integrated Decision Brief');
+        $md[] = '';
+        $md[] = '**Decision Packet:** ' . ($brief['decision_packet_id'] ?? 'SCDS-DRAFT');
+        $md[] = '**Recommendation posture:** ' . ($brief['recommendation_posture'] ?? 'Review required');
+        $md[] = '**Brief readiness:** ' . ($brief['brief_readiness']['readiness_percent'] ?? 'n/a') . '%';
+        $md[] = '';
+        $md[] = '## Executive Summary'; $md[] = $brief['executive_summary'] ?? '';
+        $md[] = ''; $md[] = '## Decision Question'; $md[] = $brief['decision_question'] ?? 'Not specified';
+        $sections = ['problem_framing'=>'Problem Framing','four_pillar_analysis'=>'Four-Pillar Sustainability Analysis','scenario_comparison'=>'Scenario Comparison','financial_tradeoffs'=>'Financial Tradeoffs','impact_measurement'=>'Impact Measurement','claim_and_narrative_risk'=>'Claim and Narrative Risk','execution_and_recovery'=>'Execution and Recovery Risk','assumptions_and_uncertainties'=>'Assumptions and Uncertainties','evidence_and_source_ledger'=>'Evidence and Source Ledger','audit_appendix_summary'=>'Audit Appendix Summary'];
+        foreach ($sections as $key=>$title) { $md[]=''; $md[]='## '.$title; $md[] = isset($brief[$key]['findings']) ? $bullets($brief[$key]['findings']) : ($brief[$key]['summary'] ?? 'Not specified'); }
+        $md[]=''; $md[]='## Next Review Actions'; $md[]=$bullets($brief['next_review_actions'] ?? []);
+        $md[]=''; $md[]='## Boundaries'; $md[]='Educational decision support only. Not professional advice, certification, assurance, or approval.';
+        return implode("\n", $md) . "\n";
+    }
+
+    private function integrated_brief_html($brief) {
+        $ul = function($items) { if (!is_array($items) || !$items) return '<p>None recorded.</p>'; $out='<ul>'; foreach($items as $i) $out.='<li>'.esc_html(is_array($i)?wp_json_encode($i):strval($i)).'</li>'; return $out.'</ul>'; };
+        $html = '<div class="scds-integrated-brief"><h2>' . esc_html($brief['title'] ?? 'Integrated Decision Brief') . '</h2>';
+        $html .= '<p><strong>Decision Packet:</strong> ' . esc_html($brief['decision_packet_id'] ?? 'SCDS-DRAFT') . '</p>';
+        $html .= '<p><strong>Recommendation posture:</strong> ' . esc_html($brief['recommendation_posture'] ?? 'Review required') . '</p>';
+        $html .= '<p><strong>Brief readiness:</strong> ' . esc_html($brief['brief_readiness']['readiness_percent'] ?? 'n/a') . '%</p>';
+        $html .= '<h3>Executive Summary</h3><p>' . esc_html($brief['executive_summary'] ?? '') . '</p>';
+        $html .= '<h3>Decision Question</h3><p>' . esc_html($brief['decision_question'] ?? 'Not specified') . '</p>';
+        $sections = ['problem_framing'=>'Problem Framing','four_pillar_analysis'=>'Four-Pillar Sustainability Analysis','scenario_comparison'=>'Scenario Comparison','financial_tradeoffs'=>'Financial Tradeoffs','impact_measurement'=>'Impact Measurement','claim_and_narrative_risk'=>'Claim and Narrative Risk','execution_and_recovery'=>'Execution and Recovery Risk','assumptions_and_uncertainties'=>'Assumptions and Uncertainties','evidence_and_source_ledger'=>'Evidence and Source Ledger','audit_appendix_summary'=>'Audit Appendix Summary'];
+        foreach ($sections as $key=>$title) { $html .= '<h3>' . esc_html($title) . '</h3>'; $html .= isset($brief[$key]['findings']) ? $ul($brief[$key]['findings']) : '<p>' . esc_html($brief[$key]['summary'] ?? 'Not specified') . '</p>'; }
+        $html .= '<h3>Next Review Actions</h3>' . $ul($brief['next_review_actions'] ?? []);
+        $html .= '<h3>Boundaries</h3><p>Educational decision support only. Not professional advice, certification, assurance, or approval.</p></div>';
+        return $html;
+    }
+
+    private function generate_integrated_brief($inputs, $results, $packet=[], $audit=[]) {
+        if (!$packet) $packet = $this->decision_packet_template();
+        if (!$audit) $audit = $this->generate_audit_provenance($inputs, $results, ['packet'=>$packet])['audit'];
+        $scores = $results['scores'] ?? [];
+        $risk = $results['risk'] ?? [];
+        $emissions = $results['emissions'] ?? [];
+        $finance = $packet['financial_tradeoffs'] ?? ($packet['finance_analysis'] ?? []);
+        $finance_results = is_array($finance) && isset($finance['results']) && is_array($finance['results']) ? $finance['results'] : ($results['finance'] ?? []);
+        $weighted = (float)($scores['weighted'] ?? 0); $risk_score = (float)($risk['risk_score'] ?? 0);
+        $readiness = 0; $filled=[]; $missing=[];
+        foreach($this->module_integrations() as $m){ $key=$m['artifact_key']; $present=!empty($packet[$key]) || (!empty($m['decision_packet_section']) && !empty($packet[$m['decision_packet_section']])); if($present)$filled[]=$m['id']; else $missing[]=$m['id']; }
+        $readiness = round(100*count($filled)/max(1,count($this->module_integrations())),1);
+        $posture = ($weighted >= 75 && $risk_score < 55) ? 'Advance with mitigations' : (($weighted >= 60 && $risk_score < 70) ? 'Continue due diligence' : 'Revise before approval');
+        if ($readiness < 50) $posture .= ' — incomplete packet';
+        $framing = $packet['decision_framing'] ?? ($packet['framing'] ?? []);
+        $project_name = $inputs['projectName'] ?? ($packet['project']['project_name'] ?? 'Decision project');
+        $decision_question = !empty($framing['decision_question']) ? $framing['decision_question'] : ($inputs['decisionQuestion'] ?? 'Decision question not specified');
+        $scenarios = $this->records_from_packet($packet, 'scenarios', 'scenario_analysis');
+        $scenario_findings=[]; if($scenarios){ foreach(array_slice($scenarios,0,4) as $sc) $scenario_findings[]=$this->text_or_default($sc['demo'] ?? ($sc['name'] ?? ($sc['label'] ?? 'Imported scenario'))) . ': ' . $this->text_or_default($sc['interpretation'] ?? ($sc['decision_note'] ?? ($sc['summary'] ?? 'Imported scenario artifact attached.'))); } else { foreach(array_slice($results['scenarios'] ?? [],0,5) as $sc) $scenario_findings[]=$this->text_or_default($sc['label'] ?? 'Scenario').': annual avoided emissions '.$this->brief_num($sc['annual_avoided_tco2e'] ?? '').' tCO2e; NPV '.$this->brief_money($sc['npv'] ?? null).'; payback '.$this->brief_num($sc['payback_years'] ?? '', ' years').'.'; }
+        $impacts=$this->records_from_packet($packet,'impact_measurement','impact_records'); $impact_findings=[]; foreach(array_slice($impacts,0,5) as $i)$impact_findings[]=$this->text_or_default($i['initiative'] ?? ($i['goal'] ?? ($i['indicator'] ?? 'Impact record'))).': baseline '.$this->text_or_default($i['baseline_value'] ?? ($i['baseline'] ?? 'n/a')).', current '.$this->text_or_default($i['current_value'] ?? ($i['current'] ?? 'n/a')).', target '.$this->text_or_default($i['target_value'] ?? ($i['target'] ?? 'n/a')).'.'; if(!$impact_findings)$impact_findings=['No Global Impact artifact is attached yet; impact claims remain draft.'];
+        $claims=$this->records_from_packet($packet,'claim_and_risk_review','claim_reviews'); $claim_findings=[]; foreach(array_slice($claims,0,5) as $c)$claim_findings[]=$this->text_or_default($c['claim'] ?? 'Imported claim').': risk '.$this->text_or_default($c['risk_level'] ?? 'unspecified').', evidence '.$this->text_or_default($c['evidence_strength'] ?? 'unspecified').'.'; if(!$claim_findings)$claim_findings=['No Narrative Risk artifact is attached yet; external-facing claims remain provisional.'];
+        $recovery=$packet['execution_and_recovery'] ?? ($packet['execution_recovery'] ?? []); $recovery_findings = $recovery ? ['Recovery state: '.$this->text_or_default($recovery['resilience_state'] ?? 'unspecified').'; recovery score '.$this->text_or_default($recovery['recovery_score'] ?? 'n/a').'.'] : ['No Catalyst Grit recovery artifact is attached yet; execution pressure and next actions require review.'];
+        $source_findings=[]; $sources=$packet['sources'] ?? ($audit['source_ledger'] ?? []); foreach(array_slice(is_array($sources)?$sources:[],0,5) as $src)$source_findings[]=$this->text_or_default($src['source_title'] ?? ($src['name'] ?? 'Source')).': confidence '.$this->text_or_default($src['confidence'] ?? 'unspecified').'; used for '.$this->text_or_default($src['used_for'] ?? 'unspecified').'.'; if(!$source_findings)$source_findings=['No explicit source ledger has been attached; import Catalyst Data records before external reliance.'];
+        $assumption_findings=[]; foreach(array_slice($packet['assumptions'] ?? [],0,5) as $a)$assumption_findings[]=$this->text_or_default($a['assumption'] ?? 'Assumption').': '.$this->text_or_default($a['value'] ?? 'n/a').'; sensitivity '.$this->text_or_default($a['sensitivity'] ?? 'unspecified').'.'; if(!$assumption_findings)$assumption_findings=['Core assumptions include baseline emissions, reduction rate, adoption rate, CAPEX, annual savings, discount rate, and model years.'];
+        $ledger = $audit['module_artifact_ledger'] ?? []; $attached=0; foreach(is_array($ledger)?$ledger:[] as $l) if(($l['status'] ?? '')==='attached') $attached++;
+        $brief = ['brief_version'=>self::VERSION,'title'=>'Integrated Decision Brief: '.$project_name,'decision_packet_id'=>$audit['decision_packet_id'] ?? 'SCDS-DRAFT','decision_question'=>$decision_question,'recommendation_posture'=>$posture,'brief_readiness'=>['readiness_percent'=>$readiness,'filled_modules'=>$filled,'missing_modules'=>$missing],'executive_summary'=>$project_name.' is currently assessed as "'.($results['status'] ?? 'Decision requires review').'". The weighted score is '.$this->brief_num($weighted).'/100, risk is '.$this->text_or_default($risk['risk_level'] ?? 'Unknown').' ('.$this->brief_num($risk_score).'/100), estimated NPV is '.$this->brief_money($finance_results['npv'] ?? null).', and estimated annual avoided emissions are '.$this->brief_num($emissions['annual_avoided_tco2e'] ?? null).' tCO2e. Recommendation posture: '.$posture.'.','problem_framing'=>['summary'=>$this->text_or_default($framing['challenge'] ?? ($framing['point_of_view'] ?? ($inputs['constraints'] ?? 'Problem framing is not yet fully imported from Catalyst Canvas.')))],'four_pillar_analysis'=>['findings'=>['Environmental score: '.$this->brief_num($scores['environmental'] ?? null).'/100.','Social score: '.$this->brief_num($scores['social'] ?? null).'/100.','Economic score: '.$this->brief_num($scores['economic'] ?? null).'/100.','Governance score: '.$this->brief_num($scores['governance'] ?? null).'/100.','Weighted score: '.$this->brief_num($weighted).'/100.']],'scenario_comparison'=>['findings'=>$scenario_findings],'financial_tradeoffs'=>['findings'=>['NPV: '.$this->brief_money($finance_results['npv'] ?? null).'.','ROI: '.$this->brief_num($finance_results['roi_percent'] ?? null, '%').'.','Payback: '.$this->brief_num($finance_results['payback_years'] ?? null, ' years').'.','Finance outputs remain estimates until assumptions and source data are reviewed.']],'impact_measurement'=>['findings'=>$impact_findings],'claim_and_narrative_risk'=>['findings'=>$claim_findings],'execution_and_recovery'=>['findings'=>$recovery_findings],'assumptions_and_uncertainties'=>['findings'=>$assumption_findings],'evidence_and_source_ledger'=>['findings'=>$source_findings],'audit_appendix_summary'=>['findings'=>['Module artifact ledger: '.$attached.'/'.(is_array($ledger)&&count($ledger)?count($ledger):count($this->module_integrations())).' modules attached.','Calculation trace entries: '.count($packet['calculation_trace'] ?? []).'.','Review status: '.$this->text_or_default($audit['review_status']['status'] ?? 'draft').'.']],'next_review_actions'=>['Attach or verify Catalyst Data source records for every major claim and calculation.','Review Catalyst Finance assumptions and rerun sensitivity tests.','Attach Narrative Risk review before publishing external-facing claims.','Use Workbench for deeper symbolic, graph, engineering, or domain-specific calculations.','Mark required expert reviews before regulated, safety-critical, financial, legal, engineering, or assurance use.'],'workbench_handoffs'=>$results['workbench_handoffs'] ?? [],'warnings'=>['Educational decision support only; not professional advice or certification.','Imported artifacts and user-provided inputs are not independently verified.']];
+        return ['ok'=>true,'version'=>self::VERSION,'brief'=>$brief,'exports'=>['markdown'=>$this->integrated_brief_markdown($brief),'html'=>$this->integrated_brief_html($brief),'json'=>$brief],'results'=>$results,'decision_packet'=>$packet,'audit'=>$audit,'readiness'=>['workflow_readiness_percent'=>$readiness,'filled_modules'=>$filled,'missing_modules'=>$missing]];
+    }
+
     private function scenario_templates() { return [ ['template_id'=>'baseline','name'=>'Baseline','purpose'=>'Current path with no intervention'], ['template_id'=>'conservative','name'=>'Conservative','purpose'=>'Lower adoption, higher cost, slower benefits'], ['template_id'=>'expected','name'=>'Expected','purpose'=>'Central planning assumption'], ['template_id'=>'ambitious','name'=>'Ambitious','purpose'=>'Higher adoption and faster benefits'], ['template_id'=>'stress','name'=>'Stress Test','purpose'=>'Costs rise, benefits lag, governance weakens'], ['template_id'=>'transition','name'=>'Transition Pathway','purpose'=>'Staged implementation over multiple years'] ]; }
     private function scorecard_rows() { return [ ['pillar'=>'Environmental','default_weight'=>'30','indicators'=>'emissions, energy, land, water, biodiversity, pollution'], ['pillar'=>'Social','default_weight'=>'20','indicators'=>'health, access, equity, labor, community, capability'], ['pillar'=>'Economic','default_weight'=>'30','indicators'=>'NPV, ROI, payback, affordability, productivity, resilience'], ['pillar'=>'Governance','default_weight'=>'20','indicators'=>'accountability, evidence, controls, transparency, capacity, audit trail'] ]; }
     private function workbench_tool_map() { return [ ['decision_module'=>'Risk matrix','workbench_shortcode'=>'[sc_workbench mode="tool" display="compact" tool="risk-resilience-impact-matrix"]'], ['decision_module'=>'Economics and scenarios','workbench_shortcode'=>'[sc_workbench mode="tool" display="compact" tool="economics-forecasting-and-scenario-tool"]'], ['decision_module'=>'Environmental QA/QC','workbench_shortcode'=>'[sc_workbench mode="tool" display="drawer" tool="environmental-monitoring-qaqc-tool"]'], ['decision_module'=>'Systems modeling','workbench_shortcode'=>'[sc_workbench mode="tool" display="compact" tool="systems-modeling-tool"]'], ['decision_module'=>'Global impact','workbench_shortcode'=>'[sc_workbench mode="tool" display="compact" tool="global-impact-assessment-matrix"]'] ]; }
-    private function report_template_markdown() { return "# Decision Brief\n\n## Executive Summary\n## Decision Question\n## Project Description\n## Assumptions\n## Four-Pillar Analysis\n## Environmental Analysis\n## Social Analysis\n## Economic Analysis\n## Governance Analysis\n## Risk Matrix\n## Scenario Comparison\n## Sensitivity Notes\n## Recommended Next Questions\n## Limitations\n## Audit Trail\n"; }
+    private function report_template_markdown() { return "# Integrated Decision Brief\n\n## Executive Summary\n## Decision Question\n## Project Description\n## Assumptions\n## Four-Pillar Analysis\n## Environmental Analysis\n## Social Analysis\n## Economic Analysis\n## Governance Analysis\n## Risk Matrix\n## Scenario Comparison\n## Sensitivity Notes\n## Recommended Next Questions\n## Limitations\n## Audit Trail\n"; }
     private function render_csv_table($rows) { if (!$rows) { echo '<p>No rows available.</p>'; return; } echo '<table class="widefat striped"><thead><tr>'; foreach(array_keys($rows[0]) as $h) echo '<th>' . esc_html($h) . '</th>'; echo '</tr></thead><tbody>'; foreach($rows as $row){ echo '<tr>'; foreach($row as $cell) echo '<td>' . esc_html($cell) . '</td>'; echo '</tr>'; } echo '</tbody></table>'; }
 }
 

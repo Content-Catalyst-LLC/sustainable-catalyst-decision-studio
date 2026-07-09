@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.2.0'
+    assert r.json()['version'] == '1.3.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '1.2.0'
+    assert data['decision_packet']['packet_version'] == '1.3.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -88,7 +88,7 @@ def test_audit_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.2.0'
+    assert data['audit']['audit_version'] == '1.3.0'
     assert 'module_artifact_ledger' in data['audit']
 
 
@@ -97,7 +97,7 @@ def test_audit_generate_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.2.0'
+    assert data['audit']['audit_version'] == '1.3.0'
     assert data['audit_summary']['assumptions_count'] >= 5
     assert data['audit_summary']['calculation_trace_count'] >= 4
 
@@ -155,3 +155,31 @@ def test_decision_packet_analyze_normalizes_artifacts():
     assert data['ok'] is True
     assert 'catalyst-data' in data['filled_modules']
     assert data['packet_quality']['source_count'] >= 1
+
+
+def test_integrated_brief_default():
+    r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert data['version'] == '1.3.0'
+    assert 'brief' in data
+    assert 'executive_summary' in data['brief']
+    assert 'exports' in data
+    assert 'markdown' in data['exports']
+
+
+def test_decision_packet_brief_with_canvas_artifact():
+    packet = {
+        "decision_framing": {
+            "challenge": "How should the integrated platform decision be framed?",
+            "decision_question": "Should the platform proceed to public demo?"
+        },
+        "sources": [{"source_title": "Demo source", "confidence": 80, "used_for": "brief test"}]
+    }
+    r = client.post('/decision-packet/brief', json={"inputs": {}, "packet": packet})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert data['brief']['decision_question'] == "Should the platform proceed to public demo?"
+    assert data['brief']['brief_readiness']['readiness_percent'] >= 0

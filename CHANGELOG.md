@@ -1,4 +1,14 @@
 
+## v1.3.0 — Integrated Brief Generator
+
+- Added professional integrated decision brief generator.
+- Added backend endpoints `POST /integrated-brief` and `POST /decision-packet/brief`.
+- Added WordPress REST route `/wp-json/scds/v1/integrated-brief`.
+- Synthesizes Decision Packet sections: framing, evidence, scenarios, impact, claims, finance, recovery, audit, and Workbench handoffs.
+- Added Markdown, HTML, JSON, and print/PDF-ready export flow.
+- Added tests for integrated brief generation and Decision Packet brief synthesis.
+
+
 ## v1.2.0 — Module Artifact Adapters
 
 - Added adapter catalog for Catalyst Canvas, Catalyst Data, Catalyst Analytics R, Global Impact Catalyst, Narrative Risk, Catalyst Finance, Catalyst Grit, and Workbench.

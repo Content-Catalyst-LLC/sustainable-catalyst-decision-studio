@@ -9,7 +9,7 @@ import os
 import urllib.request
 import urllib.error
 
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.3.0"
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
 
 class DecisionInputs(BaseModel):
@@ -77,6 +77,18 @@ class ArtifactImportRequest(BaseModel):
     moduleId: Optional[str] = None
     packet: Dict[str, Any] = Field(default_factory=dict)
     preserveRaw: bool = True
+    notes: str = ""
+
+
+class IntegratedBriefRequest(BaseModel):
+    inputs: DecisionInputs = Field(default_factory=DecisionInputs)
+    results: Optional[Dict[str, Any]] = None
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    moduleArtifacts: Dict[str, Any] = Field(default_factory=dict)
+    audit: Optional[Dict[str, Any]] = None
+    audience: str = "Sustainable Catalyst decision reviewer"
+    includeAI: bool = False
+    exportFormat: str = "structured"
     notes: str = ""
 
 
@@ -219,7 +231,7 @@ def module_integrations() -> List[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.2.0",
+        "packet_version": "1.3.0",
         "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio",
         "project": {
             "project_name": "",
@@ -260,7 +272,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.2.0",
+        "audit_version": "1.3.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -821,7 +833,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
     return {
         "ok": True,
         "version": APP_VERSION,
-        "decision_packet_version": "1.2.0",
+        "decision_packet_version": "1.3.0",
         "workflow_readiness_percent": readiness,
         "filled_modules": filled,
         "missing_modules": missing,
@@ -850,6 +862,304 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
             "Decision Packet readiness is a review workflow aid, not approval, assurance, legal advice, financial advice, engineering review, ESG/SDG certification, or professional signoff.",
         ],
     }
+
+
+def _records_from_packet(packet: Dict[str, Any], section: str, legacy: str = "") -> List[Dict[str, Any]]:
+    value = packet.get(section)
+    if isinstance(value, dict) and isinstance(value.get("records"), list):
+        return [x for x in value.get("records", []) if isinstance(x, dict)]
+    if isinstance(value, list):
+        return [x for x in value if isinstance(x, dict)]
+    if legacy:
+        legacy_value = packet.get(legacy)
+        if isinstance(legacy_value, list):
+            return [x for x in legacy_value if isinstance(x, dict)]
+        if isinstance(legacy_value, dict):
+            return [legacy_value]
+    return []
+
+
+def _compact_text(value: Any, default: str = "Not specified") -> str:
+    if value in (None, "", [], {}):
+        return default
+    if isinstance(value, (list, tuple)):
+        parts = [_compact_text(v, "") for v in value if v not in (None, "", [], {})]
+        return "; ".join([p for p in parts if p]) or default
+    if isinstance(value, dict):
+        for key in ("name", "title", "label", "summary", "description", "value"):
+            if value.get(key):
+                return str(value.get(key))
+        return json.dumps(value, ensure_ascii=False)[:220]
+    return str(value)
+
+
+def _first_present(*values: Any, default: str = "Not specified") -> str:
+    for value in values:
+        if value not in (None, "", [], {}):
+            return _compact_text(value, default)
+    return default
+
+
+def _brief_number(value: Any, suffix: str = "") -> str:
+    try:
+        num = float(value)
+        if abs(num) >= 1000:
+            text = f"{num:,.0f}"
+        else:
+            text = f"{num:.1f}".rstrip("0").rstrip(".")
+        return f"{text}{suffix}"
+    except Exception:
+        return _compact_text(value, "n/a")
+
+
+def _money_text(value: Any) -> str:
+    try:
+        return f"${float(value):,.0f}"
+    except Exception:
+        return _compact_text(value, "n/a")
+
+
+def integrated_brief_markdown(brief: Dict[str, Any]) -> str:
+    def bullets(items: Any) -> str:
+        if not isinstance(items, list) or not items:
+            return "- None recorded."
+        return "\n".join(f"- {_compact_text(item)}" for item in items)
+
+    md = [
+        f"# {brief.get('title', 'Integrated Decision Brief')}",
+        "",
+        f"**Decision Packet:** {brief.get('decision_packet_id', 'SCDS-DRAFT')}",
+        f"**Recommendation posture:** {brief.get('recommendation_posture', 'Review required')}",
+        f"**Brief readiness:** {brief.get('brief_readiness', {}).get('readiness_percent', 'n/a')}%",
+        "",
+        "## Executive Summary",
+        brief.get('executive_summary', ''),
+        "",
+        "## Decision Question",
+        brief.get('decision_question', 'Not specified'),
+        "",
+        "## Problem Framing",
+        brief.get('problem_framing', {}).get('summary', 'Not specified'),
+        "",
+        "## Four-Pillar Sustainability Analysis",
+        bullets(brief.get('four_pillar_analysis', {}).get('findings', [])),
+        "",
+        "## Scenario Comparison",
+        bullets(brief.get('scenario_comparison', {}).get('findings', [])),
+        "",
+        "## Financial Tradeoffs",
+        bullets(brief.get('financial_tradeoffs', {}).get('findings', [])),
+        "",
+        "## Impact Measurement",
+        bullets(brief.get('impact_measurement', {}).get('findings', [])),
+        "",
+        "## Claim and Narrative Risk",
+        bullets(brief.get('claim_and_narrative_risk', {}).get('findings', [])),
+        "",
+        "## Execution and Recovery Risk",
+        bullets(brief.get('execution_and_recovery', {}).get('findings', [])),
+        "",
+        "## Assumptions and Uncertainties",
+        bullets(brief.get('assumptions_and_uncertainties', {}).get('findings', [])),
+        "",
+        "## Evidence and Source Ledger",
+        bullets(brief.get('evidence_and_source_ledger', {}).get('findings', [])),
+        "",
+        "## Audit Appendix Summary",
+        bullets(brief.get('audit_appendix_summary', {}).get('findings', [])),
+        "",
+        "## Next Review Actions",
+        bullets(brief.get('next_review_actions', [])),
+        "",
+        "## Boundaries",
+        "This is educational decision support only. It is not legal, financial, investment, engineering, medical, tax, compliance, assurance, ESG/SDG certification, or professional advice.",
+    ]
+    return "\n".join(md).strip() + "\n"
+
+
+def integrated_brief_html(brief: Dict[str, Any]) -> str:
+    def esc_html(x: Any) -> str:
+        return str(x).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+    def ul(items: Any) -> str:
+        if not isinstance(items, list) or not items:
+            return "<p>None recorded.</p>"
+        return "<ul>" + "".join(f"<li>{esc_html(_compact_text(i))}</li>" for i in items) + "</ul>"
+    sections = [
+        ("Problem Framing", brief.get('problem_framing', {}).get('summary', 'Not specified')),
+        ("Four-Pillar Sustainability Analysis", ul(brief.get('four_pillar_analysis', {}).get('findings', []))),
+        ("Scenario Comparison", ul(brief.get('scenario_comparison', {}).get('findings', []))),
+        ("Financial Tradeoffs", ul(brief.get('financial_tradeoffs', {}).get('findings', []))),
+        ("Impact Measurement", ul(brief.get('impact_measurement', {}).get('findings', []))),
+        ("Claim and Narrative Risk", ul(brief.get('claim_and_narrative_risk', {}).get('findings', []))),
+        ("Execution and Recovery Risk", ul(brief.get('execution_and_recovery', {}).get('findings', []))),
+        ("Assumptions and Uncertainties", ul(brief.get('assumptions_and_uncertainties', {}).get('findings', []))),
+        ("Evidence and Source Ledger", ul(brief.get('evidence_and_source_ledger', {}).get('findings', []))),
+        ("Audit Appendix Summary", ul(brief.get('audit_appendix_summary', {}).get('findings', []))),
+        ("Next Review Actions", ul(brief.get('next_review_actions', []))),
+    ]
+    body = f"<h1>{esc_html(brief.get('title', 'Integrated Decision Brief'))}</h1>"
+    body += f"<p><strong>Decision Packet:</strong> {esc_html(brief.get('decision_packet_id', 'SCDS-DRAFT'))}</p>"
+    body += f"<p><strong>Recommendation posture:</strong> {esc_html(brief.get('recommendation_posture', 'Review required'))}</p>"
+    body += f"<p><strong>Brief readiness:</strong> {esc_html(brief.get('brief_readiness', {}).get('readiness_percent', 'n/a'))}%</p>"
+    body += f"<h2>Executive Summary</h2><p>{esc_html(brief.get('executive_summary', ''))}</p>"
+    body += f"<h2>Decision Question</h2><p>{esc_html(brief.get('decision_question', 'Not specified'))}</p>"
+    for title, content in sections:
+        if str(content).startswith("<"):
+            body += f"<h2>{esc_html(title)}</h2>{content}"
+        else:
+            body += f"<h2>{esc_html(title)}</h2><p>{esc_html(content)}</p>"
+    body += "<h2>Boundaries</h2><p>This is educational decision support only. It is not legal, financial, investment, engineering, medical, tax, compliance, assurance, ESG/SDG certification, or professional advice.</p>"
+    return body
+
+
+def generate_integrated_brief(req: IntegratedBriefRequest) -> Dict[str, Any]:
+    inputs = req.inputs or DecisionInputs()
+    results = req.results or analyze(inputs)
+    packet = req.packet or decision_packet_template()
+
+    # If moduleArtifacts are provided directly, normalize them into the packet before synthesis.
+    for module_id, artifact in (req.moduleArtifacts or {}).items():
+        if isinstance(artifact, dict) and _nonempty(artifact):
+            imported = import_artifact_into_packet(artifact, module_id=module_id, packet=packet, preserve_raw=True)
+            packet = imported.get("decision_packet", packet)
+
+    readiness = synthesize_decision_packet(packet, inputs)
+    audit = req.audit if isinstance(req.audit, dict) and req.audit else generate_audit_provenance(AuditProvenanceRequest(inputs=inputs, results=results, packet=packet, moduleArtifacts=req.moduleArtifacts)).get("audit", {})
+
+    framing = packet.get("decision_framing") or packet.get("framing") or {}
+    scenarios = _records_from_packet(packet, "scenarios", "scenario_analysis")
+    impacts = _records_from_packet(packet, "impact_measurement", "impact_records")
+    claims = _records_from_packet(packet, "claim_and_risk_review", "claim_reviews")
+    finance = packet.get("financial_tradeoffs") or packet.get("finance_analysis") or {}
+    recovery = packet.get("execution_and_recovery") or packet.get("execution_recovery") or {}
+    sources = packet.get("sources") if isinstance(packet.get("sources"), list) else []
+    assumptions = packet.get("assumptions") if isinstance(packet.get("assumptions"), list) else []
+    calc_trace = packet.get("calculation_trace") if isinstance(packet.get("calculation_trace"), list) else []
+
+    scores = results.get("scores", {})
+    risk = results.get("risk", {})
+    emissions = results.get("emissions", {})
+    finance_results = finance.get("results", {}) if isinstance(finance, dict) and isinstance(finance.get("results"), dict) else results.get("finance", {})
+    weighted = float(scores.get("weighted", 0) or 0)
+    risk_score = float(risk.get("risk_score", 0) or 0)
+    posture = "Advance with mitigations" if weighted >= 75 and risk_score < 55 else "Continue due diligence" if weighted >= 60 and risk_score < 70 else "Revise before approval"
+    if readiness.get("workflow_readiness_percent", 0) < 50:
+        posture += " — incomplete packet"
+
+    decision_question = _first_present(
+        framing.get("decision_question") if isinstance(framing, dict) else None,
+        inputs.decisionQuestion,
+        default="Decision question not specified",
+    )
+    project_name = _first_present(
+        (packet.get("project") or {}).get("project_name") if isinstance(packet.get("project"), dict) else None,
+        inputs.projectName,
+        default="Decision project",
+    )
+
+    scenario_findings = []
+    if scenarios:
+        for item in scenarios[:4]:
+            scenario_findings.append(_first_present(item.get("demo"), item.get("name"), item.get("label"), default="Imported scenario") + ": " + _first_present(item.get("interpretation"), item.get("decision_note"), item.get("summary"), default="Imported scenario artifact attached."))
+    else:
+        for sc in results.get("scenarios", [])[:5]:
+            scenario_findings.append(f"{sc.get('label')}: annual avoided emissions {_brief_number(sc.get('annual_avoided_tco2e'))} tCO2e; NPV {_money_text(sc.get('npv'))}; payback {_brief_number(sc.get('payback_years'), ' years')}.")
+
+    impact_findings = []
+    for item in impacts[:5]:
+        impact_findings.append(f"{_first_present(item.get('initiative'), item.get('goal'), item.get('indicator'), default='Impact record')}: baseline {_compact_text(item.get('baseline_value', item.get('baseline', 'n/a')))}, current {_compact_text(item.get('current_value', item.get('current', 'n/a')))}, target {_compact_text(item.get('target_value', item.get('target', 'n/a')))}.")
+    if not impact_findings:
+        impact_findings = ["No Global Impact artifact is attached yet; treat impact claims as draft until baseline, current, target, source, and review status are documented."]
+
+    claim_findings = []
+    for item in claims[:5]:
+        claim_findings.append(f"{_first_present(item.get('claim'), default='Imported claim')}: risk {_compact_text(item.get('risk_level', 'unspecified'))}, evidence {_compact_text(item.get('evidence_strength', 'unspecified'))}, uncertainty {_compact_text(item.get('uncertainty', 'unspecified'))}.")
+    if not claim_findings:
+        claim_findings = ["No Narrative Risk artifact is attached yet; external claims should remain provisional until evidence strength, uncertainty, stakeholder pressure, and narrative volatility are reviewed."]
+
+    recovery_findings = []
+    if isinstance(recovery, dict) and recovery:
+        recovery_findings.append(f"Recovery state: {_first_present(recovery.get('resilience_state'), default='unspecified')}; recovery score {_compact_text(recovery.get('recovery_score', 'n/a'))}.")
+        for action in recovery.get("next_actions", [])[:3] if isinstance(recovery.get("next_actions"), list) else []:
+            recovery_findings.append("Next action: " + _compact_text(action))
+    else:
+        recovery_findings = ["No Catalyst Grit recovery artifact is attached yet; execution pressure, support, clarity, energy, and next actions require review."]
+
+    source_findings = []
+    for item in sources[:5]:
+        if isinstance(item, dict):
+            source_findings.append(f"{_first_present(item.get('source_title'), item.get('name'), default='Source')}: confidence {_compact_text(item.get('confidence', 'unspecified'))}; used for {_compact_text(item.get('used_for', 'unspecified'))}.")
+    if not source_findings:
+        audit_sources = audit.get("source_ledger", []) if isinstance(audit.get("source_ledger"), list) else []
+        for item in audit_sources[:5]:
+            if isinstance(item, dict):
+                source_findings.append(f"{_first_present(item.get('source_title'), default='Source')}: confidence {_compact_text(item.get('confidence', 'unspecified'))}; used for {_compact_text(item.get('used_for', 'unspecified'))}.")
+    if not source_findings:
+        source_findings = ["No explicit source ledger has been attached; import Catalyst Data records before external reliance."]
+
+    assumption_findings = []
+    for item in assumptions[:5]:
+        if isinstance(item, dict):
+            assumption_findings.append(f"{_first_present(item.get('assumption'), default='Assumption')}: {_compact_text(item.get('value', 'n/a'))}; sensitivity {_compact_text(item.get('sensitivity', 'unspecified'))}; status {_compact_text(item.get('review_status', 'needs review'))}.")
+    if not assumption_findings:
+        assumption_findings = ["Core assumptions include baseline emissions, reduction rate, adoption rate, CAPEX, annual savings, discount rate, and model years; each requires source and sensitivity review."]
+
+    audit_ledger = audit.get("module_artifact_ledger", []) if isinstance(audit.get("module_artifact_ledger"), list) else []
+    attached = sum(1 for x in audit_ledger if isinstance(x, dict) and x.get("status") == "attached")
+    audit_findings = [f"Module artifact ledger: {attached}/{len(audit_ledger) if audit_ledger else len(module_integrations())} modules attached."]
+    audit_findings.append(f"Calculation trace entries: {len(calc_trace) if calc_trace else len(audit.get('calculation_trace', []) if isinstance(audit.get('calculation_trace'), list) else [])}.")
+    audit_findings.append(f"Review status: {_compact_text((audit.get('review_status') or {}).get('status', 'draft') if isinstance(audit.get('review_status'), dict) else 'draft')}.")
+
+    brief = {
+        "brief_version": APP_VERSION,
+        "title": f"Integrated Decision Brief: {project_name}",
+        "decision_packet_id": audit.get("decision_packet_id", "SCDS-DRAFT"),
+        "decision_question": decision_question,
+        "recommendation_posture": posture,
+        "brief_readiness": {
+            "readiness_percent": readiness.get("workflow_readiness_percent", 0),
+            "filled_modules": readiness.get("filled_modules", []),
+            "missing_modules": readiness.get("missing_modules", []),
+            "review_flags": readiness.get("packet_quality", {}).get("review_flags", []),
+        },
+        "executive_summary": f"{project_name} is currently assessed as '{results.get('status', 'Decision requires review')}'. The four-pillar weighted score is {_brief_number(weighted)}/100, risk is {_compact_text(risk.get('risk_level'))} ({_brief_number(risk_score)}/100), estimated NPV is {_money_text(finance_results.get('npv'))}, and estimated annual avoided emissions are {_brief_number(emissions.get('annual_avoided_tco2e'))} tCO2e. Recommendation posture: {posture}.",
+        "problem_framing": {"summary": _first_present(framing.get("challenge") if isinstance(framing, dict) else None, framing.get("point_of_view") if isinstance(framing, dict) else None, inputs.constraints, default="Problem framing is not yet fully imported from Catalyst Canvas.")},
+        "four_pillar_analysis": {"findings": [
+            f"Environmental score: {_brief_number(scores.get('environmental'))}/100.",
+            f"Social score: {_brief_number(scores.get('social'))}/100.",
+            f"Economic score: {_brief_number(scores.get('economic'))}/100.",
+            f"Governance score: {_brief_number(scores.get('governance'))}/100.",
+            f"Weighted score: {_brief_number(weighted)}/100.",
+        ]},
+        "scenario_comparison": {"findings": scenario_findings},
+        "financial_tradeoffs": {"findings": [
+            f"NPV: {_money_text(finance_results.get('npv'))}.",
+            f"ROI: {_brief_number(finance_results.get('roi_percent'), '%')}.",
+            f"Payback: {_brief_number(finance_results.get('payback_years'), ' years')}.",
+            f"Finance outputs remain decision-support estimates until Catalyst Finance assumptions and source data are reviewed.",
+        ]},
+        "impact_measurement": {"findings": impact_findings},
+        "claim_and_narrative_risk": {"findings": claim_findings},
+        "execution_and_recovery": {"findings": recovery_findings},
+        "assumptions_and_uncertainties": {"findings": assumption_findings},
+        "evidence_and_source_ledger": {"findings": source_findings},
+        "audit_appendix_summary": {"findings": audit_findings},
+        "next_review_actions": [
+            "Attach or verify Catalyst Data source records for every major claim and calculation.",
+            "Review Catalyst Finance assumptions and rerun sensitivity tests before relying on financial metrics.",
+            "Attach Narrative Risk review before publishing or using external-facing claims.",
+            "Use Workbench for deeper symbolic, graph, engineering, or domain-specific calculations where needed.",
+            "Mark required expert reviews before any regulated, safety-critical, financial, legal, engineering, or assurance use.",
+        ],
+        "workbench_handoffs": results.get("workbench_handoffs", []),
+        "warnings": [
+            "Educational decision support only. Not legal, financial, investment, engineering, medical, tax, compliance, assurance, ESG/SDG certification, or professional advice.",
+            "Imported artifacts and user-provided inputs are not independently verified by Decision Studio.",
+        ],
+    }
+    md = integrated_brief_markdown(brief)
+    html = integrated_brief_html(brief)
+    return {"ok": True, "version": APP_VERSION, "brief": brief, "exports": {"markdown": md, "html": html, "json": brief}, "results": results, "decision_packet": packet, "audit": audit, "readiness": readiness}
 
 
 def _env_first(*names: str) -> str:
@@ -1050,6 +1360,15 @@ def report_endpoint(req: ReportRequest):
     return {"ok": True, "version": APP_VERSION, "inputs": req.inputs.model_dump(), "results": results, "brief": brief, "warnings": ["Educational decision support only. Not professional advice or certification."]}
 
 
+@app.post("/integrated-brief")
+def integrated_brief_endpoint(req: IntegratedBriefRequest):
+    return generate_integrated_brief(req)
+
+@app.post("/decision-packet/brief")
+def decision_packet_brief_endpoint(req: IntegratedBriefRequest):
+    return generate_integrated_brief(req)
+
+
 @app.get("/integrations/modules")
 def integrations_modules_endpoint():
     return {"ok": True, "version": APP_VERSION, "modules": module_integrations(), "workflow": [m["phase"] for m in module_integrations()]}
@@ -1091,4 +1410,4 @@ def audit_generate_endpoint(req: AuditProvenanceRequest):
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/integrations/adapters", "/integrations/import", "/decision-packet/import"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief"]}
