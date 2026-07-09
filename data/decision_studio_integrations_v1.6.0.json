@@ -1,0 +1,30 @@
+{
+  "version": "1.6.0",
+  "name": "Decision Studio Saved Decision Packets and Export Center",
+  "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio → Saved Packet → Export Bundle",
+  "features": [
+    "Saved Decision Packets",
+    "Browser-local packet save/load/delete",
+    "Export Center tab",
+    "Export bundle JSON",
+    "Integrated brief Markdown and HTML exports",
+    "Audit/readiness/scenario/handoff export artifacts",
+    "Admin Export Center upgrade"
+  ],
+  "endpoints": [
+    "GET /decision-packet/storage-template",
+    "POST /decision-packet/save-template",
+    "GET /export-center/template",
+    "POST /export-center/bundle",
+    "POST /decision-packet/export-bundle"
+  ],
+  "wordpress_routes": [
+    "/wp-json/scds/v1/decision-packet/storage-template",
+    "/wp-json/scds/v1/decision-packet/save-template",
+    "/wp-json/scds/v1/export-center/template",
+    "/wp-json/scds/v1/export-center/bundle",
+    "/wp-json/scds/v1/decision-packet/export-bundle",
+    "/wp-json/scds/v1/packets"
+  ],
+  "boundary": "Saved packets and exports are review records, not approvals, certifications, assurance outputs, or professional advice."
+}

@@ -70,3 +70,15 @@
 .scds-readiness-grid h5{margin:.25rem 0 .4rem;font-size:1rem}
 .scds-readiness-output ul{margin-left:1.15rem}
 @media(max-width:860px){.scds-readiness-grid{grid-template-columns:1fr}}
+
+
+/* v1.6.0 Saved Decision Packets and Export Center */
+.scds-export-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:16px}
+.scds-export-panel{border:1px solid var(--scds-line);background:#fff;padding:16px;border-radius:14px}
+.scds-export-panel h4{margin-top:0;font-family:Spartan,Montserrat,Arial,sans-serif}
+.scds-saved-packets .scds-table td{vertical-align:top}
+.scds-saved-packets small{display:block;color:var(--scds-muted);line-height:1.45;margin-top:3px}
+.scds-export-output .scds-readiness-card{margin:0}
+.scds-mode-handoff [data-scds-panel]:not([data-scds-panel="handoff"]),.scds-mode-packets [data-scds-panel]:not([data-scds-panel="export"]),.scds-mode-export [data-scds-panel]:not([data-scds-panel="export"]){display:none!important}
+.scds-mode-handoff .scds-tabs,.scds-mode-packets .scds-tabs,.scds-mode-export .scds-tabs{display:none}
+@media(max-width:900px){.scds-export-layout{grid-template-columns:1fr}}

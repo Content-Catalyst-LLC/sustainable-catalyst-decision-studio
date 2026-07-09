@@ -1,3 +1,13 @@
+## v1.6.0 — Saved Decision Packets and Export Center
+
+- Added Saved Decision Packet structure and browser-local save/load/delete workflow.
+- Added Export Center tab in the public Decision Studio UI.
+- Added export bundle generation with Decision Packet JSON, integrated brief Markdown/HTML/JSON, audit JSON, readiness JSON, scenario JSON, and Workbench handoff JSON.
+- Added backend endpoints for storage templates and export bundles.
+- Added WordPress REST endpoints for saved packet records and export bundles.
+- Added admin Export Center upgrade.
+- Added backend tests for export center and saved packet generation.
+
 ## v1.5.0 — Scenario Comparison and Workbench Handoff
 
 - Added scenario comparison matrix with option ranking, baseline deltas, sensitivity flags, and tradeoff notes.

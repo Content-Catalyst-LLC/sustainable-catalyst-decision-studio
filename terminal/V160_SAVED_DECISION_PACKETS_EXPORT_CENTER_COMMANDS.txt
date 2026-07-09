@@ -1,0 +1,21 @@
+cd ~/Downloads
+
+chmod +x push_decision_studio_v1_6_0_saved_packets_export_center_to_github.sh
+./push_decision_studio_v1_6_0_saved_packets_export_center_to_github.sh
+
+Then redeploy the Decision Studio service on Render.
+
+Render settings:
+Root Directory: backend
+Build Command: pip install -r requirements.txt
+Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+PYTHON_VERSION=3.12.11
+
+In WordPress, upload:
+sustainable-catalyst-decision-studio-plugin-v1.6.0.zip
+
+Use:
+[sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]
+
+Optional standalone export center:
+[sc_decision_studio mode="export" title="Decision Studio Export Center"]

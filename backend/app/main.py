@@ -9,7 +9,7 @@ import os
 import urllib.request
 import urllib.error
 
-APP_VERSION = "1.5.0"
+APP_VERSION = "1.6.0"
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
 
 class DecisionInputs(BaseModel):
@@ -119,6 +119,33 @@ class WorkbenchHandoffRequest(BaseModel):
     scenarioComparison: Optional[Dict[str, Any]] = None
     requestedTools: List[str] = Field(default_factory=list)
     notes: str = ""
+
+
+class SavedDecisionPacketRequest(BaseModel):
+    inputs: DecisionInputs = Field(default_factory=DecisionInputs)
+    results: Optional[Dict[str, Any]] = None
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    audit: Optional[Dict[str, Any]] = None
+    readiness: Optional[Dict[str, Any]] = None
+    scenarioComparison: Optional[Dict[str, Any]] = None
+    workbenchHandoff: Optional[Dict[str, Any]] = None
+    integratedBrief: Optional[Dict[str, Any]] = None
+    title: str = ""
+    status: str = "draft"
+    notes: str = ""
+
+
+class ExportBundleRequest(BaseModel):
+    inputs: DecisionInputs = Field(default_factory=DecisionInputs)
+    results: Optional[Dict[str, Any]] = None
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    audit: Optional[Dict[str, Any]] = None
+    readiness: Optional[Dict[str, Any]] = None
+    scenarioComparison: Optional[Dict[str, Any]] = None
+    workbenchHandoff: Optional[Dict[str, Any]] = None
+    integratedBrief: Optional[Dict[str, Any]] = None
+    includeRawArtifacts: bool = True
+    exportLabel: str = "Decision Studio Export Bundle"
 
 
 def clamp(value: float, low: float = 0, high: float = 100) -> float:
@@ -260,7 +287,7 @@ def module_integrations() -> List[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.5.0",
+        "packet_version": "1.6.0",
         "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio",
         "project": {
             "project_name": "",
@@ -286,6 +313,8 @@ def decision_packet_template() -> Dict[str, Any]:
         "integrated_decision_brief": {},
         "scenario_comparison": {},
         "workbench_handoffs": [],
+        "saved_packet": {"saved_at": "", "saved_by": "", "status": "draft", "storage": "browser_or_wordpress"},
+        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "handoff_json"]},
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -303,7 +332,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.5.0",
+        "audit_version": "1.6.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -864,7 +893,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
     return {
         "ok": True,
         "version": APP_VERSION,
-        "decision_packet_version": "1.5.0",
+        "decision_packet_version": "1.6.0",
         "workflow_readiness_percent": readiness,
         "filled_modules": filled,
         "missing_modules": missing,
@@ -898,7 +927,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
 
 
 def review_status_catalog() -> Dict[str, Any]:
-    """Review state vocabulary used by v1.5.0 readiness gates."""
+    """Review state vocabulary used by v1.6.0 readiness gates."""
     return {
         "review_version": APP_VERSION,
         "states": [
@@ -1661,6 +1690,109 @@ def generate_workbench_handoff(req: WorkbenchHandoffRequest) -> Dict[str, Any]:
     }
     return {"ok": True, "version": APP_VERSION, "workbench_handoff": handoff, "scenario_comparison": comparison, "results": results, "decision_packet": packet}
 
+
+def export_center_template() -> Dict[str, Any]:
+    return {
+        "export_center_version": APP_VERSION,
+        "saved_packet_fields": [
+            "decision_packet_id", "project_name", "decision_question", "status", "updated_at",
+            "inputs", "results", "decision_packet", "audit", "readiness", "scenario_comparison",
+            "workbench_handoff", "integrated_brief"
+        ],
+        "exports": [
+            {"id": "packet_json", "label": "Decision Packet JSON", "description": "Complete normalized packet with module sections and raw artifact snapshots where included."},
+            {"id": "integrated_brief_markdown", "label": "Integrated Brief Markdown", "description": "Reviewable decision memo for editing or publication workflow."},
+            {"id": "integrated_brief_html", "label": "Integrated Brief HTML", "description": "HTML version suitable for browser print or PDF save flow."},
+            {"id": "audit_json", "label": "Audit & Provenance JSON", "description": "Module ledger, source ledger, assumptions, calculation trace, claim trace, and change log."},
+            {"id": "readiness_json", "label": "Readiness JSON", "description": "Section readiness, review states, unresolved issues, and export gates."},
+            {"id": "scenario_json", "label": "Scenario Comparison JSON", "description": "Scenario matrix, deltas, rankings, sensitivity flags, and recommended option."},
+            {"id": "handoff_json", "label": "Workbench Handoff JSON", "description": "Recommended Workbench tools, reasons, priorities, shortcodes, and payload summary."},
+        ],
+        "warnings": [
+            "Saved Decision Packets are working records, not approvals or professional signoff.",
+            "Exports preserve user-provided and imported content; review sensitive information before sharing."
+        ],
+    }
+
+
+def _safe_packet_id(project_name: str = "Decision Packet") -> str:
+    cleaned = "".join(ch for ch in project_name.upper() if ch.isalnum())[:10] or "PACKET"
+    return f"SCDS-{cleaned}-DRAFT"
+
+
+def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str, Any]:
+    results = req.results or analyze(req.inputs)
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    project_name = req.title or packet.get("project", {}).get("project_name") or req.inputs.projectName or "Decision Packet"
+    decision_question = packet.get("project", {}).get("decision_question") or req.inputs.decisionQuestion
+    packet_id = packet.get("decision_packet_id") or _safe_packet_id(project_name)
+    readiness = req.readiness or generate_brief_readiness(BriefReadinessRequest(inputs=req.inputs, results=results, packet=packet, audit=req.audit or {})).get("readiness", {})
+    scenario_comparison = req.scenarioComparison or generate_scenario_comparison(ScenarioComparisonRequest(inputs=req.inputs, results=results, packet=packet)).get("scenario_comparison", {})
+    workbench_handoff = req.workbenchHandoff or generate_workbench_handoff(WorkbenchHandoffRequest(inputs=req.inputs, results=results, packet=packet, readiness=readiness, scenarioComparison=scenario_comparison)).get("workbench_handoff", {})
+    audit = req.audit or generate_audit_provenance(AuditProvenanceRequest(inputs=req.inputs, results=results, packet=packet, reviewStatus=req.status)).get("audit", {})
+    integrated = req.integratedBrief or generate_integrated_brief(IntegratedBriefRequest(inputs=req.inputs, results=results, packet=packet, audit=audit)).get("brief", {})
+    packet["decision_packet_id"] = packet_id
+    packet["saved_packet"] = {"status": req.status, "storage": "client_or_wordpress", "notes": req.notes}
+    saved = {
+        "packet_version": APP_VERSION,
+        "decision_packet_id": packet_id,
+        "title": project_name,
+        "project_name": project_name,
+        "decision_question": decision_question,
+        "status": req.status,
+        "inputs": req.inputs.model_dump(),
+        "results": results,
+        "decision_packet": packet,
+        "audit": audit,
+        "readiness": readiness,
+        "scenario_comparison": scenario_comparison,
+        "workbench_handoff": workbench_handoff,
+        "integrated_brief": integrated,
+        "notes": req.notes,
+        "warnings": ["Saved packet is a review artifact; it is not approval, certification, assurance, or professional advice."],
+    }
+    return {"ok": True, "version": APP_VERSION, "saved_packet": saved, "export_center": export_center_template()}
+
+
+def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
+    inputs = req.inputs
+    results = req.results or analyze(inputs)
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    audit = req.audit or generate_audit_provenance(AuditProvenanceRequest(inputs=inputs, results=results, packet=packet)).get("audit", {})
+    readiness = req.readiness or generate_brief_readiness(BriefReadinessRequest(inputs=inputs, results=results, packet=packet, audit=audit)).get("readiness", {})
+    scenario_comparison = req.scenarioComparison or generate_scenario_comparison(ScenarioComparisonRequest(inputs=inputs, results=results, packet=packet)).get("scenario_comparison", {})
+    workbench_handoff = req.workbenchHandoff or generate_workbench_handoff(WorkbenchHandoffRequest(inputs=inputs, results=results, packet=packet, readiness=readiness, scenarioComparison=scenario_comparison)).get("workbench_handoff", {})
+    brief_payload = req.integratedBrief or generate_integrated_brief(IntegratedBriefRequest(inputs=inputs, results=results, packet=packet, audit=audit))
+    brief = brief_payload.get("brief", brief_payload) if isinstance(brief_payload, dict) else {}
+    markdown = integrated_brief_markdown(brief) if brief else "# Integrated Decision Brief\n\nNo brief generated."
+    html = integrated_brief_html(brief) if brief else "<h1>Integrated Decision Brief</h1><p>No brief generated.</p>"
+    bundle = {
+        "bundle_version": APP_VERSION,
+        "label": req.exportLabel,
+        "decision_packet_id": packet.get("decision_packet_id", audit.get("decision_packet_id", "SCDS-DRAFT")),
+        "project_name": packet.get("project", {}).get("project_name") or inputs.projectName,
+        "decision_question": packet.get("project", {}).get("decision_question") or inputs.decisionQuestion,
+        "exports": {
+            "decision_packet_json": packet,
+            "inputs_json": inputs.model_dump(),
+            "results_json": results,
+            "integrated_brief_json": brief,
+            "integrated_brief_markdown": markdown,
+            "integrated_brief_html": html,
+            "audit_json": audit,
+            "readiness_json": readiness,
+            "scenario_comparison_json": scenario_comparison,
+            "workbench_handoff_json": workbench_handoff,
+        },
+        "export_manifest": export_center_template()["exports"],
+        "warnings": export_center_template()["warnings"],
+    }
+    if not req.includeRawArtifacts:
+        bundle["exports"]["decision_packet_json"].pop("module_artifacts_raw", None)
+    return {"ok": True, "version": APP_VERSION, "export_bundle": bundle, "export_center": export_center_template()}
+
 def _env_first(*names: str) -> str:
     """Return the first non-empty environment variable from a list of accepted names."""
     for name in names:
@@ -1947,6 +2079,27 @@ def workbench_handoff_endpoint(req: WorkbenchHandoffRequest):
 def decision_packet_workbench_handoff_endpoint(req: WorkbenchHandoffRequest):
     return generate_workbench_handoff(req)
 
+@app.get("/decision-packet/storage-template")
+def decision_packet_storage_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "storage_template": export_center_template(), "decision_packet": decision_packet_template()}
+
+@app.post("/decision-packet/save-template")
+def decision_packet_save_template_endpoint(req: SavedDecisionPacketRequest):
+    return generate_saved_decision_packet(req)
+
+@app.get("/export-center/template")
+def export_center_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "export_center": export_center_template()}
+
+@app.post("/export-center/bundle")
+def export_center_bundle_endpoint(req: ExportBundleRequest):
+    return generate_export_bundle(req)
+
+@app.post("/decision-packet/export-bundle")
+def decision_packet_export_bundle_endpoint(req: ExportBundleRequest):
+    return generate_export_bundle(req)
+
+
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle"]}
