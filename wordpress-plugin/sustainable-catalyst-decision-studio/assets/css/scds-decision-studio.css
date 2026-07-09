@@ -7,3 +7,19 @@
 .scds-ai-brief ul{margin:8px 0 12px 20px;}
 .scds-pre{background:#111;color:#fff;padding:16px;border-radius:10px;overflow:auto;white-space:pre-wrap;}
 .scds-card-label{font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:#900;}
+
+
+/* v1.1.0 Integrated Platform Workflow */
+.scds-workflow-strip{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 20px 0;}
+.scds-workflow-strip span{background:#111;color:#fff;border:1px solid #111;padding:8px 10px;font-size:.8rem;font-weight:900;letter-spacing:.03em;}
+.scds-integration-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0;}
+.scds-integration-card{background:#fff;border:1px solid var(--scds-line);padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.03);}
+.scds-integration-card h4{font-family:Spartan,Montserrat,Arial,sans-serif;font-size:1.05rem;line-height:1.25;margin:0 0 8px;color:#000;}
+.scds-integration-card p{font-size:.92rem;line-height:1.55;color:#444;margin:8px 0;}
+.scds-integration-use{background:#fbf8ef;border-left:3px solid var(--scds-red);padding:8px 10px;}
+.scds-card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.scds-mini-button{display:inline-block;border:1px solid #222;background:#fff;color:#111;padding:8px 10px;font-weight:800;text-decoration:none;cursor:pointer;font-size:.84rem;}
+.scds-mini-button:hover,.scds-mini-button:focus{border-color:var(--scds-red);color:#000;}
+.scds-packet-card{background:#fff;border:1px solid var(--scds-line);padding:16px;margin-top:16px;}
+@media(max-width:1100px){.scds-integration-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:720px){.scds-integration-grid{grid-template-columns:1fr}.scds-workflow-strip span{width:100%;}}

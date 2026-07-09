@@ -9,7 +9,7 @@ import os
 import urllib.request
 import urllib.error
 
-APP_VERSION = "1.0.2"
+APP_VERSION = "1.1.0"
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
 
 class DecisionInputs(BaseModel):
@@ -55,6 +55,12 @@ class ReportRequest(BaseModel):
     inputs: DecisionInputs = Field(default_factory=DecisionInputs)
     includeAI: bool = True
 
+class DecisionPacketRequest(BaseModel):
+    inputs: Optional[DecisionInputs] = None
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    moduleArtifacts: Dict[str, Any] = Field(default_factory=dict)
+    notes: str = ""
+
 
 def clamp(value: float, low: float = 0, high: float = 100) -> float:
     return max(low, min(high, value))
@@ -88,6 +94,186 @@ def analyze(inputs: DecisionInputs) -> Dict[str, Any]:
         sav = inputs.annualSavings * benefit
         scenarios.append({"label": label, "annual_avoided_tco2e": inputs.baselineEmissions * (inputs.reductionRate*reduct/100) * min(100, inputs.adoptionRate*adopt)/100, "npv": npv(cap, sav, inputs.discountRate, inputs.modelYears), "payback_years": cap/sav if sav>0 else None})
     return {"scores":{"environmental":env,"social":social,"economic":econ,"governance":gov,"weighted":weighted},"finance":{"npv":npv_value,"payback_years":payback if math.isfinite(payback) else None,"roi_percent":roi},"emissions":{"annual_avoided_tco2e":annual_avoided,"total_avoided_tco2e":annual_avoided*inputs.modelYears},"risk":{"risk_score":risk,"risk_level":"High" if risk>=70 else "Medium" if risk>=45 else "Low"},"status":status,"scenarios":scenarios,"warnings":["Educational decision support only. Not professional advice or certification."],"workbench_handoffs":["risk-resilience-impact-matrix","economics-forecasting-and-scenario-tool","environmental-monitoring-qaqc-tool","systems-modeling-tool"]}
+
+
+def module_integrations() -> List[Dict[str, Any]]:
+    """Integrated platform workflow modules exposed to Decision Studio."""
+    return [
+        {
+            "id": "catalyst-canvas",
+            "step": 1,
+            "phase": "Frame",
+            "name": "Catalyst Canvas",
+            "label": "Problem framing",
+            "url": "/catalyst-canvas/#demo",
+            "artifact_key": "framing",
+            "decision_packet_section": "decision_framing",
+            "summary": "Frame a challenge, define an audience, generate POV and HMW prompts, shape a prototype, design a test plan, and export a structured brief.",
+            "use_in_brief": "Decision question, audience, POV, how-might-we prompt, prototype, test plan, and constraints.",
+        },
+        {
+            "id": "catalyst-data",
+            "step": 2,
+            "phase": "Anchor",
+            "name": "Catalyst Data",
+            "label": "Data records",
+            "url": "/catalyst-data/#demo",
+            "artifact_key": "evidence_records",
+            "decision_packet_section": "evidence_and_measurement",
+            "summary": "Create a traceable measurement record with entity, indicator, source, period, confidence, method notes, review status, and JSON export.",
+            "use_in_brief": "Sources, indicators, confidence, method notes, measurement records, and audit trail.",
+        },
+        {
+            "id": "catalyst-analytics-r",
+            "step": 3,
+            "phase": "Model",
+            "name": "Catalyst Analytics R",
+            "label": "Scenario analysis",
+            "url": "/catalyst-analytics-r/#demo",
+            "artifact_key": "scenario_analysis",
+            "decision_packet_section": "scenarios",
+            "summary": "Explore a simplified sustainable-development scenario with assumptions, capital values, emissions budget, interpretation notes, and export logic.",
+            "use_in_brief": "Scenario assumptions, trajectories, sensitivity notes, and model interpretation.",
+        },
+        {
+            "id": "global-impact-catalyst",
+            "step": 4,
+            "phase": "Measure",
+            "name": "Global Impact Catalyst",
+            "label": "Impact measurement",
+            "url": "/global-impact-catalyst/#demo",
+            "artifact_key": "impact_records",
+            "decision_packet_section": "impact_measurement",
+            "summary": "Create a traceable impact record with initiative, goal, SDG-style theme, indicator, baseline, current value, target, source, and progress notes.",
+            "use_in_brief": "Impact indicators, baseline/current/target values, progress notes, SDG-style themes, and confidence.",
+        },
+        {
+            "id": "catalyst-narrative-risk",
+            "step": 5,
+            "phase": "Review",
+            "name": "Narrative Risk",
+            "label": "Claim review",
+            "url": "/narrative-risk/#demo",
+            "artifact_key": "claim_reviews",
+            "decision_packet_section": "claim_and_risk_review",
+            "summary": "Evaluate a claim by evidence strength, uncertainty, source type, stakeholder pressure, narrative volatility, consequences, and review status.",
+            "use_in_brief": "Claim strength, uncertainty, narrative volatility, stakeholder pressure, consequences, and review status.",
+        },
+        {
+            "id": "catalyst-finance",
+            "step": 6,
+            "phase": "Evaluate",
+            "name": "Catalyst Finance",
+            "label": "Tradeoff analysis",
+            "url": "/catalyst-finance/#demo",
+            "artifact_key": "finance_analysis",
+            "decision_packet_section": "financial_tradeoffs",
+            "summary": "Estimate NPV, ROI, payback, benefit-cost ratio, carbon cost per ton, risk-adjusted score, review flags, and decision notes.",
+            "use_in_brief": "NPV, ROI, payback, benefit-cost ratio, carbon cost per ton, finance flags, and tradeoff notes.",
+        },
+        {
+            "id": "catalyst-grit",
+            "step": 7,
+            "phase": "Sustain",
+            "name": "Catalyst Grit",
+            "label": "Recovery tracking",
+            "url": "/human-systems/catalyst-grit/#demo",
+            "artifact_key": "execution_recovery",
+            "decision_packet_section": "execution_and_recovery",
+            "summary": "Describe a setback, assess pressure, impact, energy, support, clarity, recovery actions, and generate a recovery score and next actions.",
+            "use_in_brief": "Implementation pressure, support, clarity, recovery capacity, execution risks, and next actions.",
+        },
+        {
+            "id": "decision-studio",
+            "step": 8,
+            "phase": "Decide",
+            "name": "Decision Studio",
+            "label": "Decision support",
+            "url": "/platform/decision-studio/",
+            "artifact_key": "synthesis",
+            "decision_packet_section": "integrated_decision_brief",
+            "summary": "Generate a four-pillar sustainability decision brief with assumptions, scenarios, calculator-backed outputs, risks, SDG mapping, and auditable review notes.",
+            "use_in_brief": "Integrated four-pillar synthesis, recommendation posture, assumptions, risks, caveats, and audit trail.",
+        },
+    ]
+
+
+def decision_packet_template() -> Dict[str, Any]:
+    modules = module_integrations()
+    return {
+        "packet_version": "1.1.0",
+        "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio",
+        "project": {
+            "project_name": "",
+            "organization_type": "",
+            "sector": "",
+            "location": "",
+            "time_horizon": "",
+            "decision_question": "",
+        },
+        "decision_framing": {},
+        "evidence_and_measurement": {"records": []},
+        "scenarios": {"records": []},
+        "impact_measurement": {"records": []},
+        "claim_and_risk_review": {"records": []},
+        "financial_tradeoffs": {},
+        "execution_and_recovery": {},
+        "four_pillar_scores": {},
+        "assumptions": [],
+        "risks": [],
+        "sources": [],
+        "audit_trail": [],
+        "integrated_decision_brief": {},
+        "module_slots": [
+            {
+                "module_id": m["id"],
+                "name": m["name"],
+                "artifact_key": m["artifact_key"],
+                "packet_section": m["decision_packet_section"],
+                "status": "empty",
+            }
+            for m in modules
+        ],
+    }
+
+
+def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[DecisionInputs] = None) -> Dict[str, Any]:
+    modules = module_integrations()
+    filled = []
+    missing = []
+    for module in modules:
+        key = module["artifact_key"]
+        value = packet.get(key) or packet.get(module["decision_packet_section"])
+        if value and value != {} and value != []:
+            filled.append(module["id"])
+        else:
+            missing.append(module["id"])
+    base_results = analyze(inputs or DecisionInputs())
+    readiness = round((len(filled) / max(1, len(modules))) * 100, 1)
+    return {
+        "ok": True,
+        "version": APP_VERSION,
+        "decision_packet_version": "1.1.0",
+        "workflow_readiness_percent": readiness,
+        "filled_modules": filled,
+        "missing_modules": missing,
+        "module_count": len(modules),
+        "synthesis": {
+            "posture": base_results["status"],
+            "weighted_score": base_results["scores"]["weighted"],
+            "risk_level": base_results["risk"]["risk_level"],
+            "risk_score": base_results["risk"]["risk_score"],
+            "next_best_steps": [
+                "Import or manually summarize Canvas framing before finalizing the decision question.",
+                "Attach at least one traceable Catalyst Data record for each major claim.",
+                "Use Finance, Narrative Risk, and Grit artifacts before treating the brief as decision-ready.",
+            ],
+        },
+        "warnings": [
+            "Integrated workflow support is a decision-support scaffold. It does not certify outcomes or replace professional review.",
+            "v1.1.0 provides workflow cards, packet structure, and import placeholders; deeper send/import adapters are planned for later versions.",
+        ],
+    }
 
 
 def _env_first(*names: str) -> str:
@@ -287,6 +473,23 @@ def report_endpoint(req: ReportRequest):
     brief = generate_brief(BriefRequest(inputs=req.inputs, results=results, useAI=req.includeAI))
     return {"ok": True, "version": APP_VERSION, "inputs": req.inputs.model_dump(), "results": results, "brief": brief, "warnings": ["Educational decision support only. Not professional advice or certification."]}
 
+
+@app.get("/integrations/modules")
+def integrations_modules_endpoint():
+    return {"ok": True, "version": APP_VERSION, "modules": module_integrations(), "workflow": [m["phase"] for m in module_integrations()]}
+
+@app.get("/decision-packet/template")
+def decision_packet_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "decision_packet": decision_packet_template(), "modules": module_integrations()}
+
+@app.post("/decision-packet/analyze")
+def decision_packet_analyze_endpoint(req: DecisionPacketRequest):
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    for key, artifact in (req.moduleArtifacts or {}).items():
+        packet[key] = artifact
+    return synthesize_decision_packet(packet, req.inputs)
+
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze"]}

@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Applied sustainability decision-support workflows for project intake, four-pillar scoring, scenarios, risk, reports, and Workbench integration.
- * Version: 1.0.2
+ * Description: Integrated sustainability decision-support workflow for framing, evidence, scenarios, impact, claims, finance, recovery, four-pillar synthesis, and reports.
+ * Version: 1.1.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.0.2';
+    const VERSION = '1.1.0';
     const OPTION_KEY = 'scds_settings';
     const NONCE_ACTION = 'wp_rest';
     const PROJECTS_TABLE = 'scds_projects';
@@ -136,7 +136,7 @@ class Sustainable_Catalyst_Decision_Studio {
     public static function default_settings() {
         return [
             'brand_title' => 'Sustainable Catalyst Decision Studio',
-            'brand_subtitle' => 'Structured sustainability decision support for projects, policies, procurement choices, scenarios, risk, and four-pillar evaluation.',
+            'brand_subtitle' => 'Integrated sustainability decision support that connects problem framing, evidence records, scenarios, impact measurement, claim review, finance, recovery, and four-pillar synthesis.',
             'methodology_note' => 'AI in the toolkit, never in control. Outputs are decision-support drafts and educational analyses, not legal, financial, engineering, medical, sustainability assurance, tax, compliance, or investment advice.',
             'backend_url' => '',
             'backend_api_key' => '',
@@ -179,10 +179,11 @@ class Sustainable_Catalyst_Decision_Studio {
         ], $atts, 'sc_decision_studio');
 
         $mode = sanitize_key($atts['mode']);
-        if (!in_array($mode, ['full', 'project-intake', 'scorecard', 'risk', 'scenario', 'report', 'drawer', 'compact'], true)) {
+        if (!in_array($mode, ['full', 'workflow', 'project-intake', 'scorecard', 'risk', 'scenario', 'report', 'drawer', 'compact'], true)) {
             $mode = 'full';
         }
         $display = sanitize_key($atts['display'] ?: $mode);
+        $start_tab = $mode === 'workflow' ? 'workflow' : ($mode === 'project-intake' ? 'intake' : (in_array($mode, ['scorecard', 'risk', 'scenario', 'report'], true) ? $mode : 'intake'));
         $uid = 'scds-' . wp_generate_uuid4();
 
         wp_enqueue_style('scds-decision-studio');
@@ -193,6 +194,8 @@ class Sustainable_Catalyst_Decision_Studio {
             'restTemplatesUrl' => esc_url_raw(rest_url('scds/v1/templates')),
             'restBriefUrl' => esc_url_raw(rest_url('scds/v1/ai-brief')),
             'restBackendStatusUrl' => esc_url_raw(rest_url('scds/v1/backend-status')),
+            'restIntegrationsUrl' => esc_url_raw(rest_url('scds/v1/integrations')),
+            'restDecisionPacketTemplateUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/template')),
             'nonce' => wp_create_nonce(self::NONCE_ACTION),
             'backendEnabled' => $settings['backend_enabled'] === '1' && !empty($settings['backend_url']),
             'aiBriefingEnabled' => $settings['ai_briefing_enabled'] === '1',
@@ -202,14 +205,14 @@ class Sustainable_Catalyst_Decision_Studio {
 
         ob_start();
         ?>
-        <section id="<?php echo esc_attr($uid); ?>" class="scds-shell scds-mode-<?php echo esc_attr($mode); ?> scds-display-<?php echo esc_attr($display); ?>" data-scds-app data-scds-mode="<?php echo esc_attr($mode); ?>">
+        <section id="<?php echo esc_attr($uid); ?>" class="scds-shell scds-mode-<?php echo esc_attr($mode); ?> scds-display-<?php echo esc_attr($display); ?>" data-scds-app data-scds-mode="<?php echo esc_attr($mode); ?>" data-scds-start-tab="<?php echo esc_attr($start_tab); ?>">
             <?php if ($mode === 'drawer') : ?>
                 <button type="button" class="scds-drawer-toggle" data-scds-drawer-toggle><?php echo esc_html($atts['title']); ?> →</button>
                 <div class="scds-drawer-panel" hidden>
             <?php endif; ?>
 
             <header class="scds-hero">
-                <p class="scds-kicker">Sustainable Catalyst Platform · Decision Studio v1.0.1</p>
+                <p class="scds-kicker">Sustainable Catalyst Platform · Decision Studio v<?php echo esc_html(self::VERSION); ?></p>
                 <h2><?php echo esc_html($atts['title']); ?></h2>
                 <p><?php echo esc_html($settings['brand_subtitle']); ?></p>
                 <div class="scds-note"><strong>Boundary:</strong> <?php echo esc_html($settings['methodology_note']); ?></div>
@@ -217,6 +220,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
             <nav class="scds-tabs" aria-label="Decision Studio sections">
                 <button type="button" class="scds-tab is-active" data-scds-tab="intake">Intake</button>
+                <button type="button" class="scds-tab" data-scds-tab="workflow">Workflow</button>
                 <button type="button" class="scds-tab" data-scds-tab="scorecard">Scorecard</button>
                 <button type="button" class="scds-tab" data-scds-tab="risk">Risk</button>
                 <button type="button" class="scds-tab" data-scds-tab="scenario">Scenarios</button>
@@ -226,6 +230,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
             <div class="scds-panels">
                 <?php $this->render_panel_intake($mode); ?>
+                <?php $this->render_panel_workflow($mode); ?>
                 <?php $this->render_panel_scorecard($mode); ?>
                 <?php $this->render_panel_risk($mode); ?>
                 <?php $this->render_panel_scenario($mode); ?>
@@ -258,6 +263,37 @@ class Sustainable_Catalyst_Decision_Studio {
             <label class="scds-wide">Decision question<textarea rows="4" data-scds-field="decisionQuestion">Should the company electrify part of its delivery fleet over the next five years while maintaining service reliability and controlling total cost of ownership?</textarea></label>
             <label class="scds-wide">Constraints, tradeoffs, or data gaps<textarea rows="4" data-scds-field="constraints">Upfront vehicle and charging infrastructure cost; electricity source uncertainty; driver training; route variability; maintenance capacity; possible grant funding; customer pressure for lower-carbon delivery.</textarea></label>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-run>Run Decision Analysis</button><button type="button" class="scds-button" data-scds-demo>Reset Demo Inputs</button><button type="button" class="scds-button" data-scds-copy-shortcode>Copy Shortcode</button></div>
+        </section>
+    <?php }
+
+
+    private function render_panel_workflow($mode) { ?>
+        <section class="scds-panel" data-scds-panel="workflow">
+            <div class="scds-panel-head">
+                <p class="scds-section-kicker">Integrated platform workflow</p>
+                <h3>Frame → Anchor → Model → Measure → Review → Evaluate → Sustain → Decide</h3>
+                <p>Use Decision Studio as the synthesis layer for the broader Sustainable Catalyst module ecosystem. Each module can contribute a structured artifact to the Decision Packet before the final four-pillar brief is generated.</p>
+            </div>
+            <div class="scds-workflow-strip" aria-label="Decision Studio integrated workflow">
+                <span>Canvas</span><span>Data</span><span>Analytics R</span><span>Impact</span><span>Narrative Risk</span><span>Finance</span><span>Grit</span><span>Decision Studio</span>
+            </div>
+            <div class="scds-integration-grid">
+                <?php foreach ($this->module_integrations() as $module) : ?>
+                    <article class="scds-integration-card" data-scds-module="<?php echo esc_attr($module['id']); ?>">
+                        <p class="scds-card-label"><?php echo esc_html($module['label']); ?></p>
+                        <h4><?php echo esc_html($module['name']); ?></h4>
+                        <p><?php echo esc_html($module['summary']); ?></p>
+                        <p class="scds-integration-use"><strong>Feeds:</strong> <?php echo esc_html($module['feeds']); ?></p>
+                        <div class="scds-card-actions">
+                            <a class="scds-mini-button" href="<?php echo esc_url($module['url']); ?>">Open module →</a>
+                            <button type="button" class="scds-mini-button" data-scds-mark-artifact="<?php echo esc_attr($module['artifact_key']); ?>">Mark for packet</button>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+            <div class="scds-note"><strong>v1.1.0 boundary:</strong> this release adds the integrated workflow UI, module map, and Decision Packet structure. Full one-click imports from each module are planned as the next integration layer.</div>
+            <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-packet-template>Preview Decision Packet</button><button type="button" class="scds-button" data-scds-run>Run Current Decision Analysis</button></div>
+            <div class="scds-packet-preview" data-scds-packet-preview></div>
         </section>
     <?php }
 
@@ -314,6 +350,7 @@ class Sustainable_Catalyst_Decision_Studio {
     public function register_admin_menu() {
         add_menu_page('SC Decision Studio', 'SC Decision Studio', 'manage_options', 'scds-dashboard', [$this, 'render_admin_dashboard'], 'dashicons-chart-area', 59);
         add_submenu_page('scds-dashboard', 'Projects', 'Projects', 'manage_options', 'scds-projects', [$this, 'render_admin_projects']);
+        add_submenu_page('scds-dashboard', 'Integrated Workflow', 'Integrated Workflow', 'manage_options', 'scds-integrations', [$this, 'render_admin_integrations']);
         add_submenu_page('scds-dashboard', 'Scenario Templates', 'Scenario Templates', 'manage_options', 'scds-templates', [$this, 'render_admin_templates']);
         add_submenu_page('scds-dashboard', 'Scorecard Builder', 'Scorecard Builder', 'manage_options', 'scds-scorecard', [$this, 'render_admin_scorecard']);
         add_submenu_page('scds-dashboard', 'Report Templates', 'Report Templates', 'manage_options', 'scds-reports', [$this, 'render_admin_reports']);
@@ -327,10 +364,11 @@ class Sustainable_Catalyst_Decision_Studio {
     private function admin_wrap_end() { echo '</div>'; }
 
     public function render_admin_dashboard() {
-        $this->admin_wrap_start('Sustainable Catalyst Decision Studio v1.0.1', 'Applied decision-support workflows for sustainability projects, policy choices, scenarios, risk, and four-pillar reports.');
+        $this->admin_wrap_start('Sustainable Catalyst Decision Studio v' . self::VERSION, 'Integrated decision-support workflow for framing, evidence, scenarios, impact, claims, finance, recovery, and four-pillar reports.');
         echo '<div class="scds-admin-grid">';
         $cards = [
             ['Projects', 'Track project drafts and generated decision briefs.', 'admin.php?page=scds-projects'],
+            ['Integrated Workflow', 'Map Canvas, Data, Analytics R, Impact, Narrative Risk, Finance, Grit, and Decision Studio.', 'admin.php?page=scds-integrations'],
             ['Scenario Templates', 'Baseline, conservative, expected, ambitious, stress, and transition cases.', 'admin.php?page=scds-templates'],
             ['Scorecard Builder', 'Define four-pillar weights and indicator logic.', 'admin.php?page=scds-scorecard'],
             ['Validation Dashboard', 'Review module status, warnings, sample inputs, and expected outputs.', 'admin.php?page=scds-validation'],
@@ -339,6 +377,19 @@ class Sustainable_Catalyst_Decision_Studio {
         ];
         foreach ($cards as $c) echo '<div class="card"><h2>' . esc_html($c[0]) . '</h2><p>' . esc_html($c[1]) . '</p><a class="button button-primary" href="' . esc_url(admin_url($c[2])) . '">Open</a></div>';
         echo '</div><h2>Shortcodes</h2><textarea readonly style="width:100%;height:130px">[sc_decision_studio mode="full"]&#10;[sc_decision_studio mode="project-intake"]&#10;[sc_decision_studio mode="scorecard"]&#10;[sc_decision_studio mode="risk"]&#10;[sc_decision_studio mode="scenario"]&#10;[sc_decision_studio mode="report"]&#10;[sc_decision_studio mode="drawer" title="Open Decision Studio"]</textarea>';
+        $this->admin_wrap_end();
+    }
+
+
+    public function render_admin_integrations() {
+        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.1.0 maps specialized Sustainable Catalyst modules into one Decision Packet.');
+        echo '<p>Use this map as the integration contract for the next build: module artifact exports should feed the Decision Packet sections listed below.</p>';
+        echo '<table class="widefat striped"><thead><tr><th>Step</th><th>Module</th><th>Role</th><th>Feeds Decision Packet</th><th>URL</th></tr></thead><tbody>';
+        foreach ($this->module_integrations() as $m) {
+            echo '<tr><td>' . intval($m['step']) . '</td><td><strong>' . esc_html($m['name']) . '</strong><br><code>' . esc_html($m['id']) . '</code></td><td>' . esc_html($m['summary']) . '</td><td><code>' . esc_html($m['artifact_key']) . '</code><br>' . esc_html($m['feeds']) . '</td><td><a href="' . esc_url($m['url']) . '">' . esc_html($m['url']) . '</a></td></tr>';
+        }
+        echo '</tbody></table>';
+        echo '<h2>Decision Packet template</h2><pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($this->decision_packet_template(), JSON_PRETTY_PRINT)) . '</pre>';
         $this->admin_wrap_end();
     }
 
@@ -425,6 +476,8 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/health', ['methods'=>'GET','callback'=>[$this,'rest_health'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/analyze', ['methods'=>'POST','callback'=>[$this,'rest_analyze'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/templates', ['methods'=>'GET','callback'=>[$this,'rest_templates'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/integrations', ['methods'=>'GET','callback'=>[$this,'rest_integrations'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/template', ['methods'=>'GET','callback'=>[$this,'rest_decision_packet_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/backend-status', ['methods'=>'GET','callback'=>[$this,'rest_backend_status'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/ai-brief', ['methods'=>'POST','callback'=>[$this,'rest_ai_brief'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/projects', ['methods'=>'POST','callback'=>[$this,'rest_save_project'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
@@ -432,6 +485,10 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/export/templates.csv', ['methods'=>'GET','callback'=>[$this,'rest_export_templates_csv'],'permission_callback'=>function(){ return current_user_can('manage_options'); }]);
         register_rest_route('scds/v1', '/export/tool-map.csv', ['methods'=>'GET','callback'=>[$this,'rest_export_tool_map_csv'],'permission_callback'=>function(){ return current_user_can('manage_options'); }]);
     }
+
+
+    public function rest_integrations() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'modules'=>$this->module_integrations(),'workflow'=>array_map(function($m){ return $m['phase']; }, $this->module_integrations())]); }
+    public function rest_decision_packet_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_packet'=>$this->decision_packet_template(),'modules'=>$this->module_integrations()]); }
 
     public function rest_health() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio']); }
     public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map()]); }
@@ -540,9 +597,45 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function recommended_workbench_shortcodes() { return ['[sc_workbench mode="tool" display="compact" tool="risk-resilience-impact-matrix"]','[sc_workbench mode="tool" display="compact" tool="economics-forecasting-and-scenario-tool"]','[sc_workbench mode="tool" display="drawer" tool="environmental-monitoring-qaqc-tool"]']; }
 
     private function csv_response($filename, $rows) { $fh = fopen('php://temp','w+'); if ($rows) { fputcsv($fh, array_keys($rows[0])); foreach($rows as $row) fputcsv($fh, $row); } rewind($fh); $csv = stream_get_contents($fh); fclose($fh); return new WP_REST_Response($csv, 200, ['Content-Type'=>'text/csv; charset=utf-8','Content-Disposition'=>'attachment; filename="'.$filename.'"']); }
-    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.0.0.csv', $this->scenario_templates()); }
-    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.0.0.csv', $this->workbench_tool_map()); }
-    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.0.0.csv', $rows ?: []); }
+    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.1.0.csv', $this->scenario_templates()); }
+    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.1.0.csv', $this->workbench_tool_map()); }
+    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.1.0.csv', $rows ?: []); }
+
+
+    private function module_integrations() {
+        return [
+            ['step'=>1,'phase'=>'Frame','id'=>'catalyst-canvas','name'=>'Catalyst Canvas','label'=>'Problem framing','url'=>'/catalyst-canvas/#demo','artifact_key'=>'framing','feeds'=>'Decision framing: challenge, audience, POV, HMW prompt, prototype, test plan.','summary'=>'Frame a challenge, define an audience, generate POV and HMW prompts, shape a prototype, design a test plan, and export a structured brief.'],
+            ['step'=>2,'phase'=>'Anchor','id'=>'catalyst-data','name'=>'Catalyst Data','label'=>'Data records','url'=>'/catalyst-data/#demo','artifact_key'=>'evidence_records','feeds'=>'Evidence and measurement: entity, indicator, source, period, confidence, method notes, review status.','summary'=>'Create a traceable measurement record with entity, indicator, source, period, confidence, method notes, review status, and JSON export.'],
+            ['step'=>3,'phase'=>'Model','id'=>'catalyst-analytics-r','name'=>'Catalyst Analytics R','label'=>'Scenario analysis','url'=>'/catalyst-analytics-r/#demo','artifact_key'=>'scenario_analysis','feeds'=>'Scenarios: assumptions, capital values, emissions budget, interpretation notes, model outputs.','summary'=>'Explore a simplified sustainable-development scenario with assumptions, capital values, emissions budget, interpretation notes, and export logic.'],
+            ['step'=>4,'phase'=>'Measure','id'=>'global-impact-catalyst','name'=>'Global Impact Catalyst','label'=>'Impact measurement','url'=>'/global-impact-catalyst/#demo','artifact_key'=>'impact_records','feeds'=>'Impact measurement: initiative, goal, SDG-style theme, baseline, current value, target, source.','summary'=>'Create a traceable impact record with initiative, goal, SDG-style theme, indicator, baseline, current value, target, source, and progress notes.'],
+            ['step'=>5,'phase'=>'Review','id'=>'catalyst-narrative-risk','name'=>'Narrative Risk','label'=>'Claim review','url'=>'/narrative-risk/#demo','artifact_key'=>'claim_reviews','feeds'=>'Claim and risk review: evidence strength, uncertainty, source type, stakeholder pressure, volatility, consequences.','summary'=>'Evaluate a claim by evidence strength, uncertainty, source type, stakeholder pressure, narrative volatility, consequences, and review status.'],
+            ['step'=>6,'phase'=>'Evaluate','id'=>'catalyst-finance','name'=>'Catalyst Finance','label'=>'Tradeoff analysis','url'=>'/catalyst-finance/#demo','artifact_key'=>'finance_analysis','feeds'=>'Financial tradeoffs: NPV, ROI, payback, benefit-cost ratio, carbon cost per ton, risk-adjusted score.','summary'=>'Estimate NPV, ROI, payback, benefit-cost ratio, carbon cost per ton, risk-adjusted score, review flags, and decision notes.'],
+            ['step'=>7,'phase'=>'Sustain','id'=>'catalyst-grit','name'=>'Catalyst Grit','label'=>'Recovery tracking','url'=>'/human-systems/catalyst-grit/#demo','artifact_key'=>'execution_recovery','feeds'=>'Execution and recovery: setback, pressure, energy, support, clarity, recovery actions, recovery score.','summary'=>'Describe a setback, assess pressure, impact, energy, support, clarity, recovery actions, and generate a recovery score and next actions.'],
+            ['step'=>8,'phase'=>'Decide','id'=>'decision-studio','name'=>'Decision Studio','label'=>'Decision support','url'=>'/platform/decision-studio/','artifact_key'=>'synthesis','feeds'=>'Integrated decision brief: four-pillar synthesis, assumptions, scenarios, outputs, risks, SDG mapping, audit trail.','summary'=>'Generate a four-pillar sustainability decision brief with assumptions, scenarios, calculator-backed outputs, risks, SDG mapping, and auditable review notes.'],
+        ];
+    }
+
+    private function decision_packet_template() {
+        return [
+            'packet_version'=>'1.1.0',
+            'workflow'=>'Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio',
+            'project'=>['project_name'=>'','organization_type'=>'','sector'=>'','location'=>'','time_horizon'=>'','decision_question'=>''],
+            'framing'=>[],
+            'evidence_records'=>[],
+            'scenario_analysis'=>[],
+            'impact_records'=>[],
+            'claim_reviews'=>[],
+            'finance_analysis'=>[],
+            'execution_recovery'=>[],
+            'synthesis'=>[],
+            'four_pillar_scores'=>[],
+            'assumptions'=>[],
+            'risks'=>[],
+            'sources'=>[],
+            'audit_trail'=>[],
+            'module_slots'=>array_map(function($m){ return ['module_id'=>$m['id'],'name'=>$m['name'],'artifact_key'=>$m['artifact_key'],'status'=>'empty']; }, $this->module_integrations()),
+        ];
+    }
 
     private function scenario_templates() { return [ ['template_id'=>'baseline','name'=>'Baseline','purpose'=>'Current path with no intervention'], ['template_id'=>'conservative','name'=>'Conservative','purpose'=>'Lower adoption, higher cost, slower benefits'], ['template_id'=>'expected','name'=>'Expected','purpose'=>'Central planning assumption'], ['template_id'=>'ambitious','name'=>'Ambitious','purpose'=>'Higher adoption and faster benefits'], ['template_id'=>'stress','name'=>'Stress Test','purpose'=>'Costs rise, benefits lag, governance weakens'], ['template_id'=>'transition','name'=>'Transition Pathway','purpose'=>'Staged implementation over multiple years'] ]; }
     private function scorecard_rows() { return [ ['pillar'=>'Environmental','default_weight'=>'30','indicators'=>'emissions, energy, land, water, biodiversity, pollution'], ['pillar'=>'Social','default_weight'=>'20','indicators'=>'health, access, equity, labor, community, capability'], ['pillar'=>'Economic','default_weight'=>'30','indicators'=>'NPV, ROI, payback, affordability, productivity, resilience'], ['pillar'=>'Governance','default_weight'=>'20','indicators'=>'accountability, evidence, controls, transparency, capacity, audit trail'] ]; }

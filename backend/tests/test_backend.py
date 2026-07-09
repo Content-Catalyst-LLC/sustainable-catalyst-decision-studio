@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.0.1'
+    assert r.json()['version'] == '1.1.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -51,3 +51,31 @@ def test_templates():
     assert r.status_code == 200
     assert 'scenario_templates' in r.json()
     assert '/brief' in r.json()['ai_endpoints']
+
+
+def test_integrations_modules():
+    r = client.get('/integrations/modules')
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert len(data['modules']) == 8
+    assert data['modules'][0]['id'] == 'catalyst-canvas'
+    assert data['modules'][-1]['id'] == 'decision-studio'
+
+
+def test_decision_packet_template():
+    r = client.get('/decision-packet/template')
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert data['decision_packet']['packet_version'] == '1.1.0'
+    assert 'decision_framing' in data['decision_packet']
+
+
+def test_decision_packet_analyze():
+    r = client.post('/decision-packet/analyze', json={"moduleArtifacts": {"framing": {"decision_question": "Should we proceed?"}}})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert data['workflow_readiness_percent'] > 0
+    assert 'catalyst-canvas' in data['filled_modules']

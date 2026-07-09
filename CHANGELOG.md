@@ -1,3 +1,11 @@
+## v1.1.0 — Integrated Platform Workflow
+
+- Added Integrated Workflow tab.
+- Added module map for Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, Grit, and Decision Studio.
+- Added Decision Packet template and REST/API endpoints.
+- Added admin Integrated Workflow page.
+- Updated public version labels to v1.1.0.
+
 # Changelog
 
 ## 1.0.2

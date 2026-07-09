@@ -1,0 +1,54 @@
+{
+  "version": "1.1.0",
+  "workflow": "Canvas \u2192 Data \u2192 Analytics R \u2192 Global Impact \u2192 Narrative Risk \u2192 Finance \u2192 Grit \u2192 Decision Studio",
+  "modules": [
+    {
+      "id": "catalyst-canvas",
+      "step": 1,
+      "phase": "Frame",
+      "artifact_key": "framing"
+    },
+    {
+      "id": "catalyst-data",
+      "step": 2,
+      "phase": "Anchor",
+      "artifact_key": "evidence_records"
+    },
+    {
+      "id": "catalyst-analytics-r",
+      "step": 3,
+      "phase": "Model",
+      "artifact_key": "scenario_analysis"
+    },
+    {
+      "id": "global-impact-catalyst",
+      "step": 4,
+      "phase": "Measure",
+      "artifact_key": "impact_records"
+    },
+    {
+      "id": "catalyst-narrative-risk",
+      "step": 5,
+      "phase": "Review",
+      "artifact_key": "claim_reviews"
+    },
+    {
+      "id": "catalyst-finance",
+      "step": 6,
+      "phase": "Evaluate",
+      "artifact_key": "finance_analysis"
+    },
+    {
+      "id": "catalyst-grit",
+      "step": 7,
+      "phase": "Sustain",
+      "artifact_key": "execution_recovery"
+    },
+    {
+      "id": "decision-studio",
+      "step": 8,
+      "phase": "Decide",
+      "artifact_key": "synthesis"
+    }
+  ]
+}
