@@ -1,0 +1,14 @@
+cd ~/Downloads
+chmod +x push_decision_studio_v1_5_0_scenario_workbench_handoff_to_github.sh
+./push_decision_studio_v1_5_0_scenario_workbench_handoff_to_github.sh
+
+Then redeploy Decision Studio on Render.
+
+Render settings:
+Root Directory: backend
+Build Command: pip install -r requirements.txt
+Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+PYTHON_VERSION=3.12.11
+
+In WordPress, upload:
+sustainable-catalyst-decision-studio-plugin-v1.5.0.zip

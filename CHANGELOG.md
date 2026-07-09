@@ -1,3 +1,12 @@
+## v1.5.0 — Scenario Comparison and Workbench Handoff
+
+- Added scenario comparison matrix with option ranking, baseline deltas, sensitivity flags, and tradeoff notes.
+- Added Workbench handoff router with recommended tool IDs, shortcodes, reasons, priorities, and payload summaries.
+- Added Scenario Comparison and Workbench Handoff UI controls.
+- Added backend endpoints for scenario comparison and Workbench handoff generation.
+- Integrated scenario comparison and Workbench handoff details into the integrated decision brief.
+- Added tests for scenario comparison, handoff generation, and integrated brief enrichment.
+
 
 ## v1.4.0 — Brief Readiness and Review Status
 

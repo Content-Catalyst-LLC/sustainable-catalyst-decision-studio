@@ -1,0 +1,26 @@
+{
+  "version": "1.5.0",
+  "release": "Scenario Comparison and Workbench Handoff",
+  "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio → Workbench",
+  "scenario_comparison": {
+    "metrics": ["annual_avoided_tco2e", "total_avoided_tco2e", "npv", "payback_years", "risk_score", "confidence", "implementation_complexity", "decision_score"],
+    "outputs": ["comparison_matrix", "ranked_options", "delta_vs_baseline", "tradeoff_notes", "sensitivity_flags"]
+  },
+  "workbench_handoffs": [
+    "economics-forecasting-and-scenario-tool",
+    "risk-resilience-impact-matrix",
+    "graph-studio-parameter-sensitivity",
+    "engineering-mode-calculation-note",
+    "environmental-monitoring-qaqc-tool",
+    "chalkboard-symbolic-formula-review",
+    "advanced-domain-calculator-library"
+  ],
+  "backend_endpoints": [
+    "/scenario-comparison/template",
+    "/scenario-comparison",
+    "/decision-packet/scenario-comparison",
+    "/workbench/handoffs",
+    "/workbench/handoff",
+    "/decision-packet/workbench-handoff"
+  ]
+}

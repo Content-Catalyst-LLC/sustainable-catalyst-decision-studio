@@ -9,7 +9,7 @@ import os
 import urllib.request
 import urllib.error
 
-APP_VERSION = "1.4.0"
+APP_VERSION = "1.5.0"
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
 
 class DecisionInputs(BaseModel):
@@ -99,6 +99,25 @@ class BriefReadinessRequest(BaseModel):
     moduleArtifacts: Dict[str, Any] = Field(default_factory=dict)
     audit: Optional[Dict[str, Any]] = None
     reviewOverrides: Dict[str, Any] = Field(default_factory=dict)
+    notes: str = ""
+
+
+class ScenarioComparisonRequest(BaseModel):
+    inputs: DecisionInputs = Field(default_factory=DecisionInputs)
+    results: Optional[Dict[str, Any]] = None
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    scenarios: List[Dict[str, Any]] = Field(default_factory=list)
+    audit: Optional[Dict[str, Any]] = None
+    notes: str = ""
+
+
+class WorkbenchHandoffRequest(BaseModel):
+    inputs: DecisionInputs = Field(default_factory=DecisionInputs)
+    results: Optional[Dict[str, Any]] = None
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    readiness: Optional[Dict[str, Any]] = None
+    scenarioComparison: Optional[Dict[str, Any]] = None
+    requestedTools: List[str] = Field(default_factory=list)
     notes: str = ""
 
 
@@ -241,7 +260,7 @@ def module_integrations() -> List[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.4.0",
+        "packet_version": "1.5.0",
         "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio",
         "project": {
             "project_name": "",
@@ -265,6 +284,8 @@ def decision_packet_template() -> Dict[str, Any]:
         "audit_trail": [],
         "audit_and_provenance": audit_provenance_template(),
         "integrated_decision_brief": {},
+        "scenario_comparison": {},
+        "workbench_handoffs": [],
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -282,7 +303,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.4.0",
+        "audit_version": "1.5.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -843,7 +864,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
     return {
         "ok": True,
         "version": APP_VERSION,
-        "decision_packet_version": "1.4.0",
+        "decision_packet_version": "1.5.0",
         "workflow_readiness_percent": readiness,
         "filled_modules": filled,
         "missing_modules": missing,
@@ -877,7 +898,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
 
 
 def review_status_catalog() -> Dict[str, Any]:
-    """Review state vocabulary used by v1.4.0 readiness gates."""
+    """Review state vocabulary used by v1.5.0 readiness gates."""
     return {
         "review_version": APP_VERSION,
         "states": [
@@ -1455,10 +1476,190 @@ def generate_integrated_brief(req: IntegratedBriefRequest) -> Dict[str, Any]:
             "Imported artifacts and user-provided inputs are not independently verified by Decision Studio.",
         ],
     }
+    scenario_comparison = generate_scenario_comparison(ScenarioComparisonRequest(inputs=req.inputs, results=results, packet=packet)).get("scenario_comparison", {})
+    workbench_handoff = generate_workbench_handoff(WorkbenchHandoffRequest(inputs=req.inputs, results=results, packet=packet, readiness=(readiness.get("brief_readiness", {}) if isinstance(readiness, dict) else {}), scenarioComparison=scenario_comparison)).get("workbench_handoff", {})
+    brief["scenario_comparison_matrix"] = scenario_comparison
+    brief["workbench_handoff_details"] = workbench_handoff
+    brief["workbench_handoffs"] = [h.get("shortcode") for h in workbench_handoff.get("recommended_handoffs", []) if h.get("shortcode")] or results.get("workbench_handoffs", [])
     md = integrated_brief_markdown(brief)
     html = integrated_brief_html(brief)
-    return {"ok": True, "version": APP_VERSION, "brief": brief, "exports": {"markdown": md, "html": html, "json": brief}, "results": results, "decision_packet": packet, "audit": audit, "readiness": readiness}
+    return {"ok": True, "version": APP_VERSION, "brief": brief, "exports": {"markdown": md, "html": html, "json": brief}, "results": results, "decision_packet": packet, "audit": audit, "readiness": readiness, "scenario_comparison": scenario_comparison, "workbench_handoff": workbench_handoff}
 
+
+
+
+def _numeric(value: Any, default: Optional[float] = None) -> Optional[float]:
+    try:
+        if value in (None, "", [], {}):
+            return default
+        return float(value)
+    except Exception:
+        return default
+
+
+def _scenario_value(item: Dict[str, Any], *keys: str, default: Any = None) -> Any:
+    for key in keys:
+        if key in item and item.get(key) not in (None, ""):
+            return item.get(key)
+        camel = key.split("_")[0] + "".join(part.capitalize() for part in key.split("_")[1:])
+        if camel in item and item.get(camel) not in (None, ""):
+            return item.get(camel)
+    return default
+
+
+def _packet_scenarios(packet: Dict[str, Any]) -> List[Dict[str, Any]]:
+    scenarios: List[Dict[str, Any]] = []
+    raw = packet.get("scenarios", {}) if isinstance(packet, dict) else {}
+    if isinstance(raw, dict):
+        records = raw.get("records", [])
+        if isinstance(records, list):
+            scenarios.extend([x for x in records if isinstance(x, dict)])
+    elif isinstance(raw, list):
+        scenarios.extend([x for x in raw if isinstance(x, dict)])
+    imported = packet.get("scenario_analysis") if isinstance(packet, dict) else None
+    if isinstance(imported, dict):
+        scenarios.append(imported)
+    elif isinstance(imported, list):
+        scenarios.extend([x for x in imported if isinstance(x, dict)])
+    return scenarios
+
+
+def scenario_comparison_template() -> Dict[str, Any]:
+    return {
+        "comparison_version": APP_VERSION,
+        "default_options": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"],
+        "metrics": ["annual_avoided_tco2e", "total_avoided_tco2e", "npv", "payback_years", "risk_score", "confidence", "governance_burden", "implementation_complexity"],
+        "decision_use": "Compare scenario options before generating the integrated brief; use Workbench handoffs for deeper modeling, graphs, sensitivity analysis, engineering review, or calculator-backed validation.",
+        "warnings": ["Scenario comparison is a decision-support screen, not a forecast.", "Use reviewed sources and Workbench calculations before relying on outputs."],
+    }
+
+
+def generate_scenario_comparison(req: ScenarioComparisonRequest) -> Dict[str, Any]:
+    inputs = req.inputs
+    results = req.results or analyze(inputs)
+    packet = req.packet or {}
+    raw_scenarios = [x for x in req.scenarios if isinstance(x, dict)] or _packet_scenarios(packet) or results.get("scenarios", [])
+    normalized: List[Dict[str, Any]] = []
+    has_packet_scenarios = bool(_packet_scenarios(packet))
+    for idx, item in enumerate(raw_scenarios):
+        label = _first_present(_scenario_value(item, "label", "name", "scenario", "demo"), default=f"Option {idx + 1}")
+        annual = _numeric(_scenario_value(item, "annual_avoided_tco2e", "annual_avoided", "emissions_reduction", "avoided_emissions"), 0)
+        total = _numeric(_scenario_value(item, "total_avoided_tco2e", "total_avoided"), None)
+        if total is None and annual is not None:
+            total = annual * inputs.modelYears
+        npv_value = _numeric(_scenario_value(item, "npv", "net_present_value"), None)
+        payback = _numeric(_scenario_value(item, "payback_years", "payback"), None)
+        risk = _numeric(_scenario_value(item, "risk_score", "risk"), None)
+        confidence = _numeric(_scenario_value(item, "confidence", "data_confidence", "confidence_score"), inputs.dataConfidence)
+        complexity = _first_present(_scenario_value(item, "implementation_complexity", "complexity"), inputs.complexity, default="Medium")
+        interpretation = _first_present(_scenario_value(item, "interpretation", "decision_note", "summary", "notes"), default="Scenario generated from Decision Studio assumptions or imported artifact.")
+        if risk is None:
+            risk = results.get("risk", {}).get("risk_score", 50)
+        npv_component = 50
+        if npv_value is not None:
+            npv_component = clamp(50 + (npv_value / max(inputs.capex, 1)) * 35)
+        emissions_component = clamp((annual or 0) / max(inputs.baselineEmissions, 1) * 100)
+        payback_component = 50 if payback is None else clamp(100 - (payback / max(inputs.modelYears, 1)) * 55)
+        risk_component = clamp(100 - (risk or 50))
+        confidence_component = clamp(confidence or 0)
+        score = clamp((emissions_component * .26) + (npv_component * .26) + (payback_component * .16) + (risk_component * .20) + (confidence_component * .12))
+        normalized.append({
+            "option_id": f"scenario-{idx + 1}",
+            "label": label,
+            "annual_avoided_tco2e": annual,
+            "total_avoided_tco2e": total,
+            "npv": npv_value,
+            "payback_years": payback,
+            "risk_score": risk,
+            "confidence": confidence,
+            "implementation_complexity": complexity,
+            "decision_score": round(score, 2),
+            "interpretation": interpretation,
+            "source": "imported_packet" if has_packet_scenarios else "decision_studio_model",
+        })
+    ranked = sorted(normalized, key=lambda x: x.get("decision_score", 0), reverse=True)
+    ranks = {item["option_id"]: rank for rank, item in enumerate(ranked, start=1)}
+    baseline = normalized[0] if normalized else {}
+    matrix = []
+    for item in normalized:
+        row = dict(item)
+        row["rank"] = ranks.get(item["option_id"])
+        row["delta_vs_baseline"] = {
+            "annual_avoided_tco2e": round((item.get("annual_avoided_tco2e") or 0) - (baseline.get("annual_avoided_tco2e") or 0), 4),
+            "npv": None if item.get("npv") is None or baseline.get("npv") is None else round(item.get("npv") - baseline.get("npv"), 2),
+            "risk_score": None if item.get("risk_score") is None or baseline.get("risk_score") is None else round(item.get("risk_score") - baseline.get("risk_score"), 2),
+        }
+        row["tradeoff_note"] = "High-scoring option; verify assumptions and implementation limits before export." if row.get("decision_score", 0) >= 70 else "Moderate option; review tradeoffs, sources, and mitigation requirements." if row.get("decision_score", 0) >= 50 else "Weak option under current assumptions; consider redesign or stronger evidence."
+        matrix.append(row)
+    best = ranked[0] if ranked else {}
+    comparison = {
+        "comparison_version": APP_VERSION,
+        "scenario_count": len(matrix),
+        "recommended_option": best.get("label", "No option selected"),
+        "recommended_option_id": best.get("option_id"),
+        "matrix": matrix,
+        "ranked_options": ranked,
+        "sensitivity_flags": ["Review savings volatility and CAPEX volatility before treating scenario ranks as stable.", "Use Workbench Graph Studio or economics forecasting for deeper sensitivity curves.", "Use Catalyst Data records to replace screening-level assumptions with source-backed indicators."],
+        "workbench_handoff_candidates": ["economics-forecasting-and-scenario-tool", "risk-resilience-impact-matrix", "graph-studio-parameter-sensitivity", "environmental-monitoring-qaqc-tool"],
+        "warnings": scenario_comparison_template()["warnings"],
+    }
+    return {"ok": True, "version": APP_VERSION, "scenario_comparison": comparison, "results": results, "decision_packet": packet}
+
+
+def workbench_handoff_catalog() -> List[Dict[str, Any]]:
+    return [
+        {"tool_id": "economics-forecasting-and-scenario-tool", "label": "Economics Forecasting and Scenario Tool", "mode": "advanced_calculators", "use_when": "NPV, ROI, payback, benefit-cost, or scenario assumptions need sensitivity review.", "shortcode": "[sc_workbench_advanced_calculators title=\"Economics Forecasting and Scenario Tool\"]"},
+        {"tool_id": "risk-resilience-impact-matrix", "label": "Risk and Resilience Matrix", "mode": "risk", "use_when": "Exposure, vulnerability, stakeholder sensitivity, resilience, or mitigation tradeoffs drive the decision.", "shortcode": "[sc_workbench topic=\"risk-resilience\" title=\"Risk and Resilience Matrix\" display=\"compact\"]"},
+        {"tool_id": "graph-studio-parameter-sensitivity", "label": "Graph Studio Parameter Sensitivity", "mode": "graph", "use_when": "A user needs curves, parameter sliders, or scenario visualizations.", "shortcode": "[sc_workbench_graph_studio title=\"Scenario Sensitivity Graph\"]"},
+        {"tool_id": "engineering-mode-calculation-note", "label": "Engineering Mode Calculation Note", "mode": "engineering", "use_when": "The decision includes equipment, infrastructure, energy systems, buildings, safety margins, or unit-sensitive formulas.", "shortcode": "[sc_workbench_engineering_mode title=\"Engineering Review Note\"]"},
+        {"tool_id": "environmental-monitoring-qaqc-tool", "label": "Environmental Monitoring QA/QC", "mode": "environmental", "use_when": "Data confidence, source quality, indicators, thresholds, or monitoring records need validation.", "shortcode": "[sc_workbench topic=\"environmental-monitoring\" title=\"Environmental QA/QC Review\" display=\"compact\"]"},
+        {"tool_id": "chalkboard-symbolic-formula-review", "label": "Chalkboard Translator and Symbolic Formula Review", "mode": "symbolic", "use_when": "Formulas, equations, or assumptions should be translated into readable math and symbolic form.", "shortcode": "[sc_workbench_chalkboard title=\"Formula Review\"]"},
+        {"tool_id": "advanced-domain-calculator-library", "label": "Advanced Domain Calculator Library", "mode": "advanced", "use_when": "The decision needs econometrics, psychometrics, computational science, architecture, infrastructure, pattern recognition, or astrophysics calculators.", "shortcode": "[sc_workbench_advanced_calculators title=\"Advanced Calculator Library\"]"},
+    ]
+
+
+def generate_workbench_handoff(req: WorkbenchHandoffRequest) -> Dict[str, Any]:
+    inputs = req.inputs
+    results = req.results or analyze(inputs)
+    packet = req.packet or {}
+    comparison = req.scenarioComparison or generate_scenario_comparison(ScenarioComparisonRequest(inputs=inputs, results=results, packet=packet)).get("scenario_comparison", {})
+    readiness = req.readiness or compute_brief_readiness(packet, inputs, results).get("brief_readiness", {})
+    selected: List[Dict[str, Any]] = []
+    catalog = workbench_handoff_catalog()
+    requested = set(req.requestedTools or [])
+    def add(tool_id: str, reason: str, priority: str = "recommended", payload: Optional[Dict[str, Any]] = None):
+        for item in catalog:
+            if item["tool_id"] == tool_id and not any(x["tool_id"] == tool_id for x in selected):
+                selected.append({**item, "reason": reason, "priority": priority, "payload": payload or {}})
+    if requested:
+        for tool_id in requested:
+            add(tool_id, "User-requested Workbench handoff.", "requested")
+    if inputs.capex > 0 or inputs.annualSavings > 0:
+        add("economics-forecasting-and-scenario-tool", "Finance outputs or scenario assumptions should be stress-tested before relying on NPV, ROI, or payback.", "high", {"capex": inputs.capex, "annualSavings": inputs.annualSavings, "discountRate": inputs.discountRate, "modelYears": inputs.modelYears})
+    if inputs.exposure >= 50 or inputs.vulnerability >= 50 or results.get("risk", {}).get("risk_score", 0) >= 45:
+        add("risk-resilience-impact-matrix", "Risk posture is material; use Workbench to inspect exposure, vulnerability, resilience, mitigation, and cascade effects.", "high", {"exposure": inputs.exposure, "vulnerability": inputs.vulnerability, "resilience": inputs.resilience, "risk_score": results.get("risk", {}).get("risk_score")})
+    if comparison.get("scenario_count", 0) >= 3:
+        add("graph-studio-parameter-sensitivity", "Multiple scenarios are present; graph scenario sensitivity and key assumption curves.", "recommended", {"scenario_comparison": comparison})
+    if inputs.sector in ("Real estate and buildings", "Energy and utilities", "Manufacturing", "Transportation and logistics") or "infrastructure" in (inputs.constraints or "").lower():
+        add("engineering-mode-calculation-note", "Engineering-adjacent assumptions may require unit-aware review and professional boundary notes.", "review", {"sector": inputs.sector, "constraints": inputs.constraints})
+    if inputs.dataConfidence < 75 or readiness.get("counts", {}).get("sources", 0) < 1:
+        add("environmental-monitoring-qaqc-tool", "Evidence/source confidence needs QA/QC before reviewed export.", "high", {"dataConfidence": inputs.dataConfidence})
+    if any(sym in (inputs.constraints or "") for sym in ["=", "σ", "Δ", "CO2", "tCO", "NPV", "ROI"]):
+        add("chalkboard-symbolic-formula-review", "The decision includes formula-like or technical notation that should be translated and checked.", "optional", {"constraints": inputs.constraints})
+    if packet.get("scenario_comparison") or packet.get("workbench_handoffs"):
+        add("advanced-domain-calculator-library", "The Decision Packet already includes advanced analysis hooks; review whether a domain-specific calculator is needed.", "optional")
+    if not selected:
+        add("graph-studio-parameter-sensitivity", "Use Workbench for exploratory visualization if the decision needs deeper analysis.", "optional")
+    handoff = {
+        "handoff_version": APP_VERSION,
+        "decision_packet_id": packet.get("decision_packet_id", "SCDS-DRAFT"),
+        "recommended_handoffs": selected,
+        "catalog": catalog,
+        "payload_summary": {"projectName": inputs.projectName, "decisionQuestion": inputs.decisionQuestion, "weighted_score": results.get("scores", {}).get("weighted"), "risk_score": results.get("risk", {}).get("risk_score"), "npv": results.get("finance", {}).get("npv"), "scenario_count": comparison.get("scenario_count", 0), "readiness_percent": readiness.get("readiness_percent", 0)},
+        "workflow_note": "Decision Studio decides and synthesizes; Workbench calculates, graphs, checks formulas, and supports deeper domain analysis.",
+        "warnings": ["Workbench handoffs are analytical supports, not professional approval, certification, assurance, or expert signoff."],
+    }
+    return {"ok": True, "version": APP_VERSION, "workbench_handoff": handoff, "scenario_comparison": comparison, "results": results, "decision_packet": packet}
 
 def _env_first(*names: str) -> str:
     """Return the first non-empty environment variable from a list of accepted names."""
@@ -1722,6 +1923,30 @@ def audit_template_endpoint():
 def audit_generate_endpoint(req: AuditProvenanceRequest):
     return generate_audit_provenance(req)
 
+@app.get("/scenario-comparison/template")
+def scenario_comparison_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "template": scenario_comparison_template()}
+
+@app.post("/scenario-comparison")
+def scenario_comparison_endpoint(req: ScenarioComparisonRequest):
+    return generate_scenario_comparison(req)
+
+@app.post("/decision-packet/scenario-comparison")
+def decision_packet_scenario_comparison_endpoint(req: ScenarioComparisonRequest):
+    return generate_scenario_comparison(req)
+
+@app.get("/workbench/handoffs")
+def workbench_handoffs_endpoint():
+    return {"ok": True, "version": APP_VERSION, "catalog": workbench_handoff_catalog()}
+
+@app.post("/workbench/handoff")
+def workbench_handoff_endpoint(req: WorkbenchHandoffRequest):
+    return generate_workbench_handoff(req)
+
+@app.post("/decision-packet/workbench-handoff")
+def decision_packet_workbench_handoff_endpoint(req: WorkbenchHandoffRequest):
+    return generate_workbench_handoff(req)
+
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff"]}

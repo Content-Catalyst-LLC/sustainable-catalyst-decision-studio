@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.4.0'
+    assert r.json()['version'] == '1.5.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '1.4.0'
+    assert data['decision_packet']['packet_version'] == '1.5.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -88,7 +88,7 @@ def test_audit_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.4.0'
+    assert data['audit']['audit_version'] == '1.5.0'
     assert 'module_artifact_ledger' in data['audit']
 
 
@@ -97,7 +97,7 @@ def test_audit_generate_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.4.0'
+    assert data['audit']['audit_version'] == '1.5.0'
     assert data['audit_summary']['assumptions_count'] >= 5
     assert data['audit_summary']['calculation_trace_count'] >= 4
 
@@ -162,7 +162,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.4.0'
+    assert data['version'] == '1.5.0'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -190,7 +190,7 @@ def test_review_status_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.4.0'
+    assert data['version'] == '1.5.0'
     assert len(data['sections']) >= 8
     assert any(s['id'] == 'finance' for s in data['sections'])
 
@@ -201,7 +201,7 @@ def test_brief_readiness_default():
     data = r.json()
     assert data['ok'] is True
     readiness = data['readiness']
-    assert readiness['readiness_version'] == '1.4.0'
+    assert readiness['readiness_version'] == '1.5.0'
     assert 0 <= readiness['readiness_percent'] <= 100
     assert 'sections' in readiness
     assert 'export_gate' in readiness
@@ -225,3 +225,57 @@ def test_decision_packet_readiness_with_sources():
     assert readiness['readiness_percent'] > 50
     assert readiness['counts']['sources'] >= 1
     assert any(s['id'] == 'evidence' for s in readiness['sections'])
+
+
+
+def test_scenario_comparison_default():
+    r = client.post('/scenario-comparison', json={"inputs": {}, "packet": {}})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert data['version'] == '1.5.0'
+    comparison = data['scenario_comparison']
+    assert comparison['scenario_count'] >= 4
+    assert 'matrix' in comparison
+    assert 'recommended_option' in comparison
+    assert comparison['matrix'][0]['label'] == 'Baseline'
+
+
+def test_decision_packet_scenario_comparison_with_imported_options():
+    packet = {
+        "scenarios": {
+            "records": [
+                {"label": "Option A", "annual_avoided_tco2e": 100, "npv": 5000, "payback_years": 4, "risk_score": 50, "confidence": 70},
+                {"label": "Option B", "annual_avoided_tco2e": 300, "npv": 12000, "payback_years": 3, "risk_score": 42, "confidence": 82},
+            ]
+        }
+    }
+    r = client.post('/decision-packet/scenario-comparison', json={"inputs": {}, "packet": packet})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['scenario_comparison']['scenario_count'] == 2
+    assert data['scenario_comparison']['recommended_option'] in ['Option A', 'Option B']
+    assert data['scenario_comparison']['matrix'][1]['delta_vs_baseline']['annual_avoided_tco2e'] == 200
+
+
+def test_workbench_handoff_default():
+    r = client.post('/workbench/handoff', json={"inputs": {}, "packet": {}})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    handoff = data['workbench_handoff']
+    assert handoff['handoff_version'] == '1.5.0'
+    ids = [h['tool_id'] for h in handoff['recommended_handoffs']]
+    assert 'economics-forecasting-and-scenario-tool' in ids
+    assert any('sc_workbench' in h['shortcode'] for h in handoff['recommended_handoffs'])
+
+
+def test_integrated_brief_includes_scenario_and_handoff():
+    r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['version'] == '1.5.0'
+    assert 'scenario_comparison' in data
+    assert 'workbench_handoff' in data
+    assert 'scenario_comparison_matrix' in data['brief']
+    assert 'workbench_handoff_details' in data['brief']

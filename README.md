@@ -1,4 +1,4 @@
-# Sustainable Catalyst Decision Studio v1.4.0
+# Sustainable Catalyst Decision Studio v1.5.0
 
 Sustainable Catalyst Decision Studio is an applied sustainability decision-support layer for Content Catalyst LLC / Sustainable Catalyst. It upgrades the earlier Sustainable Catalyst 1.0 prototype into a modular WordPress + FastAPI-ready platform for project intake, four-pillar scoring, scenarios, risk, reports, validation, exports, Workbench integration, and backend-routed AI decision briefing.
 
@@ -17,6 +17,7 @@ Workbench is the broad analytical calculator and equation layer. Decision Studio
 [sc_decision_studio mode="scorecard"]
 [sc_decision_studio mode="risk"]
 [sc_decision_studio mode="scenario"]
+[sc_decision_studio mode="handoff"]
 [sc_decision_studio mode="report"]
 [sc_decision_studio mode="drawer" title="Open Decision Studio"]
 ```
@@ -99,3 +100,19 @@ Exports:
 ## v1.4.0 — Brief Readiness and Review Status
 
 Adds section-level Decision Packet readiness scoring, review status states, unresolved issue flags, export gates, and a public Readiness tab.
+
+
+## v1.5.0 Scenario Comparison and Workbench Handoff
+
+Decision Studio now includes a normalized scenario comparison matrix and Workbench handoff router. Scenario comparison ranks options, shows deltas versus baseline, adds tradeoff notes, and identifies sensitivity flags. Workbench handoff recommendations route deeper analysis to Workbench tools such as economics forecasting, risk/resilience, Graph Studio, engineering mode, environmental QA/QC, symbolic formula review, and advanced calculators.
+
+Key endpoints:
+
+```text
+GET /scenario-comparison/template
+POST /scenario-comparison
+POST /decision-packet/scenario-comparison
+GET /workbench/handoffs
+POST /workbench/handoff
+POST /decision-packet/workbench-handoff
+```
