@@ -1,0 +1,5 @@
+cd ~/Downloads
+chmod +x push_decision_studio_v1_2_0_module_artifact_adapters_to_github.sh
+./push_decision_studio_v1_2_0_module_artifact_adapters_to_github.sh
+
+Then redeploy Decision Studio on Render.

@@ -9,7 +9,7 @@ import os
 import urllib.request
 import urllib.error
 
-APP_VERSION = "1.1.1"
+APP_VERSION = "1.2.0"
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
 
 class DecisionInputs(BaseModel):
@@ -69,6 +69,14 @@ class AuditProvenanceRequest(BaseModel):
     reviewStatus: str = "draft"
     preparedBy: str = ""
     reviewedBy: str = ""
+    notes: str = ""
+
+
+class ArtifactImportRequest(BaseModel):
+    artifact: Dict[str, Any] = Field(default_factory=dict)
+    moduleId: Optional[str] = None
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    preserveRaw: bool = True
     notes: str = ""
 
 
@@ -211,7 +219,7 @@ def module_integrations() -> List[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.1.1",
+        "packet_version": "1.2.0",
         "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio",
         "project": {
             "project_name": "",
@@ -252,7 +260,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.1.1",
+        "audit_version": "1.2.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -419,41 +427,427 @@ def generate_audit_provenance(req: AuditProvenanceRequest) -> Dict[str, Any]:
     }
 
 
+
+def artifact_adapter_catalog() -> List[Dict[str, Any]]:
+    """Artifact adapters that normalize module JSON exports into the Decision Packet."""
+    return [
+        {
+            "module_id": "catalyst-canvas",
+            "name": "Catalyst Canvas",
+            "artifact_key": "framing",
+            "packet_section": "decision_framing",
+            "detects": ["challenge", "audience", "point_of_view", "how_might_we", "prototype", "test_plan"],
+            "required_or_expected": ["challenge", "audience", "goal", "constraint", "point_of_view", "how_might_we", "prototype", "test_plan"],
+            "summary": "Normalizes challenge framing, audience, POV, HMW prompts, prototype, test plan, assumptions, and review questions.",
+        },
+        {
+            "module_id": "catalyst-data",
+            "name": "Catalyst Data",
+            "artifact_key": "evidence_records",
+            "packet_section": "evidence_and_measurement.records",
+            "detects": ["entity", "indicator", "period", "values", "source", "confidence", "trace_path"],
+            "required_or_expected": ["entity", "indicator", "period", "values", "source", "confidence", "review_status"],
+            "summary": "Normalizes traceable measurement records and source ledger entries.",
+        },
+        {
+            "module_id": "catalyst-analytics-r",
+            "name": "Catalyst Analytics R",
+            "artifact_key": "scenario_analysis",
+            "packet_section": "scenarios.records",
+            "detects": ["demo", "inputs", "final", "composite_score", "budget_ratio", "trajectory"],
+            "required_or_expected": ["inputs", "final", "composite_score", "budget_ratio", "interpretation_notes"],
+            "summary": "Normalizes scenario assumptions, final values, composite score, budget ratio, interpretation notes, and trajectory data.",
+        },
+        {
+            "module_id": "global-impact-catalyst",
+            "name": "Global Impact Catalyst",
+            "artifact_key": "impact_records",
+            "packet_section": "impact_measurement.records",
+            "detects": ["record_type", "initiative", "goal", "sdg_theme", "indicator", "baseline_value", "current_value", "target_value"],
+            "required_or_expected": ["initiative", "goal", "indicator", "baseline_value", "current_value", "target_value", "source"],
+            "summary": "Normalizes impact records, progress-to-target fields, SDG-style themes, confidence, and source details.",
+        },
+        {
+            "module_id": "catalyst-narrative-risk",
+            "name": "Narrative Risk",
+            "artifact_key": "claim_reviews",
+            "packet_section": "claim_and_risk_review.records",
+            "detects": ["claim", "risk_score", "risk_level", "components", "flags", "review_actions"],
+            "required_or_expected": ["claim", "risk_score", "risk_level", "flags", "review_actions", "decision_note"],
+            "summary": "Normalizes claim review, evidence/uncertainty fields, flags, review actions, and narrative risk scoring.",
+        },
+        {
+            "module_id": "catalyst-finance",
+            "name": "Catalyst Finance",
+            "artifact_key": "finance_analysis",
+            "packet_section": "financial_tradeoffs",
+            "detects": ["project", "inputs", "results", "interpretation", "npv", "payback_years", "benefit_cost_ratio"],
+            "required_or_expected": ["project", "inputs", "results", "interpretation"],
+            "summary": "Normalizes NPV, ROI, payback, benefit-cost ratio, carbon cost, risk-adjusted score, and finance review flags.",
+        },
+        {
+            "module_id": "catalyst-grit",
+            "name": "Catalyst Grit",
+            "artifact_key": "execution_recovery",
+            "packet_section": "execution_and_recovery",
+            "detects": ["challenge", "impact_severity", "pressure_level", "energy_level", "support_level", "clarity_level", "recovery_score"],
+            "required_or_expected": ["challenge", "domain", "impact_severity", "pressure_level", "energy_level", "support_level", "clarity_level", "recovery_actions"],
+            "summary": "Normalizes recovery risk, pressure, support, clarity, recovery actions, next actions, and execution capacity.",
+        },
+        {
+            "module_id": "workbench",
+            "name": "Sustainable Catalyst Workbench",
+            "artifact_key": "workbench_calculations",
+            "packet_section": "calculation_trace",
+            "detects": ["calculation", "formula", "inputs", "results", "assumptions", "validation_checks", "report"],
+            "required_or_expected": ["formula", "inputs", "results"],
+            "summary": "Normalizes calculator outputs, formulas, inputs, results, assumptions, validation checks, warnings, and report metadata.",
+        },
+    ]
+
+
+def _adapter_by_id(module_id: Optional[str]) -> Optional[Dict[str, Any]]:
+    if not module_id:
+        return None
+    normalized = module_id.strip().lower().replace("_", "-")
+    aliases = {
+        "canvas": "catalyst-canvas",
+        "data": "catalyst-data",
+        "analytics-r": "catalyst-analytics-r",
+        "catalystanalyticsr": "catalyst-analytics-r",
+        "impact": "global-impact-catalyst",
+        "global-impact": "global-impact-catalyst",
+        "narrative-risk": "catalyst-narrative-risk",
+        "finance": "catalyst-finance",
+        "grit": "catalyst-grit",
+        "engineering": "workbench",
+        "calculation": "workbench",
+    }
+    normalized = aliases.get(normalized, normalized)
+    for adapter in artifact_adapter_catalog():
+        if adapter["module_id"] == normalized or adapter["artifact_key"] == normalized:
+            return adapter
+    return None
+
+
+def detect_artifact_adapter(artifact: Dict[str, Any], module_id: Optional[str] = None) -> Dict[str, Any]:
+    explicit = _adapter_by_id(module_id)
+    if explicit:
+        return explicit
+    if not isinstance(artifact, dict):
+        return artifact_adapter_catalog()[0]
+    record_type = str(artifact.get("record_type", "")).lower()
+    if record_type == "global_impact_catalyst_record":
+        return _adapter_by_id("global-impact-catalyst")
+    if record_type == "catalyst_narrative_risk_record":
+        return _adapter_by_id("catalyst-narrative-risk")
+    if record_type == "catalyst_grit_record":
+        return _adapter_by_id("catalyst-grit")
+    keys = set(artifact.keys())
+    if {"point_of_view", "how_might_we"} & keys or {"challenge", "audience", "prototype", "test_plan"}.issubset(keys):
+        return _adapter_by_id("catalyst-canvas")
+    if {"entity", "indicator", "period", "values", "source"}.issubset(keys):
+        return _adapter_by_id("catalyst-data")
+    if {"demo", "final", "composite_score", "budget_ratio"}.issubset(keys) or ("trajectory" in keys and "inputs" in keys):
+        return _adapter_by_id("catalyst-analytics-r")
+    if {"initiative", "goal", "baseline_value", "current_value", "target_value"}.issubset(keys):
+        return _adapter_by_id("global-impact-catalyst")
+    if {"claim", "risk_score", "risk_level"}.issubset(keys):
+        return _adapter_by_id("catalyst-narrative-risk")
+    if {"project", "inputs", "results", "interpretation"}.issubset(keys):
+        return _adapter_by_id("catalyst-finance")
+    if {"impact_severity", "pressure_level", "recovery_actions"}.issubset(keys) or {"recovery_score", "resilience_state"}.issubset(keys):
+        return _adapter_by_id("catalyst-grit")
+    if {"formula", "inputs", "results"}.issubset(keys) or "calculation_trace" in keys or "validation_checks" in keys:
+        return _adapter_by_id("workbench")
+    return _adapter_by_id("workbench") or artifact_adapter_catalog()[-1]
+
+
+def _dig(data: Dict[str, Any], *path: str, default: Any = None) -> Any:
+    cur: Any = data
+    for key in path:
+        if isinstance(cur, dict) and key in cur:
+            cur = cur[key]
+        else:
+            return default
+    return cur
+
+
+def _list(value: Any) -> List[Any]:
+    if value is None:
+        return []
+    return value if isinstance(value, list) else [value]
+
+
+def _source_entry(title: str, source_type: str, confidence: Any, used_for: str, method_notes: str = "") -> Dict[str, Any]:
+    return {"source_title": title or "Unspecified source", "source_type": source_type or "unspecified", "confidence": confidence if confidence not in (None, "") else "unspecified", "used_for": used_for, "method_notes": method_notes or ""}
+
+
+def _assumption(text: str, value: Any, source: str, used_in: str, sensitivity: str = "medium", review_status: str = "needs review") -> Dict[str, Any]:
+    return {"assumption": text, "value": value, "module_or_source": source, "used_in": used_in, "sensitivity": sensitivity, "review_status": review_status}
+
+
+def _merge_list(existing: Any, additions: List[Any]) -> List[Any]:
+    base = existing if isinstance(existing, list) else ([] if existing in (None, {}, "") else [existing])
+    return base + [x for x in additions if x not in base]
+
+
+def _apply_packet_patch(packet: Dict[str, Any], patch: Dict[str, Any]) -> Dict[str, Any]:
+    out = json.loads(json.dumps(packet or {}))
+    if not out:
+        out = decision_packet_template()
+    for key, value in patch.items():
+        if key in {"assumptions", "risks", "sources", "audit_trail", "calculation_trace", "claim_reviews", "workbench_calculations"}:
+            out[key] = _merge_list(out.get(key), _list(value))
+        elif key == "evidence_and_measurement":
+            cur = out.get(key) if isinstance(out.get(key), dict) else {"records": []}
+            cur["records"] = _merge_list(cur.get("records"), _list(value.get("records", []))) if isinstance(value, dict) else _merge_list(cur.get("records"), _list(value))
+            out[key] = cur
+        elif key == "scenarios":
+            cur = out.get(key) if isinstance(out.get(key), dict) else {"records": []}
+            cur["records"] = _merge_list(cur.get("records"), _list(value.get("records", []))) if isinstance(value, dict) else _merge_list(cur.get("records"), _list(value))
+            out[key] = cur
+        elif key == "impact_measurement":
+            cur = out.get(key) if isinstance(out.get(key), dict) else {"records": []}
+            cur["records"] = _merge_list(cur.get("records"), _list(value.get("records", []))) if isinstance(value, dict) else _merge_list(cur.get("records"), _list(value))
+            out[key] = cur
+        elif key == "claim_and_risk_review":
+            cur = out.get(key) if isinstance(out.get(key), dict) else {"records": []}
+            cur["records"] = _merge_list(cur.get("records"), _list(value.get("records", []))) if isinstance(value, dict) else _merge_list(cur.get("records"), _list(value))
+            out[key] = cur
+        elif isinstance(value, dict) and isinstance(out.get(key), dict):
+            merged = out.get(key, {}).copy()
+            merged.update(value)
+            out[key] = merged
+        else:
+            out[key] = value
+    # refresh module slot statuses
+    slots = []
+    for module in module_integrations():
+        key = module["artifact_key"]
+        section = module["decision_packet_section"]
+        candidate = out.get(key) or out.get(section)
+        if section == "evidence_and_measurement" and isinstance(out.get(section), dict):
+            candidate = out[section].get("records")
+        if section == "scenarios" and isinstance(out.get(section), dict):
+            candidate = out[section].get("records")
+        if section == "impact_measurement" and isinstance(out.get(section), dict):
+            candidate = out[section].get("records")
+        if section == "claim_and_risk_review" and isinstance(out.get(section), dict):
+            candidate = out[section].get("records")
+        slots.append({"module_id": module["id"], "name": module["name"], "artifact_key": key, "packet_section": section, "status": "attached" if _nonempty(candidate) else "empty"})
+    # Workbench is an external adapter, not part of the 8-step workflow, but track it when present.
+    if _nonempty(out.get("workbench_calculations")) or _nonempty(out.get("calculation_trace")):
+        slots.append({"module_id": "workbench", "name": "Sustainable Catalyst Workbench", "artifact_key": "workbench_calculations", "packet_section": "calculation_trace", "status": "attached"})
+    out["module_slots"] = slots
+    return out
+
+
+def normalize_artifact(artifact: Dict[str, Any], module_id: Optional[str] = None, preserve_raw: bool = True) -> Dict[str, Any]:
+    adapter = detect_artifact_adapter(artifact, module_id)
+    mid = adapter["module_id"]
+    name = adapter["name"]
+    patch: Dict[str, Any] = {"audit_trail": [{"event": "Artifact imported", "module": name, "module_id": mid, "version": APP_VERSION}]}
+    summary: Dict[str, Any] = {"module_id": mid, "module_name": name, "artifact_key": adapter["artifact_key"], "packet_section": adapter["packet_section"], "status": "normalized"}
+    warnings: List[str] = []
+    missing = [k for k in adapter.get("required_or_expected", []) if k not in artifact]
+    if missing:
+        warnings.append("Missing or not detected fields: " + ", ".join(missing))
+    if mid == "catalyst-canvas":
+        framing = {
+            "challenge": artifact.get("challenge", ""),
+            "audience": artifact.get("audience", ""),
+            "goal": artifact.get("goal", ""),
+            "constraint": artifact.get("constraint", ""),
+            "framework": artifact.get("framework", ""),
+            "persona": artifact.get("persona", {}),
+            "point_of_view": artifact.get("point_of_view", artifact.get("pov", "")),
+            "how_might_we": _list(artifact.get("how_might_we")),
+            "prototype": artifact.get("prototype", {}),
+            "test_plan": artifact.get("test_plan", {}),
+            "review_questions": _list(artifact.get("review_questions")),
+        }
+        patch.update({"decision_framing": framing, "framing": framing, "assumptions": [_assumption(a, None, name, "problem framing", "medium") for a in _list(artifact.get("assumptions"))]})
+        if artifact.get("challenge"):
+            patch["project"] = {"decision_question": artifact.get("challenge")}
+        summary.update({"title": artifact.get("challenge") or artifact.get("goal") or "Canvas framing", "fields_mapped": list(framing.keys())})
+    elif mid == "catalyst-data":
+        record = {
+            "entity": artifact.get("entity", {}),
+            "indicator": artifact.get("indicator", {}),
+            "period": artifact.get("period", ""),
+            "values": artifact.get("values", {}),
+            "source": artifact.get("source", {}),
+            "confidence": artifact.get("confidence"),
+            "review_status": artifact.get("review_status", "needs review"),
+            "method_notes": artifact.get("method_notes", ""),
+            "trace_path": _list(artifact.get("trace_path")),
+        }
+        source = artifact.get("source", {}) if isinstance(artifact.get("source"), dict) else {"name": artifact.get("source"), "type": "source"}
+        patch.update({"evidence_and_measurement": {"records": [record]}, "evidence_records": [record], "sources": [_source_entry(source.get("name", "Catalyst Data source"), source.get("type", "measurement source"), artifact.get("confidence"), _dig(artifact, "indicator", "name", default="measurement record"), artifact.get("method_notes", ""))]})
+        summary.update({"title": _dig(artifact, "indicator", "name", default="Catalyst Data record"), "confidence": artifact.get("confidence"), "review_status": artifact.get("review_status")})
+    elif mid == "catalyst-analytics-r":
+        scenario = {
+            "scenario_name": _dig(artifact, "inputs", "scenarioName", default=artifact.get("demo", "Catalyst Analytics R scenario")),
+            "inputs": artifact.get("inputs", {}),
+            "final": artifact.get("final", {}),
+            "composite_score": artifact.get("composite_score"),
+            "budget_ratio": artifact.get("budget_ratio"),
+            "interpretation_notes": _list(artifact.get("interpretation_notes")),
+            "trajectory": _list(artifact.get("trajectory")),
+        }
+        assumptions = [_assumption(k, v, name, "scenario analysis", "medium") for k, v in (artifact.get("inputs", {}) if isinstance(artifact.get("inputs"), dict) else {}).items()]
+        patch.update({"scenarios": {"records": [scenario]}, "scenario_analysis": scenario, "assumptions": assumptions})
+        summary.update({"title": scenario["scenario_name"], "composite_score": artifact.get("composite_score"), "budget_ratio": artifact.get("budget_ratio")})
+    elif mid == "global-impact-catalyst":
+        record = {
+            "initiative": artifact.get("initiative", ""),
+            "goal": artifact.get("goal", ""),
+            "sdg_theme": artifact.get("sdg_theme", ""),
+            "indicator": artifact.get("indicator", ""),
+            "unit": artifact.get("unit", ""),
+            "baseline_value": artifact.get("baseline_value"),
+            "current_value": artifact.get("current_value"),
+            "target_value": artifact.get("target_value"),
+            "metrics": artifact.get("metrics", {}),
+            "confidence": artifact.get("confidence", "unspecified"),
+            "review_status": artifact.get("review_status", "needs review"),
+            "interpretation_notes": _list(artifact.get("interpretation_notes")),
+            "boundaries": _list(artifact.get("boundaries")),
+        }
+        patch.update({"impact_measurement": {"records": [record]}, "impact_records": [record], "sources": [_source_entry(artifact.get("source", "Global Impact source"), "impact source", artifact.get("confidence"), artifact.get("indicator", "impact indicator"), artifact.get("method_notes", ""))]})
+        summary.update({"title": artifact.get("initiative") or artifact.get("indicator") or "Global Impact record", "progress_to_target_percent": _dig(artifact, "metrics", "progress_to_target_percent"), "review_status": artifact.get("review_status")})
+    elif mid == "catalyst-narrative-risk":
+        record = {
+            "claim": artifact.get("claim", ""),
+            "risk_score": artifact.get("risk_score"),
+            "risk_level": artifact.get("risk_level"),
+            "components": artifact.get("components", {}),
+            "flags": _list(artifact.get("flags")),
+            "review_actions": _list(artifact.get("review_actions")),
+            "decision_note": artifact.get("decision_note", ""),
+            "inputs": artifact.get("inputs", {}),
+        }
+        patch.update({"claim_and_risk_review": {"records": [record]}, "claim_reviews": [record], "risks": [{"risk": artifact.get("claim", "Narrative/claim risk"), "score": artifact.get("risk_score"), "level": artifact.get("risk_level"), "module_or_source": name, "flags": _list(artifact.get("flags"))}]})
+        summary.update({"title": artifact.get("claim") or "Narrative Risk record", "risk_score": artifact.get("risk_score"), "risk_level": artifact.get("risk_level")})
+    elif mid == "catalyst-finance":
+        results = artifact.get("results", {}) if isinstance(artifact.get("results"), dict) else artifact
+        finance = {
+            "project": artifact.get("project", {}),
+            "inputs": artifact.get("inputs", {}),
+            "results": results,
+            "interpretation": artifact.get("interpretation", {}),
+            "metadata": artifact.get("metadata", {}),
+        }
+        calcs = []
+        for label, key, unit in [("NPV", "npv", "currency"), ("ROI", "roi_percent", "%"), ("Payback", "payback_years", "years"), ("Benefit-cost ratio", "benefit_cost_ratio", "ratio"), ("Carbon cost per ton", "carbon_cost_per_ton", "currency/tCO2e")]:
+            if key in results:
+                calcs.append({"calculation": label, "formula": "Catalyst Finance scenario engine", "result": results.get(key), "unit": unit, "validation_status": "requires finance review"})
+        patch.update({"financial_tradeoffs": finance, "finance_analysis": finance, "calculation_trace": calcs, "assumptions": [_assumption(k, v, name, "finance analysis", "high" if k in {"capital_cost", "annual_savings", "discount_rate_percent"} else "medium", "needs finance review") for k, v in (artifact.get("inputs", {}) if isinstance(artifact.get("inputs"), dict) else {}).items()]})
+        summary.update({"title": _dig(artifact, "project", "name", default="Catalyst Finance analysis"), "npv": results.get("npv"), "roi_percent": results.get("roi_percent"), "payback_years": results.get("payback_years"), "risk_adjusted_score": results.get("risk_adjusted_score")})
+    elif mid == "catalyst-grit":
+        recovery = {
+            "challenge": artifact.get("challenge", ""),
+            "domain": artifact.get("domain", ""),
+            "impact_severity": artifact.get("impact_severity"),
+            "pressure_level": artifact.get("pressure_level"),
+            "energy_level": artifact.get("energy_level"),
+            "support_level": artifact.get("support_level"),
+            "clarity_level": artifact.get("clarity_level"),
+            "recovery_score": artifact.get("recovery_score"),
+            "resilience_state": artifact.get("resilience_state", ""),
+            "recovery_actions": _list(artifact.get("recovery_actions")),
+            "risk_flags": _list(artifact.get("risk_flags")),
+            "next_actions": _list(artifact.get("next_actions")),
+            "decision_note": artifact.get("decision_note", ""),
+        }
+        patch.update({"execution_and_recovery": recovery, "execution_recovery": recovery, "risks": [{"risk": "Execution/recovery risk", "score": artifact.get("recovery_score"), "level": artifact.get("resilience_state"), "module_or_source": name, "flags": _list(artifact.get("risk_flags"))}]})
+        summary.update({"title": artifact.get("challenge") or "Catalyst Grit recovery record", "recovery_score": artifact.get("recovery_score"), "resilience_state": artifact.get("resilience_state")})
+    else:
+        calc = {
+            "calculation": artifact.get("calculation", artifact.get("title", "Workbench calculation")),
+            "formula": artifact.get("formula", ""),
+            "inputs": artifact.get("inputs", {}),
+            "results": artifact.get("results", artifact.get("result")),
+            "assumptions": artifact.get("assumptions", []),
+            "validation_checks": artifact.get("validation_checks", artifact.get("checks", [])),
+            "warnings": artifact.get("warnings", []),
+            "report": artifact.get("report", {}),
+        }
+        patch.update({"workbench_calculations": [calc], "calculation_trace": [{"calculation": calc["calculation"], "formula": calc["formula"], "inputs": calc["inputs"], "result": calc["results"], "unit": artifact.get("unit", ""), "validation_status": "imported from Workbench"}]})
+        summary.update({"title": calc["calculation"], "formula": calc["formula"]})
+    if preserve_raw:
+        patch.setdefault("module_artifacts_raw", {})[adapter["artifact_key"]] = artifact
+    return {"ok": True, "version": APP_VERSION, "adapter": adapter, "summary": summary, "packet_patch": patch, "warnings": warnings, "artifact": artifact}
+
+
+def import_artifact_into_packet(artifact: Dict[str, Any], module_id: Optional[str] = None, packet: Optional[Dict[str, Any]] = None, preserve_raw: bool = True) -> Dict[str, Any]:
+    normalized = normalize_artifact(artifact, module_id=module_id, preserve_raw=preserve_raw)
+    updated_packet = _apply_packet_patch(packet or decision_packet_template(), normalized["packet_patch"])
+    analysis = synthesize_decision_packet(updated_packet, None)
+    return {"ok": True, "version": APP_VERSION, "import_result": normalized, "decision_packet": updated_packet, "analysis": analysis}
+
+
 def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[DecisionInputs] = None) -> Dict[str, Any]:
+    packet = packet or decision_packet_template()
     modules = module_integrations()
     filled = []
     missing = []
     for module in modules:
         key = module["artifact_key"]
-        value = packet.get(key) or packet.get(module["decision_packet_section"])
-        if value and value != {} and value != []:
+        section = module["decision_packet_section"]
+        value = packet.get(key) or packet.get(section)
+        if section in {"evidence_and_measurement", "scenarios", "impact_measurement", "claim_and_risk_review"} and isinstance(packet.get(section), dict):
+            value = packet[section].get("records", [])
+        if _nonempty(value):
             filled.append(module["id"])
         else:
             missing.append(module["id"])
+    workbench_attached = _nonempty(packet.get("workbench_calculations")) or _nonempty(packet.get("calculation_trace"))
     base_results = analyze(inputs or DecisionInputs())
     readiness = round((len(filled) / max(1, len(modules))) * 100, 1)
+    source_count = len(packet.get("sources", [])) if isinstance(packet.get("sources", []), list) else 0
+    assumption_count = len(packet.get("assumptions", [])) if isinstance(packet.get("assumptions", []), list) else 0
+    calculation_count = len(packet.get("calculation_trace", [])) if isinstance(packet.get("calculation_trace", []), list) else 0
+    review_flags = []
+    if "catalyst-data" in missing:
+        review_flags.append("Evidence records are missing; import Catalyst Data before external use.")
+    if "catalyst-finance" in missing:
+        review_flags.append("Finance artifact is missing; import Catalyst Finance before relying on tradeoff metrics.")
+    if "catalyst-narrative-risk" in missing:
+        review_flags.append("Narrative Risk artifact is missing; import claim review before publishing claims.")
+    if source_count == 0:
+        review_flags.append("No explicit source ledger entries are attached yet.")
     return {
         "ok": True,
         "version": APP_VERSION,
-        "decision_packet_version": "1.1.1",
+        "decision_packet_version": "1.2.0",
         "workflow_readiness_percent": readiness,
         "filled_modules": filled,
         "missing_modules": missing,
         "module_count": len(modules),
+        "workbench_attached": workbench_attached,
+        "packet_quality": {
+            "source_count": source_count,
+            "assumption_count": assumption_count,
+            "calculation_trace_count": calculation_count,
+            "review_flags": review_flags,
+        },
         "synthesis": {
             "posture": base_results["status"],
             "weighted_score": base_results["scores"]["weighted"],
             "risk_level": base_results["risk"]["risk_level"],
             "risk_score": base_results["risk"]["risk_score"],
             "next_best_steps": [
-                "Import or manually summarize Canvas framing before finalizing the decision question.",
-                "Attach at least one traceable Catalyst Data record for each major claim.",
-                "Use Finance, Narrative Risk, and Grit artifacts before treating the brief as decision-ready.",
+                "Import Canvas framing before finalizing the decision question.",
+                "Attach Catalyst Data records for each major claim and calculation.",
+                "Import Finance, Narrative Risk, and Grit artifacts before treating the brief as decision-ready.",
+                "Use Workbench handoffs for any calculation requiring deeper symbolic, graph, engineering, or domain-specific review.",
             ],
         },
         "warnings": [
-            "Integrated workflow support is a decision-support scaffold. It does not certify outcomes or replace professional review.",
-            "v1.1.1 adds an Audit & Provenance layer. Deeper send/import adapters are planned for later versions.",
+            "Module Artifact Adapters normalize user-provided JSON exports. They do not verify truth, source quality, professional compliance, or certification status.",
+            "Decision Packet readiness is a review workflow aid, not approval, assurance, legal advice, financial advice, engineering review, ESG/SDG certification, or professional signoff.",
         ],
     }
 
@@ -660,6 +1054,18 @@ def report_endpoint(req: ReportRequest):
 def integrations_modules_endpoint():
     return {"ok": True, "version": APP_VERSION, "modules": module_integrations(), "workflow": [m["phase"] for m in module_integrations()]}
 
+@app.get("/integrations/adapters")
+def integrations_adapters_endpoint():
+    return {"ok": True, "version": APP_VERSION, "adapters": artifact_adapter_catalog()}
+
+@app.post("/integrations/import")
+def integrations_import_endpoint(req: ArtifactImportRequest):
+    return import_artifact_into_packet(req.artifact, module_id=req.moduleId, packet=req.packet, preserve_raw=req.preserveRaw)
+
+@app.post("/decision-packet/import")
+def decision_packet_import_endpoint(req: ArtifactImportRequest):
+    return import_artifact_into_packet(req.artifact, module_id=req.moduleId, packet=req.packet, preserve_raw=req.preserveRaw)
+
 @app.get("/decision-packet/template")
 def decision_packet_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "decision_packet": decision_packet_template(), "modules": module_integrations()}
@@ -669,7 +1075,10 @@ def decision_packet_analyze_endpoint(req: DecisionPacketRequest):
     packet = decision_packet_template()
     packet.update(req.packet or {})
     for key, artifact in (req.moduleArtifacts or {}).items():
-        packet[key] = artifact
+        if isinstance(artifact, dict):
+            packet = import_artifact_into_packet(artifact, module_id=key, packet=packet).get("decision_packet", packet)
+        else:
+            packet[key] = artifact
     return synthesize_decision_packet(packet, req.inputs)
 
 @app.get("/audit/template")
@@ -682,4 +1091,4 @@ def audit_generate_endpoint(req: AuditProvenanceRequest):
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/integrations/adapters", "/integrations/import", "/decision-packet/import"]}

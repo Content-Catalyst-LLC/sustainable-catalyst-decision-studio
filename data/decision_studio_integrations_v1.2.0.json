@@ -1,0 +1,31 @@
+{
+  "version": "1.2.0",
+  "name": "Decision Studio Module Artifact Adapters",
+  "adapters": [
+    "catalyst-canvas",
+    "catalyst-data",
+    "catalyst-analytics-r",
+    "global-impact-catalyst",
+    "catalyst-narrative-risk",
+    "catalyst-finance",
+    "catalyst-grit",
+    "workbench"
+  ],
+  "decision_packet_sections": [
+    "decision_framing",
+    "evidence_and_measurement",
+    "scenarios",
+    "impact_measurement",
+    "claim_and_risk_review",
+    "financial_tradeoffs",
+    "execution_and_recovery",
+    "calculation_trace"
+  ],
+  "endpoints": [
+    "/integrations/adapters",
+    "/integrations/import",
+    "/decision-packet/import",
+    "/decision-packet/analyze"
+  ],
+  "boundary": "Educational decision-support artifact normalization only. Not professional advice, certification, assurance, or source verification."
+}

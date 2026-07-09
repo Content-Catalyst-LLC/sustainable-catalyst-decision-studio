@@ -3,7 +3,7 @@ Contributors: Content Catalyst LLC
 Tags: sustainability, decision support, scenario analysis, scorecards, risk
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: MIT
 
 Sustainable Catalyst Decision Studio provides integrated sustainability decision-support workflows connecting problem framing, data records, scenarios, impact measurement, claim review, finance, recovery, four-pillar synthesis, and exportable decision briefs.
@@ -17,7 +17,7 @@ Sustainable Catalyst Decision Studio provides integrated sustainability decision
 [sc_decision_studio mode="report"]
 [sc_decision_studio mode="drawer"]
 
-= 1.1.1 =
+= 1.2.0 =
 * Added Integrated Platform Workflow tab.
 * Added Decision Packet template for Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, Grit, and Decision Studio.
 * Added module integration map and REST/API endpoints.
@@ -28,3 +28,8 @@ Sustainable Catalyst Decision Studio provides integrated sustainability decision
 
 = 1.0.1 =
 * Added AI Decision Briefing Layer with backend-routed provider support and deterministic fallback.
+
+
+== 1.2.0 ==
+* Adds Module Artifact Adapters for Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, Grit, and Workbench.
+* Adds JSON artifact import UI and Decision Packet normalization.

@@ -59,3 +59,21 @@ POST /report
 ## v1.1.1 Integrated Platform Workflow
 
 Decision Studio now includes an Integrated Workflow tab and Decision Packet structure connecting Catalyst Canvas, Catalyst Data, Catalyst Analytics R, Global Impact Catalyst, Narrative Risk, Catalyst Finance, Catalyst Grit, and Decision Studio.
+
+
+## v1.2.0 Module Artifact Adapters
+
+Decision Studio can now normalize JSON exports from Catalyst Canvas, Catalyst Data, Catalyst Analytics R, Global Impact Catalyst, Narrative Risk, Catalyst Finance, Catalyst Grit, and Workbench into a shared Decision Packet. The import layer preserves raw artifacts, maps data into packet sections, adds provenance entries, and supports readiness analysis before brief generation.
+
+Key endpoints:
+
+- `GET /integrations/adapters`
+- `POST /integrations/import`
+- `POST /decision-packet/import`
+- `POST /decision-packet/analyze`
+
+WordPress routes:
+
+- `/wp-json/scds/v1/integrations/adapters`
+- `/wp-json/scds/v1/integrations/import`
+- `/wp-json/scds/v1/decision-packet/import`

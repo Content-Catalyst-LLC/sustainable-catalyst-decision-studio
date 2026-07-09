@@ -1,3 +1,13 @@
+
+## v1.2.0 — Module Artifact Adapters
+
+- Added adapter catalog for Catalyst Canvas, Catalyst Data, Catalyst Analytics R, Global Impact Catalyst, Narrative Risk, Catalyst Finance, Catalyst Grit, and Workbench.
+- Added backend artifact import endpoints for normalizing module JSON exports into the Decision Packet.
+- Added WordPress REST import routes with backend proxy and deterministic local fallback.
+- Added public UI for pasting/importing JSON artifacts inside the Integrated Workflow tab.
+- Added Decision Packet merge logic, module slot updates, source ledger/assumption/calculation/claim integration, and readiness analysis.
+- Updated audit/provenance and Decision Packet versions to v1.2.0.
+
 ## v1.1.1 - Audit & Provenance Upgrade
 
 - Added Audit & Provenance schema for Decision Packet reviews.

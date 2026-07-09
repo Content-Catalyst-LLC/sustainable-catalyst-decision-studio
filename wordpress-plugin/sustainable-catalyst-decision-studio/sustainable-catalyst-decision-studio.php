@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Integrated sustainability decision-support workflow for framing, evidence, scenarios, impact, claims, finance, recovery, four-pillar synthesis, and reports.
- * Version: 1.1.1
+ * Version: 1.2.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.1.1';
+    const VERSION = '1.2.0';
     const OPTION_KEY = 'scds_settings';
     const NONCE_ACTION = 'wp_rest';
     const PROJECTS_TABLE = 'scds_projects';
@@ -196,6 +196,9 @@ class Sustainable_Catalyst_Decision_Studio {
             'restBackendStatusUrl' => esc_url_raw(rest_url('scds/v1/backend-status')),
             'restIntegrationsUrl' => esc_url_raw(rest_url('scds/v1/integrations')),
             'restDecisionPacketTemplateUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/template')),
+            'restAdaptersUrl' => esc_url_raw(rest_url('scds/v1/integrations/adapters')),
+            'restImportArtifactUrl' => esc_url_raw(rest_url('scds/v1/integrations/import')),
+            'restDecisionPacketImportUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/import')),
             'restAuditTemplateUrl' => esc_url_raw(rest_url('scds/v1/audit/template')),
             'restAuditGenerateUrl' => esc_url_raw(rest_url('scds/v1/audit/generate')),
             'nonce' => wp_create_nonce(self::NONCE_ACTION),
@@ -293,7 +296,39 @@ class Sustainable_Catalyst_Decision_Studio {
                     </article>
                 <?php endforeach; ?>
             </div>
-            <div class="scds-note"><strong>v1.1.1 boundary:</strong> this release adds the integrated workflow UI, module map, and Decision Packet structure. Full one-click imports from each module are planned as the next integration layer.</div>
+            <div class="scds-note"><strong>v1.2.0 boundary:</strong> this release adds Module Artifact Adapters. Paste or import a JSON export from a module and Decision Studio will normalize it into the correct Decision Packet section.</div>
+            <div class="scds-import-box">
+                <div class="scds-panel-head scds-panel-head-small">
+                    <p class="scds-section-kicker">Module artifact import</p>
+                    <h4>Paste a module JSON export</h4>
+                    <p>Choose the module, paste its JSON export, and import it into the Decision Packet. Auto-detect is available for known Catalyst module schemas.</p>
+                </div>
+                <div class="scds-form-grid">
+                    <label>Artifact type
+                        <select data-scds-import-module>
+                            <option value="">Auto-detect</option>
+                            <option value="catalyst-canvas">Catalyst Canvas</option>
+                            <option value="catalyst-data">Catalyst Data</option>
+                            <option value="catalyst-analytics-r">Catalyst Analytics R</option>
+                            <option value="global-impact-catalyst">Global Impact Catalyst</option>
+                            <option value="catalyst-narrative-risk">Narrative Risk</option>
+                            <option value="catalyst-finance">Catalyst Finance</option>
+                            <option value="catalyst-grit">Catalyst Grit</option>
+                            <option value="workbench">Workbench calculation/report</option>
+                        </select>
+                    </label>
+                    <label>Import action
+                        <select data-scds-import-action>
+                            <option value="merge">Merge into current Decision Packet</option>
+                            <option value="preview">Preview normalized patch only</option>
+                        </select>
+                    </label>
+                </div>
+                <label class="scds-wide">Artifact JSON<textarea rows="8" data-scds-artifact-json placeholder='Paste a Catalyst module JSON export here'></textarea></label>
+                <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-import-artifact>Import Artifact</button><button type="button" class="scds-button" data-scds-load-sample-artifact>Load Sample Artifact</button><button type="button" class="scds-button" data-scds-download-packet>Download Decision Packet JSON</button></div>
+                <div class="scds-import-result" data-scds-import-result></div>
+            </div>
+            <div class="scds-note"><strong>v1.2.0 boundary:</strong> Module Artifact Adapters normalize structured exports into a Decision Packet. They map fields and preserve provenance, but they do not verify source truth, professional compliance, certification, or decision approval.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-packet-template>Preview Decision Packet</button><button type="button" class="scds-button" data-scds-run>Run Current Decision Analysis</button></div>
             <div class="scds-packet-preview" data-scds-packet-preview></div>
         </section>
@@ -352,7 +387,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Decision packet ledger, sources, assumptions, calculations, claims, changes, and review status</h3>
                 <p>Generate a structured audit appendix that shows what was entered, which module artifacts are present, which sources support the decision, which calculations were used, and which assumptions still require review.</p>
             </div>
-            <div class="scds-note"><strong>v1.1.1 upgrade:</strong> audit now includes a provenance ledger, source ledger, assumptions register, calculation trace, claim trace, change log, review status, and exportable audit appendix.</div>
+            <div class="scds-note"><strong>v1.2.0 upgrade:</strong> audit now includes a provenance ledger, source ledger, assumptions register, calculation trace, claim trace, change log, review status, and exportable audit appendix.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-audit-generate>Generate Audit Appendix</button><button type="button" class="scds-button" data-scds-export-audit-json>Download Audit JSON</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div>
             <div class="scds-audit-list" data-scds-audit></div>
             <div class="scds-workbench-links" data-scds-workbench-links></div>
@@ -394,7 +429,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
 
     public function render_admin_integrations() {
-        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.1.1 maps specialized Sustainable Catalyst modules into one Decision Packet.');
+        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.2.0 maps specialized Sustainable Catalyst modules into one Decision Packet.');
         echo '<p>Use this map as the integration contract for the next build: module artifact exports should feed the Decision Packet sections listed below.</p>';
         echo '<table class="widefat striped"><thead><tr><th>Step</th><th>Module</th><th>Role</th><th>Feeds Decision Packet</th><th>URL</th></tr></thead><tbody>';
         foreach ($this->module_integrations() as $m) {
@@ -489,6 +524,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/analyze', ['methods'=>'POST','callback'=>[$this,'rest_analyze'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/templates', ['methods'=>'GET','callback'=>[$this,'rest_templates'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/integrations', ['methods'=>'GET','callback'=>[$this,'rest_integrations'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/integrations/adapters', ['methods'=>'GET','callback'=>[$this,'rest_adapters'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/integrations/import', ['methods'=>'POST','callback'=>[$this,'rest_import_artifact'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/import', ['methods'=>'POST','callback'=>[$this,'rest_import_artifact'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/template', ['methods'=>'GET','callback'=>[$this,'rest_decision_packet_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/audit/template', ['methods'=>'GET','callback'=>[$this,'rest_audit_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/audit/generate', ['methods'=>'POST','callback'=>[$this,'rest_audit_generate'],'permission_callback'=>'__return_true']);
@@ -500,6 +538,26 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/export/tool-map.csv', ['methods'=>'GET','callback'=>[$this,'rest_export_tool_map_csv'],'permission_callback'=>function(){ return current_user_can('manage_options'); }]);
     }
 
+
+    public function rest_adapters() {
+        if ($this->settings()['backend_enabled'] === '1' && !empty($this->settings()['backend_url'])) {
+            $backend = $this->backend_request('/integrations/adapters', [], 'GET');
+            if (!is_wp_error($backend) && is_array($backend)) return rest_ensure_response($backend);
+        }
+        return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'adapters'=>$this->artifact_adapter_catalog()]);
+    }
+
+    public function rest_import_artifact(WP_REST_Request $request) {
+        $payload = $request->get_json_params(); if (!is_array($payload)) $payload = [];
+        $artifact = isset($payload['artifact']) && is_array($payload['artifact']) ? $payload['artifact'] : [];
+        $module_id = sanitize_text_field($payload['moduleId'] ?? '');
+        $packet = isset($payload['packet']) && is_array($payload['packet']) ? $payload['packet'] : $this->decision_packet_template();
+        if ($this->settings()['backend_enabled'] === '1' && !empty($this->settings()['backend_url'])) {
+            $backend = $this->backend_request('/integrations/import', ['artifact'=>$artifact,'moduleId'=>$module_id,'packet'=>$packet,'preserveRaw'=>true]);
+            if (!is_wp_error($backend) && is_array($backend)) return rest_ensure_response($backend);
+        }
+        return rest_ensure_response($this->import_artifact_into_packet($artifact, $module_id, $packet));
+    }
 
     public function rest_integrations() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'modules'=>$this->module_integrations(),'workflow'=>array_map(function($m){ return $m['phase']; }, $this->module_integrations())]); }
     public function rest_decision_packet_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_packet'=>$this->decision_packet_template(),'modules'=>$this->module_integrations()]); }
@@ -613,10 +671,101 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function recommended_workbench_shortcodes() { return ['[sc_workbench mode="tool" display="compact" tool="risk-resilience-impact-matrix"]','[sc_workbench mode="tool" display="compact" tool="economics-forecasting-and-scenario-tool"]','[sc_workbench mode="tool" display="drawer" tool="environmental-monitoring-qaqc-tool"]']; }
 
     private function csv_response($filename, $rows) { $fh = fopen('php://temp','w+'); if ($rows) { fputcsv($fh, array_keys($rows[0])); foreach($rows as $row) fputcsv($fh, $row); } rewind($fh); $csv = stream_get_contents($fh); fclose($fh); return new WP_REST_Response($csv, 200, ['Content-Type'=>'text/csv; charset=utf-8','Content-Disposition'=>'attachment; filename="'.$filename.'"']); }
-    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.1.1.csv', $this->scenario_templates()); }
-    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.1.1.csv', $this->workbench_tool_map()); }
-    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.1.1.csv', $rows ?: []); }
+    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.2.0.csv', $this->scenario_templates()); }
+    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.2.0.csv', $this->workbench_tool_map()); }
+    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.2.0.csv', $rows ?: []); }
 
+
+    private function artifact_adapter_catalog() {
+        return [
+            ['module_id'=>'catalyst-canvas','name'=>'Catalyst Canvas','artifact_key'=>'framing','packet_section'=>'decision_framing','detects'=>['challenge','audience','point_of_view','how_might_we','prototype','test_plan']],
+            ['module_id'=>'catalyst-data','name'=>'Catalyst Data','artifact_key'=>'evidence_records','packet_section'=>'evidence_and_measurement.records','detects'=>['entity','indicator','period','values','source','confidence','trace_path']],
+            ['module_id'=>'catalyst-analytics-r','name'=>'Catalyst Analytics R','artifact_key'=>'scenario_analysis','packet_section'=>'scenarios.records','detects'=>['demo','inputs','final','composite_score','budget_ratio','trajectory']],
+            ['module_id'=>'global-impact-catalyst','name'=>'Global Impact Catalyst','artifact_key'=>'impact_records','packet_section'=>'impact_measurement.records','detects'=>['initiative','goal','sdg_theme','indicator','baseline_value','current_value','target_value']],
+            ['module_id'=>'catalyst-narrative-risk','name'=>'Narrative Risk','artifact_key'=>'claim_reviews','packet_section'=>'claim_and_risk_review.records','detects'=>['claim','risk_score','risk_level','components','flags','review_actions']],
+            ['module_id'=>'catalyst-finance','name'=>'Catalyst Finance','artifact_key'=>'finance_analysis','packet_section'=>'financial_tradeoffs','detects'=>['project','inputs','results','interpretation','npv','payback_years']],
+            ['module_id'=>'catalyst-grit','name'=>'Catalyst Grit','artifact_key'=>'execution_recovery','packet_section'=>'execution_and_recovery','detects'=>['challenge','impact_severity','pressure_level','energy_level','support_level','clarity_level','recovery_score']],
+            ['module_id'=>'workbench','name'=>'Sustainable Catalyst Workbench','artifact_key'=>'workbench_calculations','packet_section'=>'calculation_trace','detects'=>['calculation','formula','inputs','results','assumptions','validation_checks','report']],
+        ];
+    }
+
+    private function detect_artifact_module($artifact, $module_id='') {
+        $mid = sanitize_key(str_replace('_','-', $module_id));
+        $aliases = ['canvas'=>'catalyst-canvas','data'=>'catalyst-data','analytics-r'=>'catalyst-analytics-r','impact'=>'global-impact-catalyst','global-impact'=>'global-impact-catalyst','narrative-risk'=>'catalyst-narrative-risk','finance'=>'catalyst-finance','grit'=>'catalyst-grit','calculation'=>'workbench'];
+        if (isset($aliases[$mid])) $mid = $aliases[$mid];
+        foreach ($this->artifact_adapter_catalog() as $a) if ($a['module_id'] === $mid || $a['artifact_key'] === $mid) return $a;
+        $record_type = strtolower(strval($artifact['record_type'] ?? ''));
+        if ($record_type === 'global_impact_catalyst_record') return $this->adapter_by_id('global-impact-catalyst');
+        if ($record_type === 'catalyst_narrative_risk_record') return $this->adapter_by_id('catalyst-narrative-risk');
+        if ($record_type === 'catalyst_grit_record') return $this->adapter_by_id('catalyst-grit');
+        $keys = array_keys($artifact);
+        $has = function($k) use ($artifact) { return array_key_exists($k, $artifact); };
+        if ($has('point_of_view') || $has('how_might_we') || ($has('challenge') && $has('audience') && $has('prototype'))) return $this->adapter_by_id('catalyst-canvas');
+        if ($has('entity') && $has('indicator') && $has('period') && $has('values') && $has('source')) return $this->adapter_by_id('catalyst-data');
+        if (($has('final') && $has('composite_score')) || ($has('trajectory') && $has('inputs'))) return $this->adapter_by_id('catalyst-analytics-r');
+        if ($has('initiative') && $has('goal') && $has('baseline_value') && $has('target_value')) return $this->adapter_by_id('global-impact-catalyst');
+        if ($has('claim') && $has('risk_score') && $has('risk_level')) return $this->adapter_by_id('catalyst-narrative-risk');
+        if ($has('project') && $has('inputs') && $has('results') && $has('interpretation')) return $this->adapter_by_id('catalyst-finance');
+        if ($has('impact_severity') && $has('pressure_level')) return $this->adapter_by_id('catalyst-grit');
+        return $this->adapter_by_id('workbench');
+    }
+
+    private function adapter_by_id($id) { foreach ($this->artifact_adapter_catalog() as $a) if ($a['module_id'] === $id) return $a; return $this->artifact_adapter_catalog()[0]; }
+    private function arr($value) { if (is_array($value)) return array_values($value); if ($value === null || $value === '') return []; return [$value]; }
+    private function source_entry($title,$type,$confidence,$used_for,$notes='') { return ['source_title'=>$title ?: 'Unspecified source','source_type'=>$type ?: 'unspecified','confidence'=>$confidence ?: 'unspecified','used_for'=>$used_for ?: 'unspecified','method_notes'=>$notes ?: '']; }
+    private function assumption_entry($label,$value,$source,$used_in,$sensitivity='medium',$status='needs review') { return ['assumption'=>$label,'value'=>$value,'module_or_source'=>$source,'used_in'=>$used_in,'sensitivity'=>$sensitivity,'review_status'=>$status]; }
+    private function merge_list($a,$b) { $base = is_array($a) ? $a : []; foreach((is_array($b)?$b:[$b]) as $item) if ($item !== null && $item !== '') $base[] = $item; return $base; }
+
+    private function normalize_artifact($artifact, $module_id='') {
+        $adapter = $this->detect_artifact_module($artifact, $module_id); $mid=$adapter['module_id']; $name=$adapter['name'];
+        $patch = ['audit_trail'=>[['event'=>'Artifact imported','module'=>$name,'module_id'=>$mid,'version'=>self::VERSION]]];
+        $summary = ['module_id'=>$mid,'module_name'=>$name,'artifact_key'=>$adapter['artifact_key'],'packet_section'=>$adapter['packet_section'],'status'=>'normalized'];
+        if ($mid === 'catalyst-canvas') {
+            $framing = ['challenge'=>$artifact['challenge'] ?? '', 'audience'=>$artifact['audience'] ?? '', 'goal'=>$artifact['goal'] ?? '', 'constraint'=>$artifact['constraint'] ?? '', 'framework'=>$artifact['framework'] ?? '', 'persona'=>$artifact['persona'] ?? [], 'point_of_view'=>$artifact['point_of_view'] ?? ($artifact['pov'] ?? ''), 'how_might_we'=>$this->arr($artifact['how_might_we'] ?? []), 'prototype'=>$artifact['prototype'] ?? [], 'test_plan'=>$artifact['test_plan'] ?? [], 'review_questions'=>$this->arr($artifact['review_questions'] ?? [])];
+            $patch['decision_framing']=$framing; $patch['framing']=$framing; $summary['title']=$framing['challenge'] ?: ($framing['goal'] ?: 'Canvas framing');
+        } elseif ($mid === 'catalyst-data') {
+            $record = ['entity'=>$artifact['entity'] ?? [], 'indicator'=>$artifact['indicator'] ?? [], 'period'=>$artifact['period'] ?? '', 'values'=>$artifact['values'] ?? [], 'source'=>$artifact['source'] ?? [], 'confidence'=>$artifact['confidence'] ?? null, 'review_status'=>$artifact['review_status'] ?? 'needs review', 'method_notes'=>$artifact['method_notes'] ?? '', 'trace_path'=>$this->arr($artifact['trace_path'] ?? [])];
+            $source = is_array($artifact['source'] ?? null) ? $artifact['source'] : ['name'=>$artifact['source'] ?? 'Catalyst Data source','type'=>'measurement source'];
+            $patch['evidence_and_measurement']=['records'=>[$record]]; $patch['evidence_records']=[$record]; $patch['sources']=[$this->source_entry($source['name'] ?? 'Catalyst Data source', $source['type'] ?? 'measurement source', $artifact['confidence'] ?? '', $artifact['indicator']['name'] ?? 'measurement record', $artifact['method_notes'] ?? '')]; $summary['title']=$artifact['indicator']['name'] ?? 'Catalyst Data record';
+        } elseif ($mid === 'catalyst-analytics-r') {
+            $scenario = ['scenario_name'=>$artifact['inputs']['scenarioName'] ?? ($artifact['demo'] ?? 'Catalyst Analytics R scenario'), 'inputs'=>$artifact['inputs'] ?? [], 'final'=>$artifact['final'] ?? [], 'composite_score'=>$artifact['composite_score'] ?? null, 'budget_ratio'=>$artifact['budget_ratio'] ?? null, 'interpretation_notes'=>$this->arr($artifact['interpretation_notes'] ?? []), 'trajectory'=>$this->arr($artifact['trajectory'] ?? [])];
+            $patch['scenarios']=['records'=>[$scenario]]; $patch['scenario_analysis']=$scenario; $summary['title']=$scenario['scenario_name'];
+        } elseif ($mid === 'global-impact-catalyst') {
+            $record = ['initiative'=>$artifact['initiative'] ?? '', 'goal'=>$artifact['goal'] ?? '', 'sdg_theme'=>$artifact['sdg_theme'] ?? '', 'indicator'=>$artifact['indicator'] ?? '', 'unit'=>$artifact['unit'] ?? '', 'baseline_value'=>$artifact['baseline_value'] ?? null, 'current_value'=>$artifact['current_value'] ?? null, 'target_value'=>$artifact['target_value'] ?? null, 'metrics'=>$artifact['metrics'] ?? [], 'confidence'=>$artifact['confidence'] ?? '', 'review_status'=>$artifact['review_status'] ?? 'needs review', 'interpretation_notes'=>$this->arr($artifact['interpretation_notes'] ?? [])];
+            $patch['impact_measurement']=['records'=>[$record]]; $patch['impact_records']=[$record]; $patch['sources']=[$this->source_entry($artifact['source'] ?? 'Global Impact source', 'impact source', $artifact['confidence'] ?? '', $artifact['indicator'] ?? 'impact indicator', $artifact['method_notes'] ?? '')]; $summary['title']=$record['initiative'] ?: 'Global Impact record';
+        } elseif ($mid === 'catalyst-narrative-risk') {
+            $record = ['claim'=>$artifact['claim'] ?? '', 'risk_score'=>$artifact['risk_score'] ?? null, 'risk_level'=>$artifact['risk_level'] ?? '', 'components'=>$artifact['components'] ?? [], 'flags'=>$this->arr($artifact['flags'] ?? []), 'review_actions'=>$this->arr($artifact['review_actions'] ?? []), 'decision_note'=>$artifact['decision_note'] ?? '', 'inputs'=>$artifact['inputs'] ?? []];
+            $patch['claim_and_risk_review']=['records'=>[$record]]; $patch['claim_reviews']=[$record]; $patch['risks']=[['risk'=>$record['claim'] ?: 'Narrative risk','score'=>$record['risk_score'],'level'=>$record['risk_level'],'module_or_source'=>$name,'flags'=>$record['flags']]]; $summary['title']=$record['claim'] ?: 'Narrative Risk record';
+        } elseif ($mid === 'catalyst-finance') {
+            $results = is_array($artifact['results'] ?? null) ? $artifact['results'] : $artifact; $finance=['project'=>$artifact['project'] ?? [], 'inputs'=>$artifact['inputs'] ?? [], 'results'=>$results, 'interpretation'=>$artifact['interpretation'] ?? [], 'metadata'=>$artifact['metadata'] ?? []];
+            $patch['financial_tradeoffs']=$finance; $patch['finance_analysis']=$finance; $patch['calculation_trace']=[]; foreach(['npv'=>'NPV','roi_percent'=>'ROI','payback_years'=>'Payback','benefit_cost_ratio'=>'Benefit-cost ratio','carbon_cost_per_ton'=>'Carbon cost per ton'] as $k=>$label){ if(isset($results[$k])) $patch['calculation_trace'][]=['calculation'=>$label,'formula'=>'Catalyst Finance scenario engine','result'=>$results[$k],'validation_status'=>'requires finance review']; } $summary['title']=$artifact['project']['name'] ?? 'Catalyst Finance analysis';
+        } elseif ($mid === 'catalyst-grit') {
+            $recovery=['challenge'=>$artifact['challenge'] ?? '', 'domain'=>$artifact['domain'] ?? '', 'impact_severity'=>$artifact['impact_severity'] ?? null, 'pressure_level'=>$artifact['pressure_level'] ?? null, 'energy_level'=>$artifact['energy_level'] ?? null, 'support_level'=>$artifact['support_level'] ?? null, 'clarity_level'=>$artifact['clarity_level'] ?? null, 'recovery_score'=>$artifact['recovery_score'] ?? null, 'resilience_state'=>$artifact['resilience_state'] ?? '', 'recovery_actions'=>$this->arr($artifact['recovery_actions'] ?? []), 'risk_flags'=>$this->arr($artifact['risk_flags'] ?? []), 'next_actions'=>$this->arr($artifact['next_actions'] ?? []), 'decision_note'=>$artifact['decision_note'] ?? ''];
+            $patch['execution_and_recovery']=$recovery; $patch['execution_recovery']=$recovery; $patch['risks']=[['risk'=>'Execution/recovery risk','score'=>$recovery['recovery_score'],'level'=>$recovery['resilience_state'],'module_or_source'=>$name,'flags'=>$recovery['risk_flags']]]; $summary['title']=$recovery['challenge'] ?: 'Catalyst Grit recovery record';
+        } else {
+            $calc=['calculation'=>$artifact['calculation'] ?? ($artifact['title'] ?? 'Workbench calculation'), 'formula'=>$artifact['formula'] ?? '', 'inputs'=>$artifact['inputs'] ?? [], 'results'=>$artifact['results'] ?? ($artifact['result'] ?? null), 'assumptions'=>$artifact['assumptions'] ?? [], 'validation_checks'=>$artifact['validation_checks'] ?? ($artifact['checks'] ?? []), 'warnings'=>$artifact['warnings'] ?? [], 'report'=>$artifact['report'] ?? []];
+            $patch['workbench_calculations']=[$calc]; $patch['calculation_trace']=[['calculation'=>$calc['calculation'],'formula'=>$calc['formula'],'inputs'=>$calc['inputs'],'result'=>$calc['results'],'validation_status'=>'imported from Workbench']]; $summary['title']=$calc['calculation'];
+        }
+        $patch['module_artifacts_raw']=[$adapter['artifact_key']=>$artifact];
+        return ['ok'=>true,'version'=>self::VERSION,'adapter'=>$adapter,'summary'=>$summary,'packet_patch'=>$patch,'warnings'=>[],'artifact'=>$artifact];
+    }
+
+    private function apply_packet_patch($packet, $patch) {
+        if (!is_array($packet) || !$packet) $packet = $this->decision_packet_template();
+        foreach($patch as $key=>$value) {
+            if (in_array($key, ['assumptions','risks','sources','audit_trail','calculation_trace','claim_reviews','workbench_calculations'], true)) $packet[$key] = $this->merge_list($packet[$key] ?? [], $value);
+            elseif ($key === 'evidence_and_measurement' || $key === 'scenarios' || $key === 'impact_measurement' || $key === 'claim_and_risk_review') { if(!isset($packet[$key]) || !is_array($packet[$key])) $packet[$key]=['records'=>[]]; $packet[$key]['records']=$this->merge_list($packet[$key]['records'] ?? [], $value['records'] ?? []); }
+            elseif (isset($packet[$key]) && is_array($packet[$key]) && is_array($value)) $packet[$key] = array_merge($packet[$key], $value);
+            else $packet[$key] = $value;
+        }
+        return $packet;
+    }
+
+    private function import_artifact_into_packet($artifact, $module_id='', $packet=[]) {
+        $normalized = $this->normalize_artifact($artifact, $module_id);
+        $updated = $this->apply_packet_patch($packet, $normalized['packet_patch']);
+        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.2.0']];
+    }
 
     private function module_integrations() {
         return [
@@ -633,7 +782,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function decision_packet_template() {
         return [
-            'packet_version'=>'1.1.1',
+            'packet_version'=>'1.2.0',
             'workflow'=>'Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio',
             'project'=>['project_name'=>'','organization_type'=>'','sector'=>'','location'=>'','time_horizon'=>'','decision_question'=>''],
             'framing'=>[],
@@ -657,7 +806,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function audit_provenance_template() {
         return [
-            'audit_version'=>'1.1.1',
+            'audit_version'=>'1.2.0',
             'decision_packet_id'=>'SCDS-DRAFT',
             'review_status'=>[
                 'status'=>'draft',

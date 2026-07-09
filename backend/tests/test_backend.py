@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.1.1'
+    assert r.json()['version'] == '1.2.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '1.1.1'
+    assert data['decision_packet']['packet_version'] == '1.2.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -88,7 +88,7 @@ def test_audit_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.1.1'
+    assert data['audit']['audit_version'] == '1.2.0'
     assert 'module_artifact_ledger' in data['audit']
 
 
@@ -97,6 +97,61 @@ def test_audit_generate_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.1.1'
+    assert data['audit']['audit_version'] == '1.2.0'
     assert data['audit_summary']['assumptions_count'] >= 5
     assert data['audit_summary']['calculation_trace_count'] >= 4
+
+
+def test_artifact_adapters_catalog():
+    r = client.get('/integrations/adapters')
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    ids = [a['module_id'] for a in data['adapters']]
+    assert 'catalyst-canvas' in ids
+    assert 'catalyst-finance' in ids
+    assert 'workbench' in ids
+
+
+def test_import_canvas_artifact():
+    artifact = {
+        "challenge": "How should the project be framed?",
+        "audience": "Decision reviewer",
+        "goal": "Create a traceable decision packet",
+        "constraint": "Use only reviewed sources",
+        "point_of_view": "A reviewer needs a clear decision frame.",
+        "how_might_we": ["How might we make the decision auditable?"],
+        "prototype": {"title": "Decision Packet"},
+        "test_plan": {"signal": "Reviewer can identify gaps"}
+    }
+    r = client.post('/integrations/import', json={"artifact": artifact, "moduleId": "catalyst-canvas"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert data['import_result']['summary']['module_id'] == 'catalyst-canvas'
+    assert data['decision_packet']['decision_framing']['challenge'] == artifact['challenge']
+
+
+def test_import_finance_artifact():
+    artifact = {
+        "project": {"name": "Efficiency retrofit", "category": "Energy"},
+        "inputs": {"capital_cost": 250000, "annual_savings": 52000},
+        "results": {"npv": 167572.47, "roi_percent": 144.29, "payback_years": 4.09, "benefit_cost_ratio": 1.8},
+        "interpretation": {"risk_level": "Moderate concern", "flags": []}
+    }
+    r = client.post('/decision-packet/import', json={"artifact": artifact, "moduleId": "catalyst-finance"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert data['decision_packet']['financial_tradeoffs']['results']['npv'] == 167572.47
+    assert data['analysis']['packet_quality']['calculation_trace_count'] >= 1
+
+
+def test_decision_packet_analyze_normalizes_artifacts():
+    artifact = {"entity": {"name": "Project", "type": "initiative"}, "indicator": {"name": "Data completeness", "unit": "score", "direction": "higher"}, "period": "2026-Q2", "values": {"baseline": 62, "current": 78}, "source": {"name": "Tracker", "type": "internal"}, "confidence": 72, "review_status": "needs_review"}
+    r = client.post('/decision-packet/analyze', json={"moduleArtifacts": {"catalyst-data": artifact}})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert 'catalyst-data' in data['filled_modules']
+    assert data['packet_quality']['source_count'] >= 1

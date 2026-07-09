@@ -32,3 +32,23 @@
 .scds-audit-appendix .scds-table th{white-space:nowrap;}
 .scds-audit-appendix ul{margin:8px 0 12px 20px;}
 .scds-audit-appendix td{word-break:break-word;}
+
+
+/* v1.2.0 Module Artifact Adapter UI */
+.scds-import-box {
+  margin: 22px 0;
+  padding: 18px;
+  border: 1px solid rgba(0,0,0,.12);
+  border-left: 4px solid #ff0000;
+  background: #fffdf8;
+  border-radius: 14px;
+}
+.scds-panel-head-small { margin-bottom: 12px; }
+.scds-import-box textarea {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: .88rem;
+  line-height: 1.45;
+}
+.scds-import-result .scds-packet-card details { margin-top: 12px; }
+.scds-import-result .scds-packet-card summary { cursor: pointer; font-weight: 700; }
