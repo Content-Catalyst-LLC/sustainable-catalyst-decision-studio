@@ -1,0 +1,11 @@
+cd ~/Downloads
+chmod +x push_decision_studio_v1_1_1_audit_provenance_to_github.sh
+./push_decision_studio_v1_1_1_audit_provenance_to_github.sh
+
+Then redeploy the Decision Studio Render service.
+
+Render settings:
+Root Directory: backend
+Build Command: pip install -r requirements.txt
+Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+PYTHON_VERSION=3.12.11

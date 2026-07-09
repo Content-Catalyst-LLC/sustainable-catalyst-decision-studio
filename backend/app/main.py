@@ -9,7 +9,7 @@ import os
 import urllib.request
 import urllib.error
 
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.1.1"
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
 
 class DecisionInputs(BaseModel):
@@ -59,6 +59,16 @@ class DecisionPacketRequest(BaseModel):
     inputs: Optional[DecisionInputs] = None
     packet: Dict[str, Any] = Field(default_factory=dict)
     moduleArtifacts: Dict[str, Any] = Field(default_factory=dict)
+    notes: str = ""
+
+class AuditProvenanceRequest(BaseModel):
+    inputs: DecisionInputs = Field(default_factory=DecisionInputs)
+    results: Optional[Dict[str, Any]] = None
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    moduleArtifacts: Dict[str, Any] = Field(default_factory=dict)
+    reviewStatus: str = "draft"
+    preparedBy: str = ""
+    reviewedBy: str = ""
     notes: str = ""
 
 
@@ -201,7 +211,7 @@ def module_integrations() -> List[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.1.0",
+        "packet_version": "1.1.1",
         "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio",
         "project": {
             "project_name": "",
@@ -223,6 +233,7 @@ def decision_packet_template() -> Dict[str, Any]:
         "risks": [],
         "sources": [],
         "audit_trail": [],
+        "audit_and_provenance": audit_provenance_template(),
         "integrated_decision_brief": {},
         "module_slots": [
             {
@@ -234,6 +245,177 @@ def decision_packet_template() -> Dict[str, Any]:
             }
             for m in modules
         ],
+
+    }
+
+
+def audit_provenance_template() -> Dict[str, Any]:
+    """Return the v1.1.1 audit and provenance schema."""
+    return {
+        "audit_version": "1.1.1",
+        "decision_packet_id": "SCDS-DRAFT",
+        "created_at": "generated-at-runtime",
+        "last_updated_at": "generated-at-runtime",
+        "review_status": {
+            "status": "draft",
+            "prepared_by": "",
+            "reviewed_by": "",
+            "required_reviews": [
+                "data/source review",
+                "finance assumptions review",
+                "risk and claims review",
+                "professional review where regulated or safety-critical",
+            ],
+            "open_questions": [],
+        },
+        "module_artifact_ledger": [],
+        "source_ledger": [],
+        "assumptions_register": [],
+        "calculation_trace": [],
+        "claim_trace": [],
+        "change_log": [],
+        "warnings": [
+            "Educational decision support only; not certification, assurance, legal, financial, engineering, medical, tax, compliance, or investment advice.",
+            "Audit entries are generated from user-provided inputs and imported artifacts; they must be reviewed before operational use.",
+        ],
+    }
+
+
+def _nonempty(value: Any) -> bool:
+    return value not in (None, "", {}, [])
+
+
+def generate_audit_provenance(req: AuditProvenanceRequest) -> Dict[str, Any]:
+    """Generate a structured audit/provenance appendix from inputs, results, packet, and artifacts."""
+    inputs = req.inputs
+    results = req.results or analyze(inputs)
+    artifacts = req.moduleArtifacts or {}
+    packet = req.packet or {}
+    modules = module_integrations()
+
+    module_ledger = []
+    for module in modules:
+        key = module["artifact_key"]
+        section_key = module.get("decision_packet_section", key)
+        artifact = artifacts.get(key) or packet.get(key) or packet.get(section_key)
+        present = _nonempty(artifact)
+        module_ledger.append({
+            "module_id": module["id"],
+            "module_name": module["name"],
+            "artifact_key": key,
+            "packet_section": section_key,
+            "status": "attached" if present else "missing",
+            "used_in_brief": module.get("use_in_brief", module.get("summary", "")),
+            "artifact_snapshot": artifact if present else None,
+        })
+
+    source_ledger = []
+    # Prefer explicit packet sources/evidence records, then create a fallback source ledger from core inputs.
+    for source in packet.get("sources", []) if isinstance(packet.get("sources", []), list) else []:
+        if isinstance(source, dict):
+            source_ledger.append(source)
+    evidence = packet.get("evidence_and_measurement", {}).get("records", []) if isinstance(packet.get("evidence_and_measurement", {}), dict) else []
+    for record in evidence if isinstance(evidence, list) else []:
+        if isinstance(record, dict):
+            source_ledger.append({
+                "source_title": record.get("source") or record.get("source_title") or "Catalyst Data record",
+                "source_type": record.get("source_type", "measurement record"),
+                "confidence": record.get("confidence", record.get("confidence_level", "unspecified")),
+                "used_for": record.get("indicator", "evidence and measurement"),
+                "method_notes": record.get("method_notes", ""),
+            })
+    if not source_ledger:
+        source_ledger.append({
+            "source_title": "User-provided Decision Studio inputs",
+            "source_type": "manual input",
+            "confidence": inputs.dataConfidence,
+            "used_for": "baseline calculations, scoring, finance, and risk screen",
+            "method_notes": "Replace or supplement with Catalyst Data records before relying on the brief.",
+        })
+
+    assumptions_register = [
+        {"assumption": "Baseline emissions", "value": inputs.baselineEmissions, "unit": "tCO2e/year", "module_or_source": "Decision Studio input", "used_in": "emissions reduction calculation", "sensitivity": "high", "review_status": "needs verification"},
+        {"assumption": "Reduction rate", "value": inputs.reductionRate, "unit": "%", "module_or_source": "Decision Studio input", "used_in": "emissions reduction calculation", "sensitivity": "high", "review_status": "needs verification"},
+        {"assumption": "Adoption rate", "value": inputs.adoptionRate, "unit": "%", "module_or_source": "Decision Studio input", "used_in": "emissions and scenario calculations", "sensitivity": "high", "review_status": "needs verification"},
+        {"assumption": "CAPEX", "value": inputs.capex, "unit": "currency", "module_or_source": "Decision Studio / Catalyst Finance", "used_in": "NPV, ROI, payback", "sensitivity": "high", "review_status": "needs finance review"},
+        {"assumption": "Annual savings", "value": inputs.annualSavings, "unit": "currency/year", "module_or_source": "Decision Studio / Catalyst Finance", "used_in": "NPV, ROI, payback", "sensitivity": "high", "review_status": "needs finance review"},
+        {"assumption": "Discount rate", "value": inputs.discountRate, "unit": "%", "module_or_source": "Decision Studio / Catalyst Finance", "used_in": "NPV", "sensitivity": "medium", "review_status": "needs finance review"},
+        {"assumption": "Model years", "value": inputs.modelYears, "unit": "years", "module_or_source": "Decision Studio input", "used_in": "NPV and total avoided emissions", "sensitivity": "medium", "review_status": "needs review"},
+    ]
+
+    calculation_trace = [
+        {"calculation": "Annual avoided emissions", "formula": "baseline_emissions × reduction_rate × adoption_rate", "inputs": {"baselineEmissions": inputs.baselineEmissions, "reductionRate": inputs.reductionRate, "adoptionRate": inputs.adoptionRate}, "result": results.get("emissions", {}).get("annual_avoided_tco2e"), "unit": "tCO2e/year", "validation_status": "requires source review"},
+        {"calculation": "Total avoided emissions", "formula": "annual_avoided × model_years", "inputs": {"modelYears": inputs.modelYears}, "result": results.get("emissions", {}).get("total_avoided_tco2e"), "unit": "tCO2e", "validation_status": "requires boundary review"},
+        {"calculation": "NPV", "formula": "-capex + Σ annual_savings/(1+r)^t", "inputs": {"capex": inputs.capex, "annualSavings": inputs.annualSavings, "discountRate": inputs.discountRate, "modelYears": inputs.modelYears}, "result": results.get("finance", {}).get("npv"), "unit": "currency", "validation_status": "requires finance review"},
+        {"calculation": "ROI", "formula": "((annual_savings × years - capex) / capex) × 100", "inputs": {"capex": inputs.capex, "annualSavings": inputs.annualSavings, "modelYears": inputs.modelYears}, "result": results.get("finance", {}).get("roi_percent"), "unit": "%", "validation_status": "requires finance review"},
+        {"calculation": "Four-pillar weighted score", "formula": "weighted average of environmental, social, economic, governance scores", "inputs": {"weightEnv": inputs.weightEnv, "weightSocial": inputs.weightSocial, "weightEconomic": inputs.weightEconomic, "weightGovernance": inputs.weightGovernance}, "result": results.get("scores", {}).get("weighted"), "unit": "0-100 score", "validation_status": "decision-support screen only"},
+        {"calculation": "Risk score", "formula": "exposure + vulnerability + stakeholder sensitivity - resilience - governance readiness adjustment", "inputs": {"exposure": inputs.exposure, "vulnerability": inputs.vulnerability, "stakeholderSensitivity": inputs.stakeholderSensitivity, "resilience": inputs.resilience, "governanceReadiness": inputs.governanceReadiness}, "result": results.get("risk", {}).get("risk_score"), "unit": "0-100 score", "validation_status": "decision-support screen only"},
+    ]
+
+    claim_trace = []
+    claim_artifacts = artifacts.get("claim_reviews") or packet.get("claim_reviews") or packet.get("claim_and_risk_review", {}).get("records", []) if isinstance(packet.get("claim_and_risk_review", {}), dict) else []
+    if isinstance(claim_artifacts, dict):
+        claim_artifacts = [claim_artifacts]
+    for item in claim_artifacts if isinstance(claim_artifacts, list) else []:
+        if isinstance(item, dict):
+            claim_trace.append({
+                "claim": item.get("claim", item.get("title", "Imported claim review")),
+                "evidence_strength": item.get("evidence_strength", item.get("evidenceStrength", "unspecified")),
+                "uncertainty": item.get("uncertainty", "unspecified"),
+                "source_basis": item.get("source", item.get("source_type", "unspecified")),
+                "review_status": item.get("review_status", item.get("reviewStatus", "needs review")),
+            })
+    if not claim_trace:
+        claim_trace.append({
+            "claim": f"{inputs.projectName} can proceed under the current decision posture.",
+            "evidence_strength": "screening-level only",
+            "uncertainty": "medium to high until module artifacts are imported",
+            "source_basis": "Decision Studio inputs and deterministic model",
+            "review_status": "needs Narrative Risk review",
+        })
+
+    audit = audit_provenance_template()
+    audit.update({
+        "decision_packet_id": packet.get("decision_packet_id", "SCDS-DRAFT"),
+        "review_status": {
+            **audit["review_status"],
+            "status": req.reviewStatus or "draft",
+            "prepared_by": req.preparedBy,
+            "reviewed_by": req.reviewedBy,
+            "open_questions": [
+                "Which imported artifacts are missing or incomplete?",
+                "Which assumptions have high sensitivity?",
+                "Which sources require verification?",
+                "Which professional reviews are required before action?",
+            ],
+        },
+        "module_artifact_ledger": module_ledger,
+        "source_ledger": source_ledger,
+        "assumptions_register": assumptions_register,
+        "calculation_trace": calculation_trace,
+        "claim_trace": claim_trace,
+        "change_log": packet.get("change_log", [{"event": "Audit generated", "detail": "Audit appendix generated from current Decision Studio inputs and artifacts.", "version": APP_VERSION}]),
+    })
+
+    completeness = round(100 * sum(1 for row in module_ledger if row["status"] == "attached") / max(1, len(module_ledger)), 1)
+    return {
+        "ok": True,
+        "version": APP_VERSION,
+        "audit": audit,
+        "audit_summary": {
+            "module_artifact_completeness_percent": completeness,
+            "sources_count": len(source_ledger),
+            "assumptions_count": len(assumptions_register),
+            "calculation_trace_count": len(calculation_trace),
+            "claim_trace_count": len(claim_trace),
+            "review_status": audit["review_status"]["status"],
+            "high_priority_reviews": [
+                "Verify source records and data confidence.",
+                "Review high-sensitivity financial assumptions.",
+                "Attach Narrative Risk claim review before external use.",
+                "Use professional review for regulated or safety-critical decisions.",
+            ],
+        },
     }
 
 
@@ -253,7 +435,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
     return {
         "ok": True,
         "version": APP_VERSION,
-        "decision_packet_version": "1.1.0",
+        "decision_packet_version": "1.1.1",
         "workflow_readiness_percent": readiness,
         "filled_modules": filled,
         "missing_modules": missing,
@@ -271,7 +453,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
         },
         "warnings": [
             "Integrated workflow support is a decision-support scaffold. It does not certify outcomes or replace professional review.",
-            "v1.1.0 provides workflow cards, packet structure, and import placeholders; deeper send/import adapters are planned for later versions.",
+            "v1.1.1 adds an Audit & Provenance layer. Deeper send/import adapters are planned for later versions.",
         ],
     }
 
@@ -490,6 +672,14 @@ def decision_packet_analyze_endpoint(req: DecisionPacketRequest):
         packet[key] = artifact
     return synthesize_decision_packet(packet, req.inputs)
 
+@app.get("/audit/template")
+def audit_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "audit": audit_provenance_template()}
+
+@app.post("/audit/generate")
+def audit_generate_endpoint(req: AuditProvenanceRequest):
+    return generate_audit_provenance(req)
+
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate"]}

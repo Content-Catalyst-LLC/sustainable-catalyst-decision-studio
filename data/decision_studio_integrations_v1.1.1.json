@@ -1,0 +1,21 @@
+{
+  "version": "1.1.1",
+  "feature": "Audit & Provenance Upgrade",
+  "audit_sections": [
+    "module_artifact_ledger",
+    "source_ledger",
+    "assumptions_register",
+    "calculation_trace",
+    "claim_trace",
+    "change_log",
+    "review_status"
+  ],
+  "backend_endpoints": [
+    "/audit/template",
+    "/audit/generate"
+  ],
+  "wordpress_routes": [
+    "/wp-json/scds/v1/audit/template",
+    "/wp-json/scds/v1/audit/generate"
+  ]
+}

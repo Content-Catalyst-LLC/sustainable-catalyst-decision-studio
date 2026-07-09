@@ -1,10 +1,18 @@
-## v1.1.0 — Integrated Platform Workflow
+## v1.1.1 - Audit & Provenance Upgrade
+
+- Added Audit & Provenance schema for Decision Packet reviews.
+- Added module artifact ledger, source ledger, assumptions register, calculation trace, claim trace, change log, and review status.
+- Added backend endpoints `/audit/template` and `/audit/generate`.
+- Added WordPress REST routes `/wp-json/scds/v1/audit/template` and `/wp-json/scds/v1/audit/generate`.
+- Added exportable audit appendix UI and audit JSON download.
+
+## v1.1.1 — Integrated Platform Workflow
 
 - Added Integrated Workflow tab.
 - Added module map for Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, Grit, and Decision Studio.
 - Added Decision Packet template and REST/API endpoints.
 - Added admin Integrated Workflow page.
-- Updated public version labels to v1.1.0.
+- Updated public version labels to v1.1.1.
 
 # Changelog
 

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Integrated sustainability decision-support workflow for framing, evidence, scenarios, impact, claims, finance, recovery, four-pillar synthesis, and reports.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.1.0';
+    const VERSION = '1.1.1';
     const OPTION_KEY = 'scds_settings';
     const NONCE_ACTION = 'wp_rest';
     const PROJECTS_TABLE = 'scds_projects';
@@ -196,6 +196,8 @@ class Sustainable_Catalyst_Decision_Studio {
             'restBackendStatusUrl' => esc_url_raw(rest_url('scds/v1/backend-status')),
             'restIntegrationsUrl' => esc_url_raw(rest_url('scds/v1/integrations')),
             'restDecisionPacketTemplateUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/template')),
+            'restAuditTemplateUrl' => esc_url_raw(rest_url('scds/v1/audit/template')),
+            'restAuditGenerateUrl' => esc_url_raw(rest_url('scds/v1/audit/generate')),
             'nonce' => wp_create_nonce(self::NONCE_ACTION),
             'backendEnabled' => $settings['backend_enabled'] === '1' && !empty($settings['backend_url']),
             'aiBriefingEnabled' => $settings['ai_briefing_enabled'] === '1',
@@ -291,7 +293,7 @@ class Sustainable_Catalyst_Decision_Studio {
                     </article>
                 <?php endforeach; ?>
             </div>
-            <div class="scds-note"><strong>v1.1.0 boundary:</strong> this release adds the integrated workflow UI, module map, and Decision Packet structure. Full one-click imports from each module are planned as the next integration layer.</div>
+            <div class="scds-note"><strong>v1.1.1 boundary:</strong> this release adds the integrated workflow UI, module map, and Decision Packet structure. Full one-click imports from each module are planned as the next integration layer.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-packet-template>Preview Decision Packet</button><button type="button" class="scds-button" data-scds-run>Run Current Decision Analysis</button></div>
             <div class="scds-packet-preview" data-scds-packet-preview></div>
         </section>
@@ -344,7 +346,17 @@ class Sustainable_Catalyst_Decision_Studio {
     <?php }
 
     private function render_panel_audit($mode) { ?>
-        <section class="scds-panel" data-scds-panel="audit"><div class="scds-panel-head"><p class="scds-section-kicker">Audit trail</p><h3>Assumptions, warnings, and Workbench links</h3><p>Keep the decision logic inspectable and connect deeper analysis to Sustainable Catalyst Workbench calculators.</p></div><div class="scds-audit-list" data-scds-audit></div><div class="scds-workbench-links" data-scds-workbench-links></div></section>
+        <section class="scds-panel" data-scds-panel="audit">
+            <div class="scds-panel-head">
+                <p class="scds-section-kicker">Audit &amp; Provenance</p>
+                <h3>Decision packet ledger, sources, assumptions, calculations, claims, changes, and review status</h3>
+                <p>Generate a structured audit appendix that shows what was entered, which module artifacts are present, which sources support the decision, which calculations were used, and which assumptions still require review.</p>
+            </div>
+            <div class="scds-note"><strong>v1.1.1 upgrade:</strong> audit now includes a provenance ledger, source ledger, assumptions register, calculation trace, claim trace, change log, review status, and exportable audit appendix.</div>
+            <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-audit-generate>Generate Audit Appendix</button><button type="button" class="scds-button" data-scds-export-audit-json>Download Audit JSON</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div>
+            <div class="scds-audit-list" data-scds-audit></div>
+            <div class="scds-workbench-links" data-scds-workbench-links></div>
+        </section>
     <?php }
 
     public function register_admin_menu() {
@@ -382,7 +394,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
 
     public function render_admin_integrations() {
-        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.1.0 maps specialized Sustainable Catalyst modules into one Decision Packet.');
+        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.1.1 maps specialized Sustainable Catalyst modules into one Decision Packet.');
         echo '<p>Use this map as the integration contract for the next build: module artifact exports should feed the Decision Packet sections listed below.</p>';
         echo '<table class="widefat striped"><thead><tr><th>Step</th><th>Module</th><th>Role</th><th>Feeds Decision Packet</th><th>URL</th></tr></thead><tbody>';
         foreach ($this->module_integrations() as $m) {
@@ -478,6 +490,8 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/templates', ['methods'=>'GET','callback'=>[$this,'rest_templates'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/integrations', ['methods'=>'GET','callback'=>[$this,'rest_integrations'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/template', ['methods'=>'GET','callback'=>[$this,'rest_decision_packet_template'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/audit/template', ['methods'=>'GET','callback'=>[$this,'rest_audit_template'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/audit/generate', ['methods'=>'POST','callback'=>[$this,'rest_audit_generate'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/backend-status', ['methods'=>'GET','callback'=>[$this,'rest_backend_status'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/ai-brief', ['methods'=>'POST','callback'=>[$this,'rest_ai_brief'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/projects', ['methods'=>'POST','callback'=>[$this,'rest_save_project'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
@@ -489,6 +503,8 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     public function rest_integrations() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'modules'=>$this->module_integrations(),'workflow'=>array_map(function($m){ return $m['phase']; }, $this->module_integrations())]); }
     public function rest_decision_packet_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_packet'=>$this->decision_packet_template(),'modules'=>$this->module_integrations()]); }
+    public function rest_audit_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'audit'=>$this->audit_provenance_template()]); }
+    public function rest_audit_generate(WP_REST_Request $request) { $payload = $request->get_json_params(); if (!is_array($payload)) $payload = []; $inputs = isset($payload['inputs']) && is_array($payload['inputs']) ? $payload['inputs'] : []; $results = isset($payload['results']) && is_array($payload['results']) ? $payload['results'] : $this->analyze_inputs($inputs); return rest_ensure_response($this->generate_audit_provenance($inputs, $results, $payload)); }
 
     public function rest_health() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio']); }
     public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map()]); }
@@ -597,9 +613,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function recommended_workbench_shortcodes() { return ['[sc_workbench mode="tool" display="compact" tool="risk-resilience-impact-matrix"]','[sc_workbench mode="tool" display="compact" tool="economics-forecasting-and-scenario-tool"]','[sc_workbench mode="tool" display="drawer" tool="environmental-monitoring-qaqc-tool"]']; }
 
     private function csv_response($filename, $rows) { $fh = fopen('php://temp','w+'); if ($rows) { fputcsv($fh, array_keys($rows[0])); foreach($rows as $row) fputcsv($fh, $row); } rewind($fh); $csv = stream_get_contents($fh); fclose($fh); return new WP_REST_Response($csv, 200, ['Content-Type'=>'text/csv; charset=utf-8','Content-Disposition'=>'attachment; filename="'.$filename.'"']); }
-    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.1.0.csv', $this->scenario_templates()); }
-    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.1.0.csv', $this->workbench_tool_map()); }
-    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.1.0.csv', $rows ?: []); }
+    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.1.1.csv', $this->scenario_templates()); }
+    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.1.1.csv', $this->workbench_tool_map()); }
+    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.1.1.csv', $rows ?: []); }
 
 
     private function module_integrations() {
@@ -617,7 +633,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function decision_packet_template() {
         return [
-            'packet_version'=>'1.1.0',
+            'packet_version'=>'1.1.1',
             'workflow'=>'Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio',
             'project'=>['project_name'=>'','organization_type'=>'','sector'=>'','location'=>'','time_horizon'=>'','decision_question'=>''],
             'framing'=>[],
@@ -633,8 +649,85 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'risks'=>[],
             'sources'=>[],
             'audit_trail'=>[],
+            'audit_and_provenance'=>$this->audit_provenance_template(),
             'module_slots'=>array_map(function($m){ return ['module_id'=>$m['id'],'name'=>$m['name'],'artifact_key'=>$m['artifact_key'],'status'=>'empty']; }, $this->module_integrations()),
         ];
+    }
+
+
+    private function audit_provenance_template() {
+        return [
+            'audit_version'=>'1.1.1',
+            'decision_packet_id'=>'SCDS-DRAFT',
+            'review_status'=>[
+                'status'=>'draft',
+                'prepared_by'=>'',
+                'reviewed_by'=>'',
+                'required_reviews'=>['data/source review','finance assumptions review','risk and claims review','professional review where regulated or safety-critical'],
+                'open_questions'=>[],
+            ],
+            'module_artifact_ledger'=>[],
+            'source_ledger'=>[],
+            'assumptions_register'=>[],
+            'calculation_trace'=>[],
+            'claim_trace'=>[],
+            'change_log'=>[],
+            'warnings'=>['Educational decision support only; not certification, assurance, legal, financial, engineering, medical, tax, compliance, or investment advice.'],
+        ];
+    }
+
+    private function generate_audit_provenance($inputs, $results, $payload=[]) {
+        $modules = $this->module_integrations();
+        $packet = isset($payload['packet']) && is_array($payload['packet']) ? $payload['packet'] : [];
+        $artifacts = isset($payload['moduleArtifacts']) && is_array($payload['moduleArtifacts']) ? $payload['moduleArtifacts'] : [];
+        $ledger = [];
+        foreach ($modules as $m) {
+            $key = $m['artifact_key'];
+            $present = !empty($artifacts[$key]) || !empty($packet[$key]);
+            $ledger[] = ['module_id'=>$m['id'],'module_name'=>$m['name'],'artifact_key'=>$key,'status'=>$present?'attached':'missing','used_in_brief'=>$m['feeds'] ?? $m['summary']];
+        }
+        $source_ledger = [[
+            'source_title'=>'User-provided Decision Studio inputs',
+            'source_type'=>'manual input',
+            'confidence'=>$inputs['dataConfidence'] ?? 70,
+            'used_for'=>'baseline calculations, scoring, finance, and risk screen',
+            'method_notes'=>'Replace or supplement with Catalyst Data records before relying on the brief.',
+        ]];
+        $assumptions = [
+            ['assumption'=>'Baseline emissions','value'=>$inputs['baselineEmissions'] ?? 1200,'unit'=>'tCO2e/year','module_or_source'=>'Decision Studio input','used_in'=>'emissions calculation','sensitivity'=>'high','review_status'=>'needs verification'],
+            ['assumption'=>'Reduction rate','value'=>$inputs['reductionRate'] ?? 32,'unit'=>'%','module_or_source'=>'Decision Studio input','used_in'=>'emissions calculation','sensitivity'=>'high','review_status'=>'needs verification'],
+            ['assumption'=>'Adoption rate','value'=>$inputs['adoptionRate'] ?? 65,'unit'=>'%','module_or_source'=>'Decision Studio input','used_in'=>'emissions and scenarios','sensitivity'=>'high','review_status'=>'needs verification'],
+            ['assumption'=>'CAPEX','value'=>$inputs['capex'] ?? 950000,'unit'=>'currency','module_or_source'=>'Decision Studio / Catalyst Finance','used_in'=>'NPV, ROI, payback','sensitivity'=>'high','review_status'=>'needs finance review'],
+            ['assumption'=>'Annual savings','value'=>$inputs['annualSavings'] ?? 185000,'unit'=>'currency/year','module_or_source'=>'Decision Studio / Catalyst Finance','used_in'=>'NPV, ROI, payback','sensitivity'=>'high','review_status'=>'needs finance review'],
+            ['assumption'=>'Discount rate','value'=>$inputs['discountRate'] ?? 7,'unit'=>'%','module_or_source'=>'Decision Studio / Catalyst Finance','used_in'=>'NPV','sensitivity'=>'medium','review_status'=>'needs finance review'],
+            ['assumption'=>'Model years','value'=>$inputs['modelYears'] ?? 5,'unit'=>'years','module_or_source'=>'Decision Studio input','used_in'=>'NPV and total emissions','sensitivity'=>'medium','review_status'=>'needs review'],
+        ];
+        $calcs = [
+            ['calculation'=>'Annual avoided emissions','formula'=>'baseline_emissions × reduction_rate × adoption_rate','result'=>$results['emissions']['annual_avoided_tco2e'] ?? null,'unit'=>'tCO2e/year','validation_status'=>'requires source review'],
+            ['calculation'=>'Total avoided emissions','formula'=>'annual_avoided × model_years','result'=>$results['emissions']['total_avoided_tco2e'] ?? null,'unit'=>'tCO2e','validation_status'=>'requires boundary review'],
+            ['calculation'=>'NPV','formula'=>'-capex + Σ annual_savings/(1+r)^t','result'=>$results['finance']['npv'] ?? null,'unit'=>'currency','validation_status'=>'requires finance review'],
+            ['calculation'=>'ROI','formula'=>'((annual_savings × years - capex) / capex) × 100','result'=>$results['finance']['roi_percent'] ?? null,'unit'=>'%','validation_status'=>'requires finance review'],
+            ['calculation'=>'Four-pillar weighted score','formula'=>'weighted average of E/S/E/G scores','result'=>$results['scores']['weighted'] ?? null,'unit'=>'0-100 score','validation_status'=>'decision-support screen only'],
+            ['calculation'=>'Risk score','formula'=>'risk screen from exposure, vulnerability, stakeholder sensitivity, resilience, and governance readiness','result'=>$results['risk']['risk_score'] ?? null,'unit'=>'0-100 score','validation_status'=>'decision-support screen only'],
+        ];
+        $claim_trace = [[
+            'claim'=>'The current decision can proceed under the reported posture.',
+            'evidence_strength'=>'screening-level only',
+            'uncertainty'=>'medium to high until module artifacts are imported',
+            'source_basis'=>'Decision Studio inputs and deterministic model',
+            'review_status'=>'needs Narrative Risk review',
+        ]];
+        $audit = $this->audit_provenance_template();
+        $audit['review_status']['status'] = sanitize_text_field($payload['reviewStatus'] ?? 'draft');
+        $audit['review_status']['open_questions'] = ['Which imported artifacts are missing or incomplete?','Which assumptions have high sensitivity?','Which sources require verification?','Which professional reviews are required before action?'];
+        $audit['module_artifact_ledger'] = $ledger;
+        $audit['source_ledger'] = $source_ledger;
+        $audit['assumptions_register'] = $assumptions;
+        $audit['calculation_trace'] = $calcs;
+        $audit['claim_trace'] = $claim_trace;
+        $audit['change_log'] = [['event'=>'Audit generated','detail'=>'Audit appendix generated from current Decision Studio inputs and artifacts.','version'=>self::VERSION]];
+        $attached = 0; foreach ($ledger as $row) if ($row['status']==='attached') $attached++;
+        return ['ok'=>true,'version'=>self::VERSION,'audit'=>$audit,'audit_summary'=>['module_artifact_completeness_percent'=>round(100*$attached/max(1,count($ledger)),1),'sources_count'=>count($source_ledger),'assumptions_count'=>count($assumptions),'calculation_trace_count'=>count($calcs),'claim_trace_count'=>count($claim_trace),'review_status'=>$audit['review_status']['status'],'high_priority_reviews'=>['Verify source records and data confidence.','Review high-sensitivity financial assumptions.','Attach Narrative Risk claim review before external use.','Use professional review for regulated or safety-critical decisions.']]];
     }
 
     private function scenario_templates() { return [ ['template_id'=>'baseline','name'=>'Baseline','purpose'=>'Current path with no intervention'], ['template_id'=>'conservative','name'=>'Conservative','purpose'=>'Lower adoption, higher cost, slower benefits'], ['template_id'=>'expected','name'=>'Expected','purpose'=>'Central planning assumption'], ['template_id'=>'ambitious','name'=>'Ambitious','purpose'=>'Higher adoption and faster benefits'], ['template_id'=>'stress','name'=>'Stress Test','purpose'=>'Costs rise, benefits lag, governance weakens'], ['template_id'=>'transition','name'=>'Transition Pathway','purpose'=>'Staged implementation over multiple years'] ]; }

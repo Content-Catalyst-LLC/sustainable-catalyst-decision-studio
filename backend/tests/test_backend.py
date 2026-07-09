@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.1.0'
+    assert r.json()['version'] == '1.1.1'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,8 +68,9 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '1.1.0'
+    assert data['decision_packet']['packet_version'] == '1.1.1'
     assert 'decision_framing' in data['decision_packet']
+    assert 'audit_and_provenance' in data['decision_packet']
 
 
 def test_decision_packet_analyze():
@@ -79,3 +80,23 @@ def test_decision_packet_analyze():
     assert data['ok'] is True
     assert data['workflow_readiness_percent'] > 0
     assert 'catalyst-canvas' in data['filled_modules']
+
+
+
+def test_audit_template():
+    r = client.get('/audit/template')
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert data['audit']['audit_version'] == '1.1.1'
+    assert 'module_artifact_ledger' in data['audit']
+
+
+def test_audit_generate_default():
+    r = client.post('/audit/generate', json={"inputs": {}, "reviewStatus": "draft"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert data['audit']['audit_version'] == '1.1.1'
+    assert data['audit_summary']['assumptions_count'] >= 5
+    assert data['audit_summary']['calculation_trace_count'] >= 4

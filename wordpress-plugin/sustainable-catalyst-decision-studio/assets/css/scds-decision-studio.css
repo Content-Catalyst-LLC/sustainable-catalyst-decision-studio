@@ -23,3 +23,12 @@
 .scds-packet-card{background:#fff;border:1px solid var(--scds-line);padding:16px;margin-top:16px;}
 @media(max-width:1100px){.scds-integration-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:720px){.scds-integration-grid{grid-template-columns:1fr}.scds-workflow-strip span{width:100%;}}
+
+
+/* v1.1.1 Audit & Provenance Upgrade */
+.scds-audit-appendix{background:#fff;border:1px solid var(--scds-line);padding:18px;margin-top:14px;line-height:1.6;}
+.scds-audit-appendix h4{font-family:Spartan,Montserrat,Arial,sans-serif;font-size:1.05rem;margin:20px 0 8px;color:#000;}
+.scds-audit-appendix .scds-table{font-size:.9rem;}
+.scds-audit-appendix .scds-table th{white-space:nowrap;}
+.scds-audit-appendix ul{margin:8px 0 12px 20px;}
+.scds-audit-appendix td{word-break:break-word;}
