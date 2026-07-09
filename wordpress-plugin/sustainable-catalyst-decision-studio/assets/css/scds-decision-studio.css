@@ -59,3 +59,14 @@
 .scds-integrated-brief h4{margin-top:22px;margin-bottom:8px}
 .scds-integrated-brief ul{margin-top:8px}
 .scds-integrated-brief li{margin-bottom:6px}
+
+
+/* v1.4.0 Brief Readiness and Review Status */
+.scds-readiness-card{border:1px solid rgba(0,0,0,.14);border-radius:18px;padding:18px;background:#fffdf8;box-shadow:0 2px 14px rgba(0,0,0,.04)}
+.scds-readiness-meter{height:12px;background:#eee7dc;border-radius:999px;overflow:hidden;margin:10px 0 14px;border:1px solid rgba(0,0,0,.08)}
+.scds-readiness-meter span{display:block;height:100%;background:#b00000;border-radius:999px}
+.scds-readiness-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.scds-readiness-grid article{border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:14px;padding:12px}
+.scds-readiness-grid h5{margin:.25rem 0 .4rem;font-size:1rem}
+.scds-readiness-output ul{margin-left:1.15rem}
+@media(max-width:860px){.scds-readiness-grid{grid-template-columns:1fr}}

@@ -1,4 +1,12 @@
 
+## v1.4.0 — Brief Readiness and Review Status
+
+- Added Brief Readiness tab and review status workflow.
+- Added backend endpoints for readiness and review status.
+- Added section-level scoring, unresolved issue flags, required review states, and export gates.
+- Integrated readiness metadata into Decision Packet analysis and integrated briefs.
+
+
 ## v1.3.0 — Integrated Brief Generator
 
 - Added professional integrated decision brief generator.

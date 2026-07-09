@@ -9,7 +9,7 @@ import os
 import urllib.request
 import urllib.error
 
-APP_VERSION = "1.3.0"
+APP_VERSION = "1.4.0"
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
 
 class DecisionInputs(BaseModel):
@@ -89,6 +89,16 @@ class IntegratedBriefRequest(BaseModel):
     audience: str = "Sustainable Catalyst decision reviewer"
     includeAI: bool = False
     exportFormat: str = "structured"
+    notes: str = ""
+
+
+class BriefReadinessRequest(BaseModel):
+    inputs: DecisionInputs = Field(default_factory=DecisionInputs)
+    results: Optional[Dict[str, Any]] = None
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    moduleArtifacts: Dict[str, Any] = Field(default_factory=dict)
+    audit: Optional[Dict[str, Any]] = None
+    reviewOverrides: Dict[str, Any] = Field(default_factory=dict)
     notes: str = ""
 
 
@@ -231,7 +241,7 @@ def module_integrations() -> List[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.3.0",
+        "packet_version": "1.4.0",
         "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio",
         "project": {
             "project_name": "",
@@ -272,7 +282,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.3.0",
+        "audit_version": "1.4.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -833,7 +843,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
     return {
         "ok": True,
         "version": APP_VERSION,
-        "decision_packet_version": "1.3.0",
+        "decision_packet_version": "1.4.0",
         "workflow_readiness_percent": readiness,
         "filled_modules": filled,
         "missing_modules": missing,
@@ -845,6 +855,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
             "calculation_trace_count": calculation_count,
             "review_flags": review_flags,
         },
+        "brief_readiness": compute_brief_readiness(packet, inputs or DecisionInputs(), base_results, packet.get("audit_and_provenance") if isinstance(packet.get("audit_and_provenance"), dict) else None),
         "synthesis": {
             "posture": base_results["status"],
             "weighted_score": base_results["scores"]["weighted"],
@@ -863,6 +874,284 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
         ],
     }
 
+
+
+def review_status_catalog() -> Dict[str, Any]:
+    """Review state vocabulary used by v1.4.0 readiness gates."""
+    return {
+        "review_version": APP_VERSION,
+        "states": [
+            {"id": "not_started", "label": "Not started", "meaning": "No usable artifact or section content is present."},
+            {"id": "needs_evidence", "label": "Needs evidence", "meaning": "The section has draft content but lacks source, confidence, or measurement support."},
+            {"id": "needs_review", "label": "Needs review", "meaning": "The section is usable for a draft brief but requires human review before publication or reliance."},
+            {"id": "needs_expert_review", "label": "Needs expert review", "meaning": "The section touches finance, engineering, legal/compliance, claims, safety, or other professional-review areas."},
+            {"id": "ready_for_draft", "label": "Ready for draft", "meaning": "The section can support a draft brief with caveats."},
+            {"id": "ready_for_export", "label": "Ready for export", "meaning": "The section has artifacts, sources, review status, and no critical unresolved flags."},
+        ],
+        "export_gate": {
+            "draft_minimum": 50,
+            "reviewed_export_minimum": 75,
+            "professional_reliance": "Requires qualified human review regardless of score.",
+        },
+    }
+
+
+def readiness_sections() -> List[Dict[str, Any]]:
+    """Section-level readiness model for integrated Decision Packets."""
+    return [
+        {"id": "framing", "label": "Problem Framing", "module_id": "catalyst-canvas", "weight": 10, "required": True, "expert_review": False},
+        {"id": "evidence", "label": "Evidence & Measurement", "module_id": "catalyst-data", "weight": 16, "required": True, "expert_review": False},
+        {"id": "scenarios", "label": "Scenario Analysis", "module_id": "catalyst-analytics-r", "weight": 10, "required": False, "expert_review": False},
+        {"id": "impact", "label": "Impact Measurement", "module_id": "global-impact-catalyst", "weight": 12, "required": True, "expert_review": False},
+        {"id": "claims", "label": "Claim & Narrative Risk", "module_id": "catalyst-narrative-risk", "weight": 12, "required": True, "expert_review": True},
+        {"id": "finance", "label": "Financial Tradeoffs", "module_id": "catalyst-finance", "weight": 14, "required": True, "expert_review": True},
+        {"id": "recovery", "label": "Execution & Recovery", "module_id": "catalyst-grit", "weight": 8, "required": False, "expert_review": False},
+        {"id": "audit", "label": "Audit & Provenance", "module_id": "audit", "weight": 10, "required": True, "expert_review": False},
+        {"id": "synthesis", "label": "Integrated Brief", "module_id": "decision-studio", "weight": 8, "required": True, "expert_review": False},
+    ]
+
+
+def _section_value(packet: Dict[str, Any], sid: str, results: Optional[Dict[str, Any]] = None, audit: Optional[Dict[str, Any]] = None) -> Any:
+    results = results or {}
+    audit = audit or {}
+    if sid == "framing":
+        return packet.get("decision_framing") or packet.get("framing") or (packet.get("project") or {}).get("decision_question")
+    if sid == "evidence":
+        records = packet.get("evidence_and_measurement", {}).get("records", []) if isinstance(packet.get("evidence_and_measurement", {}), dict) else []
+        return records or packet.get("evidence_records") or packet.get("sources") or audit.get("source_ledger")
+    if sid == "scenarios":
+        records = packet.get("scenarios", {}).get("records", []) if isinstance(packet.get("scenarios", {}), dict) else []
+        return records or packet.get("scenario_analysis") or results.get("scenarios")
+    if sid == "impact":
+        records = packet.get("impact_measurement", {}).get("records", []) if isinstance(packet.get("impact_measurement", {}), dict) else []
+        return records or packet.get("impact_records")
+    if sid == "claims":
+        records = packet.get("claim_and_risk_review", {}).get("records", []) if isinstance(packet.get("claim_and_risk_review", {}), dict) else []
+        return records or packet.get("claim_reviews") or audit.get("claim_trace")
+    if sid == "finance":
+        return packet.get("financial_tradeoffs") or packet.get("finance_analysis") or results.get("finance")
+    if sid == "recovery":
+        return packet.get("execution_and_recovery") or packet.get("execution_recovery")
+    if sid == "audit":
+        return packet.get("audit_and_provenance") or audit or packet.get("audit_trail")
+    if sid == "synthesis":
+        return packet.get("integrated_decision_brief") or results.get("scores") or results.get("status")
+    return None
+
+
+def _source_count_from(packet: Dict[str, Any], audit: Optional[Dict[str, Any]] = None) -> int:
+    audit = audit or {}
+    count = 0
+    if isinstance(packet.get("sources"), list):
+        count += len(packet.get("sources", []))
+    if isinstance(audit.get("source_ledger"), list):
+        count += len(audit.get("source_ledger", []))
+    evidence = packet.get("evidence_and_measurement", {}).get("records", []) if isinstance(packet.get("evidence_and_measurement", {}), dict) else []
+    if isinstance(evidence, list):
+        count += len(evidence)
+    return count
+
+
+def _review_state(score: float, flags: List[Dict[str, Any]], required: bool, expert_review: bool) -> str:
+    has_critical = any(f.get("severity") == "critical" for f in flags)
+    has_high = any(f.get("severity") == "high" for f in flags)
+    if score <= 0:
+        return "not_started"
+    if has_critical or (required and score < 40):
+        return "needs_evidence"
+    if expert_review and (has_high or score < 90):
+        return "needs_expert_review"
+    if score < 70 or has_high:
+        return "needs_review"
+    if score < 90:
+        return "ready_for_draft"
+    return "ready_for_export"
+
+
+def compute_brief_readiness(packet: Dict[str, Any], inputs: DecisionInputs, results: Optional[Dict[str, Any]] = None, audit: Optional[Dict[str, Any]] = None, review_overrides: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Compute section-level readiness, review states, unresolved issues, and export gates."""
+    packet = packet or decision_packet_template()
+    results = results or analyze(inputs)
+    audit = audit or {}
+    review_overrides = review_overrides or {}
+    sections = []
+    unresolved: List[Dict[str, Any]] = []
+    total_weight = 0.0
+    weighted_score = 0.0
+    source_count = _source_count_from(packet, audit)
+    assumptions_count = len(packet.get("assumptions", [])) if isinstance(packet.get("assumptions"), list) else 0
+    calculation_count = len(packet.get("calculation_trace", [])) if isinstance(packet.get("calculation_trace"), list) else 0
+    module_slots = packet.get("module_slots", []) if isinstance(packet.get("module_slots"), list) else []
+    attached_modules = {m.get("module_id") for m in module_slots if isinstance(m, dict) and m.get("status") == "attached"}
+
+    for sec in readiness_sections():
+        sid = sec["id"]
+        value = _section_value(packet, sid, results, audit)
+        present = _nonempty(value)
+        score = 0.0
+        flags: List[Dict[str, Any]] = []
+        if present:
+            score = 55.0
+        if sec["module_id"] in attached_modules:
+            score += 20.0
+        if sid == "framing":
+            framing = packet.get("decision_framing") or packet.get("framing") or {}
+            dq = (framing.get("decision_question") or framing.get("challenge") or (packet.get("project") or {}).get("decision_question") or inputs.decisionQuestion) if isinstance(framing, dict) else inputs.decisionQuestion
+            if dq:
+                score += 20
+            else:
+                flags.append({"severity": "high", "section": sid, "issue": "Decision question is missing.", "action": "Import Catalyst Canvas or complete the intake decision question."})
+        elif sid == "evidence":
+            if source_count:
+                score += min(25, source_count * 8)
+            else:
+                flags.append({"severity": "critical", "section": sid, "issue": "No source or evidence records are attached.", "action": "Import Catalyst Data records or add source ledger entries."})
+            if float(inputs.dataConfidence or 0) < 60:
+                flags.append({"severity": "high", "section": sid, "issue": "Data confidence is below 60.", "action": "Document source quality, method notes, and review status."})
+        elif sid == "scenarios":
+            if present:
+                score += 25
+            else:
+                score = 35
+                flags.append({"severity": "medium", "section": sid, "issue": "No imported scenario artifact is attached.", "action": "Import Catalyst Analytics R or rely on Decision Studio's built-in scenario screen as a draft."})
+        elif sid == "impact":
+            if present:
+                score += 25
+            else:
+                flags.append({"severity": "high", "section": sid, "issue": "Impact record is missing.", "action": "Import Global Impact Catalyst with baseline, current, target, source, and progress notes."})
+        elif sid == "claims":
+            if present:
+                score += 20
+            else:
+                flags.append({"severity": "high", "section": sid, "issue": "Claim review is missing.", "action": "Import Narrative Risk before publishing external claims."})
+        elif sid == "finance":
+            if present:
+                score += 15
+            if inputs.capex > 0 and inputs.annualSavings > 0:
+                score += 15
+            else:
+                flags.append({"severity": "high", "section": sid, "issue": "Finance assumptions are incomplete.", "action": "Enter CAPEX and annual savings or import Catalyst Finance."})
+            if assumptions_count == 0:
+                flags.append({"severity": "medium", "section": sid, "issue": "No imported assumptions register is attached.", "action": "Import Catalyst Finance or generate audit/provenance before final export."})
+        elif sid == "recovery":
+            if present:
+                score += 30
+            else:
+                score = 35
+                flags.append({"severity": "medium", "section": sid, "issue": "Execution/recovery artifact is missing.", "action": "Import Catalyst Grit to assess implementation pressure, support, clarity, and recovery actions."})
+        elif sid == "audit":
+            audit_present = bool(audit) or _nonempty(packet.get("audit_and_provenance")) or _nonempty(packet.get("audit_trail"))
+            if audit_present:
+                score += 20
+            if source_count > 0:
+                score += 15
+            if assumptions_count > 0 or (audit and audit.get("assumptions_register")):
+                score += 15
+            if calculation_count > 0 or (audit and audit.get("calculation_trace")):
+                score += 15
+            if source_count == 0:
+                flags.append({"severity": "critical", "section": sid, "issue": "Audit source ledger is incomplete.", "action": "Generate audit/provenance after importing evidence records."})
+        elif sid == "synthesis":
+            if results.get("scores"):
+                score += 25
+            if results.get("risk"):
+                score += 15
+            if results.get("finance"):
+                score += 10
+            if results.get("emissions"):
+                score += 10
+        score = clamp(score, 0, 100)
+        # Allow explicit review override to raise/lower state without hiding score.
+        override = review_overrides.get(sid) if isinstance(review_overrides, dict) else None
+        state = str(override.get("state")) if isinstance(override, dict) and override.get("state") else _review_state(score, flags, bool(sec["required"]), bool(sec["expert_review"]))
+        for f in flags:
+            unresolved.append(f)
+        sections.append({
+            "id": sid,
+            "label": sec["label"],
+            "module_id": sec["module_id"],
+            "required": bool(sec["required"]),
+            "expert_review": bool(sec["expert_review"]),
+            "score": round(score, 1),
+            "review_state": state,
+            "status_label": state.replace("_", " ").title(),
+            "present": bool(present),
+            "flags": flags,
+        })
+        total_weight += float(sec["weight"])
+        weighted_score += float(sec["weight"]) * score
+
+    readiness_percent = round(weighted_score / max(1.0, total_weight), 1)
+    critical_count = sum(1 for f in unresolved if f.get("severity") == "critical")
+    high_count = sum(1 for f in unresolved if f.get("severity") == "high")
+    required_not_ready = [s for s in sections if s["required"] and s["review_state"] in {"not_started", "needs_evidence"}]
+    expert_review_needed = [s for s in sections if s["review_state"] == "needs_expert_review"]
+    if critical_count or required_not_ready:
+        overall_state = "needs_evidence"
+    elif expert_review_needed:
+        overall_state = "needs_expert_review"
+    elif readiness_percent >= 85 and high_count == 0:
+        overall_state = "ready_for_export"
+    elif readiness_percent >= 65:
+        overall_state = "ready_for_draft"
+    else:
+        overall_state = "needs_review"
+    export_gate = {
+        "draft_brief_allowed": readiness_percent >= 50,
+        "reviewed_export_allowed": readiness_percent >= 75 and critical_count == 0 and not required_not_ready,
+        "professional_reliance_allowed": False,
+        "blocking_issues": [f for f in unresolved if f.get("severity") in {"critical", "high"}],
+    }
+    next_actions = []
+    for f in unresolved[:8]:
+        next_actions.append(f.get("action", f.get("issue", "Review unresolved issue.")))
+    if not next_actions:
+        next_actions = ["Generate the integrated brief, export the audit appendix, and complete any applicable expert reviews before operational use."]
+    return {
+        "ok": True,
+        "version": APP_VERSION,
+        "readiness_version": APP_VERSION,
+        "readiness_percent": readiness_percent,
+        "overall_review_state": overall_state,
+        "overall_status_label": overall_state.replace("_", " ").title(),
+        "sections": sections,
+        "unresolved_issues": unresolved,
+        "counts": {
+            "sources": source_count,
+            "assumptions": assumptions_count,
+            "calculations": calculation_count,
+            "critical_issues": critical_count,
+            "high_issues": high_count,
+            "sections_ready_for_export": sum(1 for s in sections if s["review_state"] == "ready_for_export"),
+            "sections_needing_expert_review": len(expert_review_needed),
+        },
+        "export_gate": export_gate,
+        "required_reviews": [
+            "Data/source review" if source_count else "Data/source review required before export",
+            "Finance assumptions review",
+            "Narrative/claim risk review",
+            "Professional review where regulated, safety-critical, financial, legal, engineering, medical, tax, compliance, assurance, or certification use is possible",
+        ],
+        "next_actions": list(dict.fromkeys(next_actions)),
+        "warnings": [
+            "Brief readiness is a workflow quality gate, not approval, assurance, certification, or professional signoff.",
+            "Professional reliance remains disallowed without qualified human review regardless of readiness score.",
+        ],
+    }
+
+
+def generate_brief_readiness(req: BriefReadinessRequest) -> Dict[str, Any]:
+    packet = req.packet or decision_packet_template()
+    results = req.results or analyze(req.inputs)
+    for module_id, artifact in (req.moduleArtifacts or {}).items():
+        if isinstance(artifact, dict) and _nonempty(artifact):
+            imported = import_artifact_into_packet(artifact, module_id=module_id, packet=packet, preserve_raw=True)
+            packet = imported.get("decision_packet", packet)
+    audit = req.audit if isinstance(req.audit, dict) and req.audit else {}
+    if not audit:
+        audit = generate_audit_provenance(AuditProvenanceRequest(inputs=req.inputs, results=results, packet=packet, moduleArtifacts=req.moduleArtifacts)).get("audit", {})
+    readiness = compute_brief_readiness(packet, req.inputs, results, audit, req.reviewOverrides)
+    return {"ok": True, "version": APP_VERSION, "readiness": readiness, "decision_packet": packet, "results": results, "audit": audit, "review_status_catalog": review_status_catalog()}
 
 def _records_from_packet(packet: Dict[str, Any], section: str, legacy: str = "") -> List[Dict[str, Any]]:
     value = packet.get(section)
@@ -934,6 +1223,10 @@ def integrated_brief_markdown(brief: Dict[str, Any]) -> str:
         "",
         "## Executive Summary",
         brief.get('executive_summary', ''),
+        "",
+        "## Brief Readiness and Review Status",
+        f"Overall state: {brief.get('brief_readiness', {}).get('overall_status_label', 'Needs Review')}.",
+        bullets([f"{s.get('label')}: {s.get('status_label')} ({s.get('score')}%)" for s in brief.get('brief_readiness', {}).get('section_statuses', [])]),
         "",
         "## Decision Question",
         brief.get('decision_question', 'Not specified'),
@@ -1117,7 +1410,12 @@ def generate_integrated_brief(req: IntegratedBriefRequest) -> Dict[str, Any]:
         "decision_question": decision_question,
         "recommendation_posture": posture,
         "brief_readiness": {
-            "readiness_percent": readiness.get("workflow_readiness_percent", 0),
+            "readiness_percent": (readiness.get("brief_readiness", {}) or {}).get("readiness_percent", readiness.get("workflow_readiness_percent", 0)),
+            "overall_review_state": (readiness.get("brief_readiness", {}) or {}).get("overall_review_state", "needs_review"),
+            "overall_status_label": (readiness.get("brief_readiness", {}) or {}).get("overall_status_label", "Needs Review"),
+            "section_statuses": (readiness.get("brief_readiness", {}) or {}).get("sections", []),
+            "unresolved_issues": (readiness.get("brief_readiness", {}) or {}).get("unresolved_issues", []),
+            "export_gate": (readiness.get("brief_readiness", {}) or {}).get("export_gate", {}),
             "filled_modules": readiness.get("filled_modules", []),
             "missing_modules": readiness.get("missing_modules", []),
             "review_flags": readiness.get("packet_quality", {}).get("review_flags", []),
@@ -1400,6 +1698,22 @@ def decision_packet_analyze_endpoint(req: DecisionPacketRequest):
             packet[key] = artifact
     return synthesize_decision_packet(packet, req.inputs)
 
+@app.get("/review/status-template")
+def review_status_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "review_status_catalog": review_status_catalog(), "sections": readiness_sections()}
+
+@app.post("/brief-readiness")
+def brief_readiness_endpoint(req: BriefReadinessRequest):
+    return generate_brief_readiness(req)
+
+@app.post("/decision-packet/readiness")
+def decision_packet_readiness_endpoint(req: BriefReadinessRequest):
+    return generate_brief_readiness(req)
+
+@app.post("/review/status")
+def review_status_endpoint(req: BriefReadinessRequest):
+    return generate_brief_readiness(req)
+
 @app.get("/audit/template")
 def audit_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "audit": audit_provenance_template()}
@@ -1410,4 +1724,4 @@ def audit_generate_endpoint(req: AuditProvenanceRequest):
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status"]}

@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.3.0'
+    assert r.json()['version'] == '1.4.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '1.3.0'
+    assert data['decision_packet']['packet_version'] == '1.4.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -88,7 +88,7 @@ def test_audit_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.3.0'
+    assert data['audit']['audit_version'] == '1.4.0'
     assert 'module_artifact_ledger' in data['audit']
 
 
@@ -97,7 +97,7 @@ def test_audit_generate_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.3.0'
+    assert data['audit']['audit_version'] == '1.4.0'
     assert data['audit_summary']['assumptions_count'] >= 5
     assert data['audit_summary']['calculation_trace_count'] >= 4
 
@@ -162,7 +162,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.3.0'
+    assert data['version'] == '1.4.0'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -183,3 +183,45 @@ def test_decision_packet_brief_with_canvas_artifact():
     assert data['ok'] is True
     assert data['brief']['decision_question'] == "Should the platform proceed to public demo?"
     assert data['brief']['brief_readiness']['readiness_percent'] >= 0
+
+
+def test_review_status_template():
+    r = client.get('/review/status-template')
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    assert data['version'] == '1.4.0'
+    assert len(data['sections']) >= 8
+    assert any(s['id'] == 'finance' for s in data['sections'])
+
+
+def test_brief_readiness_default():
+    r = client.post('/brief-readiness', json={"inputs": {}, "packet": {}})
+    assert r.status_code == 200
+    data = r.json()
+    assert data['ok'] is True
+    readiness = data['readiness']
+    assert readiness['readiness_version'] == '1.4.0'
+    assert 0 <= readiness['readiness_percent'] <= 100
+    assert 'sections' in readiness
+    assert 'export_gate' in readiness
+    assert readiness['export_gate']['professional_reliance_allowed'] is False
+
+
+def test_decision_packet_readiness_with_sources():
+    packet = {
+        "decision_framing": {"decision_question": "Should the project proceed?"},
+        "sources": [{"source_title": "Measurement record", "confidence": 85, "used_for": "readiness test"}],
+        "impact_measurement": {"records": [{"initiative": "Project", "indicator": "Impact", "baseline_value": 1, "current_value": 2, "target_value": 3}]},
+        "claim_and_risk_review": {"records": [{"claim": "Impact is improving", "risk_level": "Medium"}]},
+        "financial_tradeoffs": {"results": {"npv": 1000, "roi_percent": 12, "payback_years": 3}},
+        "assumptions": [{"assumption": "Savings", "value": 100, "review_status": "needs review"}],
+        "calculation_trace": [{"calculation": "NPV", "result": 1000}],
+    }
+    r = client.post('/decision-packet/readiness', json={"inputs": {}, "packet": packet})
+    assert r.status_code == 200
+    data = r.json()
+    readiness = data['readiness']
+    assert readiness['readiness_percent'] > 50
+    assert readiness['counts']['sources'] >= 1
+    assert any(s['id'] == 'evidence' for s in readiness['sections'])

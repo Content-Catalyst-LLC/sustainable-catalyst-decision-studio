@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Integrated sustainability decision-support workflow for framing, evidence, scenarios, impact, claims, finance, recovery, four-pillar synthesis, and reports.
- * Version: 1.3.0
+ * Description: Integrated sustainability decision-support workflow with module artifact adapters, audit/provenance, brief readiness scoring, review status, integrated briefs, and exportable reports.
+ * Version: 1.4.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.3.0';
+    const VERSION = '1.4.0';
     const OPTION_KEY = 'scds_settings';
     const NONCE_ACTION = 'wp_rest';
     const PROJECTS_TABLE = 'scds_projects';
@@ -118,6 +118,7 @@ class Sustainable_Catalyst_Decision_Studio {
             ['procurement-supplier-comparison', 'Procurement / Supplier Comparison', 'experimental'],
             ['uncertainty-sensitivity', 'Uncertainty and Sensitivity Analysis', 'needs_review'],
             ['decision-brief-generator', 'Decision Brief Generator', 'validated'],
+            ['brief-readiness-review-status', 'Brief Readiness / Review Status', 'validated'],
             ['audit-trail-assumptions-log', 'Audit Trail / Assumptions Log', 'validated'],
         ];
         foreach ($modules as $m) {
@@ -179,11 +180,11 @@ class Sustainable_Catalyst_Decision_Studio {
         ], $atts, 'sc_decision_studio');
 
         $mode = sanitize_key($atts['mode']);
-        if (!in_array($mode, ['full', 'workflow', 'project-intake', 'scorecard', 'risk', 'scenario', 'report', 'drawer', 'compact'], true)) {
+        if (!in_array($mode, ['full', 'workflow', 'readiness', 'project-intake', 'scorecard', 'risk', 'scenario', 'report', 'drawer', 'compact'], true)) {
             $mode = 'full';
         }
         $display = sanitize_key($atts['display'] ?: $mode);
-        $start_tab = $mode === 'workflow' ? 'workflow' : ($mode === 'project-intake' ? 'intake' : (in_array($mode, ['scorecard', 'risk', 'scenario', 'report'], true) ? $mode : 'intake'));
+        $start_tab = $mode === 'workflow' ? 'workflow' : ($mode === 'readiness' ? 'readiness' : ($mode === 'project-intake' ? 'intake' : (in_array($mode, ['scorecard', 'risk', 'scenario', 'report'], true) ? $mode : 'intake')));
         $uid = 'scds-' . wp_generate_uuid4();
 
         wp_enqueue_style('scds-decision-studio');
@@ -202,6 +203,10 @@ class Sustainable_Catalyst_Decision_Studio {
             'restAuditTemplateUrl' => esc_url_raw(rest_url('scds/v1/audit/template')),
             'restAuditGenerateUrl' => esc_url_raw(rest_url('scds/v1/audit/generate')),
             'restIntegratedBriefUrl' => esc_url_raw(rest_url('scds/v1/integrated-brief')),
+            'restBriefReadinessUrl' => esc_url_raw(rest_url('scds/v1/brief-readiness')),
+            'restDecisionPacketReadinessUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/readiness')),
+            'restReviewStatusTemplateUrl' => esc_url_raw(rest_url('scds/v1/review/status-template')),
+            'restReviewStatusUrl' => esc_url_raw(rest_url('scds/v1/review/status')),
             'nonce' => wp_create_nonce(self::NONCE_ACTION),
             'backendEnabled' => $settings['backend_enabled'] === '1' && !empty($settings['backend_url']),
             'aiBriefingEnabled' => $settings['ai_briefing_enabled'] === '1',
@@ -227,6 +232,7 @@ class Sustainable_Catalyst_Decision_Studio {
             <nav class="scds-tabs" aria-label="Decision Studio sections">
                 <button type="button" class="scds-tab is-active" data-scds-tab="intake">Intake</button>
                 <button type="button" class="scds-tab" data-scds-tab="workflow">Workflow</button>
+                <button type="button" class="scds-tab" data-scds-tab="readiness">Readiness</button>
                 <button type="button" class="scds-tab" data-scds-tab="scorecard">Scorecard</button>
                 <button type="button" class="scds-tab" data-scds-tab="risk">Risk</button>
                 <button type="button" class="scds-tab" data-scds-tab="scenario">Scenarios</button>
@@ -237,6 +243,7 @@ class Sustainable_Catalyst_Decision_Studio {
             <div class="scds-panels">
                 <?php $this->render_panel_intake($mode); ?>
                 <?php $this->render_panel_workflow($mode); ?>
+                <?php $this->render_panel_readiness($mode); ?>
                 <?php $this->render_panel_scorecard($mode); ?>
                 <?php $this->render_panel_risk($mode); ?>
                 <?php $this->render_panel_scenario($mode); ?>
@@ -335,6 +342,25 @@ class Sustainable_Catalyst_Decision_Studio {
         </section>
     <?php }
 
+
+    private function render_panel_readiness($mode) { ?>
+        <section class="scds-panel" data-scds-panel="readiness">
+            <div class="scds-panel-head">
+                <p class="scds-section-kicker">Brief readiness &amp; review status</p>
+                <h3>Quality gates before export</h3>
+                <p>Review whether the Decision Packet is ready for a draft brief, reviewed export, or further evidence work. The readiness gate checks framing, evidence, scenarios, impact, claims, finance, recovery, audit/provenance, and synthesis.</p>
+            </div>
+            <div class="scds-note"><strong>v1.4.0:</strong> readiness scoring now surfaces section status, unresolved issues, required reviews, and export gates. It is a workflow quality screen, not approval or professional signoff.</div>
+            <div class="scds-actions">
+                <button type="button" class="scds-button scds-button-primary" data-scds-readiness>Check Brief Readiness</button>
+                <button type="button" class="scds-button" data-scds-generate-review-status>Generate Review Status</button>
+                <button type="button" class="scds-button" data-scds-export-readiness-json>Download Readiness JSON</button>
+                <button type="button" class="scds-button" data-scds-integrated-brief>Generate Integrated Brief</button>
+            </div>
+            <div class="scds-readiness-output" data-scds-readiness-output></div>
+        </section>
+    <?php }
+
     private function render_panel_scorecard($mode) { ?>
         <section class="scds-panel" data-scds-panel="scorecard">
             <div class="scds-panel-head"><p class="scds-section-kicker">Four-pillar scorecard</p><h3>Environmental, social, economic, and governance scoring</h3><p>Use transparent weights and indicators to compare viability across the four pillars.</p></div>
@@ -380,7 +406,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Professional decision memo from the full Decision Packet</h3>
                 <p>Generate a structured brief that synthesizes framing, evidence, scenarios, impact records, claim review, finance, recovery, four-pillar scores, audit/provenance, and Workbench handoffs.</p>
             </div>
-            <div class="scds-note"><strong>v1.3.0:</strong> the brief generator now produces a professional memo with executive summary, recommendation posture, readiness status, module-derived findings, audit appendix summary, and Markdown/HTML/JSON exports.</div>
+            <div class="scds-note"><strong>v1.4.0:</strong> the brief generator now includes section-level readiness status, unresolved issue flags, review gates, module-derived findings, audit appendix summary, and Markdown/HTML/JSON exports.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-integrated-brief>Generate Integrated Brief</button>
                 <button type="button" class="scds-button" data-scds-run>Generate Basic Brief</button>
@@ -405,7 +431,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Decision packet ledger, sources, assumptions, calculations, claims, changes, and review status</h3>
                 <p>Generate a structured audit appendix that shows what was entered, which module artifacts are present, which sources support the decision, which calculations were used, and which assumptions still require review.</p>
             </div>
-            <div class="scds-note"><strong>v1.3.0 upgrade:</strong> audit now includes a provenance ledger, source ledger, assumptions register, calculation trace, claim trace, change log, review status, and exportable audit appendix.</div>
+            <div class="scds-note"><strong>v1.4.0:</strong> audit works with the readiness gate so unresolved evidence, source, calculation, finance, claim, and review issues can be surfaced before export.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-audit-generate>Generate Audit Appendix</button><button type="button" class="scds-button" data-scds-export-audit-json>Download Audit JSON</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div>
             <div class="scds-audit-list" data-scds-audit></div>
             <div class="scds-workbench-links" data-scds-workbench-links></div>
@@ -441,7 +467,7 @@ class Sustainable_Catalyst_Decision_Studio {
             ['Methodology Settings', 'Configure backend URL, integration boundaries, and default display mode.', 'admin.php?page=scds-settings'],
         ];
         foreach ($cards as $c) echo '<div class="card"><h2>' . esc_html($c[0]) . '</h2><p>' . esc_html($c[1]) . '</p><a class="button button-primary" href="' . esc_url(admin_url($c[2])) . '">Open</a></div>';
-        echo '</div><h2>Shortcodes</h2><textarea readonly style="width:100%;height:130px">[sc_decision_studio mode="full"]&#10;[sc_decision_studio mode="project-intake"]&#10;[sc_decision_studio mode="scorecard"]&#10;[sc_decision_studio mode="risk"]&#10;[sc_decision_studio mode="scenario"]&#10;[sc_decision_studio mode="report"]&#10;[sc_decision_studio mode="drawer" title="Open Decision Studio"]</textarea>';
+        echo '</div><h2>Shortcodes</h2><textarea readonly style="width:100%;height:130px">[sc_decision_studio mode="full"]&#10;[sc_decision_studio mode="project-intake"]&#10;[sc_decision_studio mode="scorecard"]&#10;[sc_decision_studio mode="risk"]&#10;[sc_decision_studio mode="scenario"]&#10;[sc_decision_studio mode="report"]&#10;[sc_decision_studio mode="readiness"]&#10;[sc_decision_studio mode="drawer" title="Open Decision Studio"]</textarea>';
         $this->admin_wrap_end();
     }
 
@@ -549,6 +575,10 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/audit/template', ['methods'=>'GET','callback'=>[$this,'rest_audit_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/audit/generate', ['methods'=>'POST','callback'=>[$this,'rest_audit_generate'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/integrated-brief', ['methods'=>'POST','callback'=>[$this,'rest_integrated_brief'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/brief-readiness', ['methods'=>'POST','callback'=>[$this,'rest_brief_readiness'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/readiness', ['methods'=>'POST','callback'=>[$this,'rest_brief_readiness'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/review/status', ['methods'=>'POST','callback'=>[$this,'rest_brief_readiness'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/review/status-template', ['methods'=>'GET','callback'=>[$this,'rest_review_status_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/brief', ['methods'=>'POST','callback'=>[$this,'rest_integrated_brief'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/backend-status', ['methods'=>'GET','callback'=>[$this,'rest_backend_status'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/ai-brief', ['methods'=>'POST','callback'=>[$this,'rest_ai_brief'],'permission_callback'=>'__return_true']);
@@ -583,6 +613,22 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     public function rest_decision_packet_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_packet'=>$this->decision_packet_template(),'modules'=>$this->module_integrations()]); }
     public function rest_audit_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'audit'=>$this->audit_provenance_template()]); }
     public function rest_audit_generate(WP_REST_Request $request) { $payload = $request->get_json_params(); if (!is_array($payload)) $payload = []; $inputs = isset($payload['inputs']) && is_array($payload['inputs']) ? $payload['inputs'] : []; $results = isset($payload['results']) && is_array($payload['results']) ? $payload['results'] : $this->analyze_inputs($inputs); return rest_ensure_response($this->generate_audit_provenance($inputs, $results, $payload)); }
+
+
+    public function rest_review_status_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'review_status_catalog'=>$this->review_status_catalog(),'sections'=>$this->readiness_sections()]); }
+
+    public function rest_brief_readiness(WP_REST_Request $request) {
+        $payload = $request->get_json_params(); if (!is_array($payload)) $payload = [];
+        $inputs = isset($payload['inputs']) && is_array($payload['inputs']) ? $payload['inputs'] : [];
+        $results = isset($payload['results']) && is_array($payload['results']) ? $payload['results'] : $this->analyze_inputs($inputs);
+        $packet = isset($payload['packet']) && is_array($payload['packet']) ? $payload['packet'] : [];
+        $audit = isset($payload['audit']) && is_array($payload['audit']) ? $payload['audit'] : [];
+        if ($this->settings()['backend_enabled']==='1') {
+            $backend = $this->backend_request('/brief-readiness', ['inputs'=>$inputs,'results'=>$results,'packet'=>$packet,'audit'=>$audit,'moduleArtifacts'=>isset($payload['moduleArtifacts'])?$payload['moduleArtifacts']:[],'reviewOverrides'=>isset($payload['reviewOverrides'])?$payload['reviewOverrides']:[]]);
+            if (!is_wp_error($backend)) return rest_ensure_response($backend);
+        }
+        return rest_ensure_response($this->generate_brief_readiness($inputs, $results, $packet, $audit));
+    }
 
     public function rest_integrated_brief(WP_REST_Request $request) {
         $payload = $request->get_json_params(); if (!is_array($payload)) $payload = [];
@@ -940,6 +986,38 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     }
 
     private function brief_money($value) { return is_numeric($value) ? '$' . number_format((float)$value, 0) : $this->text_or_default($value, 'n/a'); }
+
+
+    private function review_status_catalog() { return ['review_version'=>self::VERSION,'states'=>[['id'=>'not_started','label'=>'Not started'],['id'=>'needs_evidence','label'=>'Needs evidence'],['id'=>'needs_review','label'=>'Needs review'],['id'=>'needs_expert_review','label'=>'Needs expert review'],['id'=>'ready_for_draft','label'=>'Ready for draft'],['id'=>'ready_for_export','label'=>'Ready for export']],'export_gate'=>['draft_minimum'=>50,'reviewed_export_minimum'=>75,'professional_reliance'=>'Requires qualified human review regardless of score.']]; }
+    private function readiness_sections() { return [['id'=>'framing','label'=>'Problem Framing','module_id'=>'catalyst-canvas','weight'=>10,'required'=>true,'expert_review'=>false],['id'=>'evidence','label'=>'Evidence & Measurement','module_id'=>'catalyst-data','weight'=>16,'required'=>true,'expert_review'=>false],['id'=>'scenarios','label'=>'Scenario Analysis','module_id'=>'catalyst-analytics-r','weight'=>10,'required'=>false,'expert_review'=>false],['id'=>'impact','label'=>'Impact Measurement','module_id'=>'global-impact-catalyst','weight'=>12,'required'=>true,'expert_review'=>false],['id'=>'claims','label'=>'Claim & Narrative Risk','module_id'=>'catalyst-narrative-risk','weight'=>12,'required'=>true,'expert_review'=>true],['id'=>'finance','label'=>'Financial Tradeoffs','module_id'=>'catalyst-finance','weight'=>14,'required'=>true,'expert_review'=>true],['id'=>'recovery','label'=>'Execution & Recovery','module_id'=>'catalyst-grit','weight'=>8,'required'=>false,'expert_review'=>false],['id'=>'audit','label'=>'Audit & Provenance','module_id'=>'audit','weight'=>10,'required'=>true,'expert_review'=>false],['id'=>'synthesis','label'=>'Integrated Brief','module_id'=>'decision-studio','weight'=>8,'required'=>true,'expert_review'=>false]]; }
+    private function section_value($packet, $sid, $results=[], $audit=[]) { if($sid==='framing') return $packet['decision_framing'] ?? ($packet['framing'] ?? ($packet['project']['decision_question'] ?? null)); if($sid==='evidence') return $packet['evidence_and_measurement']['records'] ?? ($packet['evidence_records'] ?? ($packet['sources'] ?? ($audit['source_ledger'] ?? []))); if($sid==='scenarios') return $packet['scenarios']['records'] ?? ($packet['scenario_analysis'] ?? ($results['scenarios'] ?? [])); if($sid==='impact') return $packet['impact_measurement']['records'] ?? ($packet['impact_records'] ?? []); if($sid==='claims') return $packet['claim_and_risk_review']['records'] ?? ($packet['claim_reviews'] ?? ($audit['claim_trace'] ?? [])); if($sid==='finance') return $packet['financial_tradeoffs'] ?? ($packet['finance_analysis'] ?? ($results['finance'] ?? [])); if($sid==='recovery') return $packet['execution_and_recovery'] ?? ($packet['execution_recovery'] ?? []); if($sid==='audit') return $packet['audit_and_provenance'] ?? ($audit ?: ($packet['audit_trail'] ?? [])); if($sid==='synthesis') return $packet['integrated_decision_brief'] ?? ($results['scores'] ?? ($results['status'] ?? null)); return null; }
+    private function section_present($v) { return !($v===null || $v==='' || $v===[] || $v===new stdClass()); }
+    private function review_state($score, $flags, $required, $expert) { $critical=false; $high=false; foreach($flags as $f){ if(($f['severity']??'')==='critical')$critical=true; if(($f['severity']??'')==='high')$high=true; } if($score<=0)return 'not_started'; if($critical||($required&&$score<40))return 'needs_evidence'; if($expert&&($high||$score<90))return 'needs_expert_review'; if($score<70||$high)return 'needs_review'; if($score<90)return 'ready_for_draft'; return 'ready_for_export'; }
+    private function generate_brief_readiness($inputs, $results, $packet=[], $audit=[]) {
+        if(!$packet) $packet = $this->decision_packet_template();
+        if(!$audit) $audit = $this->generate_audit_provenance($inputs, $results, ['packet'=>$packet])['audit'];
+        $source_count = count(is_array($packet['sources'] ?? null)?$packet['sources']:[]) + count(is_array($audit['source_ledger'] ?? null)?$audit['source_ledger']:[]);
+        $assumption_count = count(is_array($packet['assumptions'] ?? null)?$packet['assumptions']:[]);
+        $calculation_count = count(is_array($packet['calculation_trace'] ?? null)?$packet['calculation_trace']:[]);
+        $slots = is_array($packet['module_slots'] ?? null)?$packet['module_slots']:[]; $attached=[]; foreach($slots as $m){ if(is_array($m)&&($m['status']??'')==='attached') $attached[$m['module_id']??'']=true; }
+        $sections=[]; $issues=[]; $total=0; $weighted=0;
+        foreach($this->readiness_sections() as $sec){ $sid=$sec['id']; $value=$this->section_value($packet,$sid,$results,$audit); $present=$this->section_present($value); $score=$present?55:0; $flags=[]; if(isset($attached[$sec['module_id']]))$score+=20;
+            if($sid==='framing'){ if(!empty($inputs['decisionQuestion']))$score+=20; }
+            elseif($sid==='evidence'){ if($source_count>0)$score+=min(25,$source_count*8); else $flags[]=['severity'=>'critical','section'=>$sid,'issue'=>'No source or evidence records are attached.','action'=>'Import Catalyst Data records or add source ledger entries.']; if(floatval($inputs['dataConfidence']??70)<60)$flags[]=['severity'=>'high','section'=>$sid,'issue'=>'Data confidence is below 60.','action'=>'Document source quality, method notes, and review status.']; }
+            elseif($sid==='scenarios'){ if($present)$score+=25; else {$score=35; $flags[]=['severity'=>'medium','section'=>$sid,'issue'=>'No imported scenario artifact is attached.','action'=>'Import Catalyst Analytics R or use built-in scenarios as a draft.'];} }
+            elseif($sid==='impact'){ if($present)$score+=25; else $flags[]=['severity'=>'high','section'=>$sid,'issue'=>'Impact record is missing.','action'=>'Import Global Impact Catalyst.']; }
+            elseif($sid==='claims'){ if($present)$score+=20; else $flags[]=['severity'=>'high','section'=>$sid,'issue'=>'Claim review is missing.','action'=>'Import Narrative Risk before publishing claims.']; }
+            elseif($sid==='finance'){ if($present)$score+=15; if(floatval($inputs['capex']??0)>0&&floatval($inputs['annualSavings']??0)>0)$score+=15; else $flags[]=['severity'=>'high','section'=>$sid,'issue'=>'Finance assumptions are incomplete.','action'=>'Enter CAPEX and annual savings or import Catalyst Finance.']; if(!$assumption_count)$flags[]=['severity'=>'medium','section'=>$sid,'issue'=>'No imported assumptions register is attached.','action'=>'Generate audit/provenance before final export.']; }
+            elseif($sid==='recovery'){ if($present)$score+=30; else {$score=35; $flags[]=['severity'=>'medium','section'=>$sid,'issue'=>'Execution/recovery artifact is missing.','action'=>'Import Catalyst Grit.'];} }
+            elseif($sid==='audit'){ if($present)$score+=20; if($source_count)$score+=15; if($assumption_count||!empty($audit['assumptions_register']))$score+=15; if($calculation_count||!empty($audit['calculation_trace']))$score+=15; if(!$source_count)$flags[]=['severity'=>'critical','section'=>$sid,'issue'=>'Audit source ledger is incomplete.','action'=>'Generate audit/provenance after importing evidence.']; }
+            elseif($sid==='synthesis'){ if(!empty($results['scores']))$score+=25; if(!empty($results['risk']))$score+=15; if(!empty($results['finance']))$score+=10; if(!empty($results['emissions']))$score+=10; }
+            $score=max(0,min(100,$score)); foreach($flags as $f)$issues[]=$f; $state=$this->review_state($score,$flags,$sec['required'],$sec['expert_review']); $sections[]=['id'=>$sid,'label'=>$sec['label'],'module_id'=>$sec['module_id'],'required'=>$sec['required'],'expert_review'=>$sec['expert_review'],'score'=>round($score,1),'review_state'=>$state,'status_label'=>ucwords(str_replace('_',' ',$state)),'present'=>$present,'flags'=>$flags]; $total+=$sec['weight']; $weighted+=$sec['weight']*$score; }
+        $readiness=round($weighted/max(1,$total),1); $critical=0; $high=0; foreach($issues as $i){ if(($i['severity']??'')==='critical')$critical++; if(($i['severity']??'')==='high')$high++; } $expert=0; $required_block=false; foreach($sections as $s){ if($s['review_state']==='needs_expert_review')$expert++; if($s['required'] && in_array($s['review_state'],['not_started','needs_evidence'],true))$required_block=true; }
+        $overall = ($critical||$required_block)?'needs_evidence':($expert?'needs_expert_review':($readiness>=85&&$high===0?'ready_for_export':($readiness>=65?'ready_for_draft':'needs_review')));
+        $next=[]; foreach(array_slice($issues,0,8) as $i)$next[]=$i['action']??($i['issue']??'Review unresolved issue.'); if(!$next)$next=['Generate the integrated brief, export the audit appendix, and complete applicable expert reviews.'];
+        $readiness_obj=['ok'=>true,'version'=>self::VERSION,'readiness_version'=>self::VERSION,'readiness_percent'=>$readiness,'overall_review_state'=>$overall,'overall_status_label'=>ucwords(str_replace('_',' ',$overall)),'sections'=>$sections,'unresolved_issues'=>$issues,'counts'=>['sources'=>$source_count,'assumptions'=>$assumption_count,'calculations'=>$calculation_count,'critical_issues'=>$critical,'high_issues'=>$high,'sections_ready_for_export'=>count(array_filter($sections,function($s){return $s['review_state']==='ready_for_export';})),'sections_needing_expert_review'=>$expert],'export_gate'=>['draft_brief_allowed'=>$readiness>=50,'reviewed_export_allowed'=>$readiness>=75&&$critical===0&&!$required_block,'professional_reliance_allowed'=>false,'blocking_issues'=>array_values(array_filter($issues,function($i){return in_array($i['severity']??'',['critical','high'],true);} ))],'required_reviews'=>['Data/source review','Finance assumptions review','Narrative/claim risk review','Professional review for regulated, safety-critical, financial, legal, engineering, medical, tax, compliance, assurance, or certification use'],'next_actions'=>array_values(array_unique($next)),'warnings'=>['Brief readiness is a workflow quality gate, not approval, assurance, certification, or professional signoff.','Professional reliance remains disallowed without qualified human review regardless of readiness score.']];
+        return ['ok'=>true,'version'=>self::VERSION,'readiness'=>$readiness_obj,'decision_packet'=>$packet,'results'=>$results,'audit'=>$audit,'review_status_catalog'=>$this->review_status_catalog()];
+    }
 
     private function integrated_brief_markdown($brief) {
         $bullets = function($items) { if (!is_array($items) || !$items) return "- None recorded."; return implode("\n", array_map(function($x){ return '- ' . (is_array($x) ? wp_json_encode($x) : sanitize_text_field(strval($x))); }, $items)); };

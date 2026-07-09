@@ -1,0 +1,27 @@
+{
+  "name": "Sustainable Catalyst Decision Studio",
+  "version": "1.4.0",
+  "release": "Brief Readiness and Review Status",
+  "description": "Section-level readiness scoring, review status, unresolved issue flags, export gates, and Decision Packet quality controls.",
+  "backend_endpoints": [
+    "/review/status-template",
+    "/brief-readiness",
+    "/decision-packet/readiness",
+    "/review/status"
+  ],
+  "wordpress_routes": [
+    "/wp-json/scds/v1/review/status-template",
+    "/wp-json/scds/v1/brief-readiness",
+    "/wp-json/scds/v1/decision-packet/readiness",
+    "/wp-json/scds/v1/review/status"
+  ],
+  "review_states": [
+    "not_started",
+    "needs_evidence",
+    "needs_review",
+    "needs_expert_review",
+    "ready_for_draft",
+    "ready_for_export"
+  ],
+  "boundaries": "Readiness is a workflow quality gate, not professional approval, assurance, certification, legal advice, financial advice, engineering review, or compliance signoff."
+}

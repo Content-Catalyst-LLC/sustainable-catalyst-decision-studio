@@ -3,7 +3,7 @@ Contributors: Content Catalyst LLC
 Tags: sustainability, decision support, scenario analysis, scorecards, risk
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: MIT
 
 Sustainable Catalyst Decision Studio provides integrated sustainability decision-support workflows connecting problem framing, data records, scenarios, impact measurement, claim review, finance, recovery, four-pillar synthesis, and exportable decision briefs.
@@ -39,3 +39,8 @@ Sustainable Catalyst Decision Studio provides integrated sustainability decision
 * Adds Integrated Brief Generator for professional Decision Packet memos.
 * Adds Markdown, HTML, JSON, and print/PDF-ready exports.
 * Adds WordPress REST route /wp-json/scds/v1/integrated-brief.
+
+
+## v1.4.0 — Brief Readiness and Review Status
+
+Adds section-level Decision Packet readiness scoring, review status states, unresolved issue flags, export gates, and a public Readiness tab.
