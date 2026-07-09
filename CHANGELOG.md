@@ -1,3 +1,11 @@
+## v1.7.0 — Professional Public Landing Page and Demo Refresh
+
+- Added public landing and demo shortcode modes.
+- Added backend and WordPress public template endpoints.
+- Added admin Public Landing & Demo guidance.
+- Added launch-ready workflow copy and scoped public-page CSS.
+- Updated tests, docs, terminal commands, and integration manifest.
+
 ## v1.6.0 — Saved Decision Packets and Export Center
 
 - Added Saved Decision Packet structure and browser-local save/load/delete workflow.

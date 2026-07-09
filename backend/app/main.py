@@ -9,7 +9,7 @@ import os
 import urllib.request
 import urllib.error
 
-APP_VERSION = "1.6.0"
+APP_VERSION = "1.7.0"
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
 
 class DecisionInputs(BaseModel):
@@ -287,7 +287,7 @@ def module_integrations() -> List[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.6.0",
+        "packet_version": "1.7.0",
         "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio",
         "project": {
             "project_name": "",
@@ -332,7 +332,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.6.0",
+        "audit_version": "1.7.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -893,7 +893,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
     return {
         "ok": True,
         "version": APP_VERSION,
-        "decision_packet_version": "1.6.0",
+        "decision_packet_version": "1.7.0",
         "workflow_readiness_percent": readiness,
         "filled_modules": filled,
         "missing_modules": missing,
@@ -927,7 +927,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
 
 
 def review_status_catalog() -> Dict[str, Any]:
-    """Review state vocabulary used by v1.6.0 readiness gates."""
+    """Review state vocabulary used by v1.7.0 readiness gates."""
     return {
         "review_version": APP_VERSION,
         "states": [
@@ -1793,6 +1793,66 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
         bundle["exports"]["decision_packet_json"].pop("module_artifacts_raw", None)
     return {"ok": True, "version": APP_VERSION, "export_bundle": bundle, "export_center": export_center_template()}
 
+
+def public_landing_template() -> Dict[str, Any]:
+    """Professional public-facing product-page structure for Decision Studio v1.7.0."""
+    return {
+        "page_version": APP_VERSION,
+        "headline": "Decision Studio",
+        "positioning": "An integrated sustainability decision-support workspace that turns framing, evidence, scenarios, impact measures, claims, financial tradeoffs, recovery factors, and audit provenance into a reviewable four-pillar decision brief.",
+        "primary_shortcode": "[sc_decision_studio mode=\"full\" title=\"Sustainable Catalyst Decision Studio\"]",
+        "landing_shortcode": "[sc_decision_studio mode=\"landing\" title=\"Sustainable Catalyst Decision Studio\"]",
+        "demo_shortcode": "[sc_decision_studio mode=\"demo\" title=\"Sustainable Catalyst Decision Studio Demo\"]",
+        "workflow": [
+            {"step": "Frame", "module": "Catalyst Canvas", "output": "Decision question, audience, POV, HMW prompt, prototype, and test plan"},
+            {"step": "Anchor", "module": "Catalyst Data", "output": "Evidence records, sources, confidence, period, and method notes"},
+            {"step": "Model", "module": "Catalyst Analytics R", "output": "Scenario assumptions, emissions budget, trajectories, and interpretation notes"},
+            {"step": "Measure", "module": "Global Impact Catalyst", "output": "Impact records, baselines, current values, targets, and progress notes"},
+            {"step": "Review", "module": "Narrative Risk", "output": "Claim review, evidence strength, uncertainty, volatility, and consequence flags"},
+            {"step": "Evaluate", "module": "Catalyst Finance", "output": "NPV, ROI, payback, benefit-cost ratio, carbon cost, and tradeoff flags"},
+            {"step": "Sustain", "module": "Catalyst Grit", "output": "Recovery pressure, energy, support, clarity, next actions, and execution risk"},
+            {"step": "Decide", "module": "Decision Studio", "output": "Four-pillar brief, audit appendix, readiness gate, export bundle, and Workbench handoffs"},
+        ],
+        "sections": [
+            "Integrated platform workflow",
+            "Decision Packet workspace",
+            "Module artifact adapters",
+            "Audit and provenance",
+            "Brief readiness and review status",
+            "Scenario comparison",
+            "Workbench handoff",
+            "Saved packets and export center",
+        ],
+        "boundaries": [
+            "Educational and decision-support oriented; not professional advice.",
+            "No ESG, SDG, assurance, compliance, engineering, legal, medical, financial, tax, or investment certification.",
+            "AI may assist drafting and interpretation; deterministic calculations, assumptions, and human review remain visible.",
+        ],
+    }
+
+
+def public_demo_template() -> Dict[str, Any]:
+    """Professional demo-page structure for landing pages and platform demos."""
+    return {
+        "demo_version": APP_VERSION,
+        "headline": "Decision Studio Demo",
+        "recommended_demo_flow": [
+            "Open the demo with default fleet-electrification inputs.",
+            "Run the scorecard and review four-pillar results.",
+            "Generate brief readiness and check unresolved issues.",
+            "Compare scenarios and inspect baseline deltas.",
+            "Generate Workbench handoff recommendations.",
+            "Save the Decision Packet locally or export a complete bundle.",
+        ],
+        "demo_cards": [
+            {"title": "Integrated Workflow", "description": "Show how Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, Grit, and Decision Studio fit together.", "shortcode": "[sc_decision_studio mode=\"workflow\"]"},
+            {"title": "Readiness Review", "description": "Check whether the packet is complete enough for a draft brief or export.", "shortcode": "[sc_decision_studio mode=\"readiness\"]"},
+            {"title": "Scenario Comparison", "description": "Rank baseline, conservative, expected, ambitious, and stress-test options.", "shortcode": "[sc_decision_studio mode=\"scenario\"]"},
+            {"title": "Export Center", "description": "Generate JSON, Markdown, HTML, audit, readiness, scenario, and handoff exports.", "shortcode": "[sc_decision_studio mode=\"export\"]"},
+        ],
+        "public_copy": "Use Canvas to frame. Use Data to anchor. Use Analytics R to model. Use Global Impact to measure. Use Narrative Risk to review. Use Finance to evaluate. Use Grit to sustain. Use Decision Studio to decide.",
+    }
+
 def _env_first(*names: str) -> str:
     """Return the first non-empty environment variable from a list of accepted names."""
     for name in names:
@@ -2100,6 +2160,15 @@ def decision_packet_export_bundle_endpoint(req: ExportBundleRequest):
     return generate_export_bundle(req)
 
 
+@app.get("/public/landing-template")
+def public_landing_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "landing": public_landing_template()}
+
+@app.get("/public/demo-template")
+def public_demo_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "demo": public_demo_template()}
+
+
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"]}

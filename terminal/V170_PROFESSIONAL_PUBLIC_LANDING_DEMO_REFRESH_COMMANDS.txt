@@ -1,0 +1,21 @@
+cd ~/Downloads
+
+chmod +x push_decision_studio_v1_7_0_public_landing_demo_refresh_to_github.sh
+./push_decision_studio_v1_7_0_public_landing_demo_refresh_to_github.sh
+
+Then redeploy the Decision Studio service on Render.
+
+Render settings:
+Root Directory: backend
+Build Command: pip install -r requirements.txt
+Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+PYTHON_VERSION=3.12.11
+
+In WordPress, upload:
+sustainable-catalyst-decision-studio-plugin-v1.7.0.zip
+
+Recommended public page shortcode:
+[sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
+
+Recommended demo shortcode:
+[sc_decision_studio mode="demo" title="Decision Studio Demo"]

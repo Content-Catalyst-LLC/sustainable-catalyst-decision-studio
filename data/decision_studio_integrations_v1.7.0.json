@@ -1,0 +1,25 @@
+{
+  "version": "1.7.0",
+  "release": "Professional Public Landing Page and Demo Refresh",
+  "shortcodes": [
+    "[sc_decision_studio mode=\"landing\"]",
+    "[sc_decision_studio mode=\"demo\"]",
+    "[sc_decision_studio mode=\"full\"]",
+    "[sc_decision_studio mode=\"export\"]"
+  ],
+  "endpoints": [
+    "/public/landing-template",
+    "/public/demo-template"
+  ],
+  "workflow": [
+    "Canvas",
+    "Data",
+    "Analytics R",
+    "Global Impact",
+    "Narrative Risk",
+    "Finance",
+    "Grit",
+    "Decision Studio"
+  ],
+  "boundary": "Educational decision support only; not professional advice, approval, certification, assurance, or regulated review."
+}

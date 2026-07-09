@@ -1,6 +1,6 @@
-# Decision Studio v1.6.0 — Saved Decision Packets and Export Center
+# Decision Studio v1.7.0 — Saved Decision Packets and Export Center
 
-Decision Studio v1.6.0 adds a persistence and export layer around the Decision Packet workflow.
+Decision Studio v1.7.0 adds a persistence and export layer around the Decision Packet workflow.
 
 ## Added
 
