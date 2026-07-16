@@ -1,0 +1,126 @@
+{
+  "release": "1.14.0",
+  "release_name": "Outcomes, Monitoring, and Reassessment",
+  "release_date": "2026-07-16",
+  "build_fingerprint": "scds-v1.14.0-outcomes-monitoring-reassessment",
+  "source_commit": "release-v1.14.0",
+  "schemas": {
+    "decision_packet": "scds-decision-packet/1.7",
+    "platform_artifact": "scds-platform-artifact/1.0",
+    "evidence_record": "scds-evidence-record/1.0",
+    "decision_governance": "scds-decision-governance/1.0",
+    "review_event": "scds-review-event/1.0",
+    "scenario_studio": "scds-scenario-studio/1.0",
+    "collaboration_room": "scds-collaborative-decision-room/1.0",
+    "collaboration_event": "scds-collaboration-event/1.0",
+    "contact_engagement_handoff": "sc-contact-engagement-handoff/1.0",
+    "institutional_decision_pack": "scds-institutional-decision-pack/1.0",
+    "decision_pack_application": "scds-decision-pack-application/1.0",
+    "decision_publication": "scds-decision-publication/1.0",
+    "publication_handoff": "scds-publication-handoff/1.0",
+    "publication_redaction": "scds-publication-redaction/1.0",
+    "outcome_monitoring": "scds-outcome-monitoring/1.0",
+    "reassessment_event": "scds-reassessment-event/1.0",
+    "decision_registry_entry": "scds-decision-registry-entry/1.0"
+  },
+  "wordpress": {
+    "plugin_version": "1.14.0",
+    "database_version": "1.8.0",
+    "api_namespace": "scds/v1",
+    "outcome_monitoring_storage": "outcome_monitoring_json",
+    "publication_storage": "publication_json",
+    "decision_pack_storage": "decision_pack_json",
+    "canonical_room_storage": "wp_scds_rooms",
+    "membership_storage": "wp_scds_room_members",
+    "event_storage": "wp_scds_room_events"
+  },
+  "backend": {
+    "version": "1.14.0",
+    "root_dir": "backend",
+    "start_command": "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+  },
+  "platform_products": [
+    "knowledge-library",
+    "research-librarian",
+    "site-intelligence",
+    "workbench",
+    "research-lab",
+    "platform-core"
+  ],
+  "outcomes_monitoring": {
+    "statuses": [
+      "planning",
+      "on_track",
+      "watch",
+      "reassessment_required",
+      "closed"
+    ],
+    "lifecycle_statuses": [
+      "not_implemented",
+      "implemented",
+      "amended",
+      "suspended",
+      "retired"
+    ],
+    "indicator_directions": [
+      "increase",
+      "decrease",
+      "range"
+    ],
+    "trigger_types": [
+      "indicator_above",
+      "indicator_below",
+      "overdue_milestone",
+      "assumption_invalidated",
+      "material_risk",
+      "scheduled_reassessment"
+    ],
+    "site_intelligence_connections": true,
+    "tamper_evident_events": true,
+    "human_reassessment_required": true,
+    "human_amendment_required": true,
+    "human_retirement_required": true,
+    "ai_approval_allowed": false
+  },
+  "compatibility": {
+    "shortcodes_preserved": true,
+    "rest_routes_preserved": true,
+    "packet_schema_breaking_changes": false,
+    "typed_platform_artifacts": true,
+    "legacy_artifact_adapters_preserved": true,
+    "v1_8_handoff_contracts_preserved": true,
+    "v1_9_governance_preserved": true,
+    "v1_10_scenario_studio_preserved": true,
+    "v1_11_collaboration_preserved": true,
+    "v1_12_decision_packs_preserved": true,
+    "v1_13_publication_studio_preserved": true
+  },
+  "limits": {
+    "max_request_bytes": 1048576,
+    "public_rate_limit": 60,
+    "window_seconds": 60,
+    "batch_import_maximum": 100
+  },
+  "checks": [
+    "107 backend tests",
+    "outcome monitoring contract tests",
+    "indicator direction and tolerance tests",
+    "observation and event hash tests",
+    "reassessment authorization tests",
+    "amendment and retirement tests",
+    "Decision Registry tests",
+    "Decision Packet 1.7 tests",
+    "persistence and export tests",
+    "publication regression tests",
+    "Decision Pack regression tests",
+    "collaboration regression tests",
+    "scenario regression tests",
+    "governance regression tests",
+    "backend compile",
+    "JavaScript syntax",
+    "PHP syntax",
+    "JSON validation",
+    "version parity",
+    "plugin package structure"
+  ]
+}

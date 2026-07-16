@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.14.0 — Outcomes, Monitoring, and Reassessment
+
+- Added commitments, decision owners, implementation owners, targets, indicators, and source-aware observations.
+- Added direction-aware baseline, target, actual, tolerance, variance, and progress evaluation.
+- Added Site Intelligence monitoring connections with source, methodology, freshness, and confidence context.
+- Added implementation milestones, overdue detection, emerging risks, and assumption invalidation.
+- Added threshold, milestone, risk, assumption, and scheduled reassessment triggers.
+- Added named-human reassessment records, authorized amendments, and retirement actions.
+- Added append-only hashed monitoring events, post-implementation reviews, lessons learned, and Decision Registry records.
+- Added Decision Packet schema 1.7 and WordPress database version 1.8.0.
+- Preserved publication, Decision Packs, collaboration, scenarios, governance, typed platform handoffs, and legacy adapters.
+- Expanded the backend suite to 107 tests.
+
 ## v1.13.0 — Decision Briefing and Publication Studio
 
 - Added twelve governed publication types.

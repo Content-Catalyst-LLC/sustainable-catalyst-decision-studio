@@ -1,25 +1,24 @@
 === Sustainable Catalyst Decision Studio ===
 Contributors: content-catalyst
-Tags: decision support, governance, publication, citations, evidence, sustainability
+Tags: decision support, outcomes, monitoring, governance, publication, evidence, sustainability
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.13.0
+Stable tag: 1.14.0
 License: GPLv2 or later
 
-Decision Briefing and Publication Studio with citation-native governed outputs, redaction controls, institutional Decision Packs, collaboration, scenarios, evidence handoffs, audit trails, and export bundles.
+Outcomes, monitoring, and human reassessment with governed publications, institutional Decision Packs, collaboration, scenarios, evidence handoffs, audit trails, and export bundles.
 
 == Description ==
 
-Decision Studio v1.13.0 converts the governed Decision Packet into publication-grade decision artifacts while preserving evidence anchors, Harvard-style citations, visibility controls, deterministic redaction records, governance gates, and structured publication handoffs.
+Decision Studio v1.14.0 extends the governed Decision Packet through implementation and observed outcomes. It tracks commitments, accountable owners, baselines, targets, actual values, milestones, emerging risks, invalidated assumptions, reassessment triggers, amendments, lessons learned, retirement, and a durable Decision Registry entry.
 
-Twelve output types cover executive memos, technical reports, board briefs, alternatives analyses, public dossiers, evidence and audit appendices, assumptions and methodology records, implementation plans, dissenting views, and post-decision monitoring plans.
-
-Reviewed and public publications remain blocked until the Decision Governance and Review Center permits release. Generated material does not approve, certify, assure, or professionally sign off a decision.
+Monitoring observations retain source, methodology, freshness, confidence, and Site Intelligence context. Reassessment, amendment, and retirement require named human actors. The system does not automatically certify causality, performance, compliance, assurance, or professional sign-off.
 
 == Shortcodes ==
 
 [sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]
+[sc_decision_studio mode="outcomes" title="Outcomes, Monitoring, and Reassessment"]
 [sc_decision_studio mode="publication" title="Decision Briefing and Publication Studio"]
 [sc_decision_studio mode="packs" title="Institutional Decision Packs"]
 [sc_decision_studio mode="room" title="Collaborative Decision Room"]
@@ -28,11 +27,12 @@ Reviewed and public publications remain blocked until the Decision Governance an
 
 == Changelog ==
 
-= 1.13.0 =
-* Added twelve governed decision publication types.
-* Added Harvard citation registry and evidence anchors.
-* Added section-level private, institutional, and public visibility.
-* Added deterministic redaction reports and governance-gated reviewed/public outputs.
-* Added print-ready Markdown and HTML plus publication manifests and handoffs.
-* Added Decision Packet schema 1.6 and WordPress database version 1.7.0.
-* Preserved Decision Packs, collaboration, scenarios, governance, typed platform handoffs, and legacy adapters.
+= 1.14.0 =
+* Added commitments, owners, targets, indicators, observations, and implementation milestones.
+* Added actual-versus-expected evaluation with direction-aware tolerances.
+* Added Site Intelligence monitoring connections and source-aware observations.
+* Added emerging-risk, assumption-invalidation, overdue-milestone, threshold, and scheduled reassessment triggers.
+* Added human-owned reassessment records and human-authorized amendments and retirement.
+* Added post-implementation review, lessons learned, and Decision Registry records.
+* Added Decision Packet schema 1.7 and WordPress database version 1.8.0.
+* Preserved publication, Decision Packs, collaboration, scenarios, governance, typed platform handoffs, and legacy adapters.

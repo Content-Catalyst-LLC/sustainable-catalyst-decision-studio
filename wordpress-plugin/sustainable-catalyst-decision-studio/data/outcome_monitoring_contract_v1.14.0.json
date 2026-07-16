@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/contracts/scds-outcome-monitoring-1.0.schema.json",
+  "title": "Sustainable Catalyst Decision Studio Outcome Monitoring Record",
+  "type": "object",
+  "required": [
+    "schema",
+    "monitoring_version",
+    "status",
+    "decision_status",
+    "indicators",
+    "implementation_milestones",
+    "reassessment_triggers",
+    "summary",
+    "decision_registry_entry"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-outcome-monitoring/1.0"
+    },
+    "monitoring_version": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "planning",
+        "on_track",
+        "watch",
+        "reassessment_required",
+        "closed"
+      ]
+    },
+    "decision_status": {
+      "enum": [
+        "not_implemented",
+        "implemented",
+        "amended",
+        "suspended",
+        "retired"
+      ]
+    },
+    "decision_owner": {
+      "type": "object"
+    },
+    "implementation_owner": {
+      "type": "object"
+    },
+    "commitments": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "indicators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "indicator_id"
+        ],
+        "properties": {
+          "indicator_id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "direction": {
+            "enum": [
+              "increase",
+              "decrease",
+              "range",
+              "lower_is_better",
+              "higher_is_better",
+              "below",
+              "within_range"
+            ]
+          },
+          "observations": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "status": {
+            "enum": [
+              "no_data",
+              "on_track",
+              "at_risk",
+              "off_track"
+            ]
+          }
+        }
+      }
+    },
+    "site_intelligence_connections": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "monitoring_schedule": {
+      "type": "object"
+    },
+    "implementation_milestones": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "emerging_risks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "assumption_invalidations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "reassessment_triggers": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "trigger_evaluations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "monitoring_events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "event_hash": {
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "previous_event_hash": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "reassessment_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "const": "scds-reassessment-event/1.0"
+          },
+          "human_authorization_required": {
+            "const": true
+          },
+          "event_hash": {
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "implementation_amendments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "human_authorized": {
+            "const": true
+          },
+          "amendment_hash": {
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "post_implementation_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "lessons_learned": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "target_count",
+        "targets_on_track",
+        "targets_at_risk",
+        "targets_off_track",
+        "milestones_overdue",
+        "active_material_risks",
+        "invalidated_assumptions",
+        "triggered_reassessments"
+      ]
+    },
+    "governance_alignment": {
+      "type": "object"
+    },
+    "decision_registry_entry": {
+      "type": "object",
+      "required": [
+        "schema",
+        "registry_hash"
+      ],
+      "properties": {
+        "schema": {
+          "const": "scds-decision-registry-entry/1.0"
+        },
+        "registry_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "content_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "boundaries": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,221 @@
+{
+  "schema": "scds-outcome-monitoring/1.0",
+  "monitoring_version": "1.14.0",
+  "status": "reassessment_required",
+  "decision_status": "implemented",
+  "decision_owner": {
+    "name": "Decision Owner",
+    "role": "program sponsor"
+  },
+  "implementation_owner": {
+    "name": "Implementation Lead",
+    "role": "fleet director"
+  },
+  "commitments": [
+    {
+      "commitment_id": "C1",
+      "statement": "Reduce annual fleet emissions while maintaining service availability.",
+      "owner": "Implementation Lead"
+    }
+  ],
+  "targets": [
+    {
+      "target_id": "TAR-1",
+      "statement": "Reduce annual emissions to 800 tCO2e by 2027."
+    }
+  ],
+  "indicators": [
+    {
+      "indicator_id": "emissions",
+      "label": "Annual fleet emissions",
+      "unit": "tCO2e",
+      "direction": "decrease",
+      "baseline_value": 1200,
+      "target_value": 800,
+      "actual_value": 840.0,
+      "tolerance_percent": 10,
+      "observations": [
+        {
+          "observation_id": "OBS-0001",
+          "value": 840,
+          "observed_at": "2026-07-15T15:00:00Z",
+          "source": "site-intelligence",
+          "source_url": "https://sustainablecatalyst.com/platform/site-intelligence/",
+          "methodology": "Annual operational emissions inventory",
+          "confidence": "medium"
+        }
+      ],
+      "status": "at_risk",
+      "variance_from_target": 40.0,
+      "progress_percent": 90.0
+    },
+    {
+      "indicator_id": "uptime",
+      "label": "Service availability",
+      "unit": "%",
+      "direction": "increase",
+      "baseline_value": 95,
+      "target_value": 99,
+      "actual_value": 97.5,
+      "tolerance_percent": 2,
+      "status": "at_risk",
+      "variance_from_target": -1.5,
+      "progress_percent": 62.5
+    }
+  ],
+  "site_intelligence_connections": [
+    {
+      "indicator_id": "emissions",
+      "source_product": "site-intelligence",
+      "source_url": "https://sustainablecatalyst.com/platform/site-intelligence/",
+      "methodology": "Source-aware indicator record",
+      "freshness": "2026-07-15",
+      "confidence": "medium"
+    }
+  ],
+  "monitoring_schedule": {
+    "cadence": "monthly",
+    "last_reviewed_at": "2026-06-16T15:00:00Z",
+    "next_review_at": "2026-08-16T15:00:00Z"
+  },
+  "implementation_milestones": [
+    {
+      "milestone_id": "M1",
+      "title": "Complete fleet deployment",
+      "due_at": "2026-06-30T23:59:59Z",
+      "status": "overdue",
+      "owner": "Implementation Lead",
+      "overdue": true
+    }
+  ],
+  "emerging_risks": [
+    {
+      "risk_id": "R1",
+      "severity": "high",
+      "status": "active",
+      "description": "Supplier constraint may delay remaining vehicle delivery.",
+      "owner": "Procurement Lead"
+    }
+  ],
+  "assumption_invalidations": [
+    {
+      "assumption_id": "A1",
+      "status": "invalidated",
+      "reason": "Energy prices changed materially after approval.",
+      "evidence_refs": [
+        "S1"
+      ]
+    }
+  ],
+  "reassessment_triggers": [
+    {
+      "trigger_id": "RT1",
+      "type": "indicator_above",
+      "indicator_id": "emissions",
+      "threshold": 820,
+      "response": "Open formal reassessment."
+    },
+    {
+      "trigger_id": "RT2",
+      "type": "overdue_milestone",
+      "response": "Review implementation schedule."
+    }
+  ],
+  "trigger_evaluations": [
+    {
+      "trigger_id": "RT1",
+      "type": "indicator_above",
+      "indicator_id": "emissions",
+      "threshold": 820,
+      "response": "Open formal reassessment.",
+      "triggered": true,
+      "evaluated_at": "2026-07-16T15:00:00+00:00",
+      "evidence": {
+        "actual": 840.0,
+        "threshold": 820.0
+      }
+    },
+    {
+      "trigger_id": "RT2",
+      "type": "overdue_milestone",
+      "response": "Review implementation schedule.",
+      "triggered": true,
+      "evaluated_at": "2026-07-16T15:00:00+00:00",
+      "evidence": {
+        "overdue_milestones": [
+          "M1"
+        ]
+      }
+    }
+  ],
+  "monitoring_events": [],
+  "reassessment_history": [],
+  "implementation_amendments": [],
+  "post_implementation_reviews": [],
+  "lessons_learned": [
+    {
+      "lesson_id": "L1",
+      "statement": "Vehicle-delivery dependencies should be modeled as a separate implementation risk."
+    }
+  ],
+  "decision_registry_entry": {
+    "schema": "scds-decision-registry-entry/1.0",
+    "registry_version": "1.14.0",
+    "decision_packet_id": "SCDS-MONITOR-001",
+    "title": "Municipal fleet transition",
+    "decision_question": "Did the approved fleet transition achieve its emissions and service outcomes?",
+    "governance_state": "implemented",
+    "lifecycle_status": "implemented",
+    "monitoring_status": "reassessment_required",
+    "decision_owner": {
+      "name": "Decision Owner",
+      "role": "program sponsor"
+    },
+    "implementation_owner": {
+      "name": "Implementation Lead",
+      "role": "fleet director"
+    },
+    "approved_at": "2026-01-15T15:00:00Z",
+    "implemented_at": "2026-02-01T15:00:00Z",
+    "last_monitored_at": "2026-07-16T15:00:00+00:00",
+    "next_reassessment_at": "2026-08-16T15:00:00Z",
+    "target_summary": {
+      "target_count": 2,
+      "targets_on_track": 0,
+      "targets_at_risk": 2,
+      "targets_off_track": 0,
+      "milestones_overdue": 1,
+      "active_material_risks": 1,
+      "invalidated_assumptions": 1,
+      "triggered_reassessments": 2
+    },
+    "amendment_count": 0,
+    "reassessment_count": 0,
+    "retired_at": "",
+    "registry_hash": "sha256:942fc09284d46c4e668f918be7ccb85bd936ed07d9a5d854aad78a1e6a1180fd"
+  },
+  "summary": {
+    "target_count": 2,
+    "targets_on_track": 0,
+    "targets_at_risk": 2,
+    "targets_off_track": 0,
+    "milestones_overdue": 1,
+    "active_material_risks": 1,
+    "invalidated_assumptions": 1,
+    "triggered_reassessments": 2
+  },
+  "boundaries": [
+    "Monitoring records observed results and implementation evidence; it does not certify causality or performance.",
+    "Lifecycle amendments, suspension, and retirement require accountable human authorization.",
+    "Site Intelligence links provide evidence context; source methodology, freshness, and confidence remain visible."
+  ],
+  "implemented_at": "2026-02-01T15:00:00Z",
+  "governance_alignment": {
+    "governance_state": "implemented",
+    "implementation_monitoring_authorized": true,
+    "note": "Monitoring plans may be drafted at any stage; recorded implementation outcomes should follow human approval and implementation authorization."
+  },
+  "last_evaluated_at": "2026-07-16T15:00:00+00:00",
+  "notes": "Monthly outcome review.",
+  "content_hash": "sha256:fa2fbd68f3435b22e9d5d1701bf8beb1a9c95d6073d400bca462ab0a2ec76a0a"
+}

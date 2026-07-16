@@ -16,11 +16,20 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
-APP_VERSION = "1.13.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.13.0-decision-briefing-publication-studio")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.13.0")
+from app.outcome_monitoring import (
+    OUTCOME_MONITORING_SCHEMA,
+    REASSESSMENT_EVENT_SCHEMA,
+    DECISION_REGISTRY_SCHEMA,
+    OutcomeMonitoringRequest,
+    outcome_monitoring_template,
+    generate_outcome_monitoring,
+)
+
+APP_VERSION = "1.14.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.14.0-outcomes-monitoring-reassessment")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.14.0")
 RELEASE_DATE = "2026-07-16"
-DECISION_PACKET_SCHEMA = "scds-decision-packet/1.6"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/1.7"
 PLATFORM_ARTIFACT_SCHEMA = "scds-platform-artifact/1.0"
 EVIDENCE_RECORD_SCHEMA = "scds-evidence-record/1.0"
 GOVERNANCE_SCHEMA = "scds-decision-governance/1.0"
@@ -55,6 +64,7 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/collaboration/contact-handoff", "/decision-packet/collaboration",
     "/decision-packs/apply", "/decision-packs/validate", "/decision-packet/domain-pack",
     "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication",
+    "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -63,7 +73,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Decision Briefing and Publication Studio",
+        "release_name": "Outcomes, Monitoring, and Reassessment",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -80,6 +90,9 @@ def release_manifest() -> Dict[str, Any]:
         "publication_studio_schema": PUBLICATION_STUDIO_SCHEMA,
         "publication_handoff_schema": PUBLICATION_HANDOFF_SCHEMA,
         "publication_redaction_schema": PUBLICATION_REDACTION_SCHEMA,
+        "outcome_monitoring_schema": OUTCOME_MONITORING_SCHEMA,
+        "reassessment_event_schema": REASSESSMENT_EVENT_SCHEMA,
+        "decision_registry_schema": DECISION_REGISTRY_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -106,6 +119,12 @@ def release_manifest() -> Dict[str, Any]:
             "section_visibility_and_redaction": True,
             "publication_handoffs": True,
             "governed_publication_exports": True,
+            "outcomes_monitoring_reassessment": True,
+            "implementation_milestones": True,
+            "site_intelligence_monitoring_links": True,
+            "assumption_invalidation": True,
+            "reassessment_triggers": True,
+            "decision_registry": True,
         },
     }
 
@@ -312,6 +331,7 @@ class SavedDecisionPacketRequest(BaseModel):
     collaboration: Optional[Dict[str, Any]] = None
     decisionPack: Optional[Dict[str, Any]] = None
     publicationStudio: Optional[Dict[str, Any]] = None
+    outcomeMonitoring: Optional[Dict[str, Any]] = None
     title: str = ""
     status: str = "draft"
     notes: str = ""
@@ -331,6 +351,7 @@ class ExportBundleRequest(BaseModel):
     collaboration: Optional[Dict[str, Any]] = None
     decisionPack: Optional[Dict[str, Any]] = None
     publicationStudio: Optional[Dict[str, Any]] = None
+    outcomeMonitoring: Optional[Dict[str, Any]] = None
     exportAudience: str = "internal"
     includeRawArtifacts: bool = True
     exportLabel: str = "Decision Studio Export Bundle"
@@ -872,7 +893,7 @@ def apply_institutional_decision_pack(req: DecisionPackRequest) -> Dict[str, Any
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.13.0",
+        "packet_version": "1.14.0",
         "workflow": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
@@ -886,6 +907,9 @@ def decision_packet_template() -> Dict[str, Any]:
         "publication_studio_schema": PUBLICATION_STUDIO_SCHEMA,
         "publication_handoff_schema": PUBLICATION_HANDOFF_SCHEMA,
         "publication_redaction_schema": PUBLICATION_REDACTION_SCHEMA,
+        "outcome_monitoring_schema": OUTCOME_MONITORING_SCHEMA,
+        "reassessment_event_schema": REASSESSMENT_EVENT_SCHEMA,
+        "decision_registry_schema": DECISION_REGISTRY_SCHEMA,
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -937,6 +961,10 @@ def decision_packet_template() -> Dict[str, Any]:
         "publication_registry": [],
         "publication_handoffs": [],
         "redaction_log": [],
+        "outcome_monitoring": outcome_monitoring_template(),
+        "decision_registry_entry": {},
+        "reassessment_history": [],
+        "implementation_amendments": [],
         "integrated_decision_brief": {},
         "scenario_comparison": {},
         "scenario_studio": {},
@@ -945,7 +973,7 @@ def decision_packet_template() -> Dict[str, Any]:
         "uncertainty_analysis": {},
         "workbench_handoffs": [],
         "saved_packet": {"saved_at": "", "saved_by": "", "status": "draft", "storage": "browser_or_wordpress"},
-        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json", "publication_json", "publication_markdown", "publication_html", "bibliography_json", "redaction_json", "publication_handoff_json"]},
+        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json", "publication_json", "publication_markdown", "publication_html", "bibliography_json", "redaction_json", "publication_handoff_json", "outcome_monitoring_json", "decision_registry_json", "reassessment_history_json"]},
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -963,7 +991,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.13.0",
+        "audit_version": "1.14.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -3572,7 +3600,7 @@ def export_center_template() -> Dict[str, Any]:
         "saved_packet_fields": [
             "decision_packet_id", "project_name", "decision_question", "status", "updated_at",
             "inputs", "results", "decision_packet", "audit", "readiness", "scenario_comparison", "scenario_studio",
-            "workbench_handoff", "integrated_brief", "governance", "collaboration", "decision_pack", "publication_studio"
+            "workbench_handoff", "integrated_brief", "governance", "collaboration", "decision_pack", "publication_studio", "outcome_monitoring"
         ],
         "exports": [
             {"id": "packet_json", "label": "Decision Packet JSON", "description": "Complete normalized packet with module sections and raw artifact snapshots where included."},
@@ -3592,6 +3620,9 @@ def export_center_template() -> Dict[str, Any]:
             {"id": "bibliography_json", "label": "Bibliography JSON", "description": "Citation registry and evidence-anchor metadata."},
             {"id": "redaction_json", "label": "Redaction Report JSON", "description": "Visibility decisions and deterministic redaction events."},
             {"id": "publication_handoff_json", "label": "Publication Handoffs JSON", "description": "Draft handoffs to Knowledge Library, Research, Publications, and Channel."},
+            {"id": "outcome_monitoring_json", "label": "Outcome Monitoring JSON", "description": "Commitments, targets, observations, milestones, risks, assumptions, triggers, and monitoring status."},
+            {"id": "decision_registry_json", "label": "Decision Registry JSON", "description": "Durable lifecycle record for the approved, implemented, amended, reassessed, or retired decision."},
+            {"id": "reassessment_history_json", "label": "Reassessment History JSON", "description": "Human-owned reassessment events, findings, recommendations, and lifecycle changes."},
         ],
         "warnings": [
             "Saved Decision Packets are working records, not approvals or professional signoff.",
@@ -3629,6 +3660,8 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
     packet["institutional_decision_pack"] = decision_pack
     publication_studio = req.publicationStudio or packet.get("publication_studio") or {}
     packet["publication_studio"] = publication_studio
+    outcome_monitoring = req.outcomeMonitoring or packet.get("outcome_monitoring") or outcome_monitoring_template()
+    packet["outcome_monitoring"] = outcome_monitoring
     packet["saved_packet"] = {"status": saved_status, "storage": "wordpress_canonical_or_client_fallback", "notes": req.notes}
     saved = {
         "packet_version": APP_VERSION,
@@ -3650,6 +3683,7 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
         "collaboration": collaboration,
         "decision_pack": decision_pack,
         "publication_studio": publication_studio,
+        "outcome_monitoring": outcome_monitoring,
         "notes": req.notes,
         "warnings": ["Saved packet is a review artifact; it is not approval, certification, assurance, or professional advice."],
     }
@@ -3675,6 +3709,8 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
     packet["institutional_decision_pack"] = decision_pack
     publication_studio = req.publicationStudio or packet.get("publication_studio") or {}
     packet["publication_studio"] = publication_studio
+    outcome_monitoring = req.outcomeMonitoring or packet.get("outcome_monitoring") or outcome_monitoring_template()
+    packet["outcome_monitoring"] = outcome_monitoring
     audience = str(req.exportAudience or "internal").strip().lower()
     gate = governance.get("export_gate", {}) if isinstance(governance, dict) else {}
     if audience == "reviewed" and not gate.get("reviewed_export_allowed", False):
@@ -3716,6 +3752,9 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
             "bibliography_json": publication_studio.get("bibliography", []) if isinstance(publication_studio, dict) else [],
             "redaction_json": publication_studio.get("redaction", {}) if isinstance(publication_studio, dict) else {},
             "publication_handoff_json": publication_studio.get("publication_handoffs", []) if isinstance(publication_studio, dict) else [],
+            "outcome_monitoring_json": outcome_monitoring,
+            "decision_registry_json": outcome_monitoring.get("decision_registry_entry", packet.get("decision_registry_entry", {})) if isinstance(outcome_monitoring, dict) else {},
+            "reassessment_history_json": outcome_monitoring.get("reassessment_history", packet.get("reassessment_history", [])) if isinstance(outcome_monitoring, dict) else [],
         },
         "export_manifest": export_center_template()["exports"],
         "warnings": export_center_template()["warnings"],
@@ -3727,7 +3766,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.13.0."""
+    """Professional public-facing product-page structure for Decision Studio v1.14.0."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
@@ -3754,6 +3793,7 @@ def public_landing_template() -> Dict[str, Any]:
             "Institutional and domain decision packs",
             "Advanced scenario, sensitivity, threshold, and Workbench handoff",
             "Decision briefing and publication studio",
+            "Outcomes, monitoring, reassessment, and Decision Registry",
             "Saved packets and export center",
         ],
         "schemas": {
@@ -4294,6 +4334,9 @@ def health():
         "publication_studio_schema": PUBLICATION_STUDIO_SCHEMA,
         "publication_handoff_schema": PUBLICATION_HANDOFF_SCHEMA,
         "publication_redaction_schema": PUBLICATION_REDACTION_SCHEMA,
+        "outcome_monitoring_schema": OUTCOME_MONITORING_SCHEMA,
+        "reassessment_event_schema": REASSESSMENT_EVENT_SCHEMA,
+        "decision_registry_schema": DECISION_REGISTRY_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -4555,6 +4598,65 @@ def decision_packet_publication_endpoint(req: PublicationStudioRequest):
     return result
 
 
+def _run_outcome_monitoring(req: OutcomeMonitoringRequest, action: str):
+    return generate_outcome_monitoring(
+        req.model_copy(update={"action": action}),
+        packet_template_factory=decision_packet_template,
+        governance_template_factory=governance_template,
+        app_version=APP_VERSION,
+        packet_schema=DECISION_PACKET_SCHEMA,
+        canonical_hash=_canonical_hash,
+        utc_now=_utc_now,
+    )
+
+
+@app.get("/outcomes/template")
+def outcomes_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "outcome_monitoring": outcome_monitoring_template()}
+
+
+@app.post("/outcomes/evaluate")
+def outcomes_evaluate_endpoint(req: OutcomeMonitoringRequest):
+    return _run_outcome_monitoring(req, "evaluate")
+
+
+@app.post("/outcomes/record-observation")
+def outcomes_record_observation_endpoint(req: OutcomeMonitoringRequest):
+    result = _run_outcome_monitoring(req, "record_observation")
+    if not result.get("ok", False):
+        return JSONResponse(status_code=422, content=result)
+    return result
+
+
+@app.post("/outcomes/reassess")
+def outcomes_reassess_endpoint(req: OutcomeMonitoringRequest):
+    result = _run_outcome_monitoring(req, "reassess")
+    if not result.get("ok", False):
+        return JSONResponse(status_code=422, content=result)
+    return result
+
+
+@app.post("/outcomes/amend")
+def outcomes_amend_endpoint(req: OutcomeMonitoringRequest):
+    result = _run_outcome_monitoring(req, "amend")
+    if not result.get("ok", False):
+        return JSONResponse(status_code=422, content=result)
+    return result
+
+
+@app.post("/outcomes/retire")
+def outcomes_retire_endpoint(req: OutcomeMonitoringRequest):
+    result = _run_outcome_monitoring(req, "retire")
+    if not result.get("ok", False):
+        return JSONResponse(status_code=422, content=result)
+    return result
+
+
+@app.post("/decision-packet/outcomes")
+def decision_packet_outcomes_endpoint(req: OutcomeMonitoringRequest):
+    return _run_outcome_monitoring(req, req.action or "evaluate")
+
+
 @app.get("/audit/template")
 def audit_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "audit": audit_provenance_template()}
@@ -4647,4 +4749,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes"]}

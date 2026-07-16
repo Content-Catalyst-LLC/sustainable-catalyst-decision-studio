@@ -1,0 +1,507 @@
+{
+  "release": "1.14.0",
+  "workflow_label": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
+  "artifact_schema": "scds-platform-artifact/1.0",
+  "evidence_schema": "scds-evidence-record/1.0",
+  "decision_packet_schema": "scds-decision-packet/1.7",
+  "workflow": [
+    {
+      "step": 1,
+      "phase": "Source",
+      "product_id": "knowledge-library",
+      "product_name": "Knowledge Library",
+      "packet_section": "evidence_registry"
+    },
+    {
+      "step": 2,
+      "phase": "Route",
+      "product_id": "research-librarian",
+      "product_name": "Research Librarian",
+      "packet_section": "research_routes"
+    },
+    {
+      "step": 3,
+      "phase": "Observe",
+      "product_id": "site-intelligence",
+      "product_name": "Site Intelligence",
+      "packet_section": "live_evidence"
+    },
+    {
+      "step": 4,
+      "phase": "Calculate",
+      "product_id": "workbench",
+      "product_name": "Workbench",
+      "packet_section": "calculation_trace"
+    },
+    {
+      "step": 5,
+      "phase": "Test",
+      "product_id": "research-lab",
+      "product_name": "Research Lab",
+      "packet_section": "experimental_evidence"
+    },
+    {
+      "step": 6,
+      "phase": "Connect",
+      "product_id": "platform-core",
+      "product_name": "Platform Core",
+      "packet_section": "platform_registry"
+    },
+    {
+      "step": 7,
+      "phase": "Decide",
+      "product_id": "decision-studio",
+      "product_name": "Decision Studio",
+      "packet_section": "integrated_decision_brief"
+    }
+  ],
+  "contracts": [
+    {
+      "product_id": "knowledge-library",
+      "product_name": "Knowledge Library",
+      "artifact_types": [
+        "source_record",
+        "quotation_evidence",
+        "citation_bundle",
+        "bibliography",
+        "collection_context"
+      ],
+      "packet_targets": [
+        "evidence_registry",
+        "sources",
+        "citations",
+        "quotations"
+      ],
+      "expected_payload": [
+        "title",
+        "source_type",
+        "citation",
+        "url",
+        "authors",
+        "published_at",
+        "quotes",
+        "evidence_notes"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    },
+    {
+      "product_id": "research-librarian",
+      "product_name": "Research Librarian",
+      "artifact_types": [
+        "research_route",
+        "source_recommendations",
+        "evidence_gap_report",
+        "related_titles"
+      ],
+      "packet_targets": [
+        "research_routes",
+        "sources",
+        "evidence_gaps",
+        "follow_up_questions"
+      ],
+      "expected_payload": [
+        "query",
+        "route",
+        "recommended_sources",
+        "evidence_gaps",
+        "follow_up_questions",
+        "related_titles"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    },
+    {
+      "product_id": "site-intelligence",
+      "product_name": "Site Intelligence",
+      "artifact_types": [
+        "indicator_record",
+        "country_dossier",
+        "live_observation",
+        "methodology_record",
+        "source_health"
+      ],
+      "packet_targets": [
+        "live_evidence",
+        "evidence_registry",
+        "sources",
+        "methodologies"
+      ],
+      "expected_payload": [
+        "indicator",
+        "geography",
+        "period",
+        "value",
+        "unit",
+        "source",
+        "methodology",
+        "freshness",
+        "confidence"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    },
+    {
+      "product_id": "workbench",
+      "product_name": "Workbench",
+      "artifact_types": [
+        "calculation",
+        "model_output",
+        "graph",
+        "code_result",
+        "technical_report"
+      ],
+      "packet_targets": [
+        "calculation_trace",
+        "workbench_calculations",
+        "assumptions",
+        "technical_artifacts"
+      ],
+      "expected_payload": [
+        "title",
+        "formula",
+        "inputs",
+        "results",
+        "assumptions",
+        "validation_checks",
+        "warnings",
+        "report"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    },
+    {
+      "product_id": "research-lab",
+      "product_name": "Research Lab",
+      "artifact_types": [
+        "experiment",
+        "notebook",
+        "dataset",
+        "instrument_run",
+        "validation_result",
+        "scientific_report"
+      ],
+      "packet_targets": [
+        "experimental_evidence",
+        "datasets",
+        "evidence_registry",
+        "calculation_trace"
+      ],
+      "expected_payload": [
+        "title",
+        "hypothesis",
+        "method",
+        "dataset",
+        "results",
+        "validation",
+        "limitations",
+        "instruments"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    },
+    {
+      "product_id": "platform-core",
+      "product_name": "Platform Core",
+      "artifact_types": [
+        "entity_record",
+        "evidence_ledger_record",
+        "provenance_link",
+        "signed_manifest",
+        "relationship_bundle"
+      ],
+      "packet_targets": [
+        "platform_registry",
+        "entities",
+        "evidence_ledger",
+        "provenance_links"
+      ],
+      "expected_payload": [
+        "entity",
+        "identifiers",
+        "evidence_records",
+        "relationships",
+        "provenance",
+        "signatures"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    }
+  ],
+  "legacy_adapters": [
+    "catalyst-canvas",
+    "catalyst-data",
+    "catalyst-analytics-r",
+    "global-impact-catalyst",
+    "catalyst-narrative-risk",
+    "catalyst-finance",
+    "catalyst-grit"
+  ],
+  "governance_schema": "scds-decision-governance/1.0",
+  "review_event_schema": "scds-review-event/1.0",
+  "governance_center": {
+    "packet_section": "governance_center",
+    "states": [
+      "draft",
+      "evidence_gathering",
+      "analysis",
+      "review",
+      "revision_required",
+      "approved",
+      "rejected",
+      "deferred",
+      "implemented",
+      "retired"
+    ],
+    "routes": [
+      "GET /governance/states",
+      "GET /governance/template",
+      "POST /governance/evaluate",
+      "POST /governance/transition",
+      "POST /decision-packet/governance",
+      "POST /governance/history/verify"
+    ],
+    "approval_is_human_only": true,
+    "review_history": "append-only SHA-256 hash chain",
+    "export_restrictions": [
+      "reviewed",
+      "public"
+    ]
+  },
+  "scenario_studio_schema": "scds-scenario-studio/1.0",
+  "advanced_scenario_studio": {
+    "packet_sections": [
+      "scenario_studio",
+      "sensitivity_analysis",
+      "threshold_analysis",
+      "uncertainty_analysis"
+    ],
+    "routes": [
+      "GET /scenario-studio/template",
+      "POST /scenario-studio/analyze",
+      "POST /scenario-studio/sensitivity",
+      "POST /scenario-studio/threshold",
+      "POST /decision-packet/scenario-studio"
+    ],
+    "analyses": [
+      "weighted ranking",
+      "unweighted ranking",
+      "one-way sensitivity",
+      "tornado ranking",
+      "two-variable screening grid",
+      "threshold and break-even search",
+      "uncertainty envelopes",
+      "time-horizon comparison",
+      "stakeholder distribution",
+      "dominance analysis",
+      "reversibility and option value"
+    ],
+    "workbench_boundary": "Workbench",
+    "governance_preserved": true
+  },
+  "collaboration_room_schema": "scds-collaborative-decision-room/1.0",
+  "collaboration_event_schema": "scds-collaboration-event/1.0",
+  "collaborative_decision_rooms": {
+    "packet_section": "collaboration_room",
+    "canonical_persistence": "wordpress",
+    "visibility": [
+      "private",
+      "restricted",
+      "institutional"
+    ],
+    "roles": [
+      "owner",
+      "facilitator",
+      "editor",
+      "reviewer",
+      "client",
+      "observer"
+    ],
+    "routes": [
+      "GET /collaboration/roles",
+      "GET /collaboration/template",
+      "POST /collaboration/room",
+      "POST /collaboration/action",
+      "POST /collaboration/comment",
+      "POST /collaboration/change-request",
+      "POST /collaboration/snapshot",
+      "POST /collaboration/share",
+      "POST /collaboration/contact-handoff",
+      "POST /decision-packet/collaboration"
+    ],
+    "wordpress_routes": [
+      "GET/POST /wp-json/scds/v1/rooms",
+      "GET/DELETE /wp-json/scds/v1/rooms/{id}",
+      "POST /wp-json/scds/v1/rooms/{id}/action"
+    ],
+    "features": [
+      "section-linked comments",
+      "change requests and resolutions",
+      "packet revisions",
+      "snapshots and comparisons",
+      "notifications",
+      "private invitation grants",
+      "approved-version locks",
+      "Contact and Engagement handoff"
+    ],
+    "activity_history": "append-only SHA-256 hash chain",
+    "governance_preserved": true
+  },
+  "institutional_decision_pack_schema": "scds-institutional-decision-pack/1.0",
+  "decision_pack_application_schema": "scds-decision-pack-application/1.0",
+  "institutional_domain_decision_packs": {
+    "packet_section": "institutional_decision_pack",
+    "pack_ids": [
+      "climate-energy-strategy",
+      "infrastructure-capital-investment",
+      "urban-resilience",
+      "sustainable-procurement",
+      "responsible-ai-governance",
+      "research-program-approval",
+      "environmental-intervention",
+      "humanitarian-development-program",
+      "organizational-policy",
+      "advisory-diagnostic-recommendation"
+    ],
+    "routes": [
+      "GET /decision-packs/catalog",
+      "GET /decision-packs/{pack_id}",
+      "POST /decision-packs/validate",
+      "POST /decision-packs/apply",
+      "POST /decision-packet/domain-pack"
+    ],
+    "applied_sections": [
+      "criteria_registry",
+      "evidence_plan",
+      "indicator_plan",
+      "model_plan",
+      "governance_center.domain_pack_requirements",
+      "domain_readiness_rules",
+      "domain_brief_templates"
+    ],
+    "workbench_execution_boundary": true,
+    "human_approval_required": true,
+    "ai_approval_allowed": false
+  },
+  "decision_publication_schema": "scds-decision-publication/1.0",
+  "publication_handoff_schema": "scds-publication-handoff/1.0",
+  "publication_redaction_schema": "scds-publication-redaction/1.0",
+  "decision_briefing_publication_studio": {
+    "packet_sections": [
+      "publication_studio",
+      "publication_registry",
+      "publication_handoffs",
+      "redaction_log"
+    ],
+    "routes": [
+      "GET /publication-studio/template",
+      "POST /publication-studio/generate",
+      "POST /publication-studio/redact",
+      "POST /publication-studio/handoff",
+      "POST /decision-packet/publication"
+    ],
+    "publication_types": [
+      "executive_decision_memo",
+      "technical_decision_report",
+      "board_leadership_brief",
+      "alternatives_analysis",
+      "public_decision_dossier",
+      "evidence_appendix",
+      "assumptions_register",
+      "methodology_statement",
+      "audit_provenance_appendix",
+      "implementation_plan",
+      "dissenting_view",
+      "monitoring_plan"
+    ],
+    "citation_style": "Harvard",
+    "audiences": {
+      "internal": "no release gate",
+      "reviewed": "reviewed_export_allowed",
+      "public": "public_export_allowed and redaction"
+    },
+    "targets": [
+      "knowledge_library",
+      "research",
+      "publications",
+      "channel"
+    ],
+    "human_review_required": true,
+    "ai_approval_allowed": false
+  },
+  "outcome_monitoring_schema": "scds-outcome-monitoring/1.0",
+  "reassessment_event_schema": "scds-reassessment-event/1.0",
+  "decision_registry_schema": "scds-decision-registry-entry/1.0",
+  "outcomes_monitoring_reassessment": {
+    "packet_sections": [
+      "outcome_monitoring",
+      "decision_registry_entry",
+      "reassessment_history",
+      "implementation_amendments"
+    ],
+    "capabilities": [
+      "commitments and owners",
+      "baseline-target-actual comparison",
+      "implementation milestones",
+      "Site Intelligence observation links",
+      "emerging risks",
+      "assumption invalidation",
+      "reassessment triggers",
+      "human-authorized amendments",
+      "retirement",
+      "post-implementation review",
+      "lessons learned",
+      "Decision Registry"
+    ],
+    "actions": [
+      "evaluate",
+      "record_observation",
+      "reassess",
+      "amend",
+      "retire"
+    ],
+    "export_formats": [
+      "outcome_monitoring_json",
+      "decision_registry_json",
+      "reassessment_history_json"
+    ],
+    "human_authorization_required": true,
+    "ai_approval_allowed": false
+  }
+}

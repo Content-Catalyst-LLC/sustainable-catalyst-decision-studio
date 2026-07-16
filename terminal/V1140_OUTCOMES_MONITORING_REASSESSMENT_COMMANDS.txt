@@ -1,0 +1,36 @@
+Sustainable Catalyst Decision Studio v1.14.0
+Outcomes, Monitoring, and Reassessment
+
+LOCAL VALIDATION
+
+cd sustainable-catalyst-decision-studio/backend
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install --prefer-binary -r requirements.txt
+python -m pytest
+cd ..
+python scripts/test_release.py
+php -l wordpress-plugin/sustainable-catalyst-decision-studio/sustainable-catalyst-decision-studio.php
+node --check wordpress-plugin/sustainable-catalyst-decision-studio/assets/js/scds-decision-studio.js
+
+BUILD ARCHIVES
+
+./scripts/build_release.sh
+
+WORDPRESS SHORTCODE
+
+[sc_decision_studio mode="outcomes" title="Outcomes, Monitoring, and Reassessment"]
+
+BACKEND CHECKS
+
+curl -s https://YOUR-DECISION-STUDIO.onrender.com/health
+curl -s https://YOUR-DECISION-STUDIO.onrender.com/release
+curl -s https://YOUR-DECISION-STUDIO.onrender.com/outcomes/template
+
+Expected version: 1.14.0
+Expected Decision Packet schema: scds-decision-packet/1.7
+Expected outcome schema: scds-outcome-monitoring/1.0
+Expected reassessment schema: scds-reassessment-event/1.0
+Expected registry schema: scds-decision-registry-entry/1.0
+Expected WordPress database version: 1.8.0

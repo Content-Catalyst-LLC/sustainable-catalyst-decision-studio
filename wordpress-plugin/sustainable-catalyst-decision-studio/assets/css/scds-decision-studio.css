@@ -149,3 +149,6 @@
 .scds-publication-bibliography li{margin-bottom:8px;line-height:1.55}
 @media(max-width:900px){.scds-publication-result>.scds-readiness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.scds-publication-result>.scds-readiness-grid{grid-template-columns:1fr}}
+
+/* v1.14.0 Outcomes, Monitoring, and Reassessment */
+.scds-shell [data-scds-panel="outcomes"] .scds-score-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}.scds-shell [data-scds-panel="outcomes"] .scds-score-grid>div{border:1px solid #d7dce2;border-radius:8px;padding:12px;background:#fff}.scds-shell [data-scds-panel="outcomes"] .scds-score-grid strong{display:block;font-size:1.35rem}.scds-shell [data-scds-panel="outcomes"] .scds-score-grid span{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}@media(max-width:720px){.scds-shell [data-scds-panel="outcomes"] .scds-score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}

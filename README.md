@@ -1,40 +1,47 @@
-# Sustainable Catalyst Decision Studio v1.13.0
+# Sustainable Catalyst Decision Studio v1.14.0
 
-## Decision Briefing and Publication Studio
+## Outcomes, Monitoring, and Reassessment
 
-Decision Studio is the governance, synthesis, and publication layer of the Sustainable Catalyst platform. v1.13.0 turns a governed Decision Packet into citation-native executive memos, technical reports, leadership briefs, alternatives analyses, public dossiers, evidence and audit appendices, implementation plans, dissenting views, and monitoring plans.
+Decision Studio is the governance, synthesis, publication, and accountability layer of the Sustainable Catalyst platform. v1.14.0 extends the governed Decision Packet beyond approval and publication into implementation monitoring, actual-versus-expected comparison, human reassessment, amendment, retirement, and institutional learning.
 
-The release preserves Decision Packs, private Decision Rooms, advanced scenarios, human governance, typed platform evidence, saved packets, and audit/provenance records. Reviewed and public outputs remain blocked until the governance gate permits release.
+The release preserves publication, institutional Decision Packs, private Decision Rooms, advanced scenarios, human governance, typed platform evidence, saved packets, and audit/provenance records. Monitoring records evidence and implementation status; it does not automatically certify causality, success, compliance, or professional assurance.
 
-## Publication capabilities
+## Outcome-monitoring capabilities
 
-- Twelve governed publication types
-- Harvard bibliography and stable evidence anchors
-- Private, institutional, and public section visibility
-- Deterministic redaction records
-- Markdown, print-ready HTML, JSON, bibliography, and publication manifests
-- Draft handoffs to Knowledge Library, Research, Publications, and Channel
-- Additive Decision Packet `scds-decision-packet/1.6`
-- No AI approval, assurance, certification, or professional sign-off
+- Decision commitments, accountable owners, targets, and indicators
+- Baseline, target, actual, variance, and progress comparison
+- Increase, decrease, and acceptable-range indicator directions
+- Source-aware observations and Site Intelligence connections
+- Implementation milestones and overdue detection
+- Emerging risks and assumption invalidation
+- Threshold, milestone, risk, assumption, and scheduled reassessment triggers
+- Human-owned reassessment records
+- Human-authorized implementation amendments and retirement
+- Post-implementation reviews, lessons learned, and a durable Decision Registry entry
+- SHA-256 event and record hashes
+- Additive Decision Packet `scds-decision-packet/1.7`
 
 ## Primary endpoints
 
-- `GET /publication-studio/template`
-- `POST /publication-studio/generate`
-- `POST /publication-studio/redact`
-- `POST /publication-studio/handoff`
-- `POST /decision-packet/publication`
+- `GET /outcomes/template`
+- `POST /outcomes/evaluate`
+- `POST /outcomes/record-observation`
+- `POST /outcomes/reassess`
+- `POST /outcomes/amend`
+- `POST /outcomes/retire`
+- `POST /decision-packet/outcomes`
 
 WordPress exposes matching routes under `/wp-json/scds/v1` and a dedicated shortcode mode:
 
 ```text
-[sc_decision_studio mode="publication" title="Decision Briefing and Publication Studio"]
+[sc_decision_studio mode="outcomes" title="Outcomes, Monitoring, and Reassessment"]
 ```
 
 ## Preserved platform layers
 
-v1.13.0 is additive and preserves:
+v1.14.0 is additive and preserves:
 
+- v1.13.0 Decision Briefing and Publication Studio
 - v1.12.0 Institutional and Domain Decision Packs
 - v1.11.0 Collaborative Decision Rooms
 - v1.10.0 Advanced Scenario and Sensitivity Studio
@@ -45,6 +52,6 @@ v1.13.0 is additive and preserves:
 
 ## Boundary
 
-Generated publications are governed decision-support artifacts. They are not legal, engineering, financial, medical, tax, compliance, fiduciary, ESG/SDG assurance, or other professional certification. Human review remains authoritative.
+Outcome records document observed implementation evidence and trigger structured human review. They are not causal attribution, legal or regulatory certification, engineering acceptance, financial assurance, clinical judgment, tax advice, fiduciary approval, or ESG/SDG assurance. Accountable human decision owners remain authoritative for reassessment, amendment, suspension, and retirement.
 
-See `docs/V1130_DECISION_BRIEFING_PUBLICATION_STUDIO.md` and `docs/ROADMAP.md`.
+See `docs/V1140_OUTCOMES_MONITORING_REASSESSMENT.md` and `docs/ROADMAP.md`.
