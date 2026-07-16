@@ -2,23 +2,18 @@
 
 ## Current release
 
-### v1.14.0 — Outcomes, Monitoring, and Reassessment
+### v1.15.0 — Public API, Embeds, and Institutional Integration
 
-- Track decision commitments and accountable implementation owners.
-- Compare baselines, targets, and observed values with direction-aware tolerances.
-- Retain source, methodology, confidence, freshness, and Site Intelligence connections for observations.
-- Track implementation milestones and overdue work.
-- Record emerging risks and invalidated assumptions.
-- Evaluate threshold, milestone, risk, assumption, and scheduled reassessment triggers.
-- Require named human actors for reassessment, amendments, and retirement.
-- Preserve append-only hashed monitoring and reassessment events.
-- Maintain post-implementation reviews, lessons learned, and a durable Decision Registry entry.
-- Apply monitoring records additively to Decision Packet `scds-decision-packet/1.7`.
+- Publish governance-gated, public-safe decision dossiers.
+- Provide script-free readiness and scenario embed descriptors.
+- Add scoped institutional packet read/write, archive, gateway, and event operations.
+- Support bulk packet import/export with safety limits.
+- Produce signed or digest-only manifests and institutional archive packages.
+- Create Platform Core gateway and internal event records.
+- Expose stable cross-product SDK contracts.
+- Apply integration records additively to Decision Packet `scds-decision-packet/1.8`.
 
 ## Planned releases
-
-### v1.15.0 — Public API, Embeds, and Institutional Integration
-Add versioned packet APIs, scoped public dossier and Decision Registry endpoints, signed export manifests, embeds, internal events, bulk import/export, institutional archive packages, and stable cross-product contracts.
 
 ### v1.16.0 — Accessibility, Offline Use, and Release Hardening
 Complete mobile, keyboard, screen-reader, chart accessibility, autosave, recovery, offline drafts, migration, security, cold-start, and degradation testing.

@@ -24,12 +24,32 @@ from app.outcome_monitoring import (
     outcome_monitoring_template,
     generate_outcome_monitoring,
 )
+from app.public_integration import (
+    PUBLIC_API_SCHEMA,
+    EMBED_DESCRIPTOR_SCHEMA,
+    INSTITUTIONAL_ARCHIVE_SCHEMA,
+    WEBHOOK_EVENT_SCHEMA,
+    SDK_CONTRACT_SCHEMA,
+    PLATFORM_CORE_GATEWAY_SCHEMA,
+    PublicIntegrationRequest,
+    integration_template,
+    public_dossier,
+    governance_public_allowed,
+    readiness_embed,
+    scenario_embed,
+    institutional_archive,
+    import_archive,
+    sign_manifest,
+    webhook_event,
+    platform_core_gateway,
+    sdk_contracts,
+)
 
-APP_VERSION = "1.14.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.14.0-outcomes-monitoring-reassessment")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.14.0")
+APP_VERSION = "1.15.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.15.0-public-api-embeds-institutional-integration")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.15.0")
 RELEASE_DATE = "2026-07-16"
-DECISION_PACKET_SCHEMA = "scds-decision-packet/1.7"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/1.8"
 PLATFORM_ARTIFACT_SCHEMA = "scds-platform-artifact/1.0"
 EVIDENCE_RECORD_SCHEMA = "scds-evidence-record/1.0"
 GOVERNANCE_SCHEMA = "scds-decision-governance/1.0"
@@ -65,6 +85,9 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/decision-packs/apply", "/decision-packs/validate", "/decision-packet/domain-pack",
     "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication",
     "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes",
+    "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario",
+    "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive",
+    "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -73,7 +96,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Outcomes, Monitoring, and Reassessment",
+        "release_name": "Public API, Embeds, and Institutional Integration",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -93,6 +116,12 @@ def release_manifest() -> Dict[str, Any]:
         "outcome_monitoring_schema": OUTCOME_MONITORING_SCHEMA,
         "reassessment_event_schema": REASSESSMENT_EVENT_SCHEMA,
         "decision_registry_schema": DECISION_REGISTRY_SCHEMA,
+        "public_api_schema": PUBLIC_API_SCHEMA,
+        "embed_descriptor_schema": EMBED_DESCRIPTOR_SCHEMA,
+        "institutional_archive_schema": INSTITUTIONAL_ARCHIVE_SCHEMA,
+        "webhook_event_schema": WEBHOOK_EVENT_SCHEMA,
+        "sdk_contract_schema": SDK_CONTRACT_SCHEMA,
+        "platform_core_gateway_schema": PLATFORM_CORE_GATEWAY_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -125,6 +154,16 @@ def release_manifest() -> Dict[str, Any]:
             "assumption_invalidation": True,
             "reassessment_triggers": True,
             "decision_registry": True,
+            "public_api_embeds_institutional_integration": True,
+            "scoped_api_keys": True,
+            "public_safe_dossiers": True,
+            "embeddable_readiness_and_scenarios": True,
+            "signed_export_manifests": True,
+            "bulk_packet_exchange": True,
+            "institutional_archives": True,
+            "platform_core_gateway": True,
+            "internal_event_records": True,
+            "stable_cross_product_sdk_contract": True,
         },
     }
 
@@ -332,6 +371,7 @@ class SavedDecisionPacketRequest(BaseModel):
     decisionPack: Optional[Dict[str, Any]] = None
     publicationStudio: Optional[Dict[str, Any]] = None
     outcomeMonitoring: Optional[Dict[str, Any]] = None
+    institutionalIntegration: Optional[Dict[str, Any]] = None
     title: str = ""
     status: str = "draft"
     notes: str = ""
@@ -352,6 +392,7 @@ class ExportBundleRequest(BaseModel):
     decisionPack: Optional[Dict[str, Any]] = None
     publicationStudio: Optional[Dict[str, Any]] = None
     outcomeMonitoring: Optional[Dict[str, Any]] = None
+    institutionalIntegration: Optional[Dict[str, Any]] = None
     exportAudience: str = "internal"
     includeRawArtifacts: bool = True
     exportLabel: str = "Decision Studio Export Bundle"
@@ -893,7 +934,7 @@ def apply_institutional_decision_pack(req: DecisionPackRequest) -> Dict[str, Any
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.14.0",
+        "packet_version": "1.15.0",
         "workflow": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
@@ -910,6 +951,12 @@ def decision_packet_template() -> Dict[str, Any]:
         "outcome_monitoring_schema": OUTCOME_MONITORING_SCHEMA,
         "reassessment_event_schema": REASSESSMENT_EVENT_SCHEMA,
         "decision_registry_schema": DECISION_REGISTRY_SCHEMA,
+        "public_api_schema": PUBLIC_API_SCHEMA,
+        "embed_descriptor_schema": EMBED_DESCRIPTOR_SCHEMA,
+        "institutional_archive_schema": INSTITUTIONAL_ARCHIVE_SCHEMA,
+        "webhook_event_schema": WEBHOOK_EVENT_SCHEMA,
+        "sdk_contract_schema": SDK_CONTRACT_SCHEMA,
+        "platform_core_gateway_schema": PLATFORM_CORE_GATEWAY_SCHEMA,
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -965,6 +1012,13 @@ def decision_packet_template() -> Dict[str, Any]:
         "decision_registry_entry": {},
         "reassessment_history": [],
         "implementation_amendments": [],
+        "institutional_integration": integration_template(app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA),
+        "public_dossier": {},
+        "embed_descriptors": [],
+        "institutional_archives": [],
+        "platform_core_gateway": {},
+        "internal_events": [],
+        "sdk_contracts": sdk_contracts(app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA),
         "integrated_decision_brief": {},
         "scenario_comparison": {},
         "scenario_studio": {},
@@ -973,7 +1027,7 @@ def decision_packet_template() -> Dict[str, Any]:
         "uncertainty_analysis": {},
         "workbench_handoffs": [],
         "saved_packet": {"saved_at": "", "saved_by": "", "status": "draft", "storage": "browser_or_wordpress"},
-        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json", "publication_json", "publication_markdown", "publication_html", "bibliography_json", "redaction_json", "publication_handoff_json", "outcome_monitoring_json", "decision_registry_json", "reassessment_history_json"]},
+        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json", "publication_json", "publication_markdown", "publication_html", "bibliography_json", "redaction_json", "publication_handoff_json", "outcome_monitoring_json", "decision_registry_json", "reassessment_history_json", "public_dossier_json", "readiness_embed_json", "scenario_embed_json", "institutional_archive_json", "signed_manifest_json", "platform_core_gateway_json", "internal_events_json"]},
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -991,7 +1045,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.14.0",
+        "audit_version": "1.15.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -3623,6 +3677,13 @@ def export_center_template() -> Dict[str, Any]:
             {"id": "outcome_monitoring_json", "label": "Outcome Monitoring JSON", "description": "Commitments, targets, observations, milestones, risks, assumptions, triggers, and monitoring status."},
             {"id": "decision_registry_json", "label": "Decision Registry JSON", "description": "Durable lifecycle record for the approved, implemented, amended, reassessed, or retired decision."},
             {"id": "reassessment_history_json", "label": "Reassessment History JSON", "description": "Human-owned reassessment events, findings, recommendations, and lifecycle changes."},
+            {"id": "public_dossier_json", "label": "Public-safe Decision Dossier JSON", "description": "Governance-gated packet projection with private fields removed."},
+            {"id": "readiness_embed_json", "label": "Readiness Embed Descriptor", "description": "Script-free readiness summary for host-controlled rendering."},
+            {"id": "scenario_embed_json", "label": "Scenario Embed Descriptor", "description": "Script-free scenario comparison for host-controlled rendering."},
+            {"id": "institutional_archive_json", "label": "Institutional Archive JSON", "description": "Bulk packet archive with machine-readable methodology and provenance."},
+            {"id": "signed_manifest_json", "label": "Signed Export Manifest", "description": "SHA-256 or HMAC-SHA-256 manifest covering every exported resource."},
+            {"id": "platform_core_gateway_json", "label": "Platform Core Gateway Record", "description": "Entities, Evidence Ledger records, provenance links, and exchange manifest."},
+            {"id": "internal_events_json", "label": "Internal Event Records", "description": "Hash-addressed webhook-style internal event records."},
         ],
         "warnings": [
             "Saved Decision Packets are working records, not approvals or professional signoff.",
@@ -3662,6 +3723,8 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
     packet["publication_studio"] = publication_studio
     outcome_monitoring = req.outcomeMonitoring or packet.get("outcome_monitoring") or outcome_monitoring_template()
     packet["outcome_monitoring"] = outcome_monitoring
+    institutional_integration = req.institutionalIntegration or packet.get("institutional_integration") or integration_template(app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA)
+    packet["institutional_integration"] = institutional_integration
     packet["saved_packet"] = {"status": saved_status, "storage": "wordpress_canonical_or_client_fallback", "notes": req.notes}
     saved = {
         "packet_version": APP_VERSION,
@@ -3684,6 +3747,7 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
         "decision_pack": decision_pack,
         "publication_studio": publication_studio,
         "outcome_monitoring": outcome_monitoring,
+        "institutional_integration": institutional_integration,
         "notes": req.notes,
         "warnings": ["Saved packet is a review artifact; it is not approval, certification, assurance, or professional advice."],
     }
@@ -3711,6 +3775,8 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
     packet["publication_studio"] = publication_studio
     outcome_monitoring = req.outcomeMonitoring or packet.get("outcome_monitoring") or outcome_monitoring_template()
     packet["outcome_monitoring"] = outcome_monitoring
+    institutional_integration = req.institutionalIntegration or packet.get("institutional_integration") or integration_template(app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA)
+    packet["institutional_integration"] = institutional_integration
     audience = str(req.exportAudience or "internal").strip().lower()
     gate = governance.get("export_gate", {}) if isinstance(governance, dict) else {}
     if audience == "reviewed" and not gate.get("reviewed_export_allowed", False):
@@ -3755,18 +3821,37 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
             "outcome_monitoring_json": outcome_monitoring,
             "decision_registry_json": outcome_monitoring.get("decision_registry_entry", packet.get("decision_registry_entry", {})) if isinstance(outcome_monitoring, dict) else {},
             "reassessment_history_json": outcome_monitoring.get("reassessment_history", packet.get("reassessment_history", [])) if isinstance(outcome_monitoring, dict) else [],
+            "institutional_integration_json": institutional_integration,
+            "public_dossier_json": packet.get("public_dossier", {}),
+            "embed_descriptors_json": packet.get("embed_descriptors", []),
+            "institutional_archives_json": packet.get("institutional_archives", []),
+            "platform_core_gateway_json": packet.get("platform_core_gateway", {}),
+            "internal_events_json": packet.get("internal_events", []),
+            "sdk_contracts_json": packet.get("sdk_contracts", {}),
         },
         "export_manifest": export_center_template()["exports"],
         "warnings": export_center_template()["warnings"],
         "governance_export_gate": governance.get("export_gate", {}),
     }
+    manifest_records = []
+    for export_id, export_value in bundle["exports"].items():
+        manifest_records.append({"export_id": export_id, "content_hash": _canonical_hash(export_value)})
+    bundle["signed_export_manifest"] = sign_manifest({
+        "schema": INSTITUTIONAL_ARCHIVE_SCHEMA,
+        "bundle_version": APP_VERSION,
+        "decision_packet_id": bundle["decision_packet_id"],
+        "export_audience": audience,
+        "exports": manifest_records,
+        "created_at": _utc_now(),
+    })
+    bundle["exports"]["signed_manifest_json"] = bundle["signed_export_manifest"]
     if not req.includeRawArtifacts:
         bundle["exports"]["decision_packet_json"].pop("module_artifacts_raw", None)
     return {"ok": True, "version": APP_VERSION, "export_bundle": bundle, "export_center": export_center_template()}
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.14.0."""
+    """Professional public-facing product-page structure for Decision Studio v1.15.0."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
@@ -3794,6 +3879,7 @@ def public_landing_template() -> Dict[str, Any]:
             "Advanced scenario, sensitivity, threshold, and Workbench handoff",
             "Decision briefing and publication studio",
             "Outcomes, monitoring, reassessment, and Decision Registry",
+            "Public API, embeddable readiness and scenario summaries, institutional archives, and Platform Core exchange",
             "Saved packets and export center",
         ],
         "schemas": {
@@ -4337,6 +4423,12 @@ def health():
         "outcome_monitoring_schema": OUTCOME_MONITORING_SCHEMA,
         "reassessment_event_schema": REASSESSMENT_EVENT_SCHEMA,
         "decision_registry_schema": DECISION_REGISTRY_SCHEMA,
+        "public_api_schema": PUBLIC_API_SCHEMA,
+        "embed_descriptor_schema": EMBED_DESCRIPTOR_SCHEMA,
+        "institutional_archive_schema": INSTITUTIONAL_ARCHIVE_SCHEMA,
+        "webhook_event_schema": WEBHOOK_EVENT_SCHEMA,
+        "sdk_contract_schema": SDK_CONTRACT_SCHEMA,
+        "platform_core_gateway_schema": PLATFORM_CORE_GATEWAY_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -4376,6 +4468,27 @@ def decision_packet_brief_endpoint(req: IntegratedBriefRequest):
 @app.get("/integrations/modules")
 def integrations_modules_endpoint():
     return {"ok": True, "version": APP_VERSION, "modules": module_integrations(), "workflow": [m["phase"] for m in module_integrations()]}
+
+def _institutional_api_scopes(request: Request) -> set[str]:
+    supplied = request.headers.get("x-scds-api-key", "").strip()
+    super_key = os.getenv("SCDS_API_KEY", "").strip()
+    if supplied and super_key and secrets.compare_digest(supplied, super_key):
+        return {"*"}
+    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError:
+        catalog = {}
+    scopes = catalog.get(supplied, []) if supplied and isinstance(catalog, dict) else []
+    return {str(scope) for scope in scopes} if isinstance(scopes, list) else set()
+
+
+def _require_institutional_scope(request: Request, scope: str) -> Optional[JSONResponse]:
+    scopes = _institutional_api_scopes(request)
+    if "*" in scopes or scope in scopes:
+        return None
+    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "institutional_scope_required", "required_scope": scope})
+
 
 @app.get("/integrations/adapters")
 def integrations_adapters_endpoint():
@@ -4657,6 +4770,87 @@ def decision_packet_outcomes_endpoint(req: OutcomeMonitoringRequest):
     return _run_outcome_monitoring(req, req.action or "evaluate")
 
 
+@app.get("/api/v1/capabilities")
+def public_api_capabilities_endpoint():
+    return {"ok": True, "version": APP_VERSION, "integration": integration_template(app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA)}
+
+
+@app.get("/api/v1/sdk/contracts")
+def public_api_sdk_contracts_endpoint():
+    return sdk_contracts(app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA)
+
+
+@app.post("/api/v1/public-dossier")
+def public_api_dossier_endpoint(req: PublicIntegrationRequest):
+    result = public_dossier(req.packet, app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA, include_provenance=req.includeProvenance, include_methodology=req.includeMethodology)
+    if not result.get("ok"):
+        return JSONResponse(status_code=409, content=result)
+    return result
+
+
+@app.post("/api/v1/embeds/readiness")
+def public_api_readiness_embed_endpoint(req: PublicIntegrationRequest):
+    return readiness_embed(req.packet, app_version=APP_VERSION)
+
+
+@app.post("/api/v1/embeds/scenario")
+def public_api_scenario_embed_endpoint(req: PublicIntegrationRequest):
+    return scenario_embed(req.packet, app_version=APP_VERSION)
+
+
+@app.post("/api/v1/packets/export")
+def institutional_bulk_export_endpoint(req: PublicIntegrationRequest, request: Request):
+    denied = _require_institutional_scope(request, "packet:read")
+    if denied: return denied
+    return institutional_archive(req.packets or ([req.packet] if req.packet else []), app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA, label=req.archiveLabel, public_only=False)
+
+
+@app.post("/api/v1/packets/import")
+def institutional_bulk_import_endpoint(req: PublicIntegrationRequest, request: Request):
+    denied = _require_institutional_scope(request, "packet:write")
+    if denied: return denied
+    archive = req.payload.get("archive") if isinstance(req.payload.get("archive"), dict) else req.payload
+    result = import_archive(archive, app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA)
+    if not result.get("ok"):
+        return JSONResponse(status_code=422, content=result)
+    return result
+
+
+@app.post("/api/v1/archive")
+def institutional_archive_endpoint(req: PublicIntegrationRequest, request: Request):
+    denied = _require_institutional_scope(request, "archive:write")
+    if denied: return denied
+    return institutional_archive(req.packets or ([req.packet] if req.packet else []), app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA, label=req.archiveLabel, public_only=req.audience == "public")
+
+
+@app.post("/api/v1/platform-core/gateway")
+def platform_core_gateway_endpoint(req: PublicIntegrationRequest, request: Request):
+    denied = _require_institutional_scope(request, "gateway:write")
+    if denied: return denied
+    return platform_core_gateway(req.packet, req.payload, app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA)
+
+
+@app.post("/api/v1/events")
+def institutional_event_endpoint(req: PublicIntegrationRequest, request: Request):
+    denied = _require_institutional_scope(request, "event:emit")
+    if denied: return denied
+    return webhook_event(req.eventType, req.payload, app_version=APP_VERSION, actor=req.actor, target=req.target)
+
+
+@app.post("/decision-packet/institutional-integration")
+def decision_packet_institutional_integration_endpoint(req: PublicIntegrationRequest):
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    packet["packet_version"] = APP_VERSION
+    packet["decision_packet_schema"] = DECISION_PACKET_SCHEMA
+    packet["institutional_integration"] = integration_template(app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA)
+    packet["sdk_contracts"] = sdk_contracts(app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA)
+    packet["embed_descriptors"] = [readiness_embed(packet, app_version=APP_VERSION)["embed"], scenario_embed(packet, app_version=APP_VERSION)["embed"]]
+    if governance_public_allowed(packet):
+        packet["public_dossier"] = public_dossier(packet, app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA).get("public_dossier", {})
+    return {"ok": True, "version": APP_VERSION, "decision_packet": packet, "institutional_integration": packet["institutional_integration"]}
+
+
 @app.get("/audit/template")
 def audit_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "audit": audit_provenance_template()}
@@ -4749,4 +4943,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration"]}

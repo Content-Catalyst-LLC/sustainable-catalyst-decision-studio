@@ -1,0 +1,27 @@
+Sustainable Catalyst Decision Studio v1.15.0
+Public API, Embeds, and Institutional Integration
+
+LOCAL VALIDATION
+
+cd backend
+python3 -m pytest
+cd ..
+python3 scripts/test_release.py
+php -l wordpress-plugin/sustainable-catalyst-decision-studio/sustainable-catalyst-decision-studio.php
+node --check wordpress-plugin/sustainable-catalyst-decision-studio/assets/js/scds-decision-studio.js
+
+RENDER
+
+Root directory: backend
+Build command: pip install -r requirements.txt
+Start command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Health path: /health
+Python: 3.12.11
+Expected version: 1.15.0
+Expected Decision Packet schema: scds-decision-packet/1.8
+
+OPTIONAL ENVIRONMENT VARIABLES
+
+SCDS_API_KEY=<all-scopes institutional key>
+SCDS_INSTITUTIONAL_API_KEYS={"key-one":["packet:read","packet:write"],"key-two":["archive:write","gateway:write","event:emit"]}
+SCDS_EXPORT_SIGNING_SECRET=<HMAC signing secret>

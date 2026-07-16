@@ -1,0 +1,417 @@
+{
+  "release": "1.15.0",
+  "decision_packet_schema": "scds-decision-packet/1.8",
+  "public_dossier": {
+    "schema": "scds-public-api/1.0",
+    "version": "1.15.0",
+    "decision_packet_schema": "scds-decision-packet/1.8",
+    "generated_at": "2026-07-16T14:46:24.340431+00:00",
+    "decision_packet_id": "SCDS-INSTITUTIONAL-DEMO-001",
+    "title": "Institutional Climate Investment Review",
+    "decision_question": "Which investment pathway should proceed to implementation?",
+    "governance": {
+      "state": "approved",
+      "approved_at": "2026-07-16T12:00:00Z",
+      "public_export_allowed": true
+    },
+    "readiness": {
+      "percent": 88,
+      "status": "ready_with_conditions",
+      "open_issue_count": 0
+    },
+    "scenario_summary": {
+      "ranked_alternatives": [
+        {
+          "label": "Expected pathway",
+          "decision_score": 81.4
+        },
+        {
+          "label": "Conservative pathway",
+          "decision_score": 73.2
+        }
+      ],
+      "dominance_analysis": [],
+      "threshold_summary": {
+        "status": "screened"
+      }
+    },
+    "publication": {
+      "publication_id": "PUB-DEMO-001",
+      "publication_type": "public_decision_dossier",
+      "title": "Climate Investment Decision Dossier",
+      "sections": [
+        {
+          "id": "executive_summary",
+          "title": "Executive Summary",
+          "visibility": "public",
+          "content": "The reviewed pathway proceeds subject to monitoring conditions."
+        }
+      ],
+      "bibliography": [
+        {
+          "anchor": "[S1]",
+          "citation": "Sustainable Catalyst (2026) Institutional review evidence record."
+        }
+      ]
+    },
+    "outcomes": {
+      "monitoring_status": "planning",
+      "decision_status": "implemented",
+      "summary": {
+        "target_count": 3
+      },
+      "next_review_at": "2026-10-16"
+    },
+    "boundaries": [
+      "Public dossier excludes private room, invitation, personal contact, and internal-note fields.",
+      "Decision support output is not professional certification, assurance, or advice."
+    ],
+    "methodology": {
+      "decision_pack": {
+        "pack_id": "climate_energy_strategy",
+        "pack_name": "Climate and Energy Strategy",
+        "pack_version": "1.0",
+        "criteria": [],
+        "readiness_rules": [],
+        "boundaries": []
+      },
+      "methodologies": [],
+      "calculation_methods": []
+    },
+    "provenance": {
+      "source_count": 0,
+      "evidence_ledger_count": 0,
+      "integrity_checks": [],
+      "source_ledger": [],
+      "module_artifact_ledger": [],
+      "review_status": {}
+    },
+    "content_hash": "sha256:b580e2b3db15b1d272b7aca7e50e154eba17d1eb3d7ea073198833518e90310e"
+  },
+  "readiness_embed": {
+    "schema": "scds-embed-descriptor/1.0",
+    "version": "1.15.0",
+    "embed_type": "readiness_summary",
+    "render_mode": "data_attribute",
+    "payload": {
+      "decision_packet_id": "SCDS-INSTITUTIONAL-DEMO-001",
+      "title": "Institutional Climate Investment Review",
+      "readiness_percent": 88,
+      "status": "ready_with_conditions",
+      "governance_state": "approved",
+      "reviewed_export_allowed": true,
+      "public_export_allowed": true
+    },
+    "html": "<div class=\"scds-embed scds-readiness-embed\" data-scds-embed=\"readiness\" aria-label=\"Decision readiness summary\"></div>",
+    "content_hash": "sha256:d61aab18d154e7f34d80b02dd077f54a498e8dff8bc80fd6f6685f76bebc2051",
+    "security": {
+      "scripts_included": false,
+      "private_fields_included": false,
+      "host_controls_rendering": true
+    }
+  },
+  "scenario_embed": {
+    "schema": "scds-embed-descriptor/1.0",
+    "version": "1.15.0",
+    "embed_type": "scenario_comparison",
+    "render_mode": "data_attribute",
+    "payload": {
+      "decision_packet_id": "SCDS-INSTITUTIONAL-DEMO-001",
+      "title": "Institutional Climate Investment Review",
+      "ranked_alternatives": [
+        {
+          "label": "Expected pathway",
+          "decision_score": 81.4
+        },
+        {
+          "label": "Conservative pathway",
+          "decision_score": 73.2
+        }
+      ],
+      "sensitivity_summary": [],
+      "threshold_summary": {
+        "status": "screened"
+      },
+      "disclaimer": "Scenario outputs are conditional comparisons, not forecasts or guarantees."
+    },
+    "html": "<div class=\"scds-embed scds-scenario-embed\" data-scds-embed=\"scenario\" aria-label=\"Decision scenario comparison\"></div>",
+    "content_hash": "sha256:37dd1fcaa94894ecee0a9759f19723cb2af903d036e64b9ee6d6da1e452a14f5",
+    "security": {
+      "scripts_included": false,
+      "private_fields_included": false,
+      "host_controls_rendering": true
+    }
+  },
+  "institutional_archive": {
+    "ok": true,
+    "version": "1.15.0",
+    "archive": {
+      "schema": "scds-institutional-archive/1.0",
+      "version": "1.15.0",
+      "label": "Institutional Decision Archive",
+      "records": [
+        {
+          "packet_version": "1.15.0",
+          "decision_packet_schema": "scds-decision-packet/1.8",
+          "decision_packet_id": "SCDS-INSTITUTIONAL-DEMO-001",
+          "project": {
+            "project_name": "Institutional Climate Investment Review",
+            "decision_question": "Which investment pathway should proceed to implementation?"
+          },
+          "governance_center": {
+            "current_state": "approved",
+            "approved_at": "2026-07-16T12:00:00Z",
+            "export_gate": {
+              "reviewed_export_allowed": true,
+              "public_export_allowed": true
+            }
+          },
+          "brief_readiness": {
+            "readiness_percent": 88,
+            "status": "ready_with_conditions",
+            "open_issues": []
+          },
+          "scenario_studio": {
+            "ranked_alternatives": [
+              {
+                "label": "Expected pathway",
+                "decision_score": 81.4
+              },
+              {
+                "label": "Conservative pathway",
+                "decision_score": 73.2
+              }
+            ],
+            "threshold_analysis": {
+              "status": "screened"
+            }
+          },
+          "publication_studio": {
+            "publication_id": "PUB-DEMO-001",
+            "publication_type": "public_decision_dossier",
+            "title": "Climate Investment Decision Dossier",
+            "sections": [
+              {
+                "id": "executive_summary",
+                "title": "Executive Summary",
+                "visibility": "public",
+                "content": "The reviewed pathway proceeds subject to monitoring conditions."
+              },
+              {
+                "id": "internal_notes",
+                "title": "Internal Notes",
+                "visibility": "private",
+                "content": "Not public."
+              }
+            ],
+            "bibliography": [
+              {
+                "anchor": "[S1]",
+                "citation": "Sustainable Catalyst (2026) Institutional review evidence record."
+              }
+            ]
+          },
+          "outcome_monitoring": {
+            "status": "planning",
+            "decision_status": "implemented",
+            "summary": {
+              "target_count": 3
+            },
+            "monitoring_schedule": {
+              "next_review_at": "2026-10-16"
+            }
+          },
+          "institutional_decision_pack": {
+            "pack_id": "climate_energy_strategy",
+            "pack_name": "Climate and Energy Strategy",
+            "pack_version": "1.0"
+          },
+          "private_notes": "must never appear publicly",
+          "owner_email": "private@example.com"
+        }
+      ],
+      "rejected": [],
+      "manifest": {
+        "schema": "scds-institutional-archive/1.0",
+        "archive_version": "1.15.0",
+        "label": "Institutional Decision Archive",
+        "created_at": "2026-07-16T14:46:24.342482+00:00",
+        "record_count": 1,
+        "rejected_count": 0,
+        "public_only": false,
+        "records": [
+          {
+            "index": 0,
+            "decision_packet_id": "SCDS-INSTITUTIONAL-DEMO-001",
+            "content_hash": "sha256:0617c25ce11027b723db96c290cc040904fa71e01e496341902e7c0b8bb5e90a",
+            "packet_schema": "scds-decision-packet/1.8"
+          }
+        ],
+        "manifest_digest": "sha256:e9a2146b74f84c0a6220bf2f2d50f397dfc7f12b011742239b1830cb319a0a37",
+        "signature_status": "unsigned",
+        "signature_algorithm": "sha256-digest",
+        "signature": ""
+      },
+      "machine_readable_methodology": [
+        {
+          "decision_pack": {
+            "pack_id": "climate_energy_strategy",
+            "pack_name": "Climate and Energy Strategy",
+            "pack_version": "1.0",
+            "criteria": [],
+            "readiness_rules": [],
+            "boundaries": []
+          },
+          "methodologies": [],
+          "calculation_methods": []
+        }
+      ],
+      "machine_readable_provenance": [
+        {
+          "source_count": 0,
+          "evidence_ledger_count": 0,
+          "integrity_checks": [],
+          "source_ledger": [],
+          "module_artifact_ledger": [],
+          "review_status": {}
+        }
+      ]
+    }
+  },
+  "platform_core_gateway": {
+    "schema": "scds-platform-core-gateway/1.0",
+    "version": "1.15.0",
+    "decision_packet_schema": "scds-decision-packet/1.8",
+    "decision_packet_id": "SCDS-INSTITUTIONAL-DEMO-001",
+    "entities": [],
+    "evidence_ledger": [],
+    "provenance_links": [],
+    "exchange_manifest": {
+      "decision_packet_id": "SCDS-INSTITUTIONAL-DEMO-001",
+      "entity_count": 0,
+      "evidence_ledger_count": 0,
+      "provenance_link_count": 0,
+      "created_at": "2026-07-16T14:46:24.342559+00:00",
+      "manifest_digest": "sha256:3ba2fe75015564dd7abe46dd46ee08564e2dff8b402368ec396fd44d6b168da7",
+      "signature_status": "unsigned",
+      "signature_algorithm": "sha256-digest",
+      "signature": ""
+    },
+    "content_hash": "sha256:a85dd98854c36edc4ae720683b363ca089ce5670662e2901b7554afcc47b28ce"
+  },
+  "internal_event": {
+    "schema": "scds-webhook-event/1.0",
+    "version": "1.15.0",
+    "event_id": "EVT-79E5C2936919BAEF",
+    "event_type": "decision_packet.approved",
+    "occurred_at": "2026-07-16T14:46:24.342623+00:00",
+    "actor": "Decision Owner",
+    "target": "platform-core",
+    "payload": {
+      "decision_packet_id": "SCDS-INSTITUTIONAL-DEMO-001",
+      "state": "approved"
+    },
+    "delivery": {
+      "mode": "internal_event_record",
+      "external_delivery_attempted": false
+    },
+    "event_hash": "sha256:80da308926cb9c1e0e6798624cab217f080e341a965ff52f3073df1655bfd80a"
+  },
+  "sdk_contracts": {
+    "ok": true,
+    "version": "1.15.0",
+    "schema": "scds-cross-product-sdk/1.0",
+    "api_base": "/api/v1",
+    "decision_packet_schema": "scds-decision-packet/1.8",
+    "authentication": {
+      "header": "X-SCDS-API-Key",
+      "scope_header": "X-SCDS-Requested-Scope",
+      "scopes": [
+        "packet:read",
+        "packet:write",
+        "archive:read",
+        "archive:write",
+        "gateway:write",
+        "event:emit"
+      ]
+    },
+    "resources": {
+      "capabilities": {
+        "method": "GET",
+        "path": "/api/v1/capabilities",
+        "public": true
+      },
+      "public_dossier": {
+        "method": "POST",
+        "path": "/api/v1/public-dossier",
+        "public": true
+      },
+      "readiness_embed": {
+        "method": "POST",
+        "path": "/api/v1/embeds/readiness",
+        "public": true
+      },
+      "scenario_embed": {
+        "method": "POST",
+        "path": "/api/v1/embeds/scenario",
+        "public": true
+      },
+      "bulk_export": {
+        "method": "POST",
+        "path": "/api/v1/packets/export",
+        "scope": "packet:read"
+      },
+      "bulk_import": {
+        "method": "POST",
+        "path": "/api/v1/packets/import",
+        "scope": "packet:write"
+      },
+      "archive": {
+        "method": "POST",
+        "path": "/api/v1/archive",
+        "scope": "archive:write"
+      },
+      "platform_core_gateway": {
+        "method": "POST",
+        "path": "/api/v1/platform-core/gateway",
+        "scope": "gateway:write"
+      },
+      "internal_event": {
+        "method": "POST",
+        "path": "/api/v1/events",
+        "scope": "event:emit"
+      }
+    },
+    "stability": {
+      "breaking_changes": "new major schema only",
+      "packet_changes": "additive within 1.x",
+      "legacy_routes_preserved": true
+    }
+  },
+  "integration_template": {
+    "schema": "scds-public-api/1.0",
+    "version": "1.15.0",
+    "decision_packet_schema": "scds-decision-packet/1.8",
+    "public_surfaces": [
+      "public_dossier",
+      "readiness_embed",
+      "scenario_embed",
+      "sdk_contracts"
+    ],
+    "institutional_surfaces": [
+      "bulk_export",
+      "bulk_import",
+      "institutional_archive",
+      "platform_core_gateway",
+      "internal_events"
+    ],
+    "limits": {
+      "bulk_packets": 100
+    },
+    "privacy": {
+      "public_private_separation": true,
+      "public_redaction": true,
+      "institutional_api_key_required": true
+    }
+  }
+}

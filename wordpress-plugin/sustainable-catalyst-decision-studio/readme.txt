@@ -1,23 +1,22 @@
 === Sustainable Catalyst Decision Studio ===
 Contributors: content-catalyst
-Tags: decision support, outcomes, monitoring, governance, publication, evidence, sustainability
+Tags: decision support, public api, embeds, institutional integration, governance, publication
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.14.0
+Stable tag: 1.15.0
 License: GPLv2 or later
 
-Outcomes, monitoring, and human reassessment with governed publications, institutional Decision Packs, collaboration, scenarios, evidence handoffs, audit trails, and export bundles.
+Public-safe dossiers, script-free embeds, signed institutional archives, scoped packet exchange, Platform Core gateway records, monitoring, publication, governance, and collaboration.
 
 == Description ==
 
-Decision Studio v1.14.0 extends the governed Decision Packet through implementation and observed outcomes. It tracks commitments, accountable owners, baselines, targets, actual values, milestones, emerging risks, invalidated assumptions, reassessment triggers, amendments, lessons learned, retirement, and a durable Decision Registry entry.
-
-Monitoring observations retain source, methodology, freshness, confidence, and Site Intelligence context. Reassessment, amendment, and retirement require named human actors. The system does not automatically certify causality, performance, compliance, assurance, or professional sign-off.
+Decision Studio v1.15.0 adds controlled public and institutional interoperability. Public dossier and embed surfaces are governance-gated and sanitized. Institutional write, archive, gateway, and event operations require appropriate permissions or scoped backend API keys.
 
 == Shortcodes ==
 
 [sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]
+[sc_decision_studio mode="integration" title="Public API, Embeds, and Institutional Integration"]
 [sc_decision_studio mode="outcomes" title="Outcomes, Monitoring, and Reassessment"]
 [sc_decision_studio mode="publication" title="Decision Briefing and Publication Studio"]
 [sc_decision_studio mode="packs" title="Institutional Decision Packs"]
@@ -27,12 +26,11 @@ Monitoring observations retain source, methodology, freshness, confidence, and S
 
 == Changelog ==
 
-= 1.14.0 =
-* Added commitments, owners, targets, indicators, observations, and implementation milestones.
-* Added actual-versus-expected evaluation with direction-aware tolerances.
-* Added Site Intelligence monitoring connections and source-aware observations.
-* Added emerging-risk, assumption-invalidation, overdue-milestone, threshold, and scheduled reassessment triggers.
-* Added human-owned reassessment records and human-authorized amendments and retirement.
-* Added post-implementation review, lessons learned, and Decision Registry records.
-* Added Decision Packet schema 1.7 and WordPress database version 1.8.0.
-* Preserved publication, Decision Packs, collaboration, scenarios, governance, typed platform handoffs, and legacy adapters.
+= 1.15.0 =
+* Added public-safe dossiers and script-free readiness and scenario embeds.
+* Added scoped institutional packet exchange and archive operations.
+* Added signed or digest-only manifests.
+* Added Platform Core gateway and internal event records.
+* Added stable SDK contract discovery.
+* Added Decision Packet schema 1.8 and WordPress database version 1.9.0.
+* Preserved outcomes, publication, Decision Packs, collaboration, scenarios, governance, and platform handoffs.

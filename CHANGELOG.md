@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.15.0 — Public API, Embeds, and Institutional Integration
+
+- Added governance-gated public-safe decision dossiers.
+- Added script-free readiness and scenario embed descriptors.
+- Added scoped institutional API keys for packet, archive, gateway, and event operations.
+- Added bulk packet import/export with a 100-record safety cap.
+- Added signed or digest-only export manifests and institutional archive packages.
+- Added Platform Core gateway exchange records and internal webhook-style event records.
+- Added stable cross-product SDK contract discovery.
+- Added Decision Packet schema 1.8 and WordPress database version 1.9.0.
+- Added WordPress API & Embeds workspace, local fallback parity, persistence, and export support.
+- Preserved outcomes, publication, Decision Packs, collaboration, scenarios, governance, typed platform handoffs, and legacy adapters.
+- Expanded the backend suite to 114 tests.
+
 ## v1.14.0 — Outcomes, Monitoring, and Reassessment
 
 - Added commitments, decision owners, implementation owners, targets, indicators, and source-aware observations.

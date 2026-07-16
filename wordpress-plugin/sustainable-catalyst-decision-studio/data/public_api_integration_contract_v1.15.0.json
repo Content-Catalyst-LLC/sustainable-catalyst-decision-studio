@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-public-integration-v1.15.0.json",
+  "title": "Sustainable Catalyst Decision Studio Public Integration Contract v1.15.0",
+  "type": "object",
+  "required": [
+    "release",
+    "decision_packet_schema",
+    "contracts",
+    "security"
+  ],
+  "properties": {
+    "release": {
+      "const": "1.15.0"
+    },
+    "decision_packet_schema": {
+      "const": "scds-decision-packet/1.8"
+    },
+    "contracts": {
+      "type": "object",
+      "required": [
+        "public_api",
+        "embed_descriptor",
+        "institutional_archive",
+        "webhook_event",
+        "sdk_contract",
+        "platform_core_gateway"
+      ],
+      "properties": {
+        "public_api": {
+          "const": "scds-public-api/1.0"
+        },
+        "embed_descriptor": {
+          "const": "scds-embed-descriptor/1.0"
+        },
+        "institutional_archive": {
+          "const": "scds-institutional-archive/1.0"
+        },
+        "webhook_event": {
+          "const": "scds-webhook-event/1.0"
+        },
+        "sdk_contract": {
+          "const": "scds-cross-product-sdk/1.0"
+        },
+        "platform_core_gateway": {
+          "const": "scds-platform-core-gateway/1.0"
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "scoped_api_keys",
+        "public_private_separation",
+        "public_governance_gate",
+        "signed_manifests"
+      ],
+      "properties": {
+        "scoped_api_keys": {
+          "const": true
+        },
+        "public_private_separation": {
+          "const": true
+        },
+        "public_governance_gate": {
+          "const": true
+        },
+        "signed_manifests": {
+          "const": true
+        }
+      }
+    }
+  }
+}

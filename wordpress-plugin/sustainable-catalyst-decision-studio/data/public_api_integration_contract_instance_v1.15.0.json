@@ -1,0 +1,18 @@
+{
+  "release": "1.15.0",
+  "decision_packet_schema": "scds-decision-packet/1.8",
+  "contracts": {
+    "public_api": "scds-public-api/1.0",
+    "embed_descriptor": "scds-embed-descriptor/1.0",
+    "institutional_archive": "scds-institutional-archive/1.0",
+    "webhook_event": "scds-webhook-event/1.0",
+    "sdk_contract": "scds-cross-product-sdk/1.0",
+    "platform_core_gateway": "scds-platform-core-gateway/1.0"
+  },
+  "security": {
+    "scoped_api_keys": true,
+    "public_private_separation": true,
+    "public_governance_gate": true,
+    "signed_manifests": true
+  }
+}
