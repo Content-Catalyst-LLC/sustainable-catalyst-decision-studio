@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-offline-workspace-v1.0.json",
+  "title": "Decision Studio Offline Workspace Manifest",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "decision_packet_schema",
+    "storage",
+    "cache_policy",
+    "draft_policy",
+    "offline_capabilities",
+    "online_required"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-offline-workspace/1.0"
+    },
+    "version": {
+      "const": "1.16.0"
+    },
+    "decision_packet_schema": {
+      "const": "scds-decision-packet/1.9"
+    },
+    "storage": {
+      "type": "object",
+      "required": [
+        "primary",
+        "sensitive_fields_cached"
+      ],
+      "properties": {
+        "primary": {
+          "enum": [
+            "indexeddb",
+            "localstorage"
+          ]
+        },
+        "sensitive_fields_cached": {
+          "const": false
+        }
+      }
+    },
+    "draft_policy": {
+      "type": "object",
+      "required": [
+        "checksum_required",
+        "automatic_write_replay",
+        "conflict_strategy"
+      ],
+      "properties": {
+        "checksum_required": {
+          "const": true
+        },
+        "automatic_write_replay": {
+          "const": false
+        },
+        "conflict_strategy": {
+          "const": "manual_compare_and_confirm"
+        }
+      }
+    },
+    "offline_capabilities": {
+      "type": "array"
+    },
+    "online_required": {
+      "type": "array"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,57 +1,46 @@
-# Sustainable Catalyst Decision Studio v1.15.0
+# Sustainable Catalyst Decision Studio v1.16.0
 
-## Public API, Embeds, and Institutional Integration
+## Accessibility, Offline Use, and Release Hardening
 
-Decision Studio is the governance, synthesis, publication, monitoring, and accountability layer of the Sustainable Catalyst platform. v1.15.0 adds controlled interoperability for public dossiers, script-free embeds, institutional packet exchange, signed archives, Platform Core gateway records, internal events, and stable cross-product contracts.
+Decision Studio is the governance, synthesis, publication, monitoring, accountability, and release-control layer of the Sustainable Catalyst platform. v1.16.0 adds an explicit hardening system for accessibility validation, local offline drafts, recovery snapshots, additive packet migration, large-packet and mobile testing, backup and restore drills, privacy review, and named-human release authorization.
 
-Public surfaces expose only governance-permitted, public-safe records. Institutional write and archive operations require scoped API keys. The release does not expose private Decision Rooms, invitation records, personal contact details, secrets, or internal notes.
+The release advances the additive Decision Packet to `scds-decision-packet/1.9`. It preserves the v1.15.0 public API and institutional integration layer and all earlier governance, collaboration, scenario, publication, monitoring, evidence, and export capabilities.
 
-## Integration capabilities
+## Hardening capabilities
 
-- Versioned `scds-decision-packet/1.8` packet exchange
-- Public-safe dossier generation gated by approved or implemented governance states
-- Script-free readiness and scenario embed descriptors
-- Scoped API keys for packet read/write, archive, gateway, and event operations
-- Bulk packet import and export, capped at 100 packets per request
-- Signed or digest-only export manifests
-- Institutional archive packages
-- Platform Core gateway records
-- Internal webhook-style event records without automatic external delivery
-- Stable SDK contract discovery
-- Additive WordPress and backend parity
+- Twelve-point accessibility audit covering keyboard operation, focus visibility, landmarks, labels, live status, tables, chart alternatives, reduced motion, contrast, errors, touch targets, and zoom/reflow
+- Explicit requirement for human screen-reader, keyboard-only, forced-colors, contrast, and reflow testing
+- IndexedDB local draft storage with localStorage fallback
+- Fifteen-second autosave and online/offline status announcements
+- Sensitive-field stripping before recovery storage
+- Recovery snapshots with packet and snapshot SHA-256 hashes
+- Additive migration assessment from Decision Packet 1.0–1.8 to 1.9
+- Large-packet and mobile performance gates
+- Backup, restore, and privacy-review gates
+- Human release authorization required; automatic deployment remains disabled
 
 ## Primary endpoints
 
-- `GET /api/v1/capabilities`
-- `GET /api/v1/sdk/contracts`
-- `POST /api/v1/public-dossier`
-- `POST /api/v1/embeds/readiness`
-- `POST /api/v1/embeds/scenario`
-- `POST /api/v1/packets/export`
-- `POST /api/v1/packets/import`
-- `POST /api/v1/archive`
-- `POST /api/v1/platform-core/gateway`
-- `POST /api/v1/events`
-- `POST /decision-packet/institutional-integration`
+- `GET /release-hardening/template`
+- `POST /release-hardening/accessibility-audit`
+- `POST /release-hardening/offline-manifest`
+- `POST /release-hardening/recovery-snapshot`
+- `POST /release-hardening/migration-assessment`
+- `POST /release-hardening/readiness`
+- `POST /decision-packet/release-hardening`
 
 WordPress exposes matching routes under `/wp-json/scds/v1` and a dedicated workspace:
 
 ```text
-[sc_decision_studio mode="integration" title="Public API, Embeds, and Institutional Integration"]
+[sc_decision_studio mode="hardening" title="Accessibility, Offline Use, and Release Hardening"]
 ```
 
-## Configuration
+## Offline boundary
 
-- `SCDS_API_KEY`: optional all-scopes institutional key.
-- `SCDS_INSTITUTIONAL_API_KEYS`: JSON object mapping keys to allowed scopes.
-- `SCDS_EXPORT_SIGNING_SECRET`: optional HMAC-SHA256 signing secret. When absent, manifests retain a SHA-256 digest and are marked unsigned.
+Offline mode supports viewing the active packet, editing a local draft, creating a recovery snapshot, and exporting JSON. Governance transitions, room membership changes, institutional API operations, publication handoffs, and external delivery require reconnection and explicit authenticated confirmation. Queued writes are never replayed automatically.
 
-## Preserved platform layers
+## Accessibility boundary
 
-v1.15.0 preserves outcomes monitoring, publication, institutional Decision Packs, private Decision Rooms, advanced scenarios, human governance, typed platform evidence, saved packets, governed exports, audit/provenance, and legacy adapters.
+Automated checks cannot establish full WCAG conformance. Assistive-technology testing, contrast review, reflow validation, restore drills, privacy review, security review, and named-human release authorization remain required.
 
-## Boundary
-
-Public APIs and embeds are decision-support publication surfaces, not certification, assurance, professional advice, or automatic approval. Internal event records are structured handoffs; this release does not deliver external webhooks automatically.
-
-See `docs/V1150_PUBLIC_API_EMBEDS_INSTITUTIONAL_INTEGRATION.md` and `docs/ROADMAP.md`.
+See `docs/V1160_ACCESSIBILITY_OFFLINE_RELEASE_HARDENING.md` and `docs/ROADMAP.md`.

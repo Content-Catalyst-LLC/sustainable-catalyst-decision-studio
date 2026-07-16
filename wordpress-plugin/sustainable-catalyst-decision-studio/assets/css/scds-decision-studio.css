@@ -152,3 +152,14 @@
 
 /* v1.14.0 Outcomes, Monitoring, and Reassessment */
 .scds-shell [data-scds-panel="outcomes"] .scds-score-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}.scds-shell [data-scds-panel="outcomes"] .scds-score-grid>div{border:1px solid #d7dce2;border-radius:8px;padding:12px;background:#fff}.scds-shell [data-scds-panel="outcomes"] .scds-score-grid strong{display:block;font-size:1.35rem}.scds-shell [data-scds-panel="outcomes"] .scds-score-grid span{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}@media(max-width:720px){.scds-shell [data-scds-panel="outcomes"] .scds-score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* v1.16.0 accessibility, reflow, and reduced-motion hardening */
+.scds-shell :focus-visible{outline:3px solid currentColor;outline-offset:3px}
+.scds-shell button,.scds-shell input,.scds-shell select,.scds-shell textarea,.scds-shell a{scroll-margin:1rem}
+.scds-shell button,.scds-shell .scds-button{min-height:44px;min-width:44px}
+.scds-status-line{margin:1rem 0;padding:.8rem 1rem;border:1px solid currentColor;border-radius:8px;font-weight:600}
+.scds-table{display:table;width:100%}
+.scds-table th{text-align:left}
+@media (max-width:720px){.scds-shell .scds-form-grid,.scds-shell .scds-score-grid,.scds-shell .scds-public-grid{grid-template-columns:1fr}.scds-shell .scds-tabs{overflow-x:auto;scroll-snap-type:x proximity}.scds-shell .scds-tab{scroll-snap-align:start;white-space:nowrap}.scds-shell .scds-table{display:block;overflow-x:auto}.scds-shell textarea{min-height:9rem}}
+@media (prefers-reduced-motion:reduce){.scds-shell *,.scds-shell *::before,.scds-shell *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media (forced-colors:active){.scds-shell .scds-button,.scds-shell .scds-tab,.scds-shell .scds-note,.scds-shell .scds-status-line{border:1px solid ButtonText}.scds-shell .scds-bar i{background:Highlight}}

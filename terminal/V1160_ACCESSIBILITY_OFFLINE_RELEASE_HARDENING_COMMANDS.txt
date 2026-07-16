@@ -1,0 +1,21 @@
+Decision Studio v1.16.0 — Accessibility, Offline Use, and Release Hardening
+
+Validate locally:
+
+  cd backend
+  python3.12 -m pytest
+  cd ..
+  python3.12 scripts/test_release.py
+  php -l wordpress-plugin/sustainable-catalyst-decision-studio/sustainable-catalyst-decision-studio.php
+  node --check wordpress-plugin/sustainable-catalyst-decision-studio/assets/js/scds-decision-studio.js
+  node --check wordpress-plugin/sustainable-catalyst-decision-studio/assets/js/scds-offline-workspace.js
+
+Build release:
+
+  PYTHON_BIN=python3.12 bash scripts/build_release.sh
+
+Render checks after deployment:
+
+  curl -sS https://YOUR-RENDER-SERVICE/health
+  curl -sS https://YOUR-RENDER-SERVICE/release
+  curl -sS https://YOUR-RENDER-SERVICE/release-hardening/template

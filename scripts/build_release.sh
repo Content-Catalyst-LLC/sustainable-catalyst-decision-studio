@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="1.15.0"
+VERSION="1.16.0"
 OUT="${1:-$ROOT/dist}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 PLUGIN_DIR="$ROOT/wordpress-plugin/sustainable-catalyst-decision-studio"
@@ -14,7 +14,7 @@ rm -f "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" "$OUT/s
 )
 "$PYTHON_BIN" "$ROOT/scripts/test_release.py"
 php -l "$PLUGIN_DIR/sustainable-catalyst-decision-studio.php"
-if command -v node >/dev/null 2>&1; then node --check "$PLUGIN_DIR/assets/js/scds-decision-studio.js"; fi
+if command -v node >/dev/null 2>&1; then node --check "$PLUGIN_DIR/assets/js/scds-decision-studio.js"; node --check "$PLUGIN_DIR/assets/js/scds-offline-workspace.js"; fi
 find "$ROOT" -type d \( -name '__pycache__' -o -name '.pytest_cache' \) -prune -exec rm -rf {} +
 find "$ROOT" -type f -name '*.pyc' -delete
 (

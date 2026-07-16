@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-recovery-snapshot-v1.0.json",
+  "title": "Decision Studio Recovery Snapshot",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "decision_packet_schema",
+    "snapshot_id",
+    "packet_hash",
+    "snapshot_hash",
+    "sensitive_fields_removed",
+    "packet"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-recovery-snapshot/1.0"
+    },
+    "version": {
+      "const": "1.16.0"
+    },
+    "decision_packet_schema": {
+      "const": "scds-decision-packet/1.9"
+    },
+    "snapshot_id": {
+      "type": "string"
+    },
+    "packet_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "snapshot_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "sensitive_fields_removed": {
+      "const": true
+    },
+    "packet": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true
+}

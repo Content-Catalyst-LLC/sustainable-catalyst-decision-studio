@@ -1,0 +1,180 @@
+{
+  "release": "1.16.0",
+  "release_name": "Accessibility, Offline Use, and Release Hardening",
+  "release_date": "2026-07-16",
+  "build_fingerprint": "scds-v1.16.0-accessibility-offline-release-hardening",
+  "source_commit": "release-v1.16.0",
+  "schemas": {
+    "decision_packet": "scds-decision-packet/1.9",
+    "platform_artifact": "scds-platform-artifact/1.0",
+    "evidence_record": "scds-evidence-record/1.0",
+    "decision_governance": "scds-decision-governance/1.0",
+    "review_event": "scds-review-event/1.0",
+    "scenario_studio": "scds-scenario-studio/1.0",
+    "collaboration_room": "scds-collaborative-decision-room/1.0",
+    "collaboration_event": "scds-collaboration-event/1.0",
+    "contact_engagement_handoff": "sc-contact-engagement-handoff/1.0",
+    "institutional_decision_pack": "scds-institutional-decision-pack/1.0",
+    "decision_pack_application": "scds-decision-pack-application/1.0",
+    "decision_publication": "scds-decision-publication/1.0",
+    "publication_handoff": "scds-publication-handoff/1.0",
+    "publication_redaction": "scds-publication-redaction/1.0",
+    "outcome_monitoring": "scds-outcome-monitoring/1.0",
+    "reassessment_event": "scds-reassessment-event/1.0",
+    "decision_registry_entry": "scds-decision-registry-entry/1.0",
+    "public_api": "scds-public-api/1.0",
+    "embed_descriptor": "scds-embed-descriptor/1.0",
+    "institutional_archive": "scds-institutional-archive/1.0",
+    "webhook_event": "scds-webhook-event/1.0",
+    "sdk_contract": "scds-cross-product-sdk/1.0",
+    "platform_core_gateway": "scds-platform-core-gateway/1.0",
+    "accessibility_audit": "scds-accessibility-audit/1.0",
+    "offline_workspace": "scds-offline-workspace/1.0",
+    "release_readiness": "scds-release-readiness/1.0",
+    "recovery_snapshot": "scds-recovery-snapshot/1.0",
+    "migration_assessment": "scds-migration-assessment/1.0"
+  },
+  "wordpress": {
+    "plugin_version": "1.16.0",
+    "database_version": "2.0.0",
+    "api_namespace": "scds/v1",
+    "outcome_monitoring_storage": "outcome_monitoring_json",
+    "publication_storage": "publication_json",
+    "decision_pack_storage": "decision_pack_json",
+    "canonical_room_storage": "wp_scds_rooms",
+    "membership_storage": "wp_scds_room_members",
+    "event_storage": "wp_scds_room_events",
+    "institutional_integration_storage": "institutional_integration_json",
+    "release_hardening_storage": "release_hardening_json",
+    "recovery_snapshot_storage": "recovery_snapshot_json"
+  },
+  "backend": {
+    "version": "1.16.0",
+    "root_dir": "backend",
+    "start_command": "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+  },
+  "platform_products": [
+    "knowledge-library",
+    "research-librarian",
+    "site-intelligence",
+    "workbench",
+    "research-lab",
+    "platform-core"
+  ],
+  "outcomes_monitoring": {
+    "statuses": [
+      "planning",
+      "on_track",
+      "watch",
+      "reassessment_required",
+      "closed"
+    ],
+    "lifecycle_statuses": [
+      "not_implemented",
+      "implemented",
+      "amended",
+      "suspended",
+      "retired"
+    ],
+    "indicator_directions": [
+      "increase",
+      "decrease",
+      "range"
+    ],
+    "trigger_types": [
+      "indicator_above",
+      "indicator_below",
+      "overdue_milestone",
+      "assumption_invalidated",
+      "material_risk",
+      "scheduled_reassessment"
+    ],
+    "site_intelligence_connections": true,
+    "tamper_evident_events": true,
+    "human_reassessment_required": true,
+    "human_amendment_required": true,
+    "human_retirement_required": true,
+    "ai_approval_allowed": false
+  },
+  "compatibility": {
+    "shortcodes_preserved": true,
+    "rest_routes_preserved": true,
+    "packet_schema_breaking_changes": false,
+    "typed_platform_artifacts": true,
+    "legacy_artifact_adapters_preserved": true,
+    "v1_8_handoff_contracts_preserved": true,
+    "v1_9_governance_preserved": true,
+    "v1_10_scenario_studio_preserved": true,
+    "v1_11_collaboration_preserved": true,
+    "v1_12_decision_packs_preserved": true,
+    "v1_13_publication_studio_preserved": true,
+    "v1_14_outcomes_monitoring_preserved": true,
+    "v1_15_public_api_integration_preserved": true
+  },
+  "limits": {
+    "max_request_bytes": 1048576,
+    "public_rate_limit": 60,
+    "window_seconds": 60,
+    "batch_import_maximum": 100
+  },
+  "checks": [
+    "124 backend tests",
+    "accessibility audit and blocker tests",
+    "offline manifest and sensitive-cache tests",
+    "recovery snapshot secret-removal and hash tests",
+    "migration upgrade and downgrade tests",
+    "release readiness gate tests",
+    "Decision Packet 1.9 tests",
+    "prior-release regression tests",
+    "backend compile",
+    "JavaScript syntax",
+    "PHP syntax",
+    "JSON validation",
+    "version parity",
+    "plugin package structure"
+  ],
+  "public_api_and_institutional_integration": {
+    "public_surfaces": [
+      "public-safe dossier",
+      "readiness embed descriptor",
+      "scenario embed descriptor",
+      "SDK contracts"
+    ],
+    "institutional_scopes": [
+      "packet:read",
+      "packet:write",
+      "archive:write",
+      "gateway:write",
+      "event:emit"
+    ],
+    "bulk_packet_maximum": 100,
+    "signed_manifests": true,
+    "public_governance_gate": true,
+    "public_private_separation": true,
+    "platform_core_gateway": true,
+    "internal_event_records": true,
+    "external_webhook_delivery": false
+  },
+  "accessibility_offline_release_hardening": {
+    "accessibility_checks": 12,
+    "manual_assistive_technology_validation_required": true,
+    "offline_storage": [
+      "IndexedDB",
+      "localStorage fallback"
+    ],
+    "automatic_write_replay": false,
+    "sensitive_fields_cached": false,
+    "recovery_snapshots": true,
+    "migration_strategy": "additive_defaulting",
+    "release_gates": [
+      "accessibility",
+      "offline_recovery",
+      "performance",
+      "migration_compatibility",
+      "backup_restore",
+      "security_privacy"
+    ],
+    "human_release_authorization_required": true,
+    "automatic_deployment_allowed": false
+  }
+}

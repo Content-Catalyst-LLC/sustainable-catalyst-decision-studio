@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-migration-assessment-v1.0.json",
+  "title": "Decision Studio Migration Assessment",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "from_schema",
+    "to_schema",
+    "supported",
+    "strategy",
+    "required_actions",
+    "blockers"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-migration-assessment/1.0"
+    },
+    "version": {
+      "const": "1.16.0"
+    },
+    "from_schema": {
+      "type": "string"
+    },
+    "to_schema": {
+      "const": "scds-decision-packet/1.9"
+    },
+    "supported": {
+      "type": "boolean"
+    },
+    "strategy": {
+      "const": "additive_defaulting"
+    },
+    "required_actions": {
+      "type": "array"
+    },
+    "blockers": {
+      "type": "array"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  },
+  "additionalProperties": true
+}

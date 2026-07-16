@@ -2,21 +2,18 @@
 
 ## Current release
 
-### v1.15.0 — Public API, Embeds, and Institutional Integration
+### v1.16.0 — Accessibility, Offline Use, and Release Hardening
 
-- Publish governance-gated, public-safe decision dossiers.
-- Provide script-free readiness and scenario embed descriptors.
-- Add scoped institutional packet read/write, archive, gateway, and event operations.
-- Support bulk packet import/export with safety limits.
-- Produce signed or digest-only manifests and institutional archive packages.
-- Create Platform Core gateway and internal event records.
-- Expose stable cross-product SDK contracts.
-- Apply integration records additively to Decision Packet `scds-decision-packet/1.8`.
+- Add keyboard, focus, landmark, label, live-region, table, chart-alternative, reduced-motion, contrast, error, touch-target, and zoom/reflow checks.
+- Require human assistive-technology validation before a conformance claim.
+- Add IndexedDB autosave with localStorage fallback and online/offline announcements.
+- Strip secrets and credentials from recovery storage.
+- Create hashed recovery snapshots before migration or release.
+- Assess additive migrations from Decision Packet 1.0–1.8 to 1.9.
+- Gate release readiness on accessibility, offline recovery, performance, migration, backup/restore, security, and privacy.
+- Require named-human release authorization and prohibit automatic deployment.
 
 ## Planned releases
-
-### v1.16.0 — Accessibility, Offline Use, and Release Hardening
-Complete mobile, keyboard, screen-reader, chart accessibility, autosave, recovery, offline drafts, migration, security, cold-start, and degradation testing.
 
 ### v2.0.0 — Connected Decision Intelligence Platform
 Complete the lifecycle: Frame → Research → Gather evidence → Model → Compare → Challenge assumptions → Review → Approve → Publish → Implement → Monitor → Reassess.
@@ -28,6 +25,7 @@ Complete the lifecycle: Frame → Research → Gather evidence → Model → Com
 - Site Intelligence supplies live, comparative, and monitoring evidence with methodology and freshness context.
 - Workbench performs calculations, simulations, optimization, and technical analysis.
 - Research Lab supplies experimental and scientific artifacts.
-- Platform Core supplies shared identity, provenance, evidence, and future Decision Registry contracts.
-- Decision Studio organizes alternatives, methodologies, governance, approval, accountability, publication, implementation monitoring, and reassessment.
-- Monitoring results do not establish causality or replace qualified external review where law, safety, fiduciary duty, clinical practice, engineering standards, assurance, or public authority require it.
+- Platform Core supplies shared identity, provenance, evidence, and Decision Registry exchange contracts.
+- Decision Studio organizes alternatives, methodologies, governance, approval, accountability, publication, implementation monitoring, reassessment, institutional exchange, and release readiness.
+- Offline storage never caches institutional credentials or automatically replays consequential writes.
+- Automated accessibility and release checks do not replace human testing, security review, professional judgment, or required external assurance.

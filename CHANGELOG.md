@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.16.0 — Accessibility, Offline Use, and Release Hardening
+
+- Added twelve-point accessibility audits with explicit human assistive-technology validation boundaries.
+- Added IndexedDB offline drafts, localStorage fallback, autosave, and online/offline live announcements.
+- Added sensitive-field stripping and hashed recovery snapshots.
+- Added additive migration assessment from Decision Packet 1.0–1.8 to 1.9 and blocked downgrades.
+- Added performance, mobile, backup, restore, security, and privacy release gates.
+- Added human release authorization requirements and prohibited automatic deployment.
+- Added Decision Packet schema 1.9 and WordPress database version 2.0.0.
+- Added WordPress Accessibility & Offline workspace, REST parity, persistence, and export support.
+- Preserved public APIs, institutional integration, outcomes, publication, Decision Packs, collaboration, scenarios, governance, typed platform handoffs, and legacy adapters.
+- Expanded the backend suite to 124 tests.
+
 ## v1.15.0 — Public API, Embeds, and Institutional Integration
 
 - Added governance-gated public-safe decision dossiers.

@@ -1,0 +1,1688 @@
+{
+  "ok": true,
+  "version": "1.16.0",
+  "schema": "scds-release-readiness/1.0",
+  "release_hardening": {
+    "schema": "scds-release-readiness/1.0",
+    "version": "1.16.0",
+    "accessibility_audit": {
+      "schema": "scds-accessibility-audit/1.0",
+      "version": "1.16.0",
+      "generated_at": "2026-07-16T16:28:56Z",
+      "score_percent": 100.0,
+      "status": "ready_for_human_validation",
+      "checks": [
+        {
+          "id": "keyboard_navigation",
+          "description": "All interactive controls can be reached and operated by keyboard.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "visible_focus",
+          "description": "Keyboard focus is clearly visible.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "semantic_landmarks",
+          "description": "Page regions use headings and semantic landmarks.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "form_labels",
+          "description": "Form controls have programmatic labels and instructions.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "screen_reader_status",
+          "description": "Async status and validation messages are announced.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "accessible_tables",
+          "description": "Tables have headers and meaningful reading order.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "accessible_chart_alternatives",
+          "description": "Charts have text or table alternatives.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "reduced_motion",
+          "description": "Animations respect reduced-motion preferences.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "contrast_review",
+          "description": "Text, controls, and focus indicators passed contrast review.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "error_identification",
+          "description": "Errors identify the field and corrective action.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "touch_target_size",
+          "description": "Primary controls meet usable touch-target sizing.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "zoom_and_reflow",
+          "description": "Core workflows remain usable at 200% zoom and narrow widths.",
+          "status": "pass",
+          "evidence": ""
+        }
+      ],
+      "blockers": [],
+      "manual_validation_required": [
+        "Screen-reader testing with at least one desktop and one mobile combination.",
+        "Keyboard-only completion of intake, review, export, and recovery workflows.",
+        "Zoom, reflow, contrast, and forced-colors review on representative pages."
+      ],
+      "conformance_claim": "none",
+      "content_hash": "sha256:32d0999287ff6ce7b2f11e89126c5801973944646a55bf89fb8700ed725485ad"
+    },
+    "offline_workspace": {
+      "schema": "scds-offline-workspace/1.0",
+      "version": "1.16.0",
+      "decision_packet_schema": "scds-decision-packet/1.9",
+      "generated_at": "2026-07-16T16:28:56Z",
+      "decision_packet_id": "SCDS-V1160-SAMPLE",
+      "online": true,
+      "storage": {
+        "primary": "indexeddb",
+        "fallback": "localstorage",
+        "maximum_drafts": 25,
+        "maximum_snapshot_bytes": 5000000,
+        "sensitive_fields_cached": false
+      },
+      "cache_policy": {
+        "strategy": "network_first_for_api_cache_first_for_static_assets",
+        "cacheable_assets": [
+          "assets/css/scds-decision-studio.css",
+          "assets/js/scds-decision-studio.js",
+          "assets/js/scds-offline-workspace.js"
+        ],
+        "non_cacheable": [
+          "api_keys",
+          "authorization_headers",
+          "private_invitation_tokens",
+          "institutional_archive_secrets"
+        ],
+        "api_responses_cached": false
+      },
+      "draft_policy": {
+        "autosave_interval_seconds": 15,
+        "checksum_required": true,
+        "recovery_snapshot_before_migration": true,
+        "queued_write_intents": true,
+        "automatic_write_replay": false,
+        "conflict_strategy": "manual_compare_and_confirm"
+      },
+      "status_announcements": {
+        "online_offline_live_region": true,
+        "save_success_live_region": true,
+        "recovery_available_live_region": true
+      },
+      "offline_capabilities": [
+        "view_current_packet",
+        "edit_local_draft",
+        "create_recovery_snapshot",
+        "export_json"
+      ],
+      "online_required": [
+        "governance_transition",
+        "room_membership_change",
+        "institutional_api",
+        "publication_handoff",
+        "external_delivery"
+      ],
+      "content_hash": "sha256:abd52a5bb574454da454ee24d26005028f807a4d20cedc9f23e33c7f8c28423f"
+    },
+    "migration_assessment": {
+      "schema": "scds-migration-assessment/1.0",
+      "version": "1.16.0",
+      "generated_at": "2026-07-16T16:28:56Z",
+      "from_schema": "scds-decision-packet/1.8",
+      "to_schema": "scds-decision-packet/1.9",
+      "supported": true,
+      "strategy": "additive_defaulting",
+      "required_actions": [
+        "Create recovery snapshot before migration.",
+        "Preserve unknown fields under migration_legacy_fields.",
+        "Apply defaults only for missing v1.16.0 sections.",
+        "Re-run governance and export readiness after migration."
+      ],
+      "added_sections": [
+        "release_hardening",
+        "accessibility_audit",
+        "offline_workspace",
+        "recovery_snapshots",
+        "migration_assessment",
+        "release_readiness"
+      ],
+      "blockers": [],
+      "rollback": "Restore the pre-migration recovery snapshot as a new draft; do not overwrite the source record.",
+      "content_hash": "sha256:a2cf4eb9ecbbb15aca5fbd1cdc1b2ab7c58aa98c286c6fc3967f430e1c11cac0"
+    },
+    "recovery_snapshot": {
+      "schema": "scds-recovery-snapshot/1.0",
+      "version": "1.16.0",
+      "decision_packet_schema": "scds-decision-packet/1.9",
+      "snapshot_id": "snapshot-e1276e236ebd9f3c5129",
+      "decision_packet_id": "SCDS-V1160-SAMPLE",
+      "label": "v1.16.0 pre-release recovery snapshot",
+      "actor": "Release Manager",
+      "created_at": "2026-07-16T16:28:56Z",
+      "size_bytes": 10759,
+      "packet_hash": "sha256:ae95e6ee158f198a3e08af0f7208fc91934ba001da5978c9c5cce2aec61b8fc2",
+      "sensitive_fields_removed": true,
+      "restore_strategy": "validate_schema_then_restore_as_new_draft",
+      "snapshot_hash": "sha256:e69af3e25a6a7f11a43380e4aa3589a84d7ae78cfcc313e63ee26570d8e50d4e"
+    },
+    "release_readiness": {
+      "schema": "scds-release-readiness/1.0",
+      "version": "1.16.0",
+      "decision_packet_schema": "scds-decision-packet/1.9",
+      "generated_at": "2026-07-16T16:28:56Z",
+      "status": "release_candidate_ready",
+      "readiness_percent": 100.0,
+      "gates": [
+        {
+          "id": "accessibility",
+          "status": "pass",
+          "details": []
+        },
+        {
+          "id": "offline_recovery",
+          "status": "pass",
+          "details": []
+        },
+        {
+          "id": "performance",
+          "status": "pass",
+          "details": []
+        },
+        {
+          "id": "migration_compatibility",
+          "status": "pass",
+          "details": []
+        },
+        {
+          "id": "backup_restore",
+          "status": "pass",
+          "details": []
+        },
+        {
+          "id": "security_privacy",
+          "status": "pass",
+          "details": []
+        }
+      ],
+      "blockers": [],
+      "human_release_authorization_required": true,
+      "automatic_deployment_allowed": false,
+      "notes": "Canonical release hardening sample",
+      "warnings": [
+        "Automated readiness cannot replace assistive-technology testing, restore drills, security review, or human release authorization.",
+        "This record is not certification, assurance, legal compliance, or professional sign-off."
+      ],
+      "content_hash": "sha256:aa9faf68cc887d73eeadd853a231890e3b4c61b3f3afec42d3848da7b23853bb"
+    },
+    "content_hash": "sha256:5c4ba6c0b40f94c803cb523a75e5d3790b1513e97aa4d6879c6fba8f4bb4a3c7"
+  },
+  "recovery_snapshot": {
+    "schema": "scds-recovery-snapshot/1.0",
+    "version": "1.16.0",
+    "decision_packet_schema": "scds-decision-packet/1.9",
+    "snapshot_id": "snapshot-e1276e236ebd9f3c5129",
+    "decision_packet_id": "SCDS-V1160-SAMPLE",
+    "label": "v1.16.0 pre-release recovery snapshot",
+    "actor": "Release Manager",
+    "created_at": "2026-07-16T16:28:56Z",
+    "size_bytes": 10759,
+    "packet_hash": "sha256:ae95e6ee158f198a3e08af0f7208fc91934ba001da5978c9c5cce2aec61b8fc2",
+    "sensitive_fields_removed": true,
+    "restore_strategy": "validate_schema_then_restore_as_new_draft",
+    "packet": {
+      "packet_version": "1.16.0",
+      "workflow": "Knowledge Library \u2192 Research Librarian \u2192 Site Intelligence \u2192 Workbench \u2192 Research Lab \u2192 Platform Core \u2192 Decision Studio",
+      "artifact_schema": "scds-platform-artifact/1.0",
+      "evidence_record_schema": "scds-evidence-record/1.0",
+      "governance_schema": "scds-decision-governance/1.0",
+      "review_event_schema": "scds-review-event/1.0",
+      "scenario_studio_schema": "scds-scenario-studio/1.0",
+      "collaboration_room_schema": "scds-collaborative-decision-room/1.0",
+      "collaboration_event_schema": "scds-collaboration-event/1.0",
+      "decision_pack_schema": "scds-institutional-decision-pack/1.0",
+      "decision_pack_application_schema": "scds-decision-pack-application/1.0",
+      "publication_studio_schema": "scds-decision-publication/1.0",
+      "publication_handoff_schema": "scds-publication-handoff/1.0",
+      "publication_redaction_schema": "scds-publication-redaction/1.0",
+      "outcome_monitoring_schema": "scds-outcome-monitoring/1.0",
+      "reassessment_event_schema": "scds-reassessment-event/1.0",
+      "decision_registry_schema": "scds-decision-registry-entry/1.0",
+      "public_api_schema": "scds-public-api/1.0",
+      "embed_descriptor_schema": "scds-embed-descriptor/1.0",
+      "institutional_archive_schema": "scds-institutional-archive/1.0",
+      "webhook_event_schema": "scds-webhook-event/1.0",
+      "sdk_contract_schema": "scds-cross-product-sdk/1.0",
+      "platform_core_gateway_schema": "scds-platform-core-gateway/1.0",
+      "accessibility_audit_schema": "scds-accessibility-audit/1.0",
+      "offline_workspace_schema": "scds-offline-workspace/1.0",
+      "release_readiness_schema": "scds-release-readiness/1.0",
+      "recovery_snapshot_schema": "scds-recovery-snapshot/1.0",
+      "migration_assessment_schema": "scds-migration-assessment/1.0",
+      "project": {
+        "project_name": "Accessible offline decision workflow"
+      },
+      "decision_framing": {},
+      "evidence_registry": [],
+      "citations": [],
+      "quotations": [],
+      "research_routes": [],
+      "evidence_gaps": [],
+      "follow_up_questions": [],
+      "live_evidence": [],
+      "methodologies": [],
+      "experimental_evidence": [],
+      "datasets": [],
+      "technical_artifacts": [],
+      "platform_registry": [],
+      "entities": [],
+      "evidence_ledger": [],
+      "provenance_links": [],
+      "platform_handoffs": [],
+      "integrity_checks": [],
+      "evidence_and_measurement": {
+        "records": []
+      },
+      "scenarios": {
+        "records": []
+      },
+      "impact_measurement": {
+        "records": []
+      },
+      "claim_and_risk_review": {
+        "records": []
+      },
+      "financial_tradeoffs": {},
+      "execution_and_recovery": {},
+      "four_pillar_scores": {},
+      "assumptions": [],
+      "risks": [],
+      "sources": [],
+      "audit_trail": [],
+      "audit_and_provenance": {
+        "audit_version": "1.16.0",
+        "decision_packet_id": "SCDS-DRAFT",
+        "created_at": "generated-at-runtime",
+        "last_updated_at": "generated-at-runtime",
+        "review_status": {
+          "status": "draft",
+          "prepared_by": "",
+          "reviewed_by": "",
+          "required_reviews": [
+            "data/source review",
+            "finance assumptions review",
+            "risk and claims review",
+            "professional review where regulated or safety-critical"
+          ],
+          "open_questions": []
+        },
+        "module_artifact_ledger": [],
+        "source_ledger": [],
+        "assumptions_register": [],
+        "calculation_trace": [],
+        "claim_trace": [],
+        "change_log": [],
+        "warnings": [
+          "Educational decision support only; not certification, assurance, legal, financial, engineering, medical, tax, compliance, or investment advice.",
+          "Audit entries are generated from user-provided inputs and imported artifacts; they must be reviewed before operational use."
+        ]
+      },
+      "governance_center": {
+        "governance_version": "1.16.0",
+        "schema": "scds-decision-governance/1.0",
+        "current_state": "draft",
+        "decision_owner": {
+          "name": "",
+          "role": "",
+          "organization": "",
+          "accountable": true
+        },
+        "reviewers": [],
+        "approval_conditions": [],
+        "exceptions": [],
+        "conflict_declarations": [],
+        "signoffs": [],
+        "review_history": [],
+        "approval_expires_at": "",
+        "reassessment_due_at": "",
+        "transition_status": {
+          "allowed": true,
+          "requested_state": "draft",
+          "blockers": []
+        },
+        "export_gate": {
+          "internal_draft_allowed": true,
+          "reviewed_export_allowed": false,
+          "public_export_allowed": false,
+          "professional_reliance_allowed": false,
+          "blocking_reasons": [
+            "Decision has not been approved by accountable human reviewers."
+          ]
+        },
+        "warnings": [
+          "Decision Studio records governance actions but does not approve decisions autonomously.",
+          "AI may flag gaps or contradictions but cannot provide sign-off, certification, assurance, or regulated professional approval."
+        ]
+      },
+      "collaboration_room": {
+        "room_version": "1.16.0",
+        "schema": "scds-collaborative-decision-room/1.0",
+        "event_schema": "scds-collaboration-event/1.0",
+        "room_id": "",
+        "title": "Collaborative Decision Room",
+        "visibility": "private",
+        "status": "active",
+        "owner": {},
+        "members": [],
+        "comments": [],
+        "change_requests": [],
+        "snapshots": [],
+        "snapshot_comparisons": [],
+        "activity_timeline": [],
+        "activity_integrity": {
+          "ok": true,
+          "event_count": 0,
+          "problems": [],
+          "head_hash": "GENESIS"
+        },
+        "notifications": [],
+        "share_grants": [],
+        "locked_version": {},
+        "contact_engagement_handoffs": [],
+        "limits": {
+          "members": 200,
+          "comments": 2000,
+          "change_requests": 500,
+          "snapshots": 100,
+          "activity_events": 5000
+        },
+        "canonical_persistence": "wordpress",
+        "warnings": [
+          "Decision Rooms are private collaboration records; WordPress authentication and authorization remain authoritative.",
+          "Comments and approvals are human records. AI cannot approve, sign, certify, or impersonate a reviewer.",
+          "Approved snapshots remain locked until an authorized human explicitly reopens the version with a reason."
+        ]
+      },
+      "institutional_decision_pack": {},
+      "criteria_registry": [],
+      "evidence_plan": [],
+      "indicator_plan": [],
+      "model_plan": [],
+      "domain_readiness_rules": [],
+      "domain_brief_templates": [],
+      "publication_studio": {},
+      "publication_registry": [],
+      "publication_handoffs": [],
+      "redaction_log": [],
+      "release_hardening": {},
+      "accessibility_audit": {},
+      "offline_workspace": {},
+      "recovery_snapshots": [],
+      "migration_assessment": {},
+      "release_readiness": {},
+      "outcome_monitoring": {
+        "schema": "scds-outcome-monitoring/1.0",
+        "monitoring_version": "1.0",
+        "status": "planning",
+        "decision_status": "not_implemented",
+        "decision_owner": {},
+        "implementation_owner": {},
+        "commitments": [],
+        "targets": [],
+        "indicators": [],
+        "site_intelligence_connections": [],
+        "monitoring_schedule": {
+          "cadence": "monthly",
+          "next_review_at": "",
+          "last_reviewed_at": ""
+        },
+        "implementation_milestones": [],
+        "emerging_risks": [],
+        "assumption_invalidations": [],
+        "reassessment_triggers": [],
+        "trigger_evaluations": [],
+        "monitoring_events": [],
+        "reassessment_history": [],
+        "implementation_amendments": [],
+        "post_implementation_reviews": [],
+        "lessons_learned": [],
+        "decision_registry_entry": {},
+        "summary": {
+          "target_count": 0,
+          "targets_on_track": 0,
+          "targets_at_risk": 0,
+          "targets_off_track": 0,
+          "milestones_overdue": 0,
+          "active_material_risks": 0,
+          "invalidated_assumptions": 0,
+          "triggered_reassessments": 0
+        },
+        "boundaries": [
+          "Monitoring records observed results and implementation evidence; it does not certify causality or performance.",
+          "Lifecycle amendments, suspension, and retirement require accountable human authorization.",
+          "Site Intelligence links provide evidence context; source methodology, freshness, and confidence remain visible."
+        ]
+      },
+      "decision_registry_entry": {},
+      "reassessment_history": [],
+      "implementation_amendments": [],
+      "institutional_integration": {
+        "schema": "scds-public-api/1.0",
+        "version": "1.16.0",
+        "decision_packet_schema": "scds-decision-packet/1.9",
+        "public_surfaces": [
+          "public_dossier",
+          "readiness_embed",
+          "scenario_embed",
+          "sdk_contracts"
+        ],
+        "institutional_surfaces": [
+          "bulk_export",
+          "bulk_import",
+          "institutional_archive",
+          "platform_core_gateway",
+          "internal_events"
+        ],
+        "limits": {
+          "bulk_packets": 100
+        },
+        "privacy": {
+          "public_private_separation": true,
+          "public_redaction": true,
+          "institutional_api_key_required": "[removed]"
+        }
+      },
+      "public_dossier": {},
+      "embed_descriptors": [],
+      "institutional_archives": [],
+      "platform_core_gateway": {},
+      "internal_events": [],
+      "sdk_contracts": {
+        "ok": true,
+        "version": "1.16.0",
+        "schema": "scds-cross-product-sdk/1.0",
+        "api_base": "/api/v1",
+        "decision_packet_schema": "scds-decision-packet/1.9",
+        "authentication": {
+          "header": "X-SCDS-API-Key",
+          "scope_header": "X-SCDS-Requested-Scope",
+          "scopes": [
+            "packet:read",
+            "packet:write",
+            "archive:read",
+            "archive:write",
+            "gateway:write",
+            "event:emit"
+          ]
+        },
+        "resources": {
+          "capabilities": {
+            "method": "GET",
+            "path": "/api/v1/capabilities",
+            "public": true
+          },
+          "public_dossier": {
+            "method": "POST",
+            "path": "/api/v1/public-dossier",
+            "public": true
+          },
+          "readiness_embed": {
+            "method": "POST",
+            "path": "/api/v1/embeds/readiness",
+            "public": true
+          },
+          "scenario_embed": {
+            "method": "POST",
+            "path": "/api/v1/embeds/scenario",
+            "public": true
+          },
+          "bulk_export": {
+            "method": "POST",
+            "path": "/api/v1/packets/export",
+            "scope": "packet:read"
+          },
+          "bulk_import": {
+            "method": "POST",
+            "path": "/api/v1/packets/import",
+            "scope": "packet:write"
+          },
+          "archive": {
+            "method": "POST",
+            "path": "/api/v1/archive",
+            "scope": "archive:write"
+          },
+          "platform_core_gateway": {
+            "method": "POST",
+            "path": "/api/v1/platform-core/gateway",
+            "scope": "gateway:write"
+          },
+          "internal_event": {
+            "method": "POST",
+            "path": "/api/v1/events",
+            "scope": "event:emit"
+          }
+        },
+        "stability": {
+          "breaking_changes": "new major schema only",
+          "packet_changes": "additive within 1.x",
+          "legacy_routes_preserved": true
+        }
+      },
+      "integrated_decision_brief": {},
+      "scenario_comparison": {},
+      "scenario_studio": {},
+      "sensitivity_analysis": {},
+      "threshold_analysis": {},
+      "uncertainty_analysis": {},
+      "workbench_handoffs": [],
+      "saved_packet": {
+        "saved_at": "",
+        "saved_by": "",
+        "status": "draft",
+        "storage": "browser_or_wordpress"
+      },
+      "export_center": {
+        "last_exported_at": "",
+        "available_formats": [
+          "json",
+          "markdown",
+          "html",
+          "audit_json",
+          "readiness_json",
+          "scenario_json",
+          "scenario_studio_json",
+          "sensitivity_json",
+          "threshold_json",
+          "handoff_json",
+          "governance_json",
+          "collaboration_json",
+          "room_activity_json",
+          "snapshot_comparison_json",
+          "decision_pack_json",
+          "publication_json",
+          "publication_markdown",
+          "publication_html",
+          "bibliography_json",
+          "redaction_json",
+          "publication_handoff_json",
+          "outcome_monitoring_json",
+          "decision_registry_json",
+          "reassessment_history_json",
+          "public_dossier_json",
+          "readiness_embed_json",
+          "scenario_embed_json",
+          "institutional_archive_json",
+          "signed_manifest_json",
+          "platform_core_gateway_json",
+          "internal_events_json"
+        ]
+      },
+      "module_slots": [
+        {
+          "module_id": "knowledge-library",
+          "name": "Knowledge Library",
+          "artifact_key": "knowledge_library_evidence",
+          "packet_section": "evidence_registry",
+          "status": "empty"
+        },
+        {
+          "module_id": "research-librarian",
+          "name": "Research Librarian",
+          "artifact_key": "research_guidance",
+          "packet_section": "research_routes",
+          "status": "empty"
+        },
+        {
+          "module_id": "site-intelligence",
+          "name": "Site Intelligence",
+          "artifact_key": "site_intelligence_evidence",
+          "packet_section": "live_evidence",
+          "status": "empty"
+        },
+        {
+          "module_id": "workbench",
+          "name": "Workbench",
+          "artifact_key": "workbench_calculations",
+          "packet_section": "calculation_trace",
+          "status": "empty"
+        },
+        {
+          "module_id": "research-lab",
+          "name": "Research Lab",
+          "artifact_key": "research_lab_artifacts",
+          "packet_section": "experimental_evidence",
+          "status": "empty"
+        },
+        {
+          "module_id": "platform-core",
+          "name": "Platform Core",
+          "artifact_key": "platform_core_records",
+          "packet_section": "platform_registry",
+          "status": "empty"
+        },
+        {
+          "module_id": "decision-studio",
+          "name": "Decision Studio",
+          "artifact_key": "synthesis",
+          "packet_section": "integrated_decision_brief",
+          "status": "empty"
+        }
+      ],
+      "decision_packet_id": "SCDS-V1160-SAMPLE",
+      "decision_packet_schema": "scds-decision-packet/1.9",
+      "api_key": "[removed]"
+    },
+    "snapshot_hash": "sha256:e69af3e25a6a7f11a43380e4aa3589a84d7ae78cfcc313e63ee26570d8e50d4e"
+  },
+  "decision_packet": {
+    "packet_version": "1.16.0",
+    "workflow": "Knowledge Library \u2192 Research Librarian \u2192 Site Intelligence \u2192 Workbench \u2192 Research Lab \u2192 Platform Core \u2192 Decision Studio",
+    "artifact_schema": "scds-platform-artifact/1.0",
+    "evidence_record_schema": "scds-evidence-record/1.0",
+    "governance_schema": "scds-decision-governance/1.0",
+    "review_event_schema": "scds-review-event/1.0",
+    "scenario_studio_schema": "scds-scenario-studio/1.0",
+    "collaboration_room_schema": "scds-collaborative-decision-room/1.0",
+    "collaboration_event_schema": "scds-collaboration-event/1.0",
+    "decision_pack_schema": "scds-institutional-decision-pack/1.0",
+    "decision_pack_application_schema": "scds-decision-pack-application/1.0",
+    "publication_studio_schema": "scds-decision-publication/1.0",
+    "publication_handoff_schema": "scds-publication-handoff/1.0",
+    "publication_redaction_schema": "scds-publication-redaction/1.0",
+    "outcome_monitoring_schema": "scds-outcome-monitoring/1.0",
+    "reassessment_event_schema": "scds-reassessment-event/1.0",
+    "decision_registry_schema": "scds-decision-registry-entry/1.0",
+    "public_api_schema": "scds-public-api/1.0",
+    "embed_descriptor_schema": "scds-embed-descriptor/1.0",
+    "institutional_archive_schema": "scds-institutional-archive/1.0",
+    "webhook_event_schema": "scds-webhook-event/1.0",
+    "sdk_contract_schema": "scds-cross-product-sdk/1.0",
+    "platform_core_gateway_schema": "scds-platform-core-gateway/1.0",
+    "accessibility_audit_schema": "scds-accessibility-audit/1.0",
+    "offline_workspace_schema": "scds-offline-workspace/1.0",
+    "release_readiness_schema": "scds-release-readiness/1.0",
+    "recovery_snapshot_schema": "scds-recovery-snapshot/1.0",
+    "migration_assessment_schema": "scds-migration-assessment/1.0",
+    "project": {
+      "project_name": "Accessible offline decision workflow"
+    },
+    "decision_framing": {},
+    "evidence_registry": [],
+    "citations": [],
+    "quotations": [],
+    "research_routes": [],
+    "evidence_gaps": [],
+    "follow_up_questions": [],
+    "live_evidence": [],
+    "methodologies": [],
+    "experimental_evidence": [],
+    "datasets": [],
+    "technical_artifacts": [],
+    "platform_registry": [],
+    "entities": [],
+    "evidence_ledger": [],
+    "provenance_links": [],
+    "platform_handoffs": [],
+    "integrity_checks": [],
+    "evidence_and_measurement": {
+      "records": []
+    },
+    "scenarios": {
+      "records": []
+    },
+    "impact_measurement": {
+      "records": []
+    },
+    "claim_and_risk_review": {
+      "records": []
+    },
+    "financial_tradeoffs": {},
+    "execution_and_recovery": {},
+    "four_pillar_scores": {},
+    "assumptions": [],
+    "risks": [],
+    "sources": [],
+    "audit_trail": [],
+    "audit_and_provenance": {
+      "audit_version": "1.16.0",
+      "decision_packet_id": "SCDS-DRAFT",
+      "created_at": "generated-at-runtime",
+      "last_updated_at": "generated-at-runtime",
+      "review_status": {
+        "status": "draft",
+        "prepared_by": "",
+        "reviewed_by": "",
+        "required_reviews": [
+          "data/source review",
+          "finance assumptions review",
+          "risk and claims review",
+          "professional review where regulated or safety-critical"
+        ],
+        "open_questions": []
+      },
+      "module_artifact_ledger": [],
+      "source_ledger": [],
+      "assumptions_register": [],
+      "calculation_trace": [],
+      "claim_trace": [],
+      "change_log": [],
+      "warnings": [
+        "Educational decision support only; not certification, assurance, legal, financial, engineering, medical, tax, compliance, or investment advice.",
+        "Audit entries are generated from user-provided inputs and imported artifacts; they must be reviewed before operational use."
+      ]
+    },
+    "governance_center": {
+      "governance_version": "1.16.0",
+      "schema": "scds-decision-governance/1.0",
+      "current_state": "draft",
+      "decision_owner": {
+        "name": "",
+        "role": "",
+        "organization": "",
+        "accountable": true
+      },
+      "reviewers": [],
+      "approval_conditions": [],
+      "exceptions": [],
+      "conflict_declarations": [],
+      "signoffs": [],
+      "review_history": [],
+      "approval_expires_at": "",
+      "reassessment_due_at": "",
+      "transition_status": {
+        "allowed": true,
+        "requested_state": "draft",
+        "blockers": []
+      },
+      "export_gate": {
+        "internal_draft_allowed": true,
+        "reviewed_export_allowed": false,
+        "public_export_allowed": false,
+        "professional_reliance_allowed": false,
+        "blocking_reasons": [
+          "Decision has not been approved by accountable human reviewers."
+        ]
+      },
+      "warnings": [
+        "Decision Studio records governance actions but does not approve decisions autonomously.",
+        "AI may flag gaps or contradictions but cannot provide sign-off, certification, assurance, or regulated professional approval."
+      ]
+    },
+    "collaboration_room": {
+      "room_version": "1.16.0",
+      "schema": "scds-collaborative-decision-room/1.0",
+      "event_schema": "scds-collaboration-event/1.0",
+      "room_id": "",
+      "title": "Collaborative Decision Room",
+      "visibility": "private",
+      "status": "active",
+      "owner": {},
+      "members": [],
+      "comments": [],
+      "change_requests": [],
+      "snapshots": [],
+      "snapshot_comparisons": [],
+      "activity_timeline": [],
+      "activity_integrity": {
+        "ok": true,
+        "event_count": 0,
+        "problems": [],
+        "head_hash": "GENESIS"
+      },
+      "notifications": [],
+      "share_grants": [],
+      "locked_version": {},
+      "contact_engagement_handoffs": [],
+      "limits": {
+        "members": 200,
+        "comments": 2000,
+        "change_requests": 500,
+        "snapshots": 100,
+        "activity_events": 5000
+      },
+      "canonical_persistence": "wordpress",
+      "warnings": [
+        "Decision Rooms are private collaboration records; WordPress authentication and authorization remain authoritative.",
+        "Comments and approvals are human records. AI cannot approve, sign, certify, or impersonate a reviewer.",
+        "Approved snapshots remain locked until an authorized human explicitly reopens the version with a reason."
+      ]
+    },
+    "institutional_decision_pack": {},
+    "criteria_registry": [],
+    "evidence_plan": [],
+    "indicator_plan": [],
+    "model_plan": [],
+    "domain_readiness_rules": [],
+    "domain_brief_templates": [],
+    "publication_studio": {},
+    "publication_registry": [],
+    "publication_handoffs": [],
+    "redaction_log": [],
+    "release_hardening": {
+      "schema": "scds-release-readiness/1.0",
+      "version": "1.16.0",
+      "accessibility_audit": {
+        "schema": "scds-accessibility-audit/1.0",
+        "version": "1.16.0",
+        "generated_at": "2026-07-16T16:28:56Z",
+        "score_percent": 100.0,
+        "status": "ready_for_human_validation",
+        "checks": [
+          {
+            "id": "keyboard_navigation",
+            "description": "All interactive controls can be reached and operated by keyboard.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "visible_focus",
+            "description": "Keyboard focus is clearly visible.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "semantic_landmarks",
+            "description": "Page regions use headings and semantic landmarks.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "form_labels",
+            "description": "Form controls have programmatic labels and instructions.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "screen_reader_status",
+            "description": "Async status and validation messages are announced.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "accessible_tables",
+            "description": "Tables have headers and meaningful reading order.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "accessible_chart_alternatives",
+            "description": "Charts have text or table alternatives.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "reduced_motion",
+            "description": "Animations respect reduced-motion preferences.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "contrast_review",
+            "description": "Text, controls, and focus indicators passed contrast review.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "error_identification",
+            "description": "Errors identify the field and corrective action.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "touch_target_size",
+            "description": "Primary controls meet usable touch-target sizing.",
+            "status": "pass",
+            "evidence": ""
+          },
+          {
+            "id": "zoom_and_reflow",
+            "description": "Core workflows remain usable at 200% zoom and narrow widths.",
+            "status": "pass",
+            "evidence": ""
+          }
+        ],
+        "blockers": [],
+        "manual_validation_required": [
+          "Screen-reader testing with at least one desktop and one mobile combination.",
+          "Keyboard-only completion of intake, review, export, and recovery workflows.",
+          "Zoom, reflow, contrast, and forced-colors review on representative pages."
+        ],
+        "conformance_claim": "none",
+        "content_hash": "sha256:32d0999287ff6ce7b2f11e89126c5801973944646a55bf89fb8700ed725485ad"
+      },
+      "offline_workspace": {
+        "schema": "scds-offline-workspace/1.0",
+        "version": "1.16.0",
+        "decision_packet_schema": "scds-decision-packet/1.9",
+        "generated_at": "2026-07-16T16:28:56Z",
+        "decision_packet_id": "SCDS-V1160-SAMPLE",
+        "online": true,
+        "storage": {
+          "primary": "indexeddb",
+          "fallback": "localstorage",
+          "maximum_drafts": 25,
+          "maximum_snapshot_bytes": 5000000,
+          "sensitive_fields_cached": false
+        },
+        "cache_policy": {
+          "strategy": "network_first_for_api_cache_first_for_static_assets",
+          "cacheable_assets": [
+            "assets/css/scds-decision-studio.css",
+            "assets/js/scds-decision-studio.js",
+            "assets/js/scds-offline-workspace.js"
+          ],
+          "non_cacheable": [
+            "api_keys",
+            "authorization_headers",
+            "private_invitation_tokens",
+            "institutional_archive_secrets"
+          ],
+          "api_responses_cached": false
+        },
+        "draft_policy": {
+          "autosave_interval_seconds": 15,
+          "checksum_required": true,
+          "recovery_snapshot_before_migration": true,
+          "queued_write_intents": true,
+          "automatic_write_replay": false,
+          "conflict_strategy": "manual_compare_and_confirm"
+        },
+        "status_announcements": {
+          "online_offline_live_region": true,
+          "save_success_live_region": true,
+          "recovery_available_live_region": true
+        },
+        "offline_capabilities": [
+          "view_current_packet",
+          "edit_local_draft",
+          "create_recovery_snapshot",
+          "export_json"
+        ],
+        "online_required": [
+          "governance_transition",
+          "room_membership_change",
+          "institutional_api",
+          "publication_handoff",
+          "external_delivery"
+        ],
+        "content_hash": "sha256:abd52a5bb574454da454ee24d26005028f807a4d20cedc9f23e33c7f8c28423f"
+      },
+      "migration_assessment": {
+        "schema": "scds-migration-assessment/1.0",
+        "version": "1.16.0",
+        "generated_at": "2026-07-16T16:28:56Z",
+        "from_schema": "scds-decision-packet/1.8",
+        "to_schema": "scds-decision-packet/1.9",
+        "supported": true,
+        "strategy": "additive_defaulting",
+        "required_actions": [
+          "Create recovery snapshot before migration.",
+          "Preserve unknown fields under migration_legacy_fields.",
+          "Apply defaults only for missing v1.16.0 sections.",
+          "Re-run governance and export readiness after migration."
+        ],
+        "added_sections": [
+          "release_hardening",
+          "accessibility_audit",
+          "offline_workspace",
+          "recovery_snapshots",
+          "migration_assessment",
+          "release_readiness"
+        ],
+        "blockers": [],
+        "rollback": "Restore the pre-migration recovery snapshot as a new draft; do not overwrite the source record.",
+        "content_hash": "sha256:a2cf4eb9ecbbb15aca5fbd1cdc1b2ab7c58aa98c286c6fc3967f430e1c11cac0"
+      },
+      "recovery_snapshot": {
+        "schema": "scds-recovery-snapshot/1.0",
+        "version": "1.16.0",
+        "decision_packet_schema": "scds-decision-packet/1.9",
+        "snapshot_id": "snapshot-e1276e236ebd9f3c5129",
+        "decision_packet_id": "SCDS-V1160-SAMPLE",
+        "label": "v1.16.0 pre-release recovery snapshot",
+        "actor": "Release Manager",
+        "created_at": "2026-07-16T16:28:56Z",
+        "size_bytes": 10759,
+        "packet_hash": "sha256:ae95e6ee158f198a3e08af0f7208fc91934ba001da5978c9c5cce2aec61b8fc2",
+        "sensitive_fields_removed": true,
+        "restore_strategy": "validate_schema_then_restore_as_new_draft",
+        "snapshot_hash": "sha256:e69af3e25a6a7f11a43380e4aa3589a84d7ae78cfcc313e63ee26570d8e50d4e"
+      },
+      "release_readiness": {
+        "schema": "scds-release-readiness/1.0",
+        "version": "1.16.0",
+        "decision_packet_schema": "scds-decision-packet/1.9",
+        "generated_at": "2026-07-16T16:28:56Z",
+        "status": "release_candidate_ready",
+        "readiness_percent": 100.0,
+        "gates": [
+          {
+            "id": "accessibility",
+            "status": "pass",
+            "details": []
+          },
+          {
+            "id": "offline_recovery",
+            "status": "pass",
+            "details": []
+          },
+          {
+            "id": "performance",
+            "status": "pass",
+            "details": []
+          },
+          {
+            "id": "migration_compatibility",
+            "status": "pass",
+            "details": []
+          },
+          {
+            "id": "backup_restore",
+            "status": "pass",
+            "details": []
+          },
+          {
+            "id": "security_privacy",
+            "status": "pass",
+            "details": []
+          }
+        ],
+        "blockers": [],
+        "human_release_authorization_required": true,
+        "automatic_deployment_allowed": false,
+        "notes": "Canonical release hardening sample",
+        "warnings": [
+          "Automated readiness cannot replace assistive-technology testing, restore drills, security review, or human release authorization.",
+          "This record is not certification, assurance, legal compliance, or professional sign-off."
+        ],
+        "content_hash": "sha256:aa9faf68cc887d73eeadd853a231890e3b4c61b3f3afec42d3848da7b23853bb"
+      },
+      "content_hash": "sha256:5c4ba6c0b40f94c803cb523a75e5d3790b1513e97aa4d6879c6fba8f4bb4a3c7"
+    },
+    "accessibility_audit": {
+      "schema": "scds-accessibility-audit/1.0",
+      "version": "1.16.0",
+      "generated_at": "2026-07-16T16:28:56Z",
+      "score_percent": 100.0,
+      "status": "ready_for_human_validation",
+      "checks": [
+        {
+          "id": "keyboard_navigation",
+          "description": "All interactive controls can be reached and operated by keyboard.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "visible_focus",
+          "description": "Keyboard focus is clearly visible.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "semantic_landmarks",
+          "description": "Page regions use headings and semantic landmarks.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "form_labels",
+          "description": "Form controls have programmatic labels and instructions.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "screen_reader_status",
+          "description": "Async status and validation messages are announced.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "accessible_tables",
+          "description": "Tables have headers and meaningful reading order.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "accessible_chart_alternatives",
+          "description": "Charts have text or table alternatives.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "reduced_motion",
+          "description": "Animations respect reduced-motion preferences.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "contrast_review",
+          "description": "Text, controls, and focus indicators passed contrast review.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "error_identification",
+          "description": "Errors identify the field and corrective action.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "touch_target_size",
+          "description": "Primary controls meet usable touch-target sizing.",
+          "status": "pass",
+          "evidence": ""
+        },
+        {
+          "id": "zoom_and_reflow",
+          "description": "Core workflows remain usable at 200% zoom and narrow widths.",
+          "status": "pass",
+          "evidence": ""
+        }
+      ],
+      "blockers": [],
+      "manual_validation_required": [
+        "Screen-reader testing with at least one desktop and one mobile combination.",
+        "Keyboard-only completion of intake, review, export, and recovery workflows.",
+        "Zoom, reflow, contrast, and forced-colors review on representative pages."
+      ],
+      "conformance_claim": "none",
+      "content_hash": "sha256:32d0999287ff6ce7b2f11e89126c5801973944646a55bf89fb8700ed725485ad"
+    },
+    "offline_workspace": {
+      "schema": "scds-offline-workspace/1.0",
+      "version": "1.16.0",
+      "decision_packet_schema": "scds-decision-packet/1.9",
+      "generated_at": "2026-07-16T16:28:56Z",
+      "decision_packet_id": "SCDS-V1160-SAMPLE",
+      "online": true,
+      "storage": {
+        "primary": "indexeddb",
+        "fallback": "localstorage",
+        "maximum_drafts": 25,
+        "maximum_snapshot_bytes": 5000000,
+        "sensitive_fields_cached": false
+      },
+      "cache_policy": {
+        "strategy": "network_first_for_api_cache_first_for_static_assets",
+        "cacheable_assets": [
+          "assets/css/scds-decision-studio.css",
+          "assets/js/scds-decision-studio.js",
+          "assets/js/scds-offline-workspace.js"
+        ],
+        "non_cacheable": [
+          "api_keys",
+          "authorization_headers",
+          "private_invitation_tokens",
+          "institutional_archive_secrets"
+        ],
+        "api_responses_cached": false
+      },
+      "draft_policy": {
+        "autosave_interval_seconds": 15,
+        "checksum_required": true,
+        "recovery_snapshot_before_migration": true,
+        "queued_write_intents": true,
+        "automatic_write_replay": false,
+        "conflict_strategy": "manual_compare_and_confirm"
+      },
+      "status_announcements": {
+        "online_offline_live_region": true,
+        "save_success_live_region": true,
+        "recovery_available_live_region": true
+      },
+      "offline_capabilities": [
+        "view_current_packet",
+        "edit_local_draft",
+        "create_recovery_snapshot",
+        "export_json"
+      ],
+      "online_required": [
+        "governance_transition",
+        "room_membership_change",
+        "institutional_api",
+        "publication_handoff",
+        "external_delivery"
+      ],
+      "content_hash": "sha256:abd52a5bb574454da454ee24d26005028f807a4d20cedc9f23e33c7f8c28423f"
+    },
+    "recovery_snapshots": [
+      {
+        "schema": "scds-recovery-snapshot/1.0",
+        "version": "1.16.0",
+        "decision_packet_schema": "scds-decision-packet/1.9",
+        "snapshot_id": "snapshot-e1276e236ebd9f3c5129",
+        "decision_packet_id": "SCDS-V1160-SAMPLE",
+        "label": "v1.16.0 pre-release recovery snapshot",
+        "actor": "Release Manager",
+        "created_at": "2026-07-16T16:28:56Z",
+        "size_bytes": 10759,
+        "packet_hash": "sha256:ae95e6ee158f198a3e08af0f7208fc91934ba001da5978c9c5cce2aec61b8fc2",
+        "sensitive_fields_removed": true,
+        "restore_strategy": "validate_schema_then_restore_as_new_draft",
+        "snapshot_hash": "sha256:e69af3e25a6a7f11a43380e4aa3589a84d7ae78cfcc313e63ee26570d8e50d4e"
+      }
+    ],
+    "migration_assessment": {
+      "schema": "scds-migration-assessment/1.0",
+      "version": "1.16.0",
+      "generated_at": "2026-07-16T16:28:56Z",
+      "from_schema": "scds-decision-packet/1.8",
+      "to_schema": "scds-decision-packet/1.9",
+      "supported": true,
+      "strategy": "additive_defaulting",
+      "required_actions": [
+        "Create recovery snapshot before migration.",
+        "Preserve unknown fields under migration_legacy_fields.",
+        "Apply defaults only for missing v1.16.0 sections.",
+        "Re-run governance and export readiness after migration."
+      ],
+      "added_sections": [
+        "release_hardening",
+        "accessibility_audit",
+        "offline_workspace",
+        "recovery_snapshots",
+        "migration_assessment",
+        "release_readiness"
+      ],
+      "blockers": [],
+      "rollback": "Restore the pre-migration recovery snapshot as a new draft; do not overwrite the source record.",
+      "content_hash": "sha256:a2cf4eb9ecbbb15aca5fbd1cdc1b2ab7c58aa98c286c6fc3967f430e1c11cac0"
+    },
+    "release_readiness": {
+      "schema": "scds-release-readiness/1.0",
+      "version": "1.16.0",
+      "decision_packet_schema": "scds-decision-packet/1.9",
+      "generated_at": "2026-07-16T16:28:56Z",
+      "status": "release_candidate_ready",
+      "readiness_percent": 100.0,
+      "gates": [
+        {
+          "id": "accessibility",
+          "status": "pass",
+          "details": []
+        },
+        {
+          "id": "offline_recovery",
+          "status": "pass",
+          "details": []
+        },
+        {
+          "id": "performance",
+          "status": "pass",
+          "details": []
+        },
+        {
+          "id": "migration_compatibility",
+          "status": "pass",
+          "details": []
+        },
+        {
+          "id": "backup_restore",
+          "status": "pass",
+          "details": []
+        },
+        {
+          "id": "security_privacy",
+          "status": "pass",
+          "details": []
+        }
+      ],
+      "blockers": [],
+      "human_release_authorization_required": true,
+      "automatic_deployment_allowed": false,
+      "notes": "Canonical release hardening sample",
+      "warnings": [
+        "Automated readiness cannot replace assistive-technology testing, restore drills, security review, or human release authorization.",
+        "This record is not certification, assurance, legal compliance, or professional sign-off."
+      ],
+      "content_hash": "sha256:aa9faf68cc887d73eeadd853a231890e3b4c61b3f3afec42d3848da7b23853bb"
+    },
+    "outcome_monitoring": {
+      "schema": "scds-outcome-monitoring/1.0",
+      "monitoring_version": "1.0",
+      "status": "planning",
+      "decision_status": "not_implemented",
+      "decision_owner": {},
+      "implementation_owner": {},
+      "commitments": [],
+      "targets": [],
+      "indicators": [],
+      "site_intelligence_connections": [],
+      "monitoring_schedule": {
+        "cadence": "monthly",
+        "next_review_at": "",
+        "last_reviewed_at": ""
+      },
+      "implementation_milestones": [],
+      "emerging_risks": [],
+      "assumption_invalidations": [],
+      "reassessment_triggers": [],
+      "trigger_evaluations": [],
+      "monitoring_events": [],
+      "reassessment_history": [],
+      "implementation_amendments": [],
+      "post_implementation_reviews": [],
+      "lessons_learned": [],
+      "decision_registry_entry": {},
+      "summary": {
+        "target_count": 0,
+        "targets_on_track": 0,
+        "targets_at_risk": 0,
+        "targets_off_track": 0,
+        "milestones_overdue": 0,
+        "active_material_risks": 0,
+        "invalidated_assumptions": 0,
+        "triggered_reassessments": 0
+      },
+      "boundaries": [
+        "Monitoring records observed results and implementation evidence; it does not certify causality or performance.",
+        "Lifecycle amendments, suspension, and retirement require accountable human authorization.",
+        "Site Intelligence links provide evidence context; source methodology, freshness, and confidence remain visible."
+      ]
+    },
+    "decision_registry_entry": {},
+    "reassessment_history": [],
+    "implementation_amendments": [],
+    "institutional_integration": {
+      "schema": "scds-public-api/1.0",
+      "version": "1.16.0",
+      "decision_packet_schema": "scds-decision-packet/1.9",
+      "public_surfaces": [
+        "public_dossier",
+        "readiness_embed",
+        "scenario_embed",
+        "sdk_contracts"
+      ],
+      "institutional_surfaces": [
+        "bulk_export",
+        "bulk_import",
+        "institutional_archive",
+        "platform_core_gateway",
+        "internal_events"
+      ],
+      "limits": {
+        "bulk_packets": 100
+      },
+      "privacy": {
+        "public_private_separation": true,
+        "public_redaction": true,
+        "institutional_api_key_required": true
+      }
+    },
+    "public_dossier": {},
+    "embed_descriptors": [],
+    "institutional_archives": [],
+    "platform_core_gateway": {},
+    "internal_events": [],
+    "sdk_contracts": {
+      "ok": true,
+      "version": "1.16.0",
+      "schema": "scds-cross-product-sdk/1.0",
+      "api_base": "/api/v1",
+      "decision_packet_schema": "scds-decision-packet/1.9",
+      "authentication": {
+        "header": "X-SCDS-API-Key",
+        "scope_header": "X-SCDS-Requested-Scope",
+        "scopes": [
+          "packet:read",
+          "packet:write",
+          "archive:read",
+          "archive:write",
+          "gateway:write",
+          "event:emit"
+        ]
+      },
+      "resources": {
+        "capabilities": {
+          "method": "GET",
+          "path": "/api/v1/capabilities",
+          "public": true
+        },
+        "public_dossier": {
+          "method": "POST",
+          "path": "/api/v1/public-dossier",
+          "public": true
+        },
+        "readiness_embed": {
+          "method": "POST",
+          "path": "/api/v1/embeds/readiness",
+          "public": true
+        },
+        "scenario_embed": {
+          "method": "POST",
+          "path": "/api/v1/embeds/scenario",
+          "public": true
+        },
+        "bulk_export": {
+          "method": "POST",
+          "path": "/api/v1/packets/export",
+          "scope": "packet:read"
+        },
+        "bulk_import": {
+          "method": "POST",
+          "path": "/api/v1/packets/import",
+          "scope": "packet:write"
+        },
+        "archive": {
+          "method": "POST",
+          "path": "/api/v1/archive",
+          "scope": "archive:write"
+        },
+        "platform_core_gateway": {
+          "method": "POST",
+          "path": "/api/v1/platform-core/gateway",
+          "scope": "gateway:write"
+        },
+        "internal_event": {
+          "method": "POST",
+          "path": "/api/v1/events",
+          "scope": "event:emit"
+        }
+      },
+      "stability": {
+        "breaking_changes": "new major schema only",
+        "packet_changes": "additive within 1.x",
+        "legacy_routes_preserved": true
+      }
+    },
+    "integrated_decision_brief": {},
+    "scenario_comparison": {},
+    "scenario_studio": {},
+    "sensitivity_analysis": {},
+    "threshold_analysis": {},
+    "uncertainty_analysis": {},
+    "workbench_handoffs": [],
+    "saved_packet": {
+      "saved_at": "",
+      "saved_by": "",
+      "status": "draft",
+      "storage": "browser_or_wordpress"
+    },
+    "export_center": {
+      "last_exported_at": "",
+      "available_formats": [
+        "json",
+        "markdown",
+        "html",
+        "audit_json",
+        "readiness_json",
+        "scenario_json",
+        "scenario_studio_json",
+        "sensitivity_json",
+        "threshold_json",
+        "handoff_json",
+        "governance_json",
+        "collaboration_json",
+        "room_activity_json",
+        "snapshot_comparison_json",
+        "decision_pack_json",
+        "publication_json",
+        "publication_markdown",
+        "publication_html",
+        "bibliography_json",
+        "redaction_json",
+        "publication_handoff_json",
+        "outcome_monitoring_json",
+        "decision_registry_json",
+        "reassessment_history_json",
+        "public_dossier_json",
+        "readiness_embed_json",
+        "scenario_embed_json",
+        "institutional_archive_json",
+        "signed_manifest_json",
+        "platform_core_gateway_json",
+        "internal_events_json",
+        "release_hardening_json",
+        "accessibility_audit_json",
+        "offline_workspace_json",
+        "recovery_snapshot_json"
+      ]
+    },
+    "module_slots": [
+      {
+        "module_id": "knowledge-library",
+        "name": "Knowledge Library",
+        "artifact_key": "knowledge_library_evidence",
+        "packet_section": "evidence_registry",
+        "status": "empty"
+      },
+      {
+        "module_id": "research-librarian",
+        "name": "Research Librarian",
+        "artifact_key": "research_guidance",
+        "packet_section": "research_routes",
+        "status": "empty"
+      },
+      {
+        "module_id": "site-intelligence",
+        "name": "Site Intelligence",
+        "artifact_key": "site_intelligence_evidence",
+        "packet_section": "live_evidence",
+        "status": "empty"
+      },
+      {
+        "module_id": "workbench",
+        "name": "Workbench",
+        "artifact_key": "workbench_calculations",
+        "packet_section": "calculation_trace",
+        "status": "empty"
+      },
+      {
+        "module_id": "research-lab",
+        "name": "Research Lab",
+        "artifact_key": "research_lab_artifacts",
+        "packet_section": "experimental_evidence",
+        "status": "empty"
+      },
+      {
+        "module_id": "platform-core",
+        "name": "Platform Core",
+        "artifact_key": "platform_core_records",
+        "packet_section": "platform_registry",
+        "status": "empty"
+      },
+      {
+        "module_id": "decision-studio",
+        "name": "Decision Studio",
+        "artifact_key": "synthesis",
+        "packet_section": "integrated_decision_brief",
+        "status": "empty"
+      }
+    ],
+    "decision_packet_id": "SCDS-V1160-SAMPLE",
+    "decision_packet_schema": "scds-decision-packet/1.9",
+    "api_key": "sample-secret"
+  },
+  "template": {
+    "schema": "scds-release-readiness/1.0",
+    "version": "1.16.0",
+    "decision_packet_schema": "scds-decision-packet/1.9",
+    "accessibility": {
+      "schema": "scds-accessibility-audit/1.0",
+      "checks": [
+        "keyboard_navigation",
+        "visible_focus",
+        "semantic_landmarks",
+        "form_labels",
+        "screen_reader_status",
+        "accessible_tables",
+        "accessible_chart_alternatives",
+        "reduced_motion",
+        "contrast_review",
+        "error_identification",
+        "touch_target_size",
+        "zoom_and_reflow"
+      ],
+      "target": "WCAG 2.2 AA-oriented product validation; final conformance requires human testing."
+    },
+    "offline": {
+      "schema": "scds-offline-workspace/1.0",
+      "capabilities": [
+        "local_draft_autosave",
+        "recovery_snapshots",
+        "offline_packet_view",
+        "queued_write_intents",
+        "explicit_conflict_resolution",
+        "online_status_announcements"
+      ],
+      "boundaries": [
+        "No background approval, publishing, or external delivery while offline.",
+        "Institutional API credentials and private invitation tokens are never cached.",
+        "Queued write intents require authenticated replay and conflict review."
+      ]
+    },
+    "release_gates": [
+      "accessibility",
+      "offline_recovery",
+      "performance",
+      "migration_compatibility",
+      "backup_restore",
+      "security_privacy"
+    ],
+    "supported_migrations": {
+      "from_packet_schemas": [
+        "scds-decision-packet/1.0",
+        "scds-decision-packet/1.1",
+        "scds-decision-packet/1.2",
+        "scds-decision-packet/1.3",
+        "scds-decision-packet/1.4",
+        "scds-decision-packet/1.5",
+        "scds-decision-packet/1.6",
+        "scds-decision-packet/1.7",
+        "scds-decision-packet/1.8"
+      ],
+      "to_packet_schema": "scds-decision-packet/1.9",
+      "strategy": "additive_defaulting_with_original_packet_preserved_in_recovery_snapshot"
+    },
+    "warnings": [
+      "Automated checks cannot establish complete accessibility conformance.",
+      "Release readiness is an engineering gate, not legal certification, assurance, or professional sign-off."
+    ]
+  }
+}

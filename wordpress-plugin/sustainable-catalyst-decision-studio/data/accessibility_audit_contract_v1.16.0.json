@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-accessibility-audit-v1.0.json",
+  "title": "Decision Studio Accessibility Audit",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "score_percent",
+    "status",
+    "checks",
+    "blockers",
+    "conformance_claim"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-accessibility-audit/1.0"
+    },
+    "version": {
+      "const": "1.16.0"
+    },
+    "score_percent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "status": {
+      "enum": [
+        "ready_for_human_validation",
+        "needs_remediation",
+        "blocked"
+      ]
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "not_applicable"
+            ]
+          }
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "conformance_claim": {
+      "const": "none"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-release-readiness-v1.0.json",
+  "title": "Decision Studio Release Readiness",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "decision_packet_schema",
+    "status",
+    "readiness_percent",
+    "gates",
+    "blockers",
+    "human_release_authorization_required",
+    "automatic_deployment_allowed"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-release-readiness/1.0"
+    },
+    "version": {
+      "const": "1.16.0"
+    },
+    "decision_packet_schema": {
+      "const": "scds-decision-packet/1.9"
+    },
+    "status": {
+      "enum": [
+        "release_candidate_ready",
+        "conditional",
+        "blocked"
+      ]
+    },
+    "readiness_percent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "gates": {
+      "type": "array",
+      "minItems": 6,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail"
+            ]
+          }
+        }
+      }
+    },
+    "blockers": {
+      "type": "array"
+    },
+    "human_release_authorization_required": {
+      "const": true
+    },
+    "automatic_deployment_allowed": {
+      "const": false
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    }
+  },
+  "additionalProperties": true
+}

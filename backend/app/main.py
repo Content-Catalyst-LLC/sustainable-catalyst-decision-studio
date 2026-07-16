@@ -24,6 +24,20 @@ from app.outcome_monitoring import (
     outcome_monitoring_template,
     generate_outcome_monitoring,
 )
+from app.release_hardening import (
+    ACCESSIBILITY_AUDIT_SCHEMA,
+    OFFLINE_WORKSPACE_SCHEMA,
+    RELEASE_READINESS_SCHEMA,
+    RECOVERY_SNAPSHOT_SCHEMA,
+    MIGRATION_ASSESSMENT_SCHEMA,
+    ReleaseHardeningRequest,
+    hardening_template,
+    accessibility_audit,
+    offline_workspace_manifest,
+    recovery_snapshot,
+    migration_assessment,
+    release_readiness,
+)
 from app.public_integration import (
     PUBLIC_API_SCHEMA,
     EMBED_DESCRIPTOR_SCHEMA,
@@ -45,11 +59,11 @@ from app.public_integration import (
     sdk_contracts,
 )
 
-APP_VERSION = "1.15.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.15.0-public-api-embeds-institutional-integration")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.15.0")
+APP_VERSION = "1.16.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.16.0-accessibility-offline-release-hardening")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.16.0")
 RELEASE_DATE = "2026-07-16"
-DECISION_PACKET_SCHEMA = "scds-decision-packet/1.8"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/1.9"
 PLATFORM_ARTIFACT_SCHEMA = "scds-platform-artifact/1.0"
 EVIDENCE_RECORD_SCHEMA = "scds-evidence-record/1.0"
 GOVERNANCE_SCHEMA = "scds-decision-governance/1.0"
@@ -88,6 +102,9 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario",
     "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive",
     "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration",
+    "/release-hardening/accessibility-audit", "/release-hardening/offline-manifest",
+    "/release-hardening/recovery-snapshot", "/release-hardening/migration-assessment",
+    "/release-hardening/readiness", "/decision-packet/release-hardening",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -96,7 +113,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Public API, Embeds, and Institutional Integration",
+        "release_name": "Accessibility, Offline Use, and Release Hardening",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -122,6 +139,11 @@ def release_manifest() -> Dict[str, Any]:
         "webhook_event_schema": WEBHOOK_EVENT_SCHEMA,
         "sdk_contract_schema": SDK_CONTRACT_SCHEMA,
         "platform_core_gateway_schema": PLATFORM_CORE_GATEWAY_SCHEMA,
+        "accessibility_audit_schema": ACCESSIBILITY_AUDIT_SCHEMA,
+        "offline_workspace_schema": OFFLINE_WORKSPACE_SCHEMA,
+        "release_readiness_schema": RELEASE_READINESS_SCHEMA,
+        "recovery_snapshot_schema": RECOVERY_SNAPSHOT_SCHEMA,
+        "migration_assessment_schema": MIGRATION_ASSESSMENT_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -164,6 +186,14 @@ def release_manifest() -> Dict[str, Any]:
             "platform_core_gateway": True,
             "internal_event_records": True,
             "stable_cross_product_sdk_contract": True,
+            "accessibility_offline_release_hardening": True,
+            "keyboard_and_screen_reader_validation": True,
+            "reduced_motion_and_reflow_support": True,
+            "offline_draft_recovery": True,
+            "recovery_snapshots": True,
+            "additive_migration_assessment": True,
+            "backup_restore_release_gates": True,
+            "human_release_authorization_required": True,
         },
     }
 
@@ -372,6 +402,7 @@ class SavedDecisionPacketRequest(BaseModel):
     publicationStudio: Optional[Dict[str, Any]] = None
     outcomeMonitoring: Optional[Dict[str, Any]] = None
     institutionalIntegration: Optional[Dict[str, Any]] = None
+    releaseHardening: Optional[Dict[str, Any]] = None
     title: str = ""
     status: str = "draft"
     notes: str = ""
@@ -393,6 +424,7 @@ class ExportBundleRequest(BaseModel):
     publicationStudio: Optional[Dict[str, Any]] = None
     outcomeMonitoring: Optional[Dict[str, Any]] = None
     institutionalIntegration: Optional[Dict[str, Any]] = None
+    releaseHardening: Optional[Dict[str, Any]] = None
     exportAudience: str = "internal"
     includeRawArtifacts: bool = True
     exportLabel: str = "Decision Studio Export Bundle"
@@ -934,7 +966,7 @@ def apply_institutional_decision_pack(req: DecisionPackRequest) -> Dict[str, Any
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.15.0",
+        "packet_version": "1.16.0",
         "workflow": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
@@ -957,6 +989,11 @@ def decision_packet_template() -> Dict[str, Any]:
         "webhook_event_schema": WEBHOOK_EVENT_SCHEMA,
         "sdk_contract_schema": SDK_CONTRACT_SCHEMA,
         "platform_core_gateway_schema": PLATFORM_CORE_GATEWAY_SCHEMA,
+        "accessibility_audit_schema": ACCESSIBILITY_AUDIT_SCHEMA,
+        "offline_workspace_schema": OFFLINE_WORKSPACE_SCHEMA,
+        "release_readiness_schema": RELEASE_READINESS_SCHEMA,
+        "recovery_snapshot_schema": RECOVERY_SNAPSHOT_SCHEMA,
+        "migration_assessment_schema": MIGRATION_ASSESSMENT_SCHEMA,
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -1008,6 +1045,12 @@ def decision_packet_template() -> Dict[str, Any]:
         "publication_registry": [],
         "publication_handoffs": [],
         "redaction_log": [],
+        "release_hardening": {},
+        "accessibility_audit": {},
+        "offline_workspace": {},
+        "recovery_snapshots": [],
+        "migration_assessment": {},
+        "release_readiness": {},
         "outcome_monitoring": outcome_monitoring_template(),
         "decision_registry_entry": {},
         "reassessment_history": [],
@@ -1045,7 +1088,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.15.0",
+        "audit_version": "1.16.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -3725,6 +3768,8 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
     packet["outcome_monitoring"] = outcome_monitoring
     institutional_integration = req.institutionalIntegration or packet.get("institutional_integration") or integration_template(app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA)
     packet["institutional_integration"] = institutional_integration
+    release_hardening = req.releaseHardening or packet.get("release_hardening") or {}
+    packet["release_hardening"] = release_hardening
     packet["saved_packet"] = {"status": saved_status, "storage": "wordpress_canonical_or_client_fallback", "notes": req.notes}
     saved = {
         "packet_version": APP_VERSION,
@@ -3748,6 +3793,7 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
         "publication_studio": publication_studio,
         "outcome_monitoring": outcome_monitoring,
         "institutional_integration": institutional_integration,
+        "release_hardening": release_hardening,
         "notes": req.notes,
         "warnings": ["Saved packet is a review artifact; it is not approval, certification, assurance, or professional advice."],
     }
@@ -3777,6 +3823,8 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
     packet["outcome_monitoring"] = outcome_monitoring
     institutional_integration = req.institutionalIntegration or packet.get("institutional_integration") or integration_template(app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA)
     packet["institutional_integration"] = institutional_integration
+    release_hardening = req.releaseHardening or packet.get("release_hardening") or {}
+    packet["release_hardening"] = release_hardening
     audience = str(req.exportAudience or "internal").strip().lower()
     gate = governance.get("export_gate", {}) if isinstance(governance, dict) else {}
     if audience == "reviewed" and not gate.get("reviewed_export_allowed", False):
@@ -3828,6 +3876,12 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
             "platform_core_gateway_json": packet.get("platform_core_gateway", {}),
             "internal_events_json": packet.get("internal_events", []),
             "sdk_contracts_json": packet.get("sdk_contracts", {}),
+            "release_hardening_json": release_hardening,
+            "accessibility_audit_json": packet.get("accessibility_audit", {}),
+            "offline_workspace_json": packet.get("offline_workspace", {}),
+            "recovery_snapshots_json": packet.get("recovery_snapshots", []),
+            "migration_assessment_json": packet.get("migration_assessment", {}),
+            "release_readiness_json": packet.get("release_readiness", {}),
         },
         "export_manifest": export_center_template()["exports"],
         "warnings": export_center_template()["warnings"],
@@ -3851,7 +3905,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.15.0."""
+    """Professional public-facing product-page structure for Decision Studio v1.16.0."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
@@ -3880,6 +3934,7 @@ def public_landing_template() -> Dict[str, Any]:
             "Decision briefing and publication studio",
             "Outcomes, monitoring, reassessment, and Decision Registry",
             "Public API, embeddable readiness and scenario summaries, institutional archives, and Platform Core exchange",
+            "Accessibility validation, offline draft recovery, migration assessment, and release readiness gates",
             "Saved packets and export center",
         ],
         "schemas": {
@@ -4429,6 +4484,11 @@ def health():
         "webhook_event_schema": WEBHOOK_EVENT_SCHEMA,
         "sdk_contract_schema": SDK_CONTRACT_SCHEMA,
         "platform_core_gateway_schema": PLATFORM_CORE_GATEWAY_SCHEMA,
+        "accessibility_audit_schema": ACCESSIBILITY_AUDIT_SCHEMA,
+        "offline_workspace_schema": OFFLINE_WORKSPACE_SCHEMA,
+        "release_readiness_schema": RELEASE_READINESS_SCHEMA,
+        "recovery_snapshot_schema": RECOVERY_SNAPSHOT_SCHEMA,
+        "migration_assessment_schema": MIGRATION_ASSESSMENT_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -4849,6 +4909,47 @@ def decision_packet_institutional_integration_endpoint(req: PublicIntegrationReq
     if governance_public_allowed(packet):
         packet["public_dossier"] = public_dossier(packet, app_version=APP_VERSION, packet_schema=DECISION_PACKET_SCHEMA).get("public_dossier", {})
     return {"ok": True, "version": APP_VERSION, "decision_packet": packet, "institutional_integration": packet["institutional_integration"]}
+
+
+@app.get("/release-hardening/template")
+def release_hardening_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "release_hardening": hardening_template(APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.post("/release-hardening/accessibility-audit")
+def release_hardening_accessibility_endpoint(req: ReleaseHardeningRequest):
+    return {"ok": True, "version": APP_VERSION, "accessibility_audit": accessibility_audit(req.accessibilityProfile, APP_VERSION)}
+
+
+@app.post("/release-hardening/offline-manifest")
+def release_hardening_offline_endpoint(req: ReleaseHardeningRequest):
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    return {"ok": True, "version": APP_VERSION, "offline_workspace": offline_workspace_manifest(packet, req.offlineProfile, APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.post("/release-hardening/recovery-snapshot")
+def release_hardening_snapshot_endpoint(req: ReleaseHardeningRequest):
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    return {"ok": True, "version": APP_VERSION, "recovery_snapshot": recovery_snapshot(packet, req.snapshotLabel, req.actor, APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.post("/release-hardening/migration-assessment")
+def release_hardening_migration_endpoint(req: ReleaseHardeningRequest):
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    return {"ok": True, "version": APP_VERSION, "migration_assessment": migration_assessment(req.migrationProfile, packet, APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.post("/release-hardening/readiness")
+def release_hardening_readiness_endpoint(req: ReleaseHardeningRequest):
+    return release_readiness(req.packet, req, APP_VERSION, DECISION_PACKET_SCHEMA, decision_packet_template)
+
+
+@app.post("/decision-packet/release-hardening")
+def decision_packet_release_hardening_endpoint(req: ReleaseHardeningRequest):
+    return release_readiness(req.packet, req, APP_VERSION, DECISION_PACKET_SCHEMA, decision_packet_template)
 
 
 @app.get("/audit/template")
