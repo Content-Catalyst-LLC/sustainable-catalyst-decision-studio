@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.7.0'
+    assert r.json()['version'] == '1.7.1'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '1.7.0'
+    assert data['decision_packet']['packet_version'] == '1.7.1'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -88,7 +88,7 @@ def test_audit_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.7.0'
+    assert data['audit']['audit_version'] == '1.7.1'
     assert 'module_artifact_ledger' in data['audit']
 
 
@@ -97,7 +97,7 @@ def test_audit_generate_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.7.0'
+    assert data['audit']['audit_version'] == '1.7.1'
     assert data['audit_summary']['assumptions_count'] >= 5
     assert data['audit_summary']['calculation_trace_count'] >= 4
 
@@ -162,7 +162,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.7.0'
+    assert data['version'] == '1.7.1'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -190,7 +190,7 @@ def test_review_status_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.7.0'
+    assert data['version'] == '1.7.1'
     assert len(data['sections']) >= 8
     assert any(s['id'] == 'finance' for s in data['sections'])
 
@@ -201,7 +201,7 @@ def test_brief_readiness_default():
     data = r.json()
     assert data['ok'] is True
     readiness = data['readiness']
-    assert readiness['readiness_version'] == '1.7.0'
+    assert readiness['readiness_version'] == '1.7.1'
     assert 0 <= readiness['readiness_percent'] <= 100
     assert 'sections' in readiness
     assert 'export_gate' in readiness
@@ -233,7 +233,7 @@ def test_scenario_comparison_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.7.0'
+    assert data['version'] == '1.7.1'
     comparison = data['scenario_comparison']
     assert comparison['scenario_count'] >= 4
     assert 'matrix' in comparison
@@ -264,7 +264,7 @@ def test_workbench_handoff_default():
     data = r.json()
     assert data['ok'] is True
     handoff = data['workbench_handoff']
-    assert handoff['handoff_version'] == '1.7.0'
+    assert handoff['handoff_version'] == '1.7.1'
     ids = [h['tool_id'] for h in handoff['recommended_handoffs']]
     assert 'economics-forecasting-and-scenario-tool' in ids
     assert any('sc_workbench' in h['shortcode'] for h in handoff['recommended_handoffs'])
@@ -274,7 +274,7 @@ def test_integrated_brief_includes_scenario_and_handoff():
     r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
     assert r.status_code == 200
     data = r.json()
-    assert data['version'] == '1.7.0'
+    assert data['version'] == '1.7.1'
     assert 'scenario_comparison' in data
     assert 'workbench_handoff' in data
     assert 'scenario_comparison_matrix' in data['brief']
@@ -287,7 +287,7 @@ def test_export_center_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['export_center']['export_center_version'] == '1.7.0'
+    assert data['export_center']['export_center_version'] == '1.7.1'
     assert any(e['id'] == 'packet_json' for e in data['export_center']['exports'])
 
 
@@ -297,7 +297,7 @@ def test_decision_packet_save_template():
     data = r.json()
     assert data['ok'] is True
     saved = data['saved_packet']
-    assert saved['packet_version'] == '1.7.0'
+    assert saved['packet_version'] == '1.7.1'
     assert saved['project_name'] == 'Saved packet test'
     assert 'readiness' in saved
     assert 'integrated_brief' in saved
@@ -309,7 +309,7 @@ def test_export_center_bundle_default():
     data = r.json()
     assert data['ok'] is True
     bundle = data['export_bundle']
-    assert bundle['bundle_version'] == '1.7.0'
+    assert bundle['bundle_version'] == '1.7.1'
     assert 'decision_packet_json' in bundle['exports']
     assert 'integrated_brief_markdown' in bundle['exports']
     assert 'audit_json' in bundle['exports']
@@ -322,8 +322,8 @@ def test_public_landing_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.7.0'
-    assert data['landing']['page_version'] == '1.7.0'
+    assert data['version'] == '1.7.1'
+    assert data['landing']['page_version'] == '1.7.1'
     assert 'Decision Studio' in data['landing']['headline']
     assert len(data['landing']['workflow']) == 8
 
@@ -333,6 +333,46 @@ def test_public_demo_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['demo']['demo_version'] == '1.7.0'
+    assert data['demo']['demo_version'] == '1.7.1'
     assert len(data['demo']['demo_cards']) >= 4
     assert 'Decision Studio to decide' in data['demo']['public_copy']
+
+
+def test_release_manifest_identity():
+    response = client.get('/release')
+    assert response.status_code == 200
+    data = response.json()
+    assert data['version'] == '1.7.1'
+    assert data['release']['build_fingerprint'] == 'scds-v1.7.1-53b729b'
+    assert data['release']['decision_packet_schema'] == 'scds-decision-packet/1.0'
+    assert data['release']['compatibility']['packet_schema_breaking_changes'] is False
+
+
+def test_health_reports_cold_start_and_limits():
+    response = client.get('/health')
+    data = response.json()
+    assert response.status_code == 200
+    assert data['ready'] is True
+    assert data['cold_start_ready'] is True
+    assert data['uptime_seconds'] >= 0
+    assert data['limits']['max_request_bytes'] == 1048576
+    assert response.headers['x-scds-version'] == '1.7.1'
+
+
+def test_oversized_public_request_is_rejected():
+    response = client.post('/analyze', content=b'{' + (b' ' * 1048576) + b'}', headers={'content-type': 'application/json'})
+    assert response.status_code == 413
+    assert response.json()['error'] == 'request_too_large'
+
+
+def test_ai_provider_error_uses_deterministic_fallback(monkeypatch):
+    import app.main as main
+
+    monkeypatch.setattr(main, 'ai_provider_status', lambda: {'configured': True, 'provider': 'gemini', 'model': 'test', 'backend_only': True})
+    monkeypatch.setattr(main, 'call_gemini', lambda prompt: (_ for _ in ()).throw(RuntimeError('provider unavailable')))
+    response = client.post('/brief', json={'inputs': {}, 'useAI': True})
+    assert response.status_code == 200
+    brief = response.json()['brief']
+    assert brief['ai_used'] is False
+    assert brief['source'] == 'deterministic_fallback_after_ai_error'
+    assert 'provider unavailable' in brief['ai_error']

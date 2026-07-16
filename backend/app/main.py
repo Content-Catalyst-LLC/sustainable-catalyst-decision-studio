@@ -1,16 +1,112 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional
 import json
 import math
 import os
+import threading
+import time
 import urllib.request
 import urllib.error
 
-APP_VERSION = "1.7.0"
+APP_VERSION = "1.7.1"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.7.1-53b729b")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "53b729b6940bc6455cf7815c58951bce4a36fff7")
+RELEASE_DATE = "2026-07-16"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/1.0"
+MAX_REQUEST_BYTES = max(65536, int(os.getenv("SCDS_MAX_REQUEST_BYTES", "1048576")))
+PUBLIC_RATE_LIMIT = max(10, int(os.getenv("SCDS_PUBLIC_RATE_LIMIT", "60")))
+RATE_WINDOW_SECONDS = max(10, int(os.getenv("SCDS_RATE_WINDOW_SECONDS", "60")))
+STARTED_AT_MONOTONIC = time.monotonic()
+_RATE_BUCKETS: Dict[str, List[float]] = {}
+_RATE_LOCK = threading.Lock()
+EXPENSIVE_PUBLIC_PATHS = {
+    "/analyze", "/brief", "/report", "/integrated-brief",
+    "/decision-packet/brief", "/decision-packet/analyze",
+    "/brief-readiness", "/decision-packet/readiness", "/review/status",
+    "/scenario-comparison", "/decision-packet/scenario-comparison",
+    "/workbench/handoff", "/decision-packet/workbench-handoff",
+    "/integrations/import", "/decision-packet/import",
+    "/decision-packet/save-template", "/export-center/bundle",
+    "/decision-packet/export-bundle", "/audit/generate",
+}
+
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
+
+
+def release_manifest() -> Dict[str, Any]:
+    return {
+        "release": APP_VERSION,
+        "release_name": "Production Reliability and Roadmap Repair",
+        "release_date": RELEASE_DATE,
+        "build_fingerprint": BUILD_FINGERPRINT,
+        "source_commit": SOURCE_COMMIT,
+        "decision_packet_schema": DECISION_PACKET_SCHEMA,
+        "compatibility": {
+            "wordpress_plugin": APP_VERSION,
+            "backend": APP_VERSION,
+            "api_namespace": "scds/v1",
+            "shortcodes_preserved": True,
+            "packet_schema_breaking_changes": False,
+        },
+    }
+
+
+def _request_client_key(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+    host = forwarded or (request.client.host if request.client else "unknown")
+    return f"{host}:{request.url.path}"
+
+
+def _rate_limit_exceeded(key: str, now: Optional[float] = None) -> bool:
+    current = time.monotonic() if now is None else now
+    cutoff = current - RATE_WINDOW_SECONDS
+    with _RATE_LOCK:
+        bucket = [stamp for stamp in _RATE_BUCKETS.get(key, []) if stamp > cutoff]
+        if len(bucket) >= PUBLIC_RATE_LIMIT:
+            _RATE_BUCKETS[key] = bucket
+            return True
+        bucket.append(current)
+        _RATE_BUCKETS[key] = bucket
+        if len(_RATE_BUCKETS) > 2048:
+            stale = [bucket_key for bucket_key, stamps in _RATE_BUCKETS.items() if not stamps or stamps[-1] <= cutoff]
+            for bucket_key in stale[:1024]:
+                _RATE_BUCKETS.pop(bucket_key, None)
+    return False
+
+
+@app.middleware("http")
+async def production_request_guard(request: Request, call_next):
+    if request.method in {"POST", "PUT", "PATCH"}:
+        content_length = request.headers.get("content-length")
+        if content_length:
+            try:
+                if int(content_length) > MAX_REQUEST_BYTES:
+                    return JSONResponse(status_code=413, content={"ok": False, "error": "request_too_large", "max_request_bytes": MAX_REQUEST_BYTES})
+            except ValueError:
+                return JSONResponse(status_code=400, content={"ok": False, "error": "invalid_content_length"})
+        body = await request.body()
+        if len(body) > MAX_REQUEST_BYTES:
+            return JSONResponse(status_code=413, content={"ok": False, "error": "request_too_large", "max_request_bytes": MAX_REQUEST_BYTES})
+
+        if request.url.path in EXPENSIVE_PUBLIC_PATHS:
+            expected_key = os.getenv("SCDS_API_KEY", "").strip()
+            supplied_key = request.headers.get("x-scds-api-key", "").strip()
+            trusted = bool(expected_key and supplied_key and supplied_key == expected_key)
+            if not trusted and _rate_limit_exceeded(_request_client_key(request)):
+                return JSONResponse(
+                    status_code=429,
+                    content={"ok": False, "error": "rate_limit_exceeded", "limit": PUBLIC_RATE_LIMIT, "window_seconds": RATE_WINDOW_SECONDS},
+                    headers={"Retry-After": str(RATE_WINDOW_SECONDS)},
+                )
+
+    response = await call_next(request)
+    response.headers["X-SCDS-Version"] = APP_VERSION
+    response.headers["X-SCDS-Build"] = BUILD_FINGERPRINT
+    return response
 
 class DecisionInputs(BaseModel):
     projectName: str = "Fleet electrification decision"
@@ -287,7 +383,7 @@ def module_integrations() -> List[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.7.0",
+        "packet_version": "1.7.1",
         "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio",
         "project": {
             "project_name": "",
@@ -332,7 +428,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.7.0",
+        "audit_version": "1.7.1",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -893,7 +989,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
     return {
         "ok": True,
         "version": APP_VERSION,
-        "decision_packet_version": "1.7.0",
+        "decision_packet_version": "1.7.1",
         "workflow_readiness_percent": readiness,
         "filled_modules": filled,
         "missing_modules": missing,
@@ -927,7 +1023,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
 
 
 def review_status_catalog() -> Dict[str, Any]:
-    """Review state vocabulary used by v1.7.0 readiness gates."""
+    """Review state vocabulary used by v1.7.1 readiness gates."""
     return {
         "review_version": APP_VERSION,
         "states": [
@@ -1795,7 +1891,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.7.0."""
+    """Professional public-facing product-page structure for Decision Studio v1.7.1."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
@@ -2030,7 +2126,23 @@ def generate_brief(req: BriefRequest) -> Dict[str, Any]:
 
 @app.get("/health")
 def health():
-    return {"ok": True, "version": APP_VERSION, "service": "sustainable-catalyst-decision-studio"}
+    return {
+        "ok": True,
+        "ready": True,
+        "cold_start_ready": True,
+        "version": APP_VERSION,
+        "service": "sustainable-catalyst-decision-studio",
+        "build_fingerprint": BUILD_FINGERPRINT,
+        "source_commit": SOURCE_COMMIT,
+        "uptime_seconds": round(time.monotonic() - STARTED_AT_MONOTONIC, 3),
+        "limits": {"max_request_bytes": MAX_REQUEST_BYTES, "public_rate_limit": PUBLIC_RATE_LIMIT, "rate_window_seconds": RATE_WINDOW_SECONDS},
+        "release": release_manifest(),
+    }
+
+
+@app.get("/release")
+def release_endpoint():
+    return {"ok": True, "version": APP_VERSION, "release": release_manifest()}
 
 @app.get("/ai/status")
 def ai_status():
@@ -2171,4 +2283,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"], "integration_endpoints": ["/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"], "integration_endpoints": ["/release", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"]}

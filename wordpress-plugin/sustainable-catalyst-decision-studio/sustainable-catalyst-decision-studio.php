@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Integrated sustainability decision-support workflow with module artifact adapters, audit/provenance, brief readiness scoring, review status, scenario comparison, Workbench handoffs, integrated briefs, saved Decision Packets, an export center, professional public landing views, and polished platform demos.
- * Version: 1.7.0
+ * Version: 1.7.1
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,7 +12,15 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.7.0';
+    const VERSION = '1.7.1';
+    const BUILD_FINGERPRINT = 'scds-v1.7.1-53b729b';
+    const SOURCE_COMMIT = '53b729b6940bc6455cf7815c58951bce4a36fff7';
+    const RELEASE_DATE = '2026-07-16';
+    const DB_VERSION = '1.1.0';
+    const DB_VERSION_OPTION = 'scds_db_version';
+    const INSTALLED_VERSION_OPTION = 'scds_installed_version';
+    const MAX_PUBLIC_REQUEST_BYTES = 1048576;
+    const PUBLIC_RATE_LIMIT = 60;
     const OPTION_KEY = 'scds_settings';
     const NONCE_ACTION = 'wp_rest';
     const PROJECTS_TABLE = 'scds_projects';
@@ -27,15 +35,28 @@ class Sustainable_Catalyst_Decision_Studio {
         add_action('admin_menu', [$this, 'register_admin_menu']);
         add_action('admin_init', [$this, 'maybe_save_settings']);
         add_action('rest_api_init', [$this, 'register_rest_routes']);
+        add_action('plugins_loaded', [__CLASS__, 'maybe_upgrade']);
+        add_filter('rest_pre_dispatch', [$this, 'protect_public_rest_request'], 10, 3);
     }
 
     public static function activate() {
-        self::create_tables();
+        self::maybe_upgrade();
         $defaults = self::default_settings();
         $existing = get_option(self::OPTION_KEY, []);
         update_option(self::OPTION_KEY, wp_parse_args($existing, $defaults));
         self::seed_validation_rows();
         self::maybe_create_page();
+    }
+
+    public static function maybe_upgrade() {
+        $installed_db = (string) get_option(self::DB_VERSION_OPTION, '0');
+        $installed_release = (string) get_option(self::INSTALLED_VERSION_OPTION, '0');
+        if (version_compare($installed_db, self::DB_VERSION, '<') || $installed_release !== self::VERSION) {
+            self::create_tables();
+            self::seed_validation_rows();
+            update_option(self::DB_VERSION_OPTION, self::DB_VERSION, false);
+            update_option(self::INSTALLED_VERSION_OPTION, self::VERSION, false);
+        }
     }
 
     private static function maybe_create_page() {
@@ -413,7 +434,7 @@ class Sustainable_Catalyst_Decision_Studio {
                     </article>
                 <?php endforeach; ?>
             </div>
-            <div class="scds-note"><strong>v1.3.0 boundary:</strong> this release adds Module Artifact Adapters. Paste or import a JSON export from a module and Decision Studio will normalize it into the correct Decision Packet section.</div>
+            <div class="scds-note"><strong>Artifact adapter boundary:</strong> this release adds Module Artifact Adapters. Paste or import a JSON export from a module and Decision Studio will normalize it into the correct Decision Packet section.</div>
             <div class="scds-import-box">
                 <div class="scds-panel-head scds-panel-head-small">
                     <p class="scds-section-kicker">Module artifact import</p>
@@ -445,7 +466,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-import-artifact>Import Artifact</button><button type="button" class="scds-button" data-scds-load-sample-artifact>Load Sample Artifact</button><button type="button" class="scds-button" data-scds-download-packet>Download Decision Packet JSON</button></div>
                 <div class="scds-import-result" data-scds-import-result></div>
             </div>
-            <div class="scds-note"><strong>v1.3.0 boundary:</strong> Module Artifact Adapters normalize structured exports into a Decision Packet. They map fields and preserve provenance, but they do not verify source truth, professional compliance, certification, or decision approval.</div>
+            <div class="scds-note"><strong>Artifact adapter boundary:</strong> Module Artifact Adapters normalize structured exports into a Decision Packet. They map fields and preserve provenance, but they do not verify source truth, professional compliance, certification, or decision approval.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-packet-template>Preview Decision Packet</button><button type="button" class="scds-button" data-scds-run>Run Current Decision Analysis</button></div>
             <div class="scds-packet-preview" data-scds-packet-preview></div>
         </section>
@@ -459,7 +480,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Quality gates before export</h3>
                 <p>Review whether the Decision Packet is ready for a draft brief, reviewed export, or further evidence work. The readiness gate checks framing, evidence, scenarios, impact, claims, finance, recovery, audit/provenance, and synthesis.</p>
             </div>
-            <div class="scds-note"><strong>v1.7.0:</strong> readiness scoring now surfaces section status, unresolved issues, required reviews, and export gates. It is a workflow quality screen, not approval or professional signoff.</div>
+            <div class="scds-note"><strong>v1.7.1:</strong> readiness scoring now surfaces section status, unresolved issues, required reviews, and export gates. It is a workflow quality screen, not approval or professional signoff.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-readiness>Check Brief Readiness</button>
                 <button type="button" class="scds-button" data-scds-generate-review-status>Generate Review Status</button>
@@ -505,7 +526,7 @@ class Sustainable_Catalyst_Decision_Studio {
         <section class="scds-panel" data-scds-panel="scenario">
             <div class="scds-panel-head"><p class="scds-section-kicker">Scenario comparison</p><h3>Compare options, deltas, tradeoffs, and readiness before the brief</h3><p>Generate a normalized comparison matrix across baseline, conservative, expected, ambitious, stress-test, or imported scenario artifacts.</p></div>
             <div class="scds-form-grid"><label>Savings uncertainty (%)<input type="number" data-scds-field="savingsVolatility" value="15" min="0" max="100"></label><label>CAPEX uncertainty (%)<input type="number" data-scds-field="capexVolatility" value="18" min="0" max="100"></label><label>Carbon price assumption ($/tCO₂e)<input type="number" data-scds-field="carbonPrice" value="45" min="0" step="1"></label><label>Social benefit score (0–100)<input type="number" data-scds-field="socialBenefit" value="58" min="0" max="100"></label></div>
-            <div class="scds-note"><strong>v1.7.0:</strong> scenario comparison now ranks options, shows deltas versus baseline, adds tradeoff notes, and identifies Workbench handoff candidates for deeper modeling.</div>
+            <div class="scds-note"><strong>v1.7.1:</strong> scenario comparison now ranks options, shows deltas versus baseline, adds tradeoff notes, and identifies Workbench handoff candidates for deeper modeling.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-scenario-compare>Compare Scenarios</button><button type="button" class="scds-button" data-scds-export-scenario-json>Download Scenario JSON</button><button type="button" class="scds-button" data-scds-workbench-handoff>Recommend Workbench Handoffs</button></div>
             <div class="scds-scenario-comparison" data-scds-scenario-output></div>
         </section>
@@ -514,7 +535,7 @@ class Sustainable_Catalyst_Decision_Studio {
     private function render_panel_handoff($mode) { ?>
         <section class="scds-panel" data-scds-panel="handoff">
             <div class="scds-panel-head"><p class="scds-section-kicker">Workbench handoff</p><h3>Send deeper calculations, graphs, and technical checks to Workbench</h3><p>Decision Studio synthesizes the decision. Workbench performs deeper symbolic, graph, engineering, scenario, risk, economics, environmental QA/QC, and domain-specific analysis.</p></div>
-            <div class="scds-note"><strong>v1.7.0:</strong> handoff recommendations include tool IDs, reasons, priorities, shortcodes, and a payload summary that can be used to continue analysis in Workbench.</div>
+            <div class="scds-note"><strong>v1.7.1:</strong> handoff recommendations include tool IDs, reasons, priorities, shortcodes, and a payload summary that can be used to continue analysis in Workbench.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-workbench-handoff>Generate Workbench Handoff Plan</button><button type="button" class="scds-button" data-scds-export-handoff-json>Download Handoff JSON</button><button type="button" class="scds-button" data-scds-scenario-compare>Refresh Scenario Matrix</button></div>
             <div class="scds-workbench-handoff" data-scds-handoff-output></div>
         </section>
@@ -528,7 +549,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Save the packet, reload prior work, and export the full decision bundle</h3>
                 <p>Decision Studio can preserve the current Decision Packet as a browser-saved working record, generate a complete export bundle, and prepare JSON, Markdown, HTML, audit, readiness, scenario, and Workbench handoff exports.</p>
             </div>
-            <div class="scds-note"><strong>v1.7.0:</strong> saved packets are working records for review and continuation. Exports preserve user-entered and imported material; review confidential or sensitive information before sharing.</div>
+            <div class="scds-note"><strong>v1.7.1:</strong> saved packets are working records for review and continuation. Exports preserve user-entered and imported material; review confidential or sensitive information before sharing.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-save-packet-local>Save Packet Locally</button>
                 <button type="button" class="scds-button" data-scds-refresh-packets>Refresh Saved Packets</button>
@@ -557,7 +578,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Professional decision memo from the full Decision Packet</h3>
                 <p>Generate a structured brief that synthesizes framing, evidence, scenarios, impact records, claim review, finance, recovery, four-pillar scores, audit/provenance, and Workbench handoffs.</p>
             </div>
-            <div class="scds-note"><strong>v1.7.0:</strong> the brief generator now includes readiness status, scenario comparison matrix, Workbench handoff details, audit appendix summary, and Markdown/HTML/JSON exports.</div>
+            <div class="scds-note"><strong>v1.7.1:</strong> the brief generator now includes readiness status, scenario comparison matrix, Workbench handoff details, audit appendix summary, and Markdown/HTML/JSON exports.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-integrated-brief>Generate Integrated Brief</button>
                 <button type="button" class="scds-button" data-scds-run>Generate Basic Brief</button>
@@ -582,7 +603,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Decision packet ledger, sources, assumptions, calculations, claims, changes, and review status</h3>
                 <p>Generate a structured audit appendix that shows what was entered, which module artifacts are present, which sources support the decision, which calculations were used, and which assumptions still require review.</p>
             </div>
-            <div class="scds-note"><strong>v1.7.0:</strong> audit works with the readiness gate so unresolved evidence, source, calculation, finance, claim, and review issues can be surfaced before export.</div>
+            <div class="scds-note"><strong>v1.7.1:</strong> audit works with the readiness gate so unresolved evidence, source, calculation, finance, claim, and review issues can be surfaced before export.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-audit-generate>Generate Audit Appendix</button><button type="button" class="scds-button" data-scds-export-audit-json>Download Audit JSON</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div>
             <div class="scds-audit-list" data-scds-audit></div>
             <div class="scds-workbench-links" data-scds-workbench-links></div>
@@ -601,6 +622,7 @@ class Sustainable_Catalyst_Decision_Studio {
         add_submenu_page('scds-dashboard', 'Validation Dashboard', 'Validation Dashboard', 'manage_options', 'scds-validation', [$this, 'render_admin_validation']);
         add_submenu_page('scds-dashboard', 'Export Center', 'Export Center', 'manage_options', 'scds-export', [$this, 'render_admin_export']);
         add_submenu_page('scds-dashboard', 'Public Landing & Demo', 'Public Landing & Demo', 'manage_options', 'scds-public-pages', [$this, 'render_admin_public_pages']);
+        add_submenu_page('scds-dashboard', 'Release Diagnostics', 'Release Diagnostics', 'manage_options', 'scds-diagnostics', [$this, 'render_admin_diagnostics']);
         add_submenu_page('scds-dashboard', 'Methodology Settings', 'Methodology Settings', 'manage_options', 'scds-settings', [$this, 'render_admin_settings']);
     }
 
@@ -618,6 +640,7 @@ class Sustainable_Catalyst_Decision_Studio {
             ['Validation Dashboard', 'Review module status, warnings, sample inputs, and expected outputs.', 'admin.php?page=scds-validation'],
             ['Export Center', 'Download saved packet exports, decision bundles, validation, and methodology exports.', 'admin.php?page=scds-export'],
             ['Public Landing & Demo', 'Copy launch-ready landing and demo shortcodes and product-page structure.', 'admin.php?page=scds-public-pages'],
+            ['Release Diagnostics', 'Check build identity, database migration state, backend health, and version parity.', 'admin.php?page=scds-diagnostics'],
             ['Methodology Settings', 'Configure backend URL, integration boundaries, and default display mode.', 'admin.php?page=scds-settings'],
         ];
         foreach ($cards as $c) echo '<div class="card"><h2>' . esc_html($c[0]) . '</h2><p>' . esc_html($c[1]) . '</p><a class="button button-primary" href="' . esc_url(admin_url($c[2])) . '">Open</a></div>';
@@ -627,7 +650,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
 
     public function render_admin_integrations() {
-        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.7.0 maps specialized modules into one Decision Packet, compares scenarios, routes deeper analysis to Workbench, and prepares saved packet/export workflows.');
+        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.7.1 maps specialized modules into one Decision Packet, compares scenarios, routes deeper analysis to Workbench, and prepares saved packet/export workflows.');
         echo '<p>Use this map as the integration contract for the next build: module artifact exports should feed the Decision Packet sections listed below.</p>';
         echo '<table class="widefat striped"><thead><tr><th>Step</th><th>Module</th><th>Role</th><th>Feeds Decision Packet</th><th>URL</th></tr></thead><tbody>';
         foreach ($this->module_integrations() as $m) {
@@ -648,7 +671,7 @@ class Sustainable_Catalyst_Decision_Studio {
     }
 
     public function render_admin_templates() { $this->admin_wrap_start('Scenario Templates', 'Bundled scenario structures for sustainability decisions.'); $this->render_csv_table($this->scenario_templates()); $this->admin_wrap_end(); }
-    public function render_admin_scenario_handoff() { $this->admin_wrap_start('Scenario Comparison and Workbench Handoff', 'v1.7.0 quality layer for comparing options, routing deeper analysis to Workbench, and feeding export bundles.'); echo '<p><strong>Endpoints:</strong> /scenario-comparison, /decision-packet/scenario-comparison, /workbench/handoff, /decision-packet/workbench-handoff.</p>'; echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($this->workbench_handoff_catalog(), JSON_PRETTY_PRINT)) . '</pre>'; $this->admin_wrap_end(); }
+    public function render_admin_scenario_handoff() { $this->admin_wrap_start('Scenario Comparison and Workbench Handoff', 'v1.7.1 quality layer for comparing options, routing deeper analysis to Workbench, and feeding export bundles.'); echo '<p><strong>Endpoints:</strong> /scenario-comparison, /decision-packet/scenario-comparison, /workbench/handoff, /decision-packet/workbench-handoff.</p>'; echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($this->workbench_handoff_catalog(), JSON_PRETTY_PRINT)) . '</pre>'; $this->admin_wrap_end(); }
     public function render_admin_scorecard() { $this->admin_wrap_start('Scorecard Builder', 'Default indicators and weights for four-pillar decision support.'); $this->render_csv_table($this->scorecard_rows()); $this->admin_wrap_end(); }
     public function render_admin_reports() { $this->admin_wrap_start('Report Templates', 'Decision brief structure used by the public interface and backend.'); echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html($this->report_template_markdown()) . '</pre>'; $this->admin_wrap_end(); }
 
@@ -694,11 +717,28 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
 
     public function render_admin_public_pages() {
-        $this->admin_wrap_start('Public Landing & Demo', 'Decision Studio v1.7.0 launch-ready public page structure, demo flow, and shortcode guidance.');
+        $this->admin_wrap_start('Public Landing & Demo', 'Decision Studio v1.7.1 launch-ready public page structure, demo flow, and shortcode guidance.');
         $template = $this->public_landing_template();
         echo '<h2>Recommended public shortcodes</h2><textarea readonly style="width:100%;height:120px">[sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]&#10;[sc_decision_studio mode="demo" title="Decision Studio Demo"]&#10;[sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]&#10;[sc_decision_studio mode="export" title="Decision Studio Export Center"]</textarea>';
         echo '<h2>Workflow copy</h2><p><strong>Use Canvas to frame. Use Data to anchor. Use Analytics R to model. Use Global Impact to measure. Use Narrative Risk to review. Use Finance to evaluate. Use Grit to sustain. Use Decision Studio to decide.</strong></p>';
         echo '<h2>Landing template</h2><pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($template, JSON_PRETTY_PRINT)) . '</pre>';
+        $this->admin_wrap_end();
+    }
+
+    public function render_admin_diagnostics() {
+        $diagnostics = $this->backend_diagnostics();
+        $this->admin_wrap_start('Decision Studio Release Diagnostics', 'Production identity, migration, backend health, and WordPress/backend version parity for v' . self::VERSION . '.');
+        $state = $diagnostics['state'] ?? 'unknown';
+        $class = $state === 'matched' ? 'notice-success' : ($state === 'backend-disabled' ? 'notice-info' : 'notice-warning');
+        echo '<div class="notice ' . esc_attr($class) . '"><p><strong>State:</strong> ' . esc_html($state) . '</p></div>';
+        echo '<table class="widefat striped"><tbody>';
+        echo '<tr><th>WordPress plugin</th><td><code>' . esc_html(self::VERSION) . '</code></td></tr>';
+        echo '<tr><th>Build fingerprint</th><td><code>' . esc_html(self::BUILD_FINGERPRINT) . '</code></td></tr>';
+        echo '<tr><th>Database schema</th><td><code>' . esc_html((string) get_option(self::DB_VERSION_OPTION, 'not-recorded')) . '</code></td></tr>';
+        echo '<tr><th>Backend version</th><td><code>' . esc_html((string) ($diagnostics['backend_version'] ?? 'not connected')) . '</code></td></tr>';
+        echo '<tr><th>Version parity</th><td>' . esc_html(isset($diagnostics['version_matches']) ? ($diagnostics['version_matches'] ? 'Matched' : 'Mismatched') : 'Not checked') . '</td></tr>';
+        echo '</tbody></table>';
+        echo '<h2>Diagnostic payload</h2><pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($diagnostics, JSON_PRETTY_PRINT)) . '</pre>';
         $this->admin_wrap_end();
     }
 
@@ -733,8 +773,89 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         add_action('admin_notices', function(){ echo '<div class="notice notice-success"><p>Decision Studio settings saved.</p></div>'; });
     }
 
+    public function protect_public_rest_request($result, $server, $request) {
+        if ($result !== null) return $result;
+        $route = (string) $request->get_route();
+        if (strpos($route, '/scds/v1/') !== 0 || strtoupper($request->get_method()) !== 'POST') return $result;
+        if (current_user_can('manage_options')) return $result;
+
+        $body = (string) $request->get_body();
+        $content_length = (int) $request->get_header('content-length');
+        if ($content_length > self::MAX_PUBLIC_REQUEST_BYTES || strlen($body) > self::MAX_PUBLIC_REQUEST_BYTES) {
+            return new WP_Error('scds_request_too_large', 'Decision Studio request exceeds the public payload limit.', ['status'=>413, 'max_request_bytes'=>self::MAX_PUBLIC_REQUEST_BYTES]);
+        }
+
+        $forwarded = sanitize_text_field((string) $request->get_header('x-forwarded-for'));
+        $ip = $forwarded ? trim(explode(',', $forwarded)[0]) : sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+        $window = (int) floor(time() / 60);
+        $rate_key = 'scds_rl_' . md5($ip . '|' . $route . '|' . $window);
+        $count = (int) get_transient($rate_key);
+        if ($count >= self::PUBLIC_RATE_LIMIT) {
+            return new WP_Error('scds_rate_limit', 'Too many Decision Studio requests. Please try again shortly.', ['status'=>429, 'retry_after'=>60]);
+        }
+        set_transient($rate_key, $count + 1, 70);
+        return $result;
+    }
+
+    private function release_manifest() {
+        return [
+            'release'=>self::VERSION,
+            'release_name'=>'Production Reliability and Roadmap Repair',
+            'release_date'=>self::RELEASE_DATE,
+            'build_fingerprint'=>self::BUILD_FINGERPRINT,
+            'source_commit'=>self::SOURCE_COMMIT,
+            'database_version'=>self::DB_VERSION,
+            'decision_packet_schema'=>'scds-decision-packet/1.0',
+            'compatibility'=>[
+                'wordpress_plugin'=>self::VERSION,
+                'backend'=>self::VERSION,
+                'api_namespace'=>'scds/v1',
+                'shortcodes_preserved'=>true,
+                'packet_schema_breaking_changes'=>false,
+            ],
+        ];
+    }
+
+    private function backend_diagnostics() {
+        $s = $this->settings();
+        $base = [
+            'ok'=>true,
+            'plugin_version'=>self::VERSION,
+            'plugin_build'=>self::BUILD_FINGERPRINT,
+            'database_version'=>(string) get_option(self::DB_VERSION_OPTION, 'not-recorded'),
+            'installed_version'=>(string) get_option(self::INSTALLED_VERSION_OPTION, 'not-recorded'),
+            'backend_enabled'=>$s['backend_enabled'] === '1',
+            'backend_configured'=>!empty($s['backend_url']),
+            'version_matches'=>null,
+            'state'=>'backend-disabled',
+            'release'=>$this->release_manifest(),
+        ];
+        if ($s['backend_enabled'] !== '1' || empty($s['backend_url'])) return $base;
+
+        $health = $this->backend_request('/health', [], 'GET');
+        if (is_wp_error($health)) {
+            $base['ok'] = false;
+            $base['state'] = 'backend-unavailable';
+            $base['error'] = $health->get_error_message();
+            return $base;
+        }
+        $backend_version = sanitize_text_field((string) ($health['version'] ?? 'unknown'));
+        $matches = hash_equals(self::VERSION, $backend_version);
+        $base['backend_health'] = $health;
+        $base['backend_version'] = $backend_version;
+        $base['backend_build'] = sanitize_text_field((string) ($health['build_fingerprint'] ?? 'unknown'));
+        $base['version_matches'] = $matches;
+        $base['state'] = $matches ? 'matched' : 'version-mismatch';
+        $base['ok'] = $matches;
+
+        $ai = $this->backend_request('/ai/status', [], 'GET');
+        if (!is_wp_error($ai)) $base['ai'] = $ai;
+        return $base;
+    }
+
     public function register_rest_routes() {
         register_rest_route('scds/v1', '/health', ['methods'=>'GET','callback'=>[$this,'rest_health'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/release', ['methods'=>'GET','callback'=>[$this,'rest_release'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/analyze', ['methods'=>'POST','callback'=>[$this,'rest_analyze'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/templates', ['methods'=>'GET','callback'=>[$this,'rest_templates'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/public/landing-template', ['methods'=>'GET','callback'=>[$this,'rest_public_landing_template'],'permission_callback'=>'__return_true']);
@@ -914,20 +1035,13 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     public function rest_delete_packet(WP_REST_Request $request) { global $wpdb; $id=intval($request['id']); $table=$wpdb->prefix.self::PROJECTS_TABLE; $wpdb->delete($table,['id'=>$id],['%d']); return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'deleted_id'=>$id]); }
     public function rest_export_packet_json(WP_REST_Request $request) { $res=$this->rest_get_packet($request); if(is_wp_error($res)) return $res; $data=$res->get_data(); return new WP_REST_Response(wp_json_encode($data, JSON_PRETTY_PRINT), 200, ['Content-Type'=>'application/json; charset=utf-8','Content-Disposition'=>'attachment; filename="decision-studio-packet-'.$request['id'].'-v'.self::VERSION.'.json"']); }
 
-    public function rest_health() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio']); }
+    public function rest_health() { return rest_ensure_response(['ok'=>true,'ready'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio','build_fingerprint'=>self::BUILD_FINGERPRINT,'database_version'=>(string)get_option(self::DB_VERSION_OPTION,'not-recorded'),'installed_version'=>(string)get_option(self::INSTALLED_VERSION_OPTION,'not-recorded'),'limits'=>['max_request_bytes'=>self::MAX_PUBLIC_REQUEST_BYTES,'public_rate_limit'=>self::PUBLIC_RATE_LIMIT],'release'=>$this->release_manifest()]); }
+    public function rest_release() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'release'=>$this->release_manifest()]); }
     public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
 
     public function rest_backend_status() {
-        $s = $this->settings();
-        if ($s['backend_enabled'] !== '1' || empty($s['backend_url'])) {
-            return rest_ensure_response(['ok'=>true,'backend_enabled'=>false,'ai_configured'=>false,'source'=>'wordpress_settings']);
-        }
-        $response = $this->backend_request('/ai/status', [], 'GET');
-        if (is_wp_error($response)) {
-            return rest_ensure_response(['ok'=>false,'backend_enabled'=>true,'error'=>$response->get_error_message(),'source'=>'wordpress_proxy']);
-        }
-        return rest_ensure_response($response);
+        return rest_ensure_response($this->backend_diagnostics());
     }
 
     public function rest_ai_brief(WP_REST_Request $request) {
@@ -1095,9 +1209,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     }
 
     private function csv_response($filename, $rows) { $fh = fopen('php://temp','w+'); if ($rows) { fputcsv($fh, array_keys($rows[0])); foreach($rows as $row) fputcsv($fh, $row); } rewind($fh); $csv = stream_get_contents($fh); fclose($fh); return new WP_REST_Response($csv, 200, ['Content-Type'=>'text/csv; charset=utf-8','Content-Disposition'=>'attachment; filename="'.$filename.'"']); }
-    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.7.0.csv', $this->scenario_templates()); }
-    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.7.0.csv', $this->workbench_tool_map()); }
-    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.7.0.csv', $rows ?: []); }
+    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.7.1.csv', $this->scenario_templates()); }
+    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.7.1.csv', $this->workbench_tool_map()); }
+    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.7.1.csv', $rows ?: []); }
 
 
     private function artifact_adapter_catalog() {
@@ -1188,7 +1302,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function import_artifact_into_packet($artifact, $module_id='', $packet=[]) {
         $normalized = $this->normalize_artifact($artifact, $module_id);
         $updated = $this->apply_packet_patch($packet, $normalized['packet_patch']);
-        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.7.0']];
+        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.7.1']];
     }
 
     private function module_integrations() {
@@ -1206,7 +1320,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function decision_packet_template() {
         return [
-            'packet_version'=>'1.7.0',
+            'packet_version'=>'1.7.1',
             'workflow'=>'Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio',
             'project'=>['project_name'=>'','organization_type'=>'','sector'=>'','location'=>'','time_horizon'=>'','decision_question'=>''],
             'framing'=>[],
@@ -1232,7 +1346,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function audit_provenance_template() {
         return [
-            'audit_version'=>'1.7.0',
+            'audit_version'=>'1.7.1',
             'decision_packet_id'=>'SCDS-DRAFT',
             'review_status'=>[
                 'status'=>'draft',

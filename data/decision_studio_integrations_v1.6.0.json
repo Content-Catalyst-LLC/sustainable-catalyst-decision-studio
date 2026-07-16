@@ -1,7 +1,7 @@
 {
-  "version": "1.7.0",
+  "version": "1.6.0",
   "name": "Decision Studio Saved Decision Packets and Export Center",
-  "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio → Saved Packet → Export Bundle",
+  "workflow": "Canvas \u2192 Data \u2192 Analytics R \u2192 Global Impact \u2192 Narrative Risk \u2192 Finance \u2192 Grit \u2192 Decision Studio \u2192 Saved Packet \u2192 Export Bundle",
   "features": [
     "Saved Decision Packets",
     "Browser-local packet save/load/delete",

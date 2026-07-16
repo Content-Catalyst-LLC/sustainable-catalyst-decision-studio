@@ -1,6 +1,12 @@
-# Sustainable Catalyst Decision Studio v1.7.0
+# Sustainable Catalyst Decision Studio v1.7.1
 
 Sustainable Catalyst Decision Studio is an applied sustainability decision-support layer for Content Catalyst LLC / Sustainable Catalyst. It upgrades the earlier Sustainable Catalyst 1.0 prototype into a modular WordPress + FastAPI-ready platform for project intake, four-pillar scoring, scenarios, risk, reports, validation, exports, Workbench integration, and backend-routed AI decision briefing.
+
+## v1.7.1 — Production Reliability and Roadmap Repair
+
+This compatibility-preserving patch repairs Render deployment, adds build identity and version-parity diagnostics, runs WordPress database migrations automatically, limits oversized and abusive public requests, normalizes backend tests, and preserves existing shortcodes and Decision Packet schemas.
+
+See `docs/V171_PRODUCTION_RELIABILITY_ROADMAP_REPAIR.md` and `docs/ROADMAP.md`.
 
 ## v1.7.0 — Professional Public Landing Page and Demo Refresh
 
@@ -51,6 +57,7 @@ Legacy compatibility is included:
 - SC Decision Studio → Report Templates
 - SC Decision Studio → Validation Dashboard
 - SC Decision Studio → Export Center
+- SC Decision Studio → Release Diagnostics
 - SC Decision Studio → Methodology Settings
 
 ## Boundary
@@ -71,7 +78,7 @@ POST /report
 ```
 
 
-## v1.1.1 Integrated Platform Workflow
+## v1.1.0 Integrated Platform Workflow
 
 Decision Studio now includes an Integrated Workflow tab and Decision Packet structure connecting Catalyst Canvas, Catalyst Data, Catalyst Analytics R, Global Impact Catalyst, Narrative Risk, Catalyst Finance, Catalyst Grit, and Decision Studio.
 

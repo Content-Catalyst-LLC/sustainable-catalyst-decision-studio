@@ -1,3 +1,14 @@
+## v1.7.1 — Production Reliability and Roadmap Repair
+
+- Corrected Render root directory, startup command, health check, and pinned runtime settings.
+- Added backend and WordPress release manifests, build fingerprints, source commit identity, and `/release` endpoints.
+- Added WordPress/backend version-parity diagnostics and an admin diagnostics screen.
+- Added automatic WordPress database migration checks on upgrade.
+- Added one-megabyte request limits and per-route public rate limiting for expensive operations.
+- Normalized Python package markers and pytest execution.
+- Added cold-start, release identity, request-limit, and deterministic AI fallback regression tests.
+- Corrected stale release labels and v1.6.0 integration metadata without changing public shortcodes or Decision Packet schemas.
+
 ## v1.7.0 — Professional Public Landing Page and Demo Refresh
 
 - Added public landing and demo shortcode modes.
@@ -61,13 +72,13 @@
 - Added WordPress REST routes `/wp-json/scds/v1/audit/template` and `/wp-json/scds/v1/audit/generate`.
 - Added exportable audit appendix UI and audit JSON download.
 
-## v1.1.1 — Integrated Platform Workflow
+## v1.1.0 — Integrated Platform Workflow
 
 - Added Integrated Workflow tab.
 - Added module map for Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, Grit, and Decision Studio.
 - Added Decision Packet template and REST/API endpoints.
 - Added admin Integrated Workflow page.
-- Updated public version labels to v1.1.1.
+- Updated public version labels to v1.1.0.
 
 # Changelog
 

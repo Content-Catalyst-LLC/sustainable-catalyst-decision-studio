@@ -1,0 +1,36 @@
+{
+  "release": "1.7.1",
+  "release_name": "Production Reliability and Roadmap Repair",
+  "release_date": "2026-07-16",
+  "build_fingerprint": "scds-v1.7.1-53b729b",
+  "source_commit": "53b729b6940bc6455cf7815c58951bce4a36fff7",
+  "decision_packet_schema": "scds-decision-packet/1.0",
+  "wordpress": {
+    "plugin_version": "1.7.1",
+    "database_version": "1.1.0",
+    "api_namespace": "scds/v1"
+  },
+  "backend": {
+    "version": "1.7.1",
+    "root_dir": "backend",
+    "start_command": "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+  },
+  "limits": {
+    "max_request_bytes": 1048576,
+    "public_rate_limit": 60,
+    "window_seconds": 60
+  },
+  "compatibility": {
+    "shortcodes_preserved": true,
+    "rest_routes_preserved": true,
+    "packet_schema_breaking_changes": false
+  },
+  "checks": [
+    "backend tests",
+    "backend compile",
+    "PHP syntax",
+    "JSON validation",
+    "version parity",
+    "plugin package structure"
+  ]
+}

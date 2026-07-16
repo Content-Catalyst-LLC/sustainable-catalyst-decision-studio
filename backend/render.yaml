@@ -2,6 +2,18 @@ services:
   - type: web
     name: sustainable-catalyst-decision-studio
     env: python
-    buildCommand: pip install -r backend/requirements.txt
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    rootDir: .
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.11
+      - key: SCDS_BUILD_FINGERPRINT
+        value: scds-v1.7.1-53b729b
+      - key: SCDS_SOURCE_COMMIT
+        value: 53b729b6940bc6455cf7815c58951bce4a36fff7
+      - key: SCDS_MAX_REQUEST_BYTES
+        value: 1048576
+      - key: SCDS_PUBLIC_RATE_LIMIT
+        value: 60

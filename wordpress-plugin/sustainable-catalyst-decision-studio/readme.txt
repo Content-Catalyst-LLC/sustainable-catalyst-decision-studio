@@ -3,7 +3,7 @@ Contributors: Content Catalyst LLC
 Tags: sustainability, decision support, scenario analysis, scorecards, risk
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: MIT
 
 Sustainable Catalyst Decision Studio provides integrated sustainability decision-support workflows connecting problem framing, data records, scenarios, impact measurement, claim review, finance, recovery, four-pillar synthesis, Workbench handoffs, saved packets, export bundles, and public demo/landing views.
@@ -24,6 +24,12 @@ Sustainable Catalyst Decision Studio provides integrated sustainability decision
 [sc_decision_studio mode="drawer"]
 
 == Changelog ==
+
+= 1.7.1 =
+* Corrected Render deployment configuration and backend package execution.
+* Added release identity, build fingerprints, database migrations, backend version parity, and an admin diagnostics screen.
+* Added public request-size and rate-limit protections.
+* Preserved existing shortcodes, REST routes, and Decision Packet schema fields.
 
 = 1.7.0 =
 * Added professional public landing page shortcode mode.

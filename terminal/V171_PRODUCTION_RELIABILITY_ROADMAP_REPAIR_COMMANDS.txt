@@ -1,0 +1,14 @@
+# Decision Studio v1.7.1 release commands
+
+cd backend
+python -m pip install -r requirements.txt
+python -m pytest
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8091
+
+# Health and release identity
+curl -s http://127.0.0.1:8091/health | python -m json.tool
+curl -s http://127.0.0.1:8091/release | python -m json.tool
+
+# WordPress plugin package
+cd ../wordpress-plugin
+zip -r sustainable-catalyst-decision-studio-plugin-v1.7.1.zip sustainable-catalyst-decision-studio
