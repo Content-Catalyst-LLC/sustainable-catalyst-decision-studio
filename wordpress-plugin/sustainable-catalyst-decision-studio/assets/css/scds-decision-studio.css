@@ -134,3 +134,18 @@
 .scds-pack-result summary{cursor:pointer;font-weight:700}
 .scds-pack-blockers{margin-top:16px}
 @media (max-width:760px){.scds-pack-catalog{grid-template-columns:1fr}.scds-pack-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* v1.13.0 Decision Briefing and Publication Studio */
+.scds-panel[data-scds-panel="publication"] textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.5}
+.scds-publication-output{margin-top:20px}
+.scds-publication-result{border:1px solid var(--scds-line);background:#fffdf8;padding:20px}
+.scds-publication-result>.scds-readiness-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.scds-publication-result>h4{font-family:Spartan,Montserrat,Arial,sans-serif;margin:24px 0 10px}
+.scds-publication-section{background:#fff;border:1px solid rgba(20,20,20,.13);border-left:4px solid #6f1024;padding:16px;margin:12px 0}
+.scds-publication-section h5{font-family:Spartan,Montserrat,Arial,sans-serif;font-size:1rem;margin:3px 0 10px}
+.scds-publication-copy{line-height:1.65;word-break:break-word}
+.scds-publication-bibliography{margin:10px 0 18px 22px}
+.scds-publication-bibliography li{margin-bottom:8px;line-height:1.55}
+@media(max-width:900px){.scds-publication-result>.scds-readiness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.scds-publication-result>.scds-readiness-grid{grid-template-columns:1fr}}

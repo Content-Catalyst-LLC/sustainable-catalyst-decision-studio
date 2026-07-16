@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/contracts/scds-decision-publication-1.0.schema.json",
+  "title": "Sustainable Catalyst Decision Publication",
+  "type": "object",
+  "required": [
+    "schema",
+    "publication_id",
+    "publication_version",
+    "publication_type",
+    "title",
+    "audience",
+    "decision_packet_id",
+    "sections",
+    "bibliography",
+    "redaction",
+    "content_hash"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-decision-publication/1.0"
+    },
+    "publication_id": {
+      "type": "string",
+      "minLength": 5
+    },
+    "publication_version": {
+      "const": "1.13.0"
+    },
+    "publication_type": {
+      "enum": [
+        "executive_decision_memo",
+        "technical_decision_report",
+        "board_leadership_brief",
+        "alternatives_analysis",
+        "public_decision_dossier",
+        "evidence_appendix",
+        "assumptions_register",
+        "methodology_statement",
+        "audit_provenance_appendix",
+        "implementation_plan",
+        "dissenting_view",
+        "monitoring_plan"
+      ]
+    },
+    "publication_type_label": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "audience": {
+      "enum": [
+        "internal",
+        "reviewed",
+        "public"
+      ]
+    },
+    "prepared_by": {
+      "type": "string"
+    },
+    "decision_packet_id": {
+      "type": "string"
+    },
+    "governance_state": {
+      "type": "string"
+    },
+    "governance_export_gate": {
+      "type": "object"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "visibility",
+          "content"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "visibility": {
+            "enum": [
+              "private",
+              "institutional",
+              "public"
+            ]
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "bibliography": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "citation_id",
+          "anchor",
+          "citation"
+        ],
+        "properties": {
+          "citation_id": {
+            "type": "string"
+          },
+          "anchor": {
+            "type": "string"
+          },
+          "citation": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "citation_style": {
+      "const": "Harvard"
+    },
+    "redaction": {
+      "type": "object",
+      "required": [
+        "schema",
+        "events",
+        "complete"
+      ],
+      "properties": {
+        "schema": {
+          "const": "scds-publication-redaction/1.0"
+        },
+        "events": {
+          "type": "array"
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      }
+    },
+    "publication_handoffs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "const": "scds-publication-handoff/1.0"
+          },
+          "target": {
+            "enum": [
+              "knowledge_library",
+              "research",
+              "publications",
+              "channel"
+            ]
+          }
+        }
+      }
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "markdown": {
+      "type": "string"
+    },
+    "html": {
+      "type": "string"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true
+}

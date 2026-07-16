@@ -1,0 +1,118 @@
+{
+  "release": "1.13.0",
+  "release_name": "Decision Briefing and Publication Studio",
+  "release_date": "2026-07-16",
+  "build_fingerprint": "scds-v1.13.0-decision-briefing-publication-studio",
+  "source_commit": "release-v1.13.0",
+  "schemas": {
+    "decision_packet": "scds-decision-packet/1.6",
+    "platform_artifact": "scds-platform-artifact/1.0",
+    "evidence_record": "scds-evidence-record/1.0",
+    "decision_governance": "scds-decision-governance/1.0",
+    "review_event": "scds-review-event/1.0",
+    "scenario_studio": "scds-scenario-studio/1.0",
+    "collaboration_room": "scds-collaborative-decision-room/1.0",
+    "collaboration_event": "scds-collaboration-event/1.0",
+    "contact_engagement_handoff": "sc-contact-engagement-handoff/1.0",
+    "institutional_decision_pack": "scds-institutional-decision-pack/1.0",
+    "decision_pack_application": "scds-decision-pack-application/1.0",
+    "decision_publication": "scds-decision-publication/1.0",
+    "publication_handoff": "scds-publication-handoff/1.0",
+    "publication_redaction": "scds-publication-redaction/1.0"
+  },
+  "wordpress": {
+    "plugin_version": "1.13.0",
+    "database_version": "1.7.0",
+    "api_namespace": "scds/v1",
+    "publication_storage": "publication_json",
+    "decision_pack_storage": "decision_pack_json",
+    "canonical_room_storage": "wp_scds_rooms",
+    "membership_storage": "wp_scds_room_members",
+    "event_storage": "wp_scds_room_events"
+  },
+  "backend": {
+    "version": "1.13.0",
+    "root_dir": "backend",
+    "start_command": "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+  },
+  "platform_products": [
+    "knowledge-library",
+    "research-librarian",
+    "site-intelligence",
+    "workbench",
+    "research-lab",
+    "platform-core"
+  ],
+  "publication_studio": {
+    "publication_type_count": 12,
+    "publication_types": [
+      "executive_decision_memo",
+      "technical_decision_report",
+      "board_leadership_brief",
+      "alternatives_analysis",
+      "public_decision_dossier",
+      "evidence_appendix",
+      "assumptions_register",
+      "methodology_statement",
+      "audit_provenance_appendix",
+      "implementation_plan",
+      "dissenting_view",
+      "monitoring_plan"
+    ],
+    "citation_style": "Harvard",
+    "audiences": [
+      "internal",
+      "reviewed",
+      "public"
+    ],
+    "targets": [
+      "knowledge_library",
+      "research",
+      "publications",
+      "channel"
+    ],
+    "deterministic_redaction": true,
+    "print_ready_html": true,
+    "native_pdf_generator": false,
+    "human_review_required": true,
+    "ai_approval_allowed": false
+  },
+  "compatibility": {
+    "shortcodes_preserved": true,
+    "rest_routes_preserved": true,
+    "packet_schema_breaking_changes": false,
+    "typed_platform_artifacts": true,
+    "legacy_artifact_adapters_preserved": true,
+    "v1_8_handoff_contracts_preserved": true,
+    "v1_9_governance_preserved": true,
+    "v1_10_scenario_studio_preserved": true,
+    "v1_11_collaboration_preserved": true,
+    "v1_12_decision_packs_preserved": true
+  },
+  "limits": {
+    "max_request_bytes": 1048576,
+    "public_rate_limit": 60,
+    "window_seconds": 60,
+    "batch_import_maximum": 100
+  },
+  "checks": [
+    "97 backend tests",
+    "publication type catalog tests",
+    "citation registry tests",
+    "governance publication gate tests",
+    "redaction tests",
+    "handoff tests",
+    "Decision Packet 1.6 tests",
+    "persistence and export tests",
+    "Decision Pack regression tests",
+    "collaboration regression tests",
+    "scenario regression tests",
+    "governance regression tests",
+    "backend compile",
+    "JavaScript syntax",
+    "PHP syntax",
+    "JSON validation",
+    "version parity",
+    "plugin package structure"
+  ]
+}

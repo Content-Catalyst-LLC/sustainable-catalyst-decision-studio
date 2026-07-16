@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static release-integrity checks for Decision Studio v1.12.0."""
+"""Static release-integrity checks for Decision Studio v1.13.0."""
 from __future__ import annotations
 
 import json
@@ -8,24 +8,20 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = ROOT / "wordpress-plugin/sustainable-catalyst-decision-studio"
 PLUGIN_PHP = PLUGIN_ROOT / "sustainable-catalyst-decision-studio.php"
-VERSION = "1.12.0"
-BUILD = "scds-v1.12.0-institutional-domain-decision-packs"
-SOURCE = "release-v1.12.0"
-PACKET_SCHEMA = "scds-decision-packet/1.5"
-PACK_SCHEMA = "scds-institutional-decision-pack/1.0"
-APPLICATION_SCHEMA = "scds-decision-pack-application/1.0"
-PACK_IDS = {
-    "climate-energy-strategy",
-    "infrastructure-capital-investment",
-    "urban-resilience",
-    "sustainable-procurement",
-    "responsible-ai-governance",
-    "research-program-approval",
-    "environmental-intervention",
-    "humanitarian-development-program",
-    "organizational-policy",
-    "advisory-diagnostic-recommendation",
+VERSION = "1.13.0"
+BUILD = "scds-v1.13.0-decision-briefing-publication-studio"
+SOURCE = "release-v1.13.0"
+PACKET_SCHEMA = "scds-decision-packet/1.6"
+PUBLICATION_SCHEMA = "scds-decision-publication/1.0"
+HANDOFF_SCHEMA = "scds-publication-handoff/1.0"
+REDACTION_SCHEMA = "scds-publication-redaction/1.0"
+PUBLICATION_IDS = {
+    "executive_decision_memo", "technical_decision_report", "board_leadership_brief",
+    "alternatives_analysis", "public_decision_dossier", "evidence_appendix",
+    "assumptions_register", "methodology_statement", "audit_provenance_appendix",
+    "implementation_plan", "dissenting_view", "monitoring_plan",
 }
+TARGETS = {"knowledge_library", "research", "publications", "channel"}
 PRODUCTS = {
     "knowledge-library", "research-librarian", "site-intelligence",
     "workbench", "research-lab", "platform-core",
@@ -53,15 +49,15 @@ render = (ROOT / "backend/render.yaml").read_text(encoding="utf-8")
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 roadmap = (ROOT / "docs/ROADMAP.md").read_text(encoding="utf-8")
 changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
-manifest = load_json(ROOT / "data/decision_studio_release_manifest_v1.12.0.json")
-plugin_manifest = load_json(PLUGIN_ROOT / "data/release_manifest_v1.12.0.json")
-integrations = load_json(ROOT / "data/decision_studio_integrations_v1.12.0.json")
-pack_catalog = load_json(ROOT / "data/institutional_decision_packs_v1.12.0.json")
-plugin_pack_catalog = load_json(PLUGIN_ROOT / "data/institutional_decision_packs_v1.12.0.json")
-pack_contract = load_json(ROOT / "data/institutional_decision_pack_contract_v1.12.0.json")
-plugin_pack_contract = load_json(PLUGIN_ROOT / "data/institutional_decision_pack_contract_v1.12.0.json")
-pack_sample = load_json(ROOT / "data/institutional_decision_pack_sample_v1.12.0.json")
-plugin_pack_sample = load_json(PLUGIN_ROOT / "data/institutional_decision_pack_sample_v1.12.0.json")
+doc = (ROOT / "docs/V1130_DECISION_BRIEFING_PUBLICATION_STUDIO.md").read_text(encoding="utf-8")
+terminal = (ROOT / "terminal/V1130_DECISION_BRIEFING_PUBLICATION_STUDIO_COMMANDS.txt").read_text(encoding="utf-8")
+manifest = load_json(ROOT / "data/decision_studio_release_manifest_v1.13.0.json")
+plugin_manifest = load_json(PLUGIN_ROOT / "data/release_manifest_v1.13.0.json")
+integrations = load_json(ROOT / "data/decision_studio_integrations_v1.13.0.json")
+contract = load_json(ROOT / "data/decision_publication_contract_v1.13.0.json")
+plugin_contract = load_json(PLUGIN_ROOT / "data/decision_publication_contract_v1.13.0.json")
+sample = load_json(ROOT / "data/decision_publication_sample_v1.13.0.json")
+plugin_sample = load_json(PLUGIN_ROOT / "data/decision_publication_sample_v1.13.0.json")
 
 # Identity and deployment.
 require(f'APP_VERSION = "{VERSION}"' in backend, "backend version marker")
@@ -72,122 +68,116 @@ require(BUILD in backend and BUILD in plugin and BUILD in render, "build fingerp
 require(SOURCE in backend and SOURCE in plugin and SOURCE in render, "source release identity parity")
 require("rootDir: backend" in render and "3.12.11" in render, "Render root and Python 3.12 runtime")
 require("healthCheckPath: /health" in render, "Render health check")
+require('VERSION="1.13.0"' in (ROOT / "scripts/build_release.sh").read_text(), "release packaging version")
 
 # Manifest and additive schema identity.
 require(manifest == plugin_manifest, "repository and plugin release manifests match")
 require(manifest["release"] == VERSION, "release manifest version")
-require(manifest["wordpress"]["database_version"] == "1.6.0", "WordPress database migration 1.6.0")
-require(manifest["schemas"]["decision_packet"] == PACKET_SCHEMA, "Decision Packet schema 1.5")
-require(manifest["schemas"]["institutional_decision_pack"] == PACK_SCHEMA, "Decision Pack schema")
-require(manifest["schemas"]["decision_pack_application"] == APPLICATION_SCHEMA, "Decision Pack application schema")
+require(manifest["wordpress"]["database_version"] == "1.7.0", "WordPress database migration 1.7.0")
+require(manifest["schemas"]["decision_packet"] == PACKET_SCHEMA, "Decision Packet schema 1.6")
+require(manifest["schemas"]["decision_publication"] == PUBLICATION_SCHEMA, "decision publication schema")
+require(manifest["schemas"]["publication_handoff"] == HANDOFF_SCHEMA, "publication handoff schema")
+require(manifest["schemas"]["publication_redaction"] == REDACTION_SCHEMA, "publication redaction schema")
 require(manifest["compatibility"]["packet_schema_breaking_changes"] is False, "additive packet compatibility")
+require(manifest["compatibility"]["v1_12_decision_packs_preserved"] is True, "v1.12 Decision Packs preserved")
 require(manifest["compatibility"]["v1_11_collaboration_preserved"] is True, "v1.11 collaboration preserved")
 require(manifest["compatibility"]["v1_10_scenario_studio_preserved"] is True, "v1.10 scenario studio preserved")
 require(manifest["compatibility"]["v1_9_governance_preserved"] is True, "v1.9 governance preserved")
 require(manifest["compatibility"]["legacy_artifact_adapters_preserved"] is True, "legacy adapters preserved")
 require(set(manifest["platform_products"]) == PRODUCTS, "six current platform products retained")
 
-# Pack contracts and catalog.
-require(pack_catalog == plugin_pack_catalog, "repository and plugin pack catalogs match")
-require(pack_contract == plugin_pack_contract, "repository and plugin pack contracts match")
-require(pack_sample == plugin_pack_sample, "repository and plugin pack sample matches")
-require(pack_catalog.get("schema") == PACK_SCHEMA, "catalog schema")
-require(pack_catalog.get("release") == VERSION, "catalog release")
-packs = pack_catalog.get("packs", [])
-require(len(packs) == 10, "ten institutional Decision Packs")
-require({item.get("id") for item in packs} == PACK_IDS, "canonical Decision Pack IDs")
-for item in packs:
-    require(item.get("schema") == PACK_SCHEMA, f"{item.get('id')} schema")
-    for key in (
-        "required_intake_fields", "criteria", "required_evidence",
-        "suggested_indicators", "workbench_models", "review_roles",
-        "risk_questions", "readiness_rules", "brief_templates", "boundaries",
-    ):
-        require(bool(item.get(key)), f"{item.get('id')} has {key}")
-    require(item.get("governance_defaults", {}).get("ai_approval_allowed") is False, f"{item.get('id')} prohibits AI approval")
+# Publication contracts and samples.
+require(contract == plugin_contract, "repository and plugin publication contracts match")
+require(sample == plugin_sample, "repository and plugin publication samples match")
+require(contract["properties"]["schema"]["const"] == PUBLICATION_SCHEMA, "publication contract schema identity")
+require(set(contract["properties"]["publication_type"]["enum"]) == PUBLICATION_IDS, "publication contract exposes twelve types")
+require(sample["schema"] == PUBLICATION_SCHEMA, "sample publication schema")
+require(sample["citation_style"] == "Harvard", "sample Harvard citation style")
+require(sample["content_hash"].startswith("sha256:") and len(sample["content_hash"]) == 71, "sample content hash format")
+require(sample["publication_handoffs"][0]["schema"] == HANDOFF_SCHEMA, "sample publication handoff schema")
 require(integrations["decision_packet_schema"] == PACKET_SCHEMA, "integration manifest packet schema")
-require(set(integrations["institutional_domain_decision_packs"]["pack_ids"]) == PACK_IDS, "integration manifest pack IDs")
-require(integrations["institutional_domain_decision_packs"]["ai_approval_allowed"] is False, "integration manifest human authority boundary")
+require(integrations["decision_publication_schema"] == PUBLICATION_SCHEMA, "integration manifest publication schema")
+require(set(integrations["decision_briefing_publication_studio"]["publication_types"]) == PUBLICATION_IDS, "integration manifest publication catalog")
+require(set(integrations["decision_briefing_publication_studio"]["targets"]) == TARGETS, "integration manifest publication targets")
 
-# Backend engine, routes, and tests.
-for marker in (
-    'DECISION_PACK_SCHEMA = "scds-institutional-decision-pack/1.0"',
-    'DECISION_PACK_APPLICATION_SCHEMA = "scds-decision-pack-application/1.0"',
-    "def institutional_decision_pack_catalog",
-    "def validate_institutional_decision_pack",
-    "def apply_institutional_decision_pack",
-    '@app.get("/decision-packs/catalog")',
-    '@app.get("/decision-packs/{pack_id}")',
-    '@app.post("/decision-packs/validate")',
-    '@app.post("/decision-packs/apply")',
-    '@app.post("/decision-packet/domain-pack")',
-    'packet["criteria_registry"]',
-    'packet["evidence_plan"]',
-    'packet["indicator_plan"]',
-    'packet["model_plan"]',
-    'packet["domain_readiness_rules"]',
-    'packet["domain_brief_templates"]',
-    '"ai_approval_allowed": False',
-    '"professional_reliance_allowed": False',
-):
-    require(marker in backend, f"backend marker: {marker[:70]}")
-for test_marker in (
-    "test_decision_pack_catalog_has_ten_institutional_domains",
-    "test_decision_pack_detail_and_alias_lookup",
-    "test_decision_pack_validation_identifies_missing_evidence_and_roles",
-    "test_complete_decision_pack_validation_is_governance_ready",
-    "test_apply_decision_pack_updates_packet_schema_and_plans",
-    "test_unknown_decision_pack_returns_404",
-    "test_decision_pack_is_saved_and_exported",
-    "test_health_and_release_publish_decision_pack_schemas",
-):
-    require(test_marker in tests, f"backend regression: {test_marker}")
+# Backend publication engine and API.
+for marker in [
+    'PUBLICATION_STUDIO_SCHEMA = "scds-decision-publication/1.0"',
+    'PUBLICATION_HANDOFF_SCHEMA = "scds-publication-handoff/1.0"',
+    'PUBLICATION_REDACTION_SCHEMA = "scds-publication-redaction/1.0"',
+    'def publication_studio_template()', 'def generate_publication(',
+    'def publication_markdown(', 'def publication_html(',
+    '@app.get("/publication-studio/template")',
+    '@app.post("/publication-studio/generate")',
+    '@app.post("/publication-studio/redact")',
+    '@app.post("/publication-studio/handoff")',
+    '@app.post("/decision-packet/publication")',
+    '"publication_studio": {}', '"publication_registry": []',
+    '"publication_handoffs": []', '"redaction_log": []',
+    '"publication_markdown"', '"publication_html"', '"bibliography_json"',
+]:
+    require(marker in backend, f"backend marker: {marker}")
+require('audience == "reviewed" and not gate.get("reviewed_export_allowed"' in backend, "reviewed publication governance gate")
+require('audience == "public" and not gate.get("public_export_allowed"' in backend, "public publication governance gate")
+require('"citation_style": "Harvard"' in backend, "Harvard citation registry")
+require('"knowledge_library"' in backend and '"channel"' in backend, "publication targets in backend")
+require('"/publication-studio/template", "/publication-studio/template"' not in backend, "no duplicate publication template route in catalog")
 
-# WordPress persistence, routes, interface, and browser fallback.
-for marker in (
-    "const DB_VERSION = '1.6.0';",
-    "decision_pack_json LONGTEXT",
-    "private function decision_pack_catalog",
-    "private function validate_decision_pack_local",
-    "private function apply_decision_pack_local",
-    "'/decision-packs/catalog'",
-    "'/decision-packs/validate'",
-    "'/decision-packs/apply'",
-    "'/decision-packet/domain-pack'",
-    "data-scds-panel=\"packs\"",
-    "data-scds-pack-preview",
-    "data-scds-pack-validate",
-    "data-scds-pack-apply",
-    "data-scds-pack-download",
-    "decision_pack_json",
-    "mode=\"packs\"",
-    "'decision_packet_schema'=>'scds-decision-packet/1.5'",
-    "'institutional_domain_decision_packs'=>true",
-    "'regulated_assurance_prohibited'=>true",
-):
-    require(marker in plugin, f"WordPress marker: {marker[:70]}")
-for marker in (
-    "function decisionPackPayload",
-    "function renderDecisionPack",
-    "function previewDecisionPack",
-    "function runDecisionPack",
-    "function downloadDecisionPack",
-    "restDecisionPacksCatalogUrl",
-    "restDecisionPackValidateUrl",
-    "restDecisionPackApplyUrl",
-    "decision_pack:decisionPack",
-    "decision_pack_json:snap.decision_pack",
-):
-    require(marker in js, f"browser fallback marker: {marker}")
-require("v1.12.0 Institutional and Domain Decision Packs" in css, "Decision Pack CSS release block")
+# Backend regression coverage.
+for phrase in [
+    "test_publication_studio_template_has_twelve_outputs",
+    "test_internal_publication_generates_harvard_citations_and_exports",
+    "test_publication_redaction_masks_public_contact_data_and_private_sections",
+    "test_publication_governance_blocks_reviewed_and_public_outputs",
+    "test_publication_packet_schema_and_registry_are_additive",
+    "test_publication_handoff_endpoint_returns_structured_targets",
+    "test_publication_is_saved_and_exported",
+    "test_publication_type_aliases_resolve",
+    "test_health_and_release_publish_publication_schemas",
+]:
+    require(phrase in tests, f"backend regression test: {phrase}")
 
-# Documentation and release files.
-require("Institutional and Domain Decision Packs" in readme and VERSION in readme, "README release identity")
-require("v1.12.0 — Institutional and Domain Decision Packs" in roadmap, "canonical roadmap current release")
-require("v1.13.0 — Decision Briefing and Publication Studio" in roadmap, "next canonical release")
-require("1.12.0 — Institutional and Domain Decision Packs" in changelog, "changelog release entry")
-require((ROOT / "docs/V1120_INSTITUTIONAL_DOMAIN_DECISION_PACKS.md").exists(), "v1.12.0 architecture documentation")
-require((ROOT / "terminal/V1120_INSTITUTIONAL_DOMAIN_DECISION_PACKS_COMMANDS.txt").exists(), "v1.12.0 terminal guide")
-require('VERSION="1.12.0"' in (ROOT / "scripts/build_release.sh").read_text(encoding="utf-8"), "release packaging version")
+# WordPress database, routes, fallback, UI, persistence, and exports.
+for marker in [
+    "const DB_VERSION = '1.7.0';",
+    "const PUBLICATION_STUDIO_SCHEMA = 'scds-decision-publication/1.0';",
+    "const PUBLICATION_HANDOFF_SCHEMA = 'scds-publication-handoff/1.0';",
+    "const PUBLICATION_REDACTION_SCHEMA = 'scds-publication-redaction/1.0';",
+    "publication_json LONGTEXT",
+    "render_panel_publication",
+    "generate_publication_local",
+    "rest_publication_template", "rest_publication_generate", "rest_publication_redact", "rest_publication_handoff",
+    "'/publication-studio/template'", "'/publication-studio/generate'", "'/publication-studio/redact'", "'/publication-studio/handoff'", "'/decision-packet/publication'",
+    "'publication_studio'=>[]", "'publication_registry'=>[]", "'publication_handoffs'=>[]", "'redaction_log'=>[]",
+    "'publication_json'", "'publication_markdown'", "'publication_html'", "'bibliography_json'", "'redaction_json'", "'publication_handoff_json'",
+    "[sc_decision_studio mode=\"publication\"",
+]:
+    require(marker in plugin or marker in plugin_readme, f"WordPress marker: {marker}")
+require("array_is_list" not in plugin, "PHP 7.4-compatible publication array handling")
+require(plugin.count("'publication_studio_schema'=>self::PUBLICATION_STUDIO_SCHEMA") >= 2, "WordPress publication schema exposed")
 
-print("Decision Studio v1.12.0 release integrity checks passed.")
+# Browser workspace.
+for marker in [
+    "function publicationPayload(root)", "function publicationOutputHtml(data)",
+    "function runPublication(root,mode)", "function downloadPublication(root,kind)",
+    "data-scds-publication-generate", "data-scds-publication-redact", "data-scds-publication-handoff",
+    "decision-studio-publication-v1.13.0.json", "decision-studio-publication-v1.13.0.md", "decision-studio-publication-v1.13.0.html",
+    "publication_studio:publicationStudio", "scds_saved_decision_packets_v1_13_0",
+]:
+    require(marker in js, f"browser marker: {marker}")
+require("v1.12.0" not in js, "no stale v1.12 browser release filenames")
+for marker in ["v1.13.0 Decision Briefing and Publication Studio", ".scds-publication-section", ".scds-publication-bibliography"]:
+    require(marker in css, f"publication CSS marker: {marker}")
+
+# Documentation and roadmap.
+for text, label in [
+    (readme, "repository README"), (plugin_readme, "plugin readme"),
+    (roadmap, "roadmap"), (changelog, "changelog"), (doc, "publication documentation"),
+    (terminal, "terminal commands"),
+]:
+    require(VERSION in text, f"{label} version")
+require("v1.14.0 — Outcomes, Monitoring, and Reassessment" in roadmap, "next roadmap release")
+require("Harvard" in doc and "redaction" in doc.lower() and "governance" in doc.lower(), "publication documentation coverage")
+require("[sc_decision_studio mode=\"publication\"" in plugin_readme and "[sc_decision_studio mode=\"publication\"" in doc, "publication shortcode documentation")
+
+print("Decision Studio v1.13.0 release-integrity checks passed.")

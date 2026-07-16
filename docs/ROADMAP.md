@@ -2,19 +2,18 @@
 
 ## Current release
 
-### v1.12.0 — Institutional and Domain Decision Packs
+### v1.13.0 — Decision Briefing and Publication Studio
 
-- Provide ten reusable institutional methodologies across climate, infrastructure, urban resilience, procurement, responsible AI, research, environmental, humanitarian, policy, and advisory decisions.
-- Define required intake, criteria, evidence, indicators, Workbench models, review roles, risk questions, readiness rules, and briefing templates.
-- Validate missing evidence, incomplete intake, and missing human review assignments before governance review.
-- Apply a selected methodology additively to Decision Packet `scds-decision-packet/1.5`.
-- Preserve Decision Rooms, governance, scenario analysis, typed evidence handoffs, saved packets, and export bundles.
-- Prohibit AI or template-based approval, assurance, certification, or professional sign-off.
+- Produce twelve citation-native decision publication types.
+- Build Harvard-style bibliographies and evidence anchors from the Decision Packet source registry.
+- Control private, institutional, and public section visibility.
+- Record deterministic redaction events and block non-public sections from public output.
+- Enforce human-governance gates for reviewed and public publications.
+- Export JSON, Markdown, print-ready HTML, bibliography, redaction, and publication handoff records.
+- Create draft handoffs to Knowledge Library, Research, Publications, and Channel.
+- Apply publication records additively to Decision Packet `scds-decision-packet/1.6`.
 
 ## Planned releases
-
-### v1.13.0 — Decision Briefing and Publication Studio
-Produce citation-native executive memos, technical reports, board briefs, alternatives analyses, public dossiers, evidence appendices, methodology statements, implementation plans, dissenting views, and monitoring plans with public/private controls and publication handoffs.
 
 ### v1.14.0 — Outcomes, Monitoring, and Reassessment
 Track commitments, owners, baselines, targets, actual-versus-expected results, implementation milestones, assumption invalidation, reassessment triggers, amendments, lessons learned, and retirement.
@@ -30,11 +29,11 @@ Complete the lifecycle: Frame → Research → Gather evidence → Model → Com
 
 ## Architectural boundaries
 
-- Knowledge Library supplies durable sources and citations.
+- Knowledge Library supplies durable sources and citations and receives reviewed publication handoffs.
 - Research Librarian routes research and evidence gaps.
 - Site Intelligence supplies live and comparative evidence.
 - Workbench performs calculations, simulations, optimization, and technical analysis.
 - Research Lab supplies experimental and scientific artifacts.
 - Platform Core supplies shared identity, provenance, and evidence contracts.
 - Decision Studio organizes alternatives, methodologies, governance, approval, accountability, publication, and reassessment.
-- Decision Packs never replace qualified external review where law, safety, fiduciary duty, clinical practice, engineering standards, or public authority require it.
+- Publications never replace qualified external review where law, safety, fiduciary duty, clinical practice, engineering standards, or public authority require it.

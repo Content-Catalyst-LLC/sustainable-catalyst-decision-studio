@@ -1,53 +1,41 @@
-# Sustainable Catalyst Decision Studio v1.12.0
+# Sustainable Catalyst Decision Studio v1.13.0
 
-**Institutional and Domain Decision Packs**
+## Decision Briefing and Publication Studio
 
-Decision Studio is the Sustainable Catalyst platform's governed decision-orchestration layer. v1.12.0 adds reusable institutional methodologies that configure the Decision Packet without replacing evidence, scenario analysis, collaboration, governance, or qualified human review.
+Decision Studio is the governance, synthesis, and publication layer of the Sustainable Catalyst platform. v1.13.0 turns a governed Decision Packet into citation-native executive memos, technical reports, leadership briefs, alternatives analyses, public dossiers, evidence and audit appendices, implementation plans, dissenting views, and monitoring plans.
 
-## v1.12.0 highlights
+The release preserves Decision Packs, private Decision Rooms, advanced scenarios, human governance, typed platform evidence, saved packets, and audit/provenance records. Reviewed and public outputs remain blocked until the governance gate permits release.
 
-- Ten institutional and domain Decision Packs
-- Required intake and transparent decision criteria
-- Required evidence and readiness diagnostics
-- Suggested Site Intelligence indicators
-- Structured Workbench model routing
-- Required human review roles and risk questions
-- Domain readiness rules and briefing templates
-- Browser, WordPress, and FastAPI contract parity
-- Decision Packet `scds-decision-packet/1.5`
-- Pack contracts `scds-institutional-decision-pack/1.0` and `scds-decision-pack-application/1.0`
+## Publication capabilities
 
-## Included Decision Packs
-
-1. Climate and Energy Strategy
-2. Infrastructure and Capital Investment
-3. Urban Resilience
-4. Sustainable Procurement
-5. Responsible AI and Technology Governance
-6. Research Program Approval
-7. Environmental Intervention
-8. Humanitarian and Development Programming
-9. Organizational Policy
-10. Advisory Diagnostic and Recommendation
+- Twelve governed publication types
+- Harvard bibliography and stable evidence anchors
+- Private, institutional, and public section visibility
+- Deterministic redaction records
+- Markdown, print-ready HTML, JSON, bibliography, and publication manifests
+- Draft handoffs to Knowledge Library, Research, Publications, and Channel
+- Additive Decision Packet `scds-decision-packet/1.6`
+- No AI approval, assurance, certification, or professional sign-off
 
 ## Primary endpoints
 
-- `GET /decision-packs/catalog`
-- `GET /decision-packs/{pack_id}`
-- `POST /decision-packs/validate`
-- `POST /decision-packs/apply`
-- `POST /decision-packet/domain-pack`
+- `GET /publication-studio/template`
+- `POST /publication-studio/generate`
+- `POST /publication-studio/redact`
+- `POST /publication-studio/handoff`
+- `POST /decision-packet/publication`
 
 WordPress exposes matching routes under `/wp-json/scds/v1` and a dedicated shortcode mode:
 
 ```text
-[sc_decision_studio mode="packs" title="Institutional Decision Packs"]
+[sc_decision_studio mode="publication" title="Decision Briefing and Publication Studio"]
 ```
 
 ## Preserved platform layers
 
-v1.12.0 is additive and preserves:
+v1.13.0 is additive and preserves:
 
+- v1.12.0 Institutional and Domain Decision Packs
 - v1.11.0 Collaborative Decision Rooms
 - v1.10.0 Advanced Scenario and Sensitivity Studio
 - v1.9.0 Decision Governance and Review Center
@@ -57,6 +45,6 @@ v1.12.0 is additive and preserves:
 
 ## Boundary
 
-Decision Packs are decision-support methodologies. They are not legal, engineering, financial, medical, tax, compliance, fiduciary, ESG/SDG assurance, or other professional certification. AI may organize evidence and draft questions but cannot approve, certify, assure, or sign off a decision.
+Generated publications are governed decision-support artifacts. They are not legal, engineering, financial, medical, tax, compliance, fiduciary, ESG/SDG assurance, or other professional certification. Human review remains authoritative.
 
-See `docs/V1120_INSTITUTIONAL_DOMAIN_DECISION_PACKS.md` and `docs/ROADMAP.md`.
+See `docs/V1130_DECISION_BRIEFING_PUBLICATION_STUDIO.md` and `docs/ROADMAP.md`.

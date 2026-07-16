@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.13.0 — Decision Briefing and Publication Studio
+
+- Added twelve governed publication types.
+- Added Harvard citation registry and stable evidence anchors.
+- Added section-level visibility and deterministic redaction reports.
+- Added governance-gated internal, reviewed, and public publication audiences.
+- Added print-ready Markdown and HTML plus structured JSON exports.
+- Added publication handoffs to Knowledge Library, Research, Publications, and Channel.
+- Added Decision Packet schema 1.6 and WordPress database version 1.7.0.
+- Preserved Decision Packs, collaboration, scenario analysis, governance, typed platform handoffs, and legacy adapters.
+
 ## 1.12.0 — Institutional and Domain Decision Packs
 
 - Added ten reusable institutional and domain decision methodologies.

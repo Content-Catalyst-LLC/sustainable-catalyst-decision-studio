@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional
 import json
+import re
 import hashlib
 import math
 import os
@@ -15,11 +16,11 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
-APP_VERSION = "1.12.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.12.0-institutional-domain-decision-packs")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.12.0")
+APP_VERSION = "1.13.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.13.0-decision-briefing-publication-studio")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.13.0")
 RELEASE_DATE = "2026-07-16"
-DECISION_PACKET_SCHEMA = "scds-decision-packet/1.5"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/1.6"
 PLATFORM_ARTIFACT_SCHEMA = "scds-platform-artifact/1.0"
 EVIDENCE_RECORD_SCHEMA = "scds-evidence-record/1.0"
 GOVERNANCE_SCHEMA = "scds-decision-governance/1.0"
@@ -29,6 +30,9 @@ COLLABORATION_ROOM_SCHEMA = "scds-collaborative-decision-room/1.0"
 COLLABORATION_EVENT_SCHEMA = "scds-collaboration-event/1.0"
 DECISION_PACK_SCHEMA = "scds-institutional-decision-pack/1.0"
 DECISION_PACK_APPLICATION_SCHEMA = "scds-decision-pack-application/1.0"
+PUBLICATION_STUDIO_SCHEMA = "scds-decision-publication/1.0"
+PUBLICATION_HANDOFF_SCHEMA = "scds-publication-handoff/1.0"
+PUBLICATION_REDACTION_SCHEMA = "scds-publication-redaction/1.0"
 MAX_REQUEST_BYTES = max(65536, int(os.getenv("SCDS_MAX_REQUEST_BYTES", "1048576")))
 PUBLIC_RATE_LIMIT = max(10, int(os.getenv("SCDS_PUBLIC_RATE_LIMIT", "60")))
 RATE_WINDOW_SECONDS = max(10, int(os.getenv("SCDS_RATE_WINDOW_SECONDS", "60")))
@@ -50,6 +54,7 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share",
     "/collaboration/contact-handoff", "/decision-packet/collaboration",
     "/decision-packs/apply", "/decision-packs/validate", "/decision-packet/domain-pack",
+    "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -58,7 +63,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Institutional and Domain Decision Packs",
+        "release_name": "Decision Briefing and Publication Studio",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -72,6 +77,9 @@ def release_manifest() -> Dict[str, Any]:
         "collaboration_event_schema": COLLABORATION_EVENT_SCHEMA,
         "decision_pack_schema": DECISION_PACK_SCHEMA,
         "decision_pack_application_schema": DECISION_PACK_APPLICATION_SCHEMA,
+        "publication_studio_schema": PUBLICATION_STUDIO_SCHEMA,
+        "publication_handoff_schema": PUBLICATION_HANDOFF_SCHEMA,
+        "publication_redaction_schema": PUBLICATION_REDACTION_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -93,6 +101,11 @@ def release_manifest() -> Dict[str, Any]:
             "institutional_domain_decision_packs": True,
             "domain_pack_validation": True,
             "regulated_assurance_prohibited": True,
+            "decision_briefing_publication_studio": True,
+            "harvard_citation_registry": True,
+            "section_visibility_and_redaction": True,
+            "publication_handoffs": True,
+            "governed_publication_exports": True,
         },
     }
 
@@ -298,6 +311,7 @@ class SavedDecisionPacketRequest(BaseModel):
     integratedBrief: Optional[Dict[str, Any]] = None
     collaboration: Optional[Dict[str, Any]] = None
     decisionPack: Optional[Dict[str, Any]] = None
+    publicationStudio: Optional[Dict[str, Any]] = None
     title: str = ""
     status: str = "draft"
     notes: str = ""
@@ -316,6 +330,7 @@ class ExportBundleRequest(BaseModel):
     governance: Optional[Dict[str, Any]] = None
     collaboration: Optional[Dict[str, Any]] = None
     decisionPack: Optional[Dict[str, Any]] = None
+    publicationStudio: Optional[Dict[str, Any]] = None
     exportAudience: str = "internal"
     includeRawArtifacts: bool = True
     exportLabel: str = "Decision Studio Export Bundle"
@@ -365,6 +380,26 @@ class DecisionPackRequest(BaseModel):
     actor: str = ""
     notes: str = ""
     strict: bool = False
+
+
+class PublicationStudioRequest(BaseModel):
+    inputs: DecisionInputs = Field(default_factory=DecisionInputs)
+    results: Optional[Dict[str, Any]] = None
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    integratedBrief: Optional[Dict[str, Any]] = None
+    governance: Optional[Dict[str, Any]] = None
+    publicationType: str = "executive_decision_memo"
+    audience: str = "internal"
+    title: str = ""
+    subtitle: str = ""
+    preparedBy: str = ""
+    sectionVisibility: Dict[str, str] = Field(default_factory=dict)
+    redactionRules: List[Dict[str, Any]] = Field(default_factory=list, max_length=100)
+    publicationTargets: List[str] = Field(default_factory=list, max_length=10)
+    citationStyle: str = "Harvard"
+    includeDissentingView: bool = True
+    includeMonitoringPlan: bool = True
+    notes: str = ""
 
 
 def clamp(value: float, low: float = 0, high: float = 100) -> float:
@@ -837,7 +872,7 @@ def apply_institutional_decision_pack(req: DecisionPackRequest) -> Dict[str, Any
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.12.0",
+        "packet_version": "1.13.0",
         "workflow": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
@@ -848,6 +883,9 @@ def decision_packet_template() -> Dict[str, Any]:
         "collaboration_event_schema": COLLABORATION_EVENT_SCHEMA,
         "decision_pack_schema": DECISION_PACK_SCHEMA,
         "decision_pack_application_schema": DECISION_PACK_APPLICATION_SCHEMA,
+        "publication_studio_schema": PUBLICATION_STUDIO_SCHEMA,
+        "publication_handoff_schema": PUBLICATION_HANDOFF_SCHEMA,
+        "publication_redaction_schema": PUBLICATION_REDACTION_SCHEMA,
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -895,6 +933,10 @@ def decision_packet_template() -> Dict[str, Any]:
         "model_plan": [],
         "domain_readiness_rules": [],
         "domain_brief_templates": [],
+        "publication_studio": {},
+        "publication_registry": [],
+        "publication_handoffs": [],
+        "redaction_log": [],
         "integrated_decision_brief": {},
         "scenario_comparison": {},
         "scenario_studio": {},
@@ -903,7 +945,7 @@ def decision_packet_template() -> Dict[str, Any]:
         "uncertainty_analysis": {},
         "workbench_handoffs": [],
         "saved_packet": {"saved_at": "", "saved_by": "", "status": "draft", "storage": "browser_or_wordpress"},
-        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json"]},
+        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json", "publication_json", "publication_markdown", "publication_html", "bibliography_json", "redaction_json", "publication_handoff_json"]},
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -921,7 +963,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.12.0",
+        "audit_version": "1.13.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -3530,7 +3572,7 @@ def export_center_template() -> Dict[str, Any]:
         "saved_packet_fields": [
             "decision_packet_id", "project_name", "decision_question", "status", "updated_at",
             "inputs", "results", "decision_packet", "audit", "readiness", "scenario_comparison", "scenario_studio",
-            "workbench_handoff", "integrated_brief", "governance", "collaboration"
+            "workbench_handoff", "integrated_brief", "governance", "collaboration", "decision_pack", "publication_studio"
         ],
         "exports": [
             {"id": "packet_json", "label": "Decision Packet JSON", "description": "Complete normalized packet with module sections and raw artifact snapshots where included."},
@@ -3544,6 +3586,12 @@ def export_center_template() -> Dict[str, Any]:
             {"id": "governance_json", "label": "Decision Governance JSON", "description": "Decision state, owner, reviewers, conditions, exceptions, conflicts, sign-offs, export gates, and immutable review history."},
             {"id": "collaboration_json", "label": "Collaborative Decision Room JSON", "description": "Private room members, comments, change requests, snapshots, comparisons, notifications, share grants, locks, and activity history."},
             {"id": "decision_pack_json", "label": "Institutional Decision Pack JSON", "description": "Applied domain methodology, required evidence, criteria, indicators, Workbench models, governance roles, readiness rules, and briefing templates."},
+            {"id": "publication_json", "label": "Decision Publication JSON", "description": "Structured governed publication, section visibility, citations, redaction, and handoff manifest."},
+            {"id": "publication_markdown", "label": "Decision Publication Markdown", "description": "Editable publication with evidence anchors and Harvard bibliography."},
+            {"id": "publication_html", "label": "Print-ready Publication HTML", "description": "Browser-printable publication suitable for controlled PDF save workflow."},
+            {"id": "bibliography_json", "label": "Bibliography JSON", "description": "Citation registry and evidence-anchor metadata."},
+            {"id": "redaction_json", "label": "Redaction Report JSON", "description": "Visibility decisions and deterministic redaction events."},
+            {"id": "publication_handoff_json", "label": "Publication Handoffs JSON", "description": "Draft handoffs to Knowledge Library, Research, Publications, and Channel."},
         ],
         "warnings": [
             "Saved Decision Packets are working records, not approvals or professional signoff.",
@@ -3579,6 +3627,8 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
     packet["collaboration_room"] = collaboration
     decision_pack = req.decisionPack or packet.get("institutional_decision_pack") or {}
     packet["institutional_decision_pack"] = decision_pack
+    publication_studio = req.publicationStudio or packet.get("publication_studio") or {}
+    packet["publication_studio"] = publication_studio
     packet["saved_packet"] = {"status": saved_status, "storage": "wordpress_canonical_or_client_fallback", "notes": req.notes}
     saved = {
         "packet_version": APP_VERSION,
@@ -3599,6 +3649,7 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
         "governance": packet.get("governance_center", governance_template()),
         "collaboration": collaboration,
         "decision_pack": decision_pack,
+        "publication_studio": publication_studio,
         "notes": req.notes,
         "warnings": ["Saved packet is a review artifact; it is not approval, certification, assurance, or professional advice."],
     }
@@ -3622,6 +3673,8 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
     packet["collaboration_room"] = collaboration
     decision_pack = req.decisionPack or packet.get("institutional_decision_pack") or {}
     packet["institutional_decision_pack"] = decision_pack
+    publication_studio = req.publicationStudio or packet.get("publication_studio") or {}
+    packet["publication_studio"] = publication_studio
     audience = str(req.exportAudience or "internal").strip().lower()
     gate = governance.get("export_gate", {}) if isinstance(governance, dict) else {}
     if audience == "reviewed" and not gate.get("reviewed_export_allowed", False):
@@ -3657,6 +3710,12 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
             "room_activity_json": collaboration.get("activity_timeline", []) if isinstance(collaboration, dict) else [],
             "snapshot_comparison_json": collaboration.get("snapshot_comparisons", []) if isinstance(collaboration, dict) else [],
             "decision_pack_json": decision_pack,
+            "publication_studio_json": publication_studio,
+            "publication_markdown": publication_studio.get("markdown", "") if isinstance(publication_studio, dict) else "",
+            "publication_html": publication_studio.get("html", "") if isinstance(publication_studio, dict) else "",
+            "bibliography_json": publication_studio.get("bibliography", []) if isinstance(publication_studio, dict) else [],
+            "redaction_json": publication_studio.get("redaction", {}) if isinstance(publication_studio, dict) else {},
+            "publication_handoff_json": publication_studio.get("publication_handoffs", []) if isinstance(publication_studio, dict) else [],
         },
         "export_manifest": export_center_template()["exports"],
         "warnings": export_center_template()["warnings"],
@@ -3668,7 +3727,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.12.0."""
+    """Professional public-facing product-page structure for Decision Studio v1.13.0."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
@@ -3694,6 +3753,7 @@ def public_landing_template() -> Dict[str, Any]:
             "Brief readiness and review status",
             "Institutional and domain decision packs",
             "Advanced scenario, sensitivity, threshold, and Workbench handoff",
+            "Decision briefing and publication studio",
             "Saved packets and export center",
         ],
         "schemas": {
@@ -3729,10 +3789,311 @@ def public_demo_template() -> Dict[str, Any]:
             {"title": "Unified Platform Handoffs", "description": "Show how six current Sustainable Catalyst products feed a typed Decision Packet.", "shortcode": "[sc_decision_studio mode=\"workflow\"]"},
             {"title": "Readiness Review", "description": "Check whether the packet is complete enough for a draft brief or export.", "shortcode": "[sc_decision_studio mode=\"readiness\"]"},
             {"title": "Advanced Scenario Studio", "description": "Compare any number of alternatives, vary assumptions, find thresholds, and inspect stakeholder and time-horizon tradeoffs.", "shortcode": "[sc_decision_studio mode=\"scenario\"]"},
-            {"title": "Export Center", "description": "Generate JSON, Markdown, HTML, audit, readiness, advanced scenario, governance, and handoff exports.", "shortcode": "[sc_decision_studio mode=\"export\"]"},
+            {"title": "Publication Studio", "description": "Generate citation-native governed decision publications with visibility, redaction, and handoff controls.", "shortcode": "[sc_decision_studio mode=\"publication\"]"},
+            {"title": "Export Center", "description": "Generate JSON, Markdown, HTML, audit, readiness, advanced scenario, governance, publication, and handoff exports.", "shortcode": "[sc_decision_studio mode=\"export\"]"},
         ],
         "public_copy": "Use Knowledge Library to source. Research Librarian to route. Site Intelligence to observe. Workbench to calculate. Research Lab to test. Platform Core to connect. Decision Studio to decide.",
     }
+
+
+def publication_studio_template() -> Dict[str, Any]:
+    publication_types = [
+        {"id": "executive_decision_memo", "label": "Executive Decision Memo", "audiences": ["internal", "reviewed"], "sections": ["executive_summary", "decision_question", "recommendation", "key_evidence", "tradeoffs", "governance", "next_actions"]},
+        {"id": "technical_decision_report", "label": "Technical Decision Report", "audiences": ["internal", "reviewed"], "sections": ["executive_summary", "decision_question", "methodology", "evidence", "scenario_analysis", "technical_analysis", "assumptions", "risks", "governance", "implementation", "monitoring", "bibliography"]},
+        {"id": "board_leadership_brief", "label": "Board or Leadership Brief", "audiences": ["reviewed"], "sections": ["executive_summary", "recommendation", "alternatives", "material_risks", "financial_tradeoffs", "governance", "decision_required"]},
+        {"id": "alternatives_analysis", "label": "Alternatives Analysis", "audiences": ["internal", "reviewed", "public"], "sections": ["decision_question", "alternatives", "scenario_analysis", "tradeoffs", "sensitivity", "recommendation", "bibliography"]},
+        {"id": "public_decision_dossier", "label": "Public Decision Dossier", "audiences": ["public"], "sections": ["executive_summary", "decision_question", "public_interest", "alternatives", "evidence", "methodology", "risks", "governance", "implementation", "monitoring", "bibliography"]},
+        {"id": "evidence_appendix", "label": "Evidence Appendix", "audiences": ["internal", "reviewed", "public"], "sections": ["evidence", "quotations", "site_intelligence", "workbench_outputs", "research_lab_outputs", "bibliography"]},
+        {"id": "assumptions_register", "label": "Assumptions Register", "audiences": ["internal", "reviewed"], "sections": ["assumptions", "uncertainties", "sensitivity", "review_actions"]},
+        {"id": "methodology_statement", "label": "Methodology Statement", "audiences": ["reviewed", "public"], "sections": ["scope", "methodology", "decision_pack", "calculation_methods", "limitations", "governance", "bibliography"]},
+        {"id": "audit_provenance_appendix", "label": "Audit and Provenance Appendix", "audiences": ["internal", "reviewed"], "sections": ["source_ledger", "calculation_trace", "review_history", "collaboration_history", "integrity_checks", "transformation_history"]},
+        {"id": "implementation_plan", "label": "Implementation Plan", "audiences": ["internal", "reviewed"], "sections": ["recommendation", "implementation", "owners", "milestones", "risks", "monitoring", "reassessment"]},
+        {"id": "dissenting_view", "label": "Minority or Dissenting View", "audiences": ["internal", "reviewed"], "sections": ["decision_question", "majority_position", "dissenting_position", "contested_evidence", "unresolved_assumptions", "review_actions"]},
+        {"id": "monitoring_plan", "label": "Post-Decision Monitoring Plan", "audiences": ["internal", "reviewed", "public"], "sections": ["decision_commitments", "indicators", "baselines", "targets", "owners", "monitoring", "reassessment", "public_reporting"]},
+    ]
+    return {
+        "schema": PUBLICATION_STUDIO_SCHEMA,
+        "version": APP_VERSION,
+        "publication_types": publication_types,
+        "citation_styles": ["Harvard"],
+        "audiences": {
+            "internal": {"governance_gate": "none", "default_visibility": "private"},
+            "reviewed": {"governance_gate": "reviewed_export_allowed", "default_visibility": "institutional"},
+            "public": {"governance_gate": "public_export_allowed", "default_visibility": "public", "redaction_required": True},
+        },
+        "publication_targets": [
+            {"id": "knowledge_library", "label": "Knowledge Library"},
+            {"id": "research", "label": "Research"},
+            {"id": "publications", "label": "Publications"},
+            {"id": "channel", "label": "Channel"},
+        ],
+        "boundaries": [
+            "Publication templates do not approve, certify, assure, or professionally sign off a decision.",
+            "Reviewed and public publication remains controlled by the Decision Governance and Review Center.",
+            "Print-ready HTML can be saved as PDF through the browser; generated content must be reviewed before release.",
+        ],
+    }
+
+
+def _publication_type(type_id: str) -> Dict[str, Any]:
+    normalized = str(type_id or "executive_decision_memo").strip().lower().replace("-", "_")
+    aliases = {"executive_memo": "executive_decision_memo", "technical_report": "technical_decision_report", "public_dossier": "public_decision_dossier", "board_brief": "board_leadership_brief"}
+    normalized = aliases.get(normalized, normalized)
+    for item in publication_studio_template()["publication_types"]:
+        if item["id"] == normalized:
+            return item
+    return publication_studio_template()["publication_types"][0]
+
+
+def _publication_citations(packet: Dict[str, Any]) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+    candidates.extend([x for x in _list(packet.get("citations")) if isinstance(x, dict)])
+    candidates.extend([x for x in _list(packet.get("evidence_registry")) if isinstance(x, dict)])
+    candidates.extend([x for x in _list(packet.get("sources")) if isinstance(x, dict)])
+    seen: set[str] = set()
+    records: List[Dict[str, Any]] = []
+    for item in candidates:
+        title = str(item.get("title") or item.get("source_title") or item.get("name") or "Untitled source").strip()
+        citation = str(item.get("citation") or "").strip()
+        authors = item.get("authors") if isinstance(item.get("authors"), list) else []
+        year = str(item.get("published_at") or item.get("year") or item.get("date") or "n.d.")[:4]
+        author_text = ", ".join(str(a) for a in authors if a) or str(item.get("author") or item.get("organization") or item.get("source_product") or "Sustainable Catalyst")
+        url = str(item.get("source_url") or item.get("url") or "")
+        if not citation:
+            citation = f"{author_text} ({year}) {title}." + (f" Available at: {url}." if url else "")
+        key = (citation or title).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        idx = len(records) + 1
+        records.append({
+            "citation_id": f"S{idx}", "anchor": f"[S{idx}]", "title": title,
+            "authors": authors or [author_text], "year": year, "citation": citation,
+            "in_text": f"({author_text.split(',')[0]}, {year})", "url": url,
+            "source_type": item.get("source_type", item.get("artifact_type", "source")),
+            "confidence": item.get("confidence", "not specified"),
+            "artifact_id": item.get("artifact_id", ""),
+        })
+    return records
+
+
+def _publication_content(packet: Dict[str, Any], brief: Dict[str, Any], inputs: DecisionInputs, results: Dict[str, Any]) -> Dict[str, Any]:
+    governance = packet.get("governance_center", {}) if isinstance(packet.get("governance_center"), dict) else {}
+    collaboration = packet.get("collaboration_room", {}) if isinstance(packet.get("collaboration_room"), dict) else {}
+    scenario = packet.get("scenario_studio", {}) if isinstance(packet.get("scenario_studio"), dict) else {}
+    decision_pack = packet.get("institutional_decision_pack", {}) if isinstance(packet.get("institutional_decision_pack"), dict) else {}
+    audit = packet.get("audit_and_provenance", {}) if isinstance(packet.get("audit_and_provenance"), dict) else {}
+    return {
+        "executive_summary": brief.get("executive_summary") or f"Decision review for {inputs.projectName}.",
+        "decision_question": packet.get("project", {}).get("decision_question") or inputs.decisionQuestion,
+        "recommendation": brief.get("recommendation_posture") or results.get("status") or "Human review required.",
+        "key_evidence": brief.get("evidence_and_source_ledger", {}).get("findings", []),
+        "tradeoffs": brief.get("four_pillar_analysis", {}).get("findings", []),
+        "governance": {"state": governance.get("current_state", "draft"), "owner": governance.get("decision_owner", {}), "conditions": governance.get("approval_conditions", []), "exceptions": governance.get("exceptions", [])},
+        "next_actions": brief.get("next_review_actions", []),
+        "methodology": packet.get("methodologies", []) or decision_pack.get("methodology", decision_pack.get("summary", "Decision Studio deterministic synthesis and human review.")),
+        "evidence": packet.get("evidence_registry", []) or packet.get("sources", []),
+        "scenario_analysis": scenario or packet.get("scenario_comparison", {}),
+        "technical_analysis": packet.get("technical_artifacts", []) or packet.get("calculation_trace", []),
+        "assumptions": packet.get("assumptions", []),
+        "risks": packet.get("risks", []) or brief.get("claim_and_narrative_risk", {}).get("findings", []),
+        "implementation": packet.get("execution_and_recovery", {}) or {"status": "Not yet specified"},
+        "monitoring": packet.get("monitoring_plan", {}) or {"status": "Monitoring plan requires assignment."},
+        "alternatives": scenario.get("alternatives", []) or packet.get("scenarios", {}).get("records", []),
+        "material_risks": packet.get("risks", []),
+        "financial_tradeoffs": packet.get("financial_tradeoffs", {}) or results.get("finance", {}),
+        "decision_required": inputs.decisionQuestion,
+        "public_interest": packet.get("public_interest_statement", "Public-interest implications should be reviewed and stated explicitly."),
+        "quotations": packet.get("quotations", []),
+        "site_intelligence": packet.get("live_evidence", []),
+        "workbench_outputs": packet.get("workbench_calculations", []) or packet.get("technical_artifacts", []),
+        "research_lab_outputs": packet.get("experimental_evidence", []),
+        "uncertainties": packet.get("uncertainty_analysis", {}) or brief.get("assumptions_and_uncertainties", {}).get("findings", []),
+        "sensitivity": packet.get("sensitivity_analysis", {}),
+        "review_actions": brief.get("next_review_actions", []),
+        "scope": packet.get("decision_framing", {}) or packet.get("project", {}),
+        "decision_pack": decision_pack,
+        "calculation_methods": packet.get("calculation_trace", []),
+        "limitations": brief.get("boundaries", []) or ["Decision support only; qualified human review remains required."],
+        "source_ledger": audit.get("source_ledger", packet.get("sources", [])),
+        "calculation_trace": audit.get("calculation_trace", packet.get("calculation_trace", [])),
+        "review_history": governance.get("review_history", []),
+        "collaboration_history": collaboration.get("activity_timeline", []),
+        "integrity_checks": packet.get("integrity_checks", []),
+        "transformation_history": [x.get("provenance", {}).get("transformation_history", []) for x in packet.get("platform_handoffs", []) if isinstance(x, dict)],
+        "owners": [governance.get("decision_owner", {})] + [x for x in governance.get("reviewers", []) if isinstance(x, dict)],
+        "milestones": packet.get("implementation_milestones", []),
+        "reassessment": {"due_at": governance.get("reassessment_due_at", ""), "approval_expires_at": governance.get("approval_expires_at", "")},
+        "majority_position": brief.get("recommendation_posture", "Not recorded"),
+        "dissenting_position": packet.get("dissenting_view", "No dissenting view recorded."),
+        "contested_evidence": packet.get("contested_evidence", []),
+        "unresolved_assumptions": [x for x in packet.get("assumptions", []) if isinstance(x, dict) and str(x.get("review_status", "")).lower() not in {"reviewed", "accepted", "closed"}],
+        "decision_commitments": packet.get("decision_commitments", []),
+        "indicators": packet.get("indicator_plan", []) or packet.get("live_evidence", []),
+        "baselines": packet.get("baselines", []),
+        "targets": packet.get("targets", []),
+        "public_reporting": packet.get("public_reporting_plan", "Publication cadence not yet specified."),
+    }
+
+
+def _publication_text(value: Any) -> str:
+    if value in (None, "", [], {}):
+        return "Not specified."
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        return "\n".join(f"- {_compact_text(item)}" for item in value) or "Not specified."
+    if isinstance(value, dict):
+        return json.dumps(value, ensure_ascii=False, indent=2)
+    return str(value)
+
+
+def _apply_publication_redaction(sections: List[Dict[str, Any]], audience: str, rules: List[Dict[str, Any]]) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    output = json.loads(json.dumps(sections, ensure_ascii=False))
+    log: List[Dict[str, Any]] = []
+    remove_ids = {str(r.get("section_id", "")) for r in rules if str(r.get("type", "")).lower() == "remove_section"}
+    filtered: List[Dict[str, Any]] = []
+    for section in output:
+        if section.get("id") in remove_ids or (audience == "public" and section.get("visibility") in {"private", "institutional"}):
+            log.append({"action": "section_removed", "section_id": section.get("id"), "reason": "rule" if section.get("id") in remove_ids else "public_visibility_gate"})
+            continue
+        text = str(section.get("content", ""))
+        for rule in rules:
+            if str(rule.get("type", "")).lower() == "replace_text" and rule.get("term"):
+                replacement = str(rule.get("replacement") or "[REDACTED]")
+                updated, count = re.subn(re.escape(str(rule["term"])), replacement, text, flags=re.IGNORECASE)
+                if count:
+                    log.append({"action": "text_replaced", "section_id": section.get("id"), "term": str(rule["term"]), "count": count})
+                    text = updated
+        if audience == "public":
+            text, emails = re.subn(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", "[REDACTED EMAIL]", text, flags=re.IGNORECASE)
+            text, phones = re.subn(r"(?<!\d)(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}(?!\d)", "[REDACTED PHONE]", text)
+            if emails: log.append({"action": "email_redacted", "section_id": section.get("id"), "count": emails})
+            if phones: log.append({"action": "phone_redacted", "section_id": section.get("id"), "count": phones})
+        section["content"] = text
+        filtered.append(section)
+    return filtered, log
+
+
+def publication_markdown(publication: Dict[str, Any]) -> str:
+    lines = [f"# {publication.get('title', 'Decision Publication')}"]
+    if publication.get("subtitle"):
+        lines += ["", publication["subtitle"]]
+    lines += ["", f"**Publication type:** {publication.get('publication_type_label')}", f"**Audience:** {publication.get('audience')}", f"**Decision Packet:** {publication.get('decision_packet_id')}", ""]
+    for section in publication.get("sections", []):
+        lines += [f"## {section.get('title')}", str(section.get("content") or "Not specified."), ""]
+    bibliography = publication.get("bibliography", [])
+    if bibliography:
+        lines += ["## Bibliography"] + [f"{c.get('anchor')} {c.get('citation')}" for c in bibliography] + [""]
+    lines += ["## Publication Boundary", "This publication is a governed decision-support artifact. It is not professional approval, certification, assurance, or regulated advice.", ""]
+    return "\n".join(lines)
+
+
+def publication_html(publication: Dict[str, Any]) -> str:
+    def esc(value: Any) -> str:
+        return str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+    body = f"<article class=\"scds-publication\"><header><h1>{esc(publication.get('title', 'Decision Publication'))}</h1>"
+    if publication.get("subtitle"):
+        body += f"<p>{esc(publication['subtitle'])}</p>"
+    body += f"<p><strong>Type:</strong> {esc(publication.get('publication_type_label'))} · <strong>Audience:</strong> {esc(publication.get('audience'))}</p></header>"
+    for section in publication.get("sections", []):
+        content = esc(section.get("content", "")).replace("\n", "<br>")
+        body += f"<section data-section=\"{esc(section.get('id'))}\"><h2>{esc(section.get('title'))}</h2><p>{content}</p></section>"
+    if publication.get("bibliography"):
+        body += "<section><h2>Bibliography</h2><ol>" + "".join(f"<li id=\"{esc(c.get('citation_id'))}\">{esc(c.get('citation'))}</li>" for c in publication["bibliography"]) + "</ol></section>"
+    body += "<footer><p>This publication is a governed decision-support artifact. It is not professional approval, certification, assurance, or regulated advice.</p></footer></article>"
+    return body
+
+
+def _publication_handoffs(publication: Dict[str, Any], targets: List[str]) -> List[Dict[str, Any]]:
+    allowed = {x["id"] for x in publication_studio_template()["publication_targets"]}
+    selected = [str(x).strip().lower().replace("-", "_") for x in targets] or ["knowledge_library", "publications"]
+    return [{
+        "schema": PUBLICATION_HANDOFF_SCHEMA,
+        "handoff_id": f"pub-{publication.get('publication_id')}-{target}",
+        "target": target,
+        "status": "draft",
+        "publication_id": publication.get("publication_id"),
+        "decision_packet_id": publication.get("decision_packet_id"),
+        "title": publication.get("title"),
+        "publication_type": publication.get("publication_type"),
+        "audience": publication.get("audience"),
+        "content_hash": publication.get("content_hash"),
+        "governance_state": publication.get("governance_state"),
+        "review_required": True,
+    } for target in selected if target in allowed]
+
+
+def generate_publication(req: PublicationStudioRequest) -> Dict[str, Any]:
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    results = req.results or analyze(req.inputs)
+    governance = req.governance or packet.get("governance_center") or governance_template()
+    audience = str(req.audience or "internal").strip().lower()
+    if audience == "institutional": audience = "reviewed"
+    gate = governance.get("export_gate", {}) if isinstance(governance, dict) else {}
+    if audience == "reviewed" and not gate.get("reviewed_export_allowed", False):
+        return {"ok": False, "version": APP_VERSION, "error": "governance_publication_blocked", "audience": audience, "governance_export_gate": gate, "message": "Reviewed publication is blocked by the current decision-governance state."}
+    if audience == "public" and not gate.get("public_export_allowed", False):
+        return {"ok": False, "version": APP_VERSION, "error": "governance_publication_blocked", "audience": audience, "governance_export_gate": gate, "message": "Public publication is blocked by the current decision-governance state."}
+    brief_payload = req.integratedBrief or generate_integrated_brief(IntegratedBriefRequest(inputs=req.inputs, results=results, packet=packet))
+    brief = brief_payload.get("brief", brief_payload) if isinstance(brief_payload, dict) else {}
+    type_record = _publication_type(req.publicationType)
+    content = _publication_content(packet, brief, req.inputs, results)
+    citations = _publication_citations(packet)
+    anchors = " ".join(c["anchor"] for c in citations[:3])
+    sections: List[Dict[str, Any]] = []
+    visibility_map = {str(k): str(v).lower() for k, v in (req.sectionVisibility or {}).items()}
+    for section_id in type_record["sections"]:
+        if section_id == "dissenting_position" and not req.includeDissentingView:
+            continue
+        if section_id == "monitoring" and not req.includeMonitoringPlan:
+            continue
+        visibility = visibility_map.get(section_id, "public" if audience == "public" else ("institutional" if audience == "reviewed" else "private"))
+        section_content = _publication_text(content.get(section_id))
+        if citations and section_id in {"executive_summary", "key_evidence", "evidence", "methodology", "scenario_analysis", "technical_analysis", "site_intelligence", "workbench_outputs", "research_lab_outputs", "contested_evidence"}:
+            section_content = f"{section_content}\n\nEvidence anchors: {anchors}"
+        sections.append({"id": section_id, "title": section_id.replace("_", " ").title(), "visibility": visibility, "content": section_content})
+    sections, redaction_log = _apply_publication_redaction(sections, audience, req.redactionRules)
+    packet_id = packet.get("decision_packet_id") or _safe_packet_id(req.inputs.projectName)
+    pub_id = "PUB-" + hashlib.sha256(f"{packet_id}|{type_record['id']}|{req.title}|{len(sections)}".encode()).hexdigest()[:12].upper()
+    publication = {
+        "schema": PUBLICATION_STUDIO_SCHEMA,
+        "publication_id": pub_id,
+        "publication_version": APP_VERSION,
+        "publication_type": type_record["id"],
+        "publication_type_label": type_record["label"],
+        "title": req.title or f"{req.inputs.projectName}: {type_record['label']}",
+        "subtitle": req.subtitle,
+        "audience": audience,
+        "prepared_by": req.preparedBy,
+        "decision_packet_id": packet_id,
+        "governance_state": governance.get("current_state", "draft") if isinstance(governance, dict) else "draft",
+        "governance_export_gate": gate,
+        "sections": sections,
+        "bibliography": citations,
+        "citation_style": "Harvard",
+        "redaction": {"schema": PUBLICATION_REDACTION_SCHEMA, "required": audience == "public", "rules_applied": len(req.redactionRules), "events": redaction_log, "complete": True},
+        "notes": req.notes,
+        "warnings": publication_studio_template()["boundaries"],
+    }
+    publication["content_hash"] = "sha256:" + _canonical_hash({"sections": sections, "bibliography": citations, "audience": audience, "type": type_record["id"]})
+    publication["markdown"] = publication_markdown(publication)
+    publication["html"] = publication_html(publication)
+    publication["publication_handoffs"] = _publication_handoffs(publication, req.publicationTargets)
+    packet["decision_packet_schema"] = DECISION_PACKET_SCHEMA
+    packet["publication_studio_schema"] = PUBLICATION_STUDIO_SCHEMA
+    packet["publication_handoff_schema"] = PUBLICATION_HANDOFF_SCHEMA
+    packet["publication_redaction_schema"] = PUBLICATION_REDACTION_SCHEMA
+    packet["publication_studio"] = publication
+    packet.setdefault("publication_registry", []).append({k: publication[k] for k in ("publication_id", "publication_type", "title", "audience", "content_hash", "governance_state")})
+    packet["publication_handoffs"] = publication["publication_handoffs"]
+    packet["redaction_log"] = redaction_log
+    formats = packet.setdefault("export_center", {}).setdefault("available_formats", [])
+    for fmt in ("publication_json", "publication_markdown", "publication_html", "bibliography_json", "redaction_json", "publication_handoff_json"):
+        if fmt not in formats: formats.append(fmt)
+    return {"ok": True, "version": APP_VERSION, "schema": PUBLICATION_STUDIO_SCHEMA, "publication": publication, "decision_packet": packet, "publication_studio": publication_studio_template()}
+
 
 def _env_first(*names: str) -> str:
     """Return the first non-empty environment variable from a list of accepted names."""
@@ -3930,6 +4291,9 @@ def health():
         "collaboration_event_schema": COLLABORATION_EVENT_SCHEMA,
         "decision_pack_schema": DECISION_PACK_SCHEMA,
         "decision_pack_application_schema": DECISION_PACK_APPLICATION_SCHEMA,
+        "publication_studio_schema": PUBLICATION_STUDIO_SCHEMA,
+        "publication_handoff_schema": PUBLICATION_HANDOFF_SCHEMA,
+        "publication_redaction_schema": PUBLICATION_REDACTION_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -4158,6 +4522,39 @@ def decision_packet_collaboration_endpoint(req: CollaborativeRoomRequest):
     if not result.get("ok", False): return JSONResponse(status_code=403 if result.get("error") == "collaboration_permission_denied" else 409, content=result)
     return result
 
+@app.get("/publication-studio/template")
+def publication_studio_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "publication_studio": publication_studio_template()}
+
+@app.post("/publication-studio/generate")
+def publication_studio_generate_endpoint(req: PublicationStudioRequest):
+    result = generate_publication(req)
+    if not result.get("ok", False):
+        return JSONResponse(status_code=409, content=result)
+    return result
+
+@app.post("/publication-studio/redact")
+def publication_studio_redact_endpoint(req: PublicationStudioRequest):
+    result = generate_publication(req)
+    if not result.get("ok", False):
+        return JSONResponse(status_code=409, content=result)
+    return result
+
+@app.post("/publication-studio/handoff")
+def publication_studio_handoff_endpoint(req: PublicationStudioRequest):
+    result = generate_publication(req)
+    if not result.get("ok", False):
+        return JSONResponse(status_code=409, content=result)
+    return {"ok": True, "version": APP_VERSION, "schema": PUBLICATION_HANDOFF_SCHEMA, "publication": result["publication"], "publication_handoffs": result["publication"].get("publication_handoffs", []), "decision_packet": result["decision_packet"]}
+
+@app.post("/decision-packet/publication")
+def decision_packet_publication_endpoint(req: PublicationStudioRequest):
+    result = generate_publication(req)
+    if not result.get("ok", False):
+        return JSONResponse(status_code=409, content=result)
+    return result
+
+
 @app.get("/audit/template")
 def audit_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "audit": audit_provenance_template()}
@@ -4250,4 +4647,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication"]}

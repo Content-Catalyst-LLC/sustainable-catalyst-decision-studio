@@ -1,0 +1,24 @@
+Sustainable Catalyst Decision Studio v1.13.0
+Decision Briefing and Publication Studio
+
+BACKEND VALIDATION
+cd backend
+python -m pytest
+python -m uvicorn app.main:app --reload
+
+PUBLICATION ROUTES
+curl http://127.0.0.1:8000/publication-studio/template
+curl http://127.0.0.1:8000/release
+
+WORDPRESS SHORTCODE
+[sc_decision_studio mode="publication" title="Decision Briefing and Publication Studio"]
+
+RELEASE BUILD
+./scripts/build_release.sh
+
+RENDER
+Root Directory: backend
+Build Command: pip install -r requirements.txt
+Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Health Check: /health
+Python: 3.12.11

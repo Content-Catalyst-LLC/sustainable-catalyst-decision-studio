@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.12.0'
+    assert r.json()['version'] == '1.13.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '1.12.0'
+    assert data['decision_packet']['packet_version'] == '1.13.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -87,7 +87,7 @@ def test_audit_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.12.0'
+    assert data['audit']['audit_version'] == '1.13.0'
     assert 'module_artifact_ledger' in data['audit']
 
 
@@ -96,7 +96,7 @@ def test_audit_generate_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.12.0'
+    assert data['audit']['audit_version'] == '1.13.0'
     assert data['audit_summary']['assumptions_count'] >= 5
     assert data['audit_summary']['calculation_trace_count'] >= 4
 
@@ -161,7 +161,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.12.0'
+    assert data['version'] == '1.13.0'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -189,7 +189,7 @@ def test_review_status_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.12.0'
+    assert data['version'] == '1.13.0'
     assert len(data['sections']) >= 8
     assert any(s['id'] == 'finance' for s in data['sections'])
 
@@ -200,7 +200,7 @@ def test_brief_readiness_default():
     data = r.json()
     assert data['ok'] is True
     readiness = data['readiness']
-    assert readiness['readiness_version'] == '1.12.0'
+    assert readiness['readiness_version'] == '1.13.0'
     assert 0 <= readiness['readiness_percent'] <= 100
     assert 'sections' in readiness
     assert 'export_gate' in readiness
@@ -232,7 +232,7 @@ def test_scenario_comparison_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.12.0'
+    assert data['version'] == '1.13.0'
     comparison = data['scenario_comparison']
     assert comparison['scenario_count'] >= 4
     assert 'matrix' in comparison
@@ -263,7 +263,7 @@ def test_workbench_handoff_default():
     data = r.json()
     assert data['ok'] is True
     handoff = data['workbench_handoff']
-    assert handoff['handoff_version'] == '1.12.0'
+    assert handoff['handoff_version'] == '1.13.0'
     ids = [h['tool_id'] for h in handoff['recommended_handoffs']]
     assert 'economics-forecasting-and-scenario-tool' in ids
     assert any('sc_workbench' in h['shortcode'] for h in handoff['recommended_handoffs'])
@@ -273,7 +273,7 @@ def test_integrated_brief_includes_scenario_and_handoff():
     r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
     assert r.status_code == 200
     data = r.json()
-    assert data['version'] == '1.12.0'
+    assert data['version'] == '1.13.0'
     assert 'scenario_comparison' in data
     assert 'workbench_handoff' in data
     assert 'scenario_comparison_matrix' in data['brief']
@@ -286,7 +286,7 @@ def test_export_center_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['export_center']['export_center_version'] == '1.12.0'
+    assert data['export_center']['export_center_version'] == '1.13.0'
     assert any(e['id'] == 'packet_json' for e in data['export_center']['exports'])
 
 
@@ -296,7 +296,7 @@ def test_decision_packet_save_template():
     data = r.json()
     assert data['ok'] is True
     saved = data['saved_packet']
-    assert saved['packet_version'] == '1.12.0'
+    assert saved['packet_version'] == '1.13.0'
     assert saved['project_name'] == 'Saved packet test'
     assert 'readiness' in saved
     assert 'integrated_brief' in saved
@@ -308,7 +308,7 @@ def test_export_center_bundle_default():
     data = r.json()
     assert data['ok'] is True
     bundle = data['export_bundle']
-    assert bundle['bundle_version'] == '1.12.0'
+    assert bundle['bundle_version'] == '1.13.0'
     assert 'decision_packet_json' in bundle['exports']
     assert 'integrated_brief_markdown' in bundle['exports']
     assert 'audit_json' in bundle['exports']
@@ -321,8 +321,8 @@ def test_public_landing_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.12.0'
-    assert data['landing']['page_version'] == '1.12.0'
+    assert data['version'] == '1.13.0'
+    assert data['landing']['page_version'] == '1.13.0'
     assert 'Decision Studio' in data['landing']['headline']
     assert len(data['landing']['workflow']) == 7
     assert data['landing']['workflow'][0]['module'] == 'Knowledge Library'
@@ -334,7 +334,7 @@ def test_public_demo_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['demo']['demo_version'] == '1.12.0'
+    assert data['demo']['demo_version'] == '1.13.0'
     assert len(data['demo']['demo_cards']) >= 4
     assert 'Knowledge Library to source' in data['demo']['public_copy']
     assert 'Decision Studio to decide' in data['demo']['public_copy']
@@ -344,9 +344,9 @@ def test_release_manifest_identity():
     response = client.get('/release')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '1.12.0'
-    assert data['release']['build_fingerprint'] == 'scds-v1.12.0-institutional-domain-decision-packs'
-    assert data['release']['decision_packet_schema'] == 'scds-decision-packet/1.5'
+    assert data['version'] == '1.13.0'
+    assert data['release']['build_fingerprint'] == 'scds-v1.13.0-decision-briefing-publication-studio'
+    assert data['release']['decision_packet_schema'] == 'scds-decision-packet/1.6'
     assert data['release']['compatibility']['packet_schema_breaking_changes'] is False
 
 
@@ -358,7 +358,7 @@ def test_health_reports_cold_start_and_limits():
     assert data['cold_start_ready'] is True
     assert data['uptime_seconds'] >= 0
     assert data['limits']['max_request_bytes'] == 1048576
-    assert response.headers['x-scds-version'] == '1.12.0'
+    assert response.headers['x-scds-version'] == '1.13.0'
 
 
 def test_oversized_public_request_is_rejected():
@@ -558,7 +558,7 @@ def test_platform_handoff_template_has_new_packet_sections():
     r = client.get('/decision-packet/platform-handoffs')
     assert r.status_code == 200
     packet = r.json()['decision_packet']
-    assert packet['packet_version'] == '1.12.0'
+    assert packet['packet_version'] == '1.13.0'
     assert packet['artifact_schema'] == 'scds-platform-artifact/1.0'
     for key in ['evidence_registry', 'research_routes', 'live_evidence', 'experimental_evidence', 'platform_registry', 'integrity_checks']:
         assert key in packet
@@ -663,7 +663,7 @@ def test_review_history_detects_tampering():
 
 def test_governance_is_in_decision_packet_and_export_bundle():
     packet = client.get('/decision-packet/template').json()['decision_packet']
-    assert packet['packet_version'] == '1.12.0'
+    assert packet['packet_version'] == '1.13.0'
     assert packet['governance_schema'] == 'scds-decision-governance/1.0'
     assert packet['governance_center']['current_state'] == 'draft'
     governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
@@ -735,7 +735,7 @@ def test_scenario_studio_default_analysis():
     assert response.status_code == 200
     data = response.json()
     studio = data['scenario_studio']
-    assert data['version'] == '1.12.0'
+    assert data['version'] == '1.13.0'
     assert studio['schema'] == 'scds-scenario-studio/1.0'
     assert studio['alternative_count'] == 5
     assert len(studio['weighted_ranking']) == 5
@@ -807,7 +807,7 @@ def test_scenario_studio_time_horizon_comparison():
 def test_scenario_studio_updates_decision_packet():
     response = client.post('/decision-packet/scenario-studio', json=advanced_scenario_payload())
     packet = response.json()['decision_packet']
-    assert packet['packet_version'] == '1.12.0'
+    assert packet['packet_version'] == '1.13.0'
     assert packet['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
     assert packet['scenario_studio']['alternative_count'] == 3
     assert packet['sensitivity_analysis']['parameters']
@@ -932,14 +932,14 @@ def test_collaboration_contact_and_engagement_handoff():
     handoff = response.json()['contact_engagement_handoff']
     assert handoff['schema'] == 'sc-contact-engagement-handoff/1.0'
     assert handoff['private_workspace_required'] is True
-    assert handoff['source_version'] == '1.12.0'
+    assert handoff['source_version'] == '1.13.0'
 
 
 def test_collaboration_is_saved_and_exported_with_packet_schema_1_5():
     created = client.post('/collaboration/room', json=room_payload()).json()
     room = created['room']
     saved = client.post('/decision-packet/save-template', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['saved_packet']
-    assert saved['decision_packet']['packet_version'] == '1.12.0'
+    assert saved['decision_packet']['packet_version'] == '1.13.0'
     assert saved['decision_packet']['collaboration_room_schema'] == 'scds-collaborative-decision-room/1.0'
     assert saved['collaboration']['room_id'] == room['room_id']
     bundle = client.post('/export-center/bundle', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['export_bundle']
@@ -1017,7 +1017,7 @@ def test_apply_decision_pack_updates_packet_schema_and_plans():
     data = response.json()
     packet = data['decision_packet']
     assert data['schema'] == 'scds-decision-pack-application/1.0'
-    assert packet['packet_version'] == '1.12.0'
+    assert packet['packet_version'] == '1.13.0'
     assert packet['decision_pack_schema'] == 'scds-institutional-decision-pack/1.0'
     assert packet['institutional_decision_pack']['pack_id'] == 'responsible-ai-governance'
     assert len(packet['criteria_registry']) == 6
@@ -1058,3 +1058,145 @@ def test_health_and_release_publish_decision_pack_schemas():
     assert release['decision_pack_schema'] == 'scds-institutional-decision-pack/1.0'
     assert release['compatibility']['institutional_domain_decision_packs'] is True
     assert release['compatibility']['regulated_assurance_prohibited'] is True
+
+
+
+def publication_packet_with_evidence():
+    return {
+        'decision_packet_id': 'SCDS-PUBLICATION-TEST',
+        'project': {'project_name': 'Publication test', 'decision_question': 'Should the tested option proceed?'},
+        'evidence_registry': [{
+            'artifact_id': 'source-1', 'title': 'Climate transition evidence',
+            'authors': ['Ahmed, T.'], 'published_at': '2026',
+            'citation': 'Ahmed, T. (2026) Climate transition evidence. Sustainable Catalyst.',
+            'source_url': 'https://example.test/source', 'confidence': 'high'
+        }],
+        'citations': [{'artifact_id': 'source-1', 'title': 'Climate transition evidence', 'citation': 'Ahmed, T. (2026) Climate transition evidence. Sustainable Catalyst.', 'style': 'Harvard'}],
+        'quotations': [{'artifact_id': 'source-1', 'source_title': 'Climate transition evidence', 'quote': 'Evidence supports a phased transition.', 'locator': 'p. 4'}],
+        'technical_artifacts': [{'title': 'Workbench NPV model', 'results': {'npv': 125000}}],
+        'live_evidence': [{'indicator': 'Renewable share', 'value': 31.2, 'unit': '%'}],
+        'experimental_evidence': [{'title': 'Pilot validation', 'validation': {'status': 'passed'}}],
+        'assumptions': [{'assumption': 'Savings remain stable', 'review_status': 'needs review'}],
+        'risks': [{'risk': 'Implementation delay', 'severity': 'medium'}],
+    }
+
+
+def test_publication_studio_template_has_twelve_outputs():
+    response = client.get('/publication-studio/template')
+    assert response.status_code == 200
+    studio = response.json()['publication_studio']
+    assert studio['schema'] == 'scds-decision-publication/1.0'
+    assert len(studio['publication_types']) == 12
+    ids = {item['id'] for item in studio['publication_types']}
+    assert {'executive_decision_memo', 'technical_decision_report', 'public_decision_dossier', 'monitoring_plan'} <= ids
+    assert {item['id'] for item in studio['publication_targets']} == {'knowledge_library', 'research', 'publications', 'channel'}
+
+
+def test_internal_publication_generates_harvard_citations_and_exports():
+    response = client.post('/publication-studio/generate', json={
+        'inputs': {'projectName': 'Publication test'},
+        'packet': publication_packet_with_evidence(),
+        'publicationType': 'technical_decision_report',
+        'audience': 'internal',
+        'title': 'Technical Decision Report',
+        'publicationTargets': ['knowledge_library', 'publications'],
+    })
+    assert response.status_code == 200
+    data = response.json()
+    publication = data['publication']
+    assert publication['schema'] == 'scds-decision-publication/1.0'
+    assert publication['citation_style'] == 'Harvard'
+    assert publication['bibliography'][0]['anchor'] == '[S1]'
+    assert '[S1]' in publication['markdown']
+    assert '<article class="scds-publication">' in publication['html']
+    assert publication['content_hash'].startswith('sha256:')
+    assert {item['target'] for item in publication['publication_handoffs']} == {'knowledge_library', 'publications'}
+
+
+def test_publication_redaction_masks_public_contact_data_and_private_sections():
+    governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
+    packet = publication_packet_with_evidence()
+    packet['governance_center'] = governance
+    response = client.post('/publication-studio/redact', json={
+        'inputs': {'projectName': 'Public dossier'},
+        'packet': packet,
+        'governance': governance,
+        'publicationType': 'public_decision_dossier',
+        'audience': 'public',
+        'sectionVisibility': {'governance': 'private'},
+        'redactionRules': [{'type': 'replace_text', 'term': 'Publication test', 'replacement': '[PROJECT]'}],
+        'notes': 'Contact editor@example.com or 312-555-0199 before release.'
+    })
+    assert response.status_code == 200
+    publication = response.json()['publication']
+    assert all(section['id'] != 'governance' for section in publication['sections'])
+    assert publication['redaction']['complete'] is True
+    assert any(event['action'] == 'section_removed' for event in publication['redaction']['events'])
+
+
+def test_publication_governance_blocks_reviewed_and_public_outputs():
+    reviewed = client.post('/publication-studio/generate', json={'inputs': {}, 'packet': {}, 'audience': 'reviewed'})
+    assert reviewed.status_code == 409
+    assert reviewed.json()['error'] == 'governance_publication_blocked'
+    public = client.post('/decision-packet/publication', json={'inputs': {}, 'packet': {}, 'audience': 'public', 'publicationType': 'public_decision_dossier'})
+    assert public.status_code == 409
+    assert public.json()['audience'] == 'public'
+
+
+def test_approved_governance_allows_public_dossier():
+    governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
+    packet = publication_packet_with_evidence()
+    packet['governance_center'] = governance
+    response = client.post('/decision-packet/publication', json={'inputs': {}, 'packet': packet, 'governance': governance, 'audience': 'public', 'publicationType': 'public_decision_dossier'})
+    assert response.status_code == 200
+    publication = response.json()['publication']
+    assert publication['audience'] == 'public'
+    assert publication['governance_state'] == 'approved'
+
+
+def test_publication_packet_schema_and_registry_are_additive():
+    response = client.post('/publication-studio/generate', json={'inputs': {}, 'packet': publication_packet_with_evidence(), 'audience': 'internal'})
+    packet = response.json()['decision_packet']
+    assert packet['decision_packet_schema'] == 'scds-decision-packet/1.6'
+    assert packet['publication_studio_schema'] == 'scds-decision-publication/1.0'
+    assert packet['publication_registry'][0]['publication_id'].startswith('PUB-')
+    assert 'publication_json' in packet['export_center']['available_formats']
+
+
+def test_publication_handoff_endpoint_returns_structured_targets():
+    response = client.post('/publication-studio/handoff', json={'inputs': {}, 'packet': publication_packet_with_evidence(), 'publicationTargets': ['research', 'channel']})
+    assert response.status_code == 200
+    data = response.json()
+    assert data['schema'] == 'scds-publication-handoff/1.0'
+    assert {item['target'] for item in data['publication_handoffs']} == {'research', 'channel'}
+    assert all(item['review_required'] is True for item in data['publication_handoffs'])
+
+
+def test_publication_is_saved_and_exported():
+    generated = client.post('/publication-studio/generate', json={'inputs': {}, 'packet': publication_packet_with_evidence()}).json()
+    publication = generated['publication']
+    packet = generated['decision_packet']
+    saved = client.post('/decision-packet/save-template', json={'inputs': {}, 'packet': packet, 'publicationStudio': publication}).json()['saved_packet']
+    assert saved['publication_studio']['publication_id'] == publication['publication_id']
+    bundle = client.post('/export-center/bundle', json={'inputs': {}, 'packet': packet, 'publicationStudio': publication}).json()['export_bundle']
+    assert bundle['exports']['publication_studio_json']['publication_id'] == publication['publication_id']
+    assert bundle['exports']['publication_markdown'].startswith('# ')
+    assert bundle['exports']['bibliography_json'][0]['citation_id'] == 'S1'
+    assert any(item['id'] == 'publication_json' for item in bundle['export_manifest'])
+
+
+def test_publication_type_aliases_resolve():
+    response = client.post('/publication-studio/generate', json={'inputs': {}, 'packet': {}, 'publicationType': 'board-brief', 'audience': 'internal'})
+    assert response.status_code == 200
+    assert response.json()['publication']['publication_type'] == 'board_leadership_brief'
+
+
+def test_health_and_release_publish_publication_schemas():
+    health = client.get('/health').json()
+    release = client.get('/release').json()['release']
+    assert health['publication_studio_schema'] == 'scds-decision-publication/1.0'
+    assert health['publication_handoff_schema'] == 'scds-publication-handoff/1.0'
+    assert health['publication_redaction_schema'] == 'scds-publication-redaction/1.0'
+    assert release['publication_studio_schema'] == 'scds-decision-publication/1.0'
+    assert release['compatibility']['decision_briefing_publication_studio'] is True
+    assert release['compatibility']['governed_publication_exports'] is True

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="1.12.0"
+VERSION="1.13.0"
 OUT="${1:-$ROOT/dist}"
 PLUGIN_DIR="$ROOT/wordpress-plugin/sustainable-catalyst-decision-studio"
 mkdir -p "$OUT"
