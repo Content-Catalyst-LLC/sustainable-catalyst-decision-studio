@@ -1,6 +1,21 @@
-# Sustainable Catalyst Decision Studio v1.7.1
+# Sustainable Catalyst Decision Studio v1.8.0
 
 Sustainable Catalyst Decision Studio is an applied sustainability decision-support layer for Content Catalyst LLC / Sustainable Catalyst. It upgrades the earlier Sustainable Catalyst 1.0 prototype into a modular WordPress + FastAPI-ready platform for project intake, four-pillar scoring, scenarios, risk, reports, validation, exports, Workbench integration, and backend-routed AI decision briefing.
+
+## v1.8.0 — Unified Evidence and Platform Handoffs
+
+Decision Studio is now the governance and synthesis layer for the current Sustainable Catalyst platform. It accepts provenance-preserving typed artifacts from Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core through `scds-platform-artifact/1.0`, merges them into `scds-decision-packet/1.1`, verifies canonical payload hashes, and retains the earlier Catalyst adapters as a compatibility layer.
+
+Key additions:
+
+- Six current product contracts and auto-detection rules
+- Unified evidence, citation, research-route, live-indicator, calculation, experiment, entity, and provenance sections
+- Individual validation/import plus batch import for up to 100 artifacts
+- Integrity hashes and transformation history
+- WordPress local fallback parity when the FastAPI backend is unavailable
+- New platform, contract, validation, batch, and handoff-template endpoints
+
+See `docs/V180_UNIFIED_EVIDENCE_PLATFORM_HANDOFFS.md` and `docs/ROADMAP.md`.
 
 ## v1.7.1 — Production Reliability and Roadmap Repair
 
@@ -80,12 +95,12 @@ POST /report
 
 ## v1.1.0 Integrated Platform Workflow
 
-Decision Studio now includes an Integrated Workflow tab and Decision Packet structure connecting Catalyst Canvas, Catalyst Data, Catalyst Analytics R, Global Impact Catalyst, Narrative Risk, Catalyst Finance, Catalyst Grit, and Decision Studio.
+Decision Studio includes a typed platform workflow connecting Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, Platform Core, and Decision Studio. Earlier Catalyst modules remain supported through legacy adapters.
 
 
 ## v1.2.0 Module Artifact Adapters
 
-Decision Studio can now normalize JSON exports from Catalyst Canvas, Catalyst Data, Catalyst Analytics R, Global Impact Catalyst, Narrative Risk, Catalyst Finance, Catalyst Grit, and Workbench into a shared Decision Packet. The import layer preserves raw artifacts, maps data into packet sections, adds provenance entries, and supports readiness analysis before brief generation.
+Decision Studio normalizes typed artifacts from current Sustainable Catalyst products into a shared Decision Packet. The import layer preserves raw artifacts, validates contracts, verifies integrity metadata, maps product outputs into packet sections, and supports readiness analysis before brief generation. Legacy JSON exports remain compatible.
 
 Key endpoints:
 

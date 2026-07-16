@@ -1,0 +1,11 @@
+# Decision Studio v1.8.0 validation commands
+cd sustainable-catalyst-decision-studio/backend
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m pytest
+cd ..
+python scripts/test_release.py
+php -l wordpress-plugin/sustainable-catalyst-decision-studio/sustainable-catalyst-decision-studio.php
+node --check wordpress-plugin/sustainable-catalyst-decision-studio/assets/js/scds-decision-studio.js
+bash scripts/build_release.sh

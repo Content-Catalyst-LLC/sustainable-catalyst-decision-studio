@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="1.7.1"
+VERSION="1.8.0"
 OUT="${1:-$ROOT/dist}"
 PLUGIN_DIR="$ROOT/wordpress-plugin/sustainable-catalyst-decision-studio"
 mkdir -p "$OUT"
@@ -13,6 +13,7 @@ rm -f "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" "$OUT/s
 )
 python "$ROOT/scripts/test_release.py"
 php -l "$PLUGIN_DIR/sustainable-catalyst-decision-studio.php"
+if command -v node >/dev/null 2>&1; then node --check "$PLUGIN_DIR/assets/js/scds-decision-studio.js"; fi
 (
   cd "$ROOT/wordpress-plugin"
   zip -qr "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" sustainable-catalyst-decision-studio -x '*/__pycache__/*' '*.pyc'

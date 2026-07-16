@@ -1,3 +1,14 @@
+## v1.8.0 — Unified Evidence and Platform Handoffs
+
+- Added typed handoff contracts for Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core.
+- Added `scds-platform-artifact/1.0`, `scds-evidence-record/1.0`, and additive `scds-decision-packet/1.1` schemas.
+- Added source-product auto-detection, artifact validation, canonical SHA-256 payload verification, transformation history, and batch import for up to 100 artifacts.
+- Added Decision Packet sections for evidence records, citations, quotations, research routes, evidence gaps, live observations, methodologies, technical artifacts, experiments, datasets, entities, Evidence Ledger records, and provenance links.
+- Added backend and WordPress routes for platform discovery, contract discovery, validation, batch import, and platform handoff templates.
+- Added WordPress browser fallback parity and a Knowledge Library sample artifact.
+- Preserved all existing shortcodes, REST routes, and legacy Catalyst artifact adapters.
+- Expanded the regression suite to 46 backend tests.
+
 ## v1.7.1 — Production Reliability and Roadmap Repair
 
 - Corrected Render root directory, startup command, health check, and pinned runtime settings.

@@ -2,21 +2,16 @@
 
 ## Current release
 
-### v1.7.1 — Production Reliability and Roadmap Repair
+### v1.8.0 — Unified Evidence and Platform Handoffs
 
-- Repair Render deployment root and startup configuration.
-- Add release manifests, build fingerprints, and source commit identity.
-- Add WordPress/backend version-parity diagnostics.
-- Add automatic database migration checks on plugin upgrades.
-- Add request-size controls and public endpoint rate limiting.
-- Normalize Python package/test execution from the backend root.
-- Verify cold-start health and deterministic AI fallback behavior.
-- Correct stale release labels while preserving all public shortcodes and Decision Packet schema fields.
+- Connect Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core through typed artifacts.
+- Add `scds-platform-artifact/1.0`, `scds-evidence-record/1.0`, and additive Decision Packet schema `scds-decision-packet/1.1`.
+- Preserve source product, version, URL, methodology, freshness, confidence, integrity hashes, and transformation history.
+- Map citations, quotations, research routes, evidence gaps, indicators, calculations, experiments, datasets, entities, Evidence Ledger records, and provenance links into the Decision Packet.
+- Add contract discovery, validation, batch import, and platform handoff template endpoints.
+- Preserve v1.0–v1.7 module artifact adapters as a compatibility layer.
 
 ## Planned releases
-
-### v1.8.0 — Unified Evidence and Platform Handoffs
-Connect Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core through typed, provenance-preserving artifacts.
 
 ### v1.9.0 — Decision Governance and Review Center
 Add decision states, reviewer assignments, approval conditions, exceptions, conflicts, sign-off records, and immutable review history.

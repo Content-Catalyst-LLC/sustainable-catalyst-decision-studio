@@ -1,0 +1,234 @@
+[
+  {
+    "artifact_schema": "scds-platform-artifact/1.0",
+    "artifact_id": "sample-knowledge-library-001",
+    "artifact_type": "source_record",
+    "source": {
+      "product": "knowledge-library",
+      "product_version": "sample",
+      "artifact_url": "https://sustainablecatalyst.com/",
+      "created_at": "2026-07-16T12:00:00Z"
+    },
+    "provenance": {
+      "methodology": "v1.8.0 release validation fixture",
+      "freshness": "current",
+      "confidence": "high",
+      "integrity_hash": "sha256:d2a3481291e238adb3c91a8b5f8684dc40017bd4cdcb94b33dcfc5f9de68a9e1",
+      "transformation_history": []
+    },
+    "payload": {
+      "title": "Planetary Boundaries: Evidence Record",
+      "source_type": "scholarly source",
+      "citation": "Sample Author (2026) Planetary Boundaries: Evidence Record.",
+      "citation_style": "Harvard",
+      "authors": [
+        "Sample Author"
+      ],
+      "published_at": "2026",
+      "evidence_notes": "Demonstrates citation-native evidence import.",
+      "quotes": [
+        {
+          "text": "Sample quotation for validation.",
+          "locator": "p. 1"
+        }
+      ]
+    }
+  },
+  {
+    "artifact_schema": "scds-platform-artifact/1.0",
+    "artifact_id": "sample-research-librarian-002",
+    "artifact_type": "research_route",
+    "source": {
+      "product": "research-librarian",
+      "product_version": "sample",
+      "artifact_url": "https://sustainablecatalyst.com/",
+      "created_at": "2026-07-16T12:00:00Z"
+    },
+    "provenance": {
+      "methodology": "v1.8.0 release validation fixture",
+      "freshness": "current",
+      "confidence": "high",
+      "integrity_hash": "sha256:9ab2f18afb1a29c2c7dae5fbd7a557d719d9d4c3beb732ebb17bfe7bd04035df",
+      "transformation_history": []
+    },
+    "payload": {
+      "query": "What evidence should inform a planetary-boundaries decision?",
+      "route": [
+        "Knowledge Library",
+        "Site Intelligence",
+        "Workbench"
+      ],
+      "recommended_sources": [
+        "Planetary Boundaries: Evidence Record"
+      ],
+      "evidence_gaps": [
+        "Current regional threshold evidence"
+      ],
+      "follow_up_questions": [
+        "Which geography and time horizon apply?"
+      ],
+      "related_titles": [
+        "Earth-system risk methods"
+      ]
+    }
+  },
+  {
+    "artifact_schema": "scds-platform-artifact/1.0",
+    "artifact_id": "sample-site-intelligence-003",
+    "artifact_type": "indicator_record",
+    "source": {
+      "product": "site-intelligence",
+      "product_version": "sample",
+      "artifact_url": "https://sustainablecatalyst.com/",
+      "created_at": "2026-07-16T12:00:00Z"
+    },
+    "provenance": {
+      "methodology": "v1.8.0 release validation fixture",
+      "freshness": "current",
+      "confidence": "high",
+      "integrity_hash": "sha256:31773b0dd94599a6315aef8913f615894677147ffa87589a4973369083511dfc",
+      "transformation_history": []
+    },
+    "payload": {
+      "indicator": "Freshwater change pressure",
+      "geography": "Global",
+      "period": "2026",
+      "value": 64.2,
+      "unit": "index",
+      "source": {
+        "name": "Sample public indicator registry",
+        "type": "public data source"
+      },
+      "methodology": "Normalized demonstration indicator",
+      "freshness": "current",
+      "confidence": "medium"
+    }
+  },
+  {
+    "artifact_schema": "scds-platform-artifact/1.0",
+    "artifact_id": "sample-workbench-004",
+    "artifact_type": "calculation",
+    "source": {
+      "product": "workbench",
+      "product_version": "sample",
+      "artifact_url": "https://sustainablecatalyst.com/",
+      "created_at": "2026-07-16T12:00:00Z"
+    },
+    "provenance": {
+      "methodology": "v1.8.0 release validation fixture",
+      "freshness": "current",
+      "confidence": "high",
+      "integrity_hash": "sha256:e7bdc6a06690abf30f5aeb4c4fa1770fb72c3038894b4cdc6e310c77d41cf7a6",
+      "transformation_history": []
+    },
+    "payload": {
+      "title": "Threshold sensitivity calculation",
+      "calculation": "Threshold sensitivity calculation",
+      "formula": "risk = exposure × vulnerability ÷ resilience",
+      "inputs": {
+        "exposure": 0.8,
+        "vulnerability": 0.7,
+        "resilience": 0.6
+      },
+      "results": {
+        "risk": 0.9333
+      },
+      "assumptions": [
+        "Inputs are normalized to 0–1"
+      ],
+      "validation_checks": [
+        "Result is finite"
+      ],
+      "warnings": [
+        "Screening result only"
+      ]
+    }
+  },
+  {
+    "artifact_schema": "scds-platform-artifact/1.0",
+    "artifact_id": "sample-research-lab-005",
+    "artifact_type": "experiment",
+    "source": {
+      "product": "research-lab",
+      "product_version": "sample",
+      "artifact_url": "https://sustainablecatalyst.com/",
+      "created_at": "2026-07-16T12:00:00Z"
+    },
+    "provenance": {
+      "methodology": "v1.8.0 release validation fixture",
+      "freshness": "current",
+      "confidence": "high",
+      "integrity_hash": "sha256:9973bd8b1b7e1d1f4a5fecf3bb364133c344401ea7c1eff5e92731946c1c73be",
+      "transformation_history": []
+    },
+    "payload": {
+      "title": "Water-quality validation experiment",
+      "hypothesis": "Observed pressure is detectable with the selected method.",
+      "method": {
+        "design": "controlled comparison"
+      },
+      "datasets": [
+        {
+          "dataset_id": "sample-dataset-001"
+        }
+      ],
+      "results": {
+        "effect_detected": true
+      },
+      "validation": {
+        "status": "screening validated"
+      },
+      "limitations": [
+        "Demonstration fixture"
+      ],
+      "instruments": [
+        "Sample sensor"
+      ]
+    }
+  },
+  {
+    "artifact_schema": "scds-platform-artifact/1.0",
+    "artifact_id": "sample-platform-core-006",
+    "artifact_type": "entity_record",
+    "source": {
+      "product": "platform-core",
+      "product_version": "sample",
+      "artifact_url": "https://sustainablecatalyst.com/",
+      "created_at": "2026-07-16T12:00:00Z"
+    },
+    "provenance": {
+      "methodology": "v1.8.0 release validation fixture",
+      "freshness": "current",
+      "confidence": "high",
+      "integrity_hash": "sha256:98a8429f1fc839c2dfb7584e7c4fce30a4a83bab8f8c1a0df96721bb911a72c8",
+      "transformation_history": []
+    },
+    "payload": {
+      "entity": {
+        "entity_id": "sc-entity-planetary-boundaries",
+        "name": "Planetary Boundaries"
+      },
+      "identifiers": {
+        "canonical": "sc-entity-planetary-boundaries"
+      },
+      "evidence_ledger": [
+        {
+          "record_id": "ledger-001"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "informs",
+          "target": "decision-packet"
+        }
+      ],
+      "provenance_links": [
+        {
+          "source_product": "knowledge-library",
+          "artifact_id": "sample-knowledge-library-001"
+        }
+      ],
+      "signatures": []
+    }
+  }
+]

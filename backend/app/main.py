@@ -5,18 +5,22 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional
 import json
+import hashlib
 import math
 import os
 import threading
 import time
 import urllib.request
 import urllib.error
+from datetime import datetime, timezone
 
-APP_VERSION = "1.7.1"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.7.1-53b729b")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "53b729b6940bc6455cf7815c58951bce4a36fff7")
+APP_VERSION = "1.8.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.8.0-unified-evidence")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.8.0")
 RELEASE_DATE = "2026-07-16"
-DECISION_PACKET_SCHEMA = "scds-decision-packet/1.0"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/1.1"
+PLATFORM_ARTIFACT_SCHEMA = "scds-platform-artifact/1.0"
+EVIDENCE_RECORD_SCHEMA = "scds-evidence-record/1.0"
 MAX_REQUEST_BYTES = max(65536, int(os.getenv("SCDS_MAX_REQUEST_BYTES", "1048576")))
 PUBLIC_RATE_LIMIT = max(10, int(os.getenv("SCDS_PUBLIC_RATE_LIMIT", "60")))
 RATE_WINDOW_SECONDS = max(10, int(os.getenv("SCDS_RATE_WINDOW_SECONDS", "60")))
@@ -29,7 +33,7 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/brief-readiness", "/decision-packet/readiness", "/review/status",
     "/scenario-comparison", "/decision-packet/scenario-comparison",
     "/workbench/handoff", "/decision-packet/workbench-handoff",
-    "/integrations/import", "/decision-packet/import",
+    "/integrations/import", "/integrations/import-batch", "/decision-packet/import",
     "/decision-packet/save-template", "/export-center/bundle",
     "/decision-packet/export-bundle", "/audit/generate",
 }
@@ -40,17 +44,21 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Production Reliability and Roadmap Repair",
+        "release_name": "Unified Evidence and Platform Handoffs",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
         "decision_packet_schema": DECISION_PACKET_SCHEMA,
+        "platform_artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
+        "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
             "api_namespace": "scds/v1",
             "shortcodes_preserved": True,
             "packet_schema_breaking_changes": False,
+            "typed_platform_artifacts": True,
+            "legacy_artifact_adapters_preserved": True,
         },
     }
 
@@ -176,6 +184,19 @@ class ArtifactImportRequest(BaseModel):
     notes: str = ""
 
 
+class TypedArtifactValidationRequest(BaseModel):
+    artifact: Dict[str, Any] = Field(default_factory=dict)
+    sourceProduct: Optional[str] = None
+    strict: bool = False
+
+
+class ArtifactBatchImportRequest(BaseModel):
+    artifacts: List[Dict[str, Any]] = Field(default_factory=list, max_length=100)
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    preserveRaw: bool = True
+    strict: bool = False
+
+
 class IntegratedBriefRequest(BaseModel):
     inputs: DecisionInputs = Field(default_factory=DecisionInputs)
     results: Optional[Dict[str, Any]] = None
@@ -279,112 +300,141 @@ def analyze(inputs: DecisionInputs) -> Dict[str, Any]:
 
 
 def module_integrations() -> List[Dict[str, Any]]:
-    """Integrated platform workflow modules exposed to Decision Studio."""
+    """Current Sustainable Catalyst platform workflow for typed evidence handoffs."""
     return [
         {
-            "id": "catalyst-canvas",
-            "step": 1,
-            "phase": "Frame",
-            "name": "Catalyst Canvas",
-            "label": "Problem framing",
-            "url": "/catalyst-canvas/#demo",
-            "artifact_key": "framing",
-            "decision_packet_section": "decision_framing",
-            "summary": "Frame a challenge, define an audience, generate POV and HMW prompts, shape a prototype, design a test plan, and export a structured brief.",
-            "use_in_brief": "Decision question, audience, POV, how-might-we prompt, prototype, test plan, and constraints.",
+            "id": "knowledge-library", "step": 1, "phase": "Source", "name": "Knowledge Library",
+            "label": "Sources and citations", "url": "/knowledge-library/", "artifact_key": "knowledge_library_evidence",
+            "decision_packet_section": "evidence_registry",
+            "summary": "Import durable source records, quotations, Harvard-style citations, bibliographies, collections, and evidence notes.",
+            "use_in_brief": "Sources, quotations, citations, bibliography entries, collection context, and evidence notes.",
         },
         {
-            "id": "catalyst-data",
-            "step": 2,
-            "phase": "Anchor",
-            "name": "Catalyst Data",
-            "label": "Data records",
-            "url": "/catalyst-data/#demo",
-            "artifact_key": "evidence_records",
-            "decision_packet_section": "evidence_and_measurement",
-            "summary": "Create a traceable measurement record with entity, indicator, source, period, confidence, method notes, review status, and JSON export.",
-            "use_in_brief": "Sources, indicators, confidence, method notes, measurement records, and audit trail.",
+            "id": "research-librarian", "step": 2, "phase": "Research", "name": "Research Librarian",
+            "label": "Research routes and gaps", "url": "/research-librarian/", "artifact_key": "research_guidance",
+            "decision_packet_section": "research_routes",
+            "summary": "Import research routes, recommended sources, evidence gaps, related titles, and follow-up questions.",
+            "use_in_brief": "Research path, source recommendations, unanswered questions, and explicit evidence gaps.",
         },
         {
-            "id": "catalyst-analytics-r",
-            "step": 3,
-            "phase": "Model",
-            "name": "Catalyst Analytics R",
-            "label": "Scenario analysis",
-            "url": "/catalyst-analytics-r/#demo",
-            "artifact_key": "scenario_analysis",
-            "decision_packet_section": "scenarios",
-            "summary": "Explore a simplified sustainable-development scenario with assumptions, capital values, emissions budget, interpretation notes, and export logic.",
-            "use_in_brief": "Scenario assumptions, trajectories, sensitivity notes, and model interpretation.",
+            "id": "site-intelligence", "step": 3, "phase": "Observe", "name": "Site Intelligence",
+            "label": "Indicators and observations", "url": "/platform/site-intelligence/", "artifact_key": "site_intelligence_evidence",
+            "decision_packet_section": "live_evidence",
+            "summary": "Import indicators, country dossiers, live observations, methodology records, source health, and freshness context.",
+            "use_in_brief": "Indicators, observations, geographic context, source health, freshness, and methodology.",
         },
         {
-            "id": "global-impact-catalyst",
-            "step": 4,
-            "phase": "Measure",
-            "name": "Global Impact Catalyst",
-            "label": "Impact measurement",
-            "url": "/global-impact-catalyst/#demo",
-            "artifact_key": "impact_records",
-            "decision_packet_section": "impact_measurement",
-            "summary": "Create a traceable impact record with initiative, goal, SDG-style theme, indicator, baseline, current value, target, source, and progress notes.",
-            "use_in_brief": "Impact indicators, baseline/current/target values, progress notes, SDG-style themes, and confidence.",
+            "id": "workbench", "step": 4, "phase": "Model", "name": "Workbench",
+            "label": "Calculations and models", "url": "/platform/workbench/", "artifact_key": "workbench_calculations",
+            "decision_packet_section": "calculation_trace",
+            "summary": "Import formulas, calculations, graphs, models, code outputs, validation checks, assumptions, and technical reports.",
+            "use_in_brief": "Calculated outputs, formulas, graphs, assumptions, validation checks, warnings, and technical interpretation.",
         },
         {
-            "id": "catalyst-narrative-risk",
-            "step": 5,
-            "phase": "Review",
-            "name": "Narrative Risk",
-            "label": "Claim review",
-            "url": "/narrative-risk/#demo",
-            "artifact_key": "claim_reviews",
-            "decision_packet_section": "claim_and_risk_review",
-            "summary": "Evaluate a claim by evidence strength, uncertainty, source type, stakeholder pressure, narrative volatility, consequences, and review status.",
-            "use_in_brief": "Claim strength, uncertainty, narrative volatility, stakeholder pressure, consequences, and review status.",
+            "id": "research-lab", "step": 5, "phase": "Validate", "name": "Research Lab",
+            "label": "Experiments and scientific artifacts", "url": "/lab/", "artifact_key": "research_lab_artifacts",
+            "decision_packet_section": "experimental_evidence",
+            "summary": "Import experiments, notebooks, datasets, instrument context, validation results, provenance, and scientific reports.",
+            "use_in_brief": "Experimental methods, datasets, results, validation status, limitations, and scientific provenance.",
         },
         {
-            "id": "catalyst-finance",
-            "step": 6,
-            "phase": "Evaluate",
-            "name": "Catalyst Finance",
-            "label": "Tradeoff analysis",
-            "url": "/catalyst-finance/#demo",
-            "artifact_key": "finance_analysis",
-            "decision_packet_section": "financial_tradeoffs",
-            "summary": "Estimate NPV, ROI, payback, benefit-cost ratio, carbon cost per ton, risk-adjusted score, review flags, and decision notes.",
-            "use_in_brief": "NPV, ROI, payback, benefit-cost ratio, carbon cost per ton, finance flags, and tradeoff notes.",
+            "id": "platform-core", "step": 6, "phase": "Trace", "name": "Platform Core",
+            "label": "Entities and evidence ledger", "url": "/platform/", "artifact_key": "platform_core_records",
+            "decision_packet_section": "platform_registry",
+            "summary": "Import canonical entities, Evidence Ledger records, provenance links, identifiers, signatures, and shared exchange metadata.",
+            "use_in_brief": "Canonical entity identity, evidence-ledger links, provenance, integrity, and cross-product relationships.",
         },
         {
-            "id": "catalyst-grit",
-            "step": 7,
-            "phase": "Sustain",
-            "name": "Catalyst Grit",
-            "label": "Recovery tracking",
-            "url": "/human-systems/catalyst-grit/#demo",
-            "artifact_key": "execution_recovery",
-            "decision_packet_section": "execution_and_recovery",
-            "summary": "Describe a setback, assess pressure, impact, energy, support, clarity, recovery actions, and generate a recovery score and next actions.",
-            "use_in_brief": "Implementation pressure, support, clarity, recovery capacity, execution risks, and next actions.",
-        },
-        {
-            "id": "decision-studio",
-            "step": 8,
-            "phase": "Decide",
-            "name": "Decision Studio",
-            "label": "Decision support",
-            "url": "/platform/decision-studio/",
-            "artifact_key": "synthesis",
+            "id": "decision-studio", "step": 7, "phase": "Decide", "name": "Decision Studio",
+            "label": "Decision synthesis", "url": "/platform/decision-studio/", "artifact_key": "synthesis",
             "decision_packet_section": "integrated_decision_brief",
-            "summary": "Generate a four-pillar sustainability decision brief with assumptions, scenarios, calculator-backed outputs, risks, SDG mapping, and auditable review notes.",
-            "use_in_brief": "Integrated four-pillar synthesis, recommendation posture, assumptions, risks, caveats, and audit trail.",
+            "summary": "Synthesize typed evidence into scenarios, readiness findings, governance notes, an auditable brief, and export bundle.",
+            "use_in_brief": "Integrated synthesis, recommendation posture, alternatives, assumptions, risks, caveats, and audit trail.",
         },
     ]
 
 
+def legacy_module_integrations() -> List[Dict[str, Any]]:
+    """v1.0-v1.7 workflow retained as an import-compatibility layer."""
+    return [
+        {"id": "catalyst-canvas", "name": "Catalyst Canvas", "artifact_key": "framing"},
+        {"id": "catalyst-data", "name": "Catalyst Data", "artifact_key": "evidence_records"},
+        {"id": "catalyst-analytics-r", "name": "Catalyst Analytics R", "artifact_key": "scenario_analysis"},
+        {"id": "global-impact-catalyst", "name": "Global Impact Catalyst", "artifact_key": "impact_records"},
+        {"id": "catalyst-narrative-risk", "name": "Narrative Risk", "artifact_key": "claim_reviews"},
+        {"id": "catalyst-finance", "name": "Catalyst Finance", "artifact_key": "finance_analysis"},
+        {"id": "catalyst-grit", "name": "Catalyst Grit", "artifact_key": "execution_recovery"},
+    ]
+
+
+def platform_handoff_contracts() -> List[Dict[str, Any]]:
+    base_metadata = ["artifact_schema", "artifact_id", "artifact_type", "source", "provenance", "payload"]
+    return [
+        {
+            "product_id": "knowledge-library", "product_name": "Knowledge Library",
+            "artifact_types": ["source_record", "quotation_evidence", "citation_bundle", "bibliography", "collection_context"],
+            "packet_targets": ["evidence_registry", "sources", "citations", "quotations"],
+            "expected_payload": ["title", "source_type", "citation", "url", "authors", "published_at", "quotes", "evidence_notes"],
+            "required_envelope": base_metadata,
+        },
+        {
+            "product_id": "research-librarian", "product_name": "Research Librarian",
+            "artifact_types": ["research_route", "source_recommendations", "evidence_gap_report", "related_titles"],
+            "packet_targets": ["research_routes", "sources", "evidence_gaps", "follow_up_questions"],
+            "expected_payload": ["query", "route", "recommended_sources", "evidence_gaps", "follow_up_questions", "related_titles"],
+            "required_envelope": base_metadata,
+        },
+        {
+            "product_id": "site-intelligence", "product_name": "Site Intelligence",
+            "artifact_types": ["indicator_record", "country_dossier", "live_observation", "methodology_record", "source_health"],
+            "packet_targets": ["live_evidence", "evidence_registry", "sources", "methodologies"],
+            "expected_payload": ["indicator", "geography", "period", "value", "unit", "source", "methodology", "freshness", "confidence"],
+            "required_envelope": base_metadata,
+        },
+        {
+            "product_id": "workbench", "product_name": "Workbench",
+            "artifact_types": ["calculation", "model_output", "graph", "code_result", "technical_report"],
+            "packet_targets": ["calculation_trace", "workbench_calculations", "assumptions", "technical_artifacts"],
+            "expected_payload": ["title", "formula", "inputs", "results", "assumptions", "validation_checks", "warnings", "report"],
+            "required_envelope": base_metadata,
+        },
+        {
+            "product_id": "research-lab", "product_name": "Research Lab",
+            "artifact_types": ["experiment", "notebook", "dataset", "instrument_run", "validation_result", "scientific_report"],
+            "packet_targets": ["experimental_evidence", "datasets", "evidence_registry", "calculation_trace"],
+            "expected_payload": ["title", "hypothesis", "method", "dataset", "results", "validation", "limitations", "instruments"],
+            "required_envelope": base_metadata,
+        },
+        {
+            "product_id": "platform-core", "product_name": "Platform Core",
+            "artifact_types": ["entity_record", "evidence_ledger_record", "provenance_link", "signed_manifest", "relationship_bundle"],
+            "packet_targets": ["platform_registry", "entities", "evidence_ledger", "provenance_links"],
+            "expected_payload": ["entity", "identifiers", "evidence_records", "relationships", "provenance", "signatures"],
+            "required_envelope": base_metadata,
+        },
+    ]
+
+
+def platform_contract(product_id: Optional[str]) -> Optional[Dict[str, Any]]:
+    if not product_id:
+        return None
+    normalized = product_id.strip().lower().replace("_", "-")
+    aliases = {
+        "library": "knowledge-library", "knowledge": "knowledge-library",
+        "librarian": "research-librarian", "research-guidance": "research-librarian",
+        "site": "site-intelligence", "intelligence": "site-intelligence",
+        "lab": "research-lab", "core": "platform-core", "platform": "platform-core",
+    }
+    normalized = aliases.get(normalized, normalized)
+    return next((c for c in platform_handoff_contracts() if c["product_id"] == normalized), None)
+
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.7.1",
-        "workflow": "Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio",
+        "packet_version": "1.8.0",
+        "workflow": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
+        "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
+        "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -394,6 +444,23 @@ def decision_packet_template() -> Dict[str, Any]:
             "decision_question": "",
         },
         "decision_framing": {},
+        "evidence_registry": [],
+        "citations": [],
+        "quotations": [],
+        "research_routes": [],
+        "evidence_gaps": [],
+        "follow_up_questions": [],
+        "live_evidence": [],
+        "methodologies": [],
+        "experimental_evidence": [],
+        "datasets": [],
+        "technical_artifacts": [],
+        "platform_registry": [],
+        "entities": [],
+        "evidence_ledger": [],
+        "provenance_links": [],
+        "platform_handoffs": [],
+        "integrity_checks": [],
         "evidence_and_measurement": {"records": []},
         "scenarios": {"records": []},
         "impact_measurement": {"records": []},
@@ -428,7 +495,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.7.1",
+        "audit_version": "1.8.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -600,6 +667,36 @@ def artifact_adapter_catalog() -> List[Dict[str, Any]]:
     """Artifact adapters that normalize module JSON exports into the Decision Packet."""
     return [
         {
+            "module_id": "knowledge-library", "name": "Knowledge Library", "artifact_key": "knowledge_library_evidence",
+            "packet_section": "evidence_registry", "detects": ["citation", "bibliography", "quotes", "source_record", "evidence_notes"],
+            "required_or_expected": ["title", "citation", "source_type"],
+            "summary": "Normalizes source records, quotations, citations, bibliographies, collections, and evidence notes.",
+        },
+        {
+            "module_id": "research-librarian", "name": "Research Librarian", "artifact_key": "research_guidance",
+            "packet_section": "research_routes", "detects": ["research_route", "recommended_sources", "evidence_gaps", "follow_up_questions", "related_titles"],
+            "required_or_expected": ["query", "route"],
+            "summary": "Normalizes research routes, source recommendations, related titles, evidence gaps, and follow-up questions.",
+        },
+        {
+            "module_id": "site-intelligence", "name": "Site Intelligence", "artifact_key": "site_intelligence_evidence",
+            "packet_section": "live_evidence", "detects": ["indicator", "geography", "period", "value", "methodology", "freshness"],
+            "required_or_expected": ["indicator", "value", "source"],
+            "summary": "Normalizes indicators, country context, live observations, methods, source health, freshness, and confidence.",
+        },
+        {
+            "module_id": "research-lab", "name": "Research Lab", "artifact_key": "research_lab_artifacts",
+            "packet_section": "experimental_evidence", "detects": ["experiment", "hypothesis", "method", "dataset", "validation", "instruments"],
+            "required_or_expected": ["title", "method", "results"],
+            "summary": "Normalizes experiments, notebooks, datasets, instrument context, validation results, and limitations.",
+        },
+        {
+            "module_id": "platform-core", "name": "Platform Core", "artifact_key": "platform_core_records",
+            "packet_section": "platform_registry", "detects": ["entity", "identifiers", "evidence_ledger", "relationships", "provenance", "signatures"],
+            "required_or_expected": ["entity"],
+            "summary": "Normalizes canonical entities, evidence-ledger records, provenance links, relationships, and signatures.",
+        },
+        {
             "module_id": "catalyst-canvas",
             "name": "Catalyst Canvas",
             "artifact_key": "framing",
@@ -690,6 +787,14 @@ def _adapter_by_id(module_id: Optional[str]) -> Optional[Dict[str, Any]]:
         "grit": "catalyst-grit",
         "engineering": "workbench",
         "calculation": "workbench",
+        "library": "knowledge-library",
+        "knowledge": "knowledge-library",
+        "librarian": "research-librarian",
+        "research-guidance": "research-librarian",
+        "site": "site-intelligence",
+        "intelligence": "site-intelligence",
+        "lab": "research-lab",
+        "core": "platform-core",
     }
     normalized = aliases.get(normalized, normalized)
     for adapter in artifact_adapter_catalog():
@@ -704,7 +809,25 @@ def detect_artifact_adapter(artifact: Dict[str, Any], module_id: Optional[str] =
         return explicit
     if not isinstance(artifact, dict):
         return artifact_adapter_catalog()[0]
-    record_type = str(artifact.get("record_type", "")).lower()
+    envelope_source = artifact.get("source", {}) if isinstance(artifact.get("source"), dict) else {}
+    source_product = artifact.get("source_product") or artifact.get("sourceProduct") or envelope_source.get("product") or envelope_source.get("product_id")
+    if source_product and _adapter_by_id(str(source_product)):
+        return _adapter_by_id(str(source_product))
+    payload = artifact.get("payload") if isinstance(artifact.get("payload"), dict) else artifact
+    keys = set(payload.keys())
+    artifact_type = str(artifact.get("artifact_type", artifact.get("type", ""))).lower()
+    if artifact_type in {"source_record", "quotation_evidence", "citation_bundle", "bibliography", "collection_context"} or {"citation", "bibliography"} & keys:
+        return _adapter_by_id("knowledge-library")
+    if artifact_type in {"research_route", "source_recommendations", "evidence_gap_report", "related_titles"} or {"recommended_sources", "evidence_gaps", "follow_up_questions"} & keys:
+        return _adapter_by_id("research-librarian")
+    if artifact_type in {"indicator_record", "country_dossier", "live_observation", "methodology_record", "source_health"} or ({"indicator", "value"}.issubset(keys) and ("geography" in keys or "freshness" in keys)):
+        return _adapter_by_id("site-intelligence")
+    if artifact_type in {"experiment", "notebook", "dataset", "instrument_run", "validation_result", "scientific_report"} or {"hypothesis", "method", "validation"} & keys:
+        return _adapter_by_id("research-lab")
+    if artifact_type in {"entity_record", "evidence_ledger_record", "provenance_link", "signed_manifest", "relationship_bundle"} or {"identifiers", "evidence_ledger", "relationships", "signatures"} & keys:
+        return _adapter_by_id("platform-core")
+    record_type = str(payload.get("record_type", "")).lower()
+    artifact = payload
     if record_type == "global_impact_catalyst_record":
         return _adapter_by_id("global-impact-catalyst")
     if record_type == "catalyst_narrative_risk_record":
@@ -765,7 +888,7 @@ def _apply_packet_patch(packet: Dict[str, Any], patch: Dict[str, Any]) -> Dict[s
     if not out:
         out = decision_packet_template()
     for key, value in patch.items():
-        if key in {"assumptions", "risks", "sources", "audit_trail", "calculation_trace", "claim_reviews", "workbench_calculations"}:
+        if key in {"assumptions", "risks", "sources", "audit_trail", "calculation_trace", "claim_reviews", "workbench_calculations", "evidence_registry", "citations", "quotations", "research_routes", "evidence_gaps", "follow_up_questions", "live_evidence", "methodologies", "experimental_evidence", "datasets", "technical_artifacts", "platform_registry", "entities", "evidence_ledger", "provenance_links", "platform_handoffs", "integrity_checks"}:
             out[key] = _merge_list(out.get(key), _list(value))
         elif key == "evidence_and_measurement":
             cur = out.get(key) if isinstance(out.get(key), dict) else {"records": []}
@@ -804,14 +927,11 @@ def _apply_packet_patch(packet: Dict[str, Any], patch: Dict[str, Any]) -> Dict[s
         if section == "claim_and_risk_review" and isinstance(out.get(section), dict):
             candidate = out[section].get("records")
         slots.append({"module_id": module["id"], "name": module["name"], "artifact_key": key, "packet_section": section, "status": "attached" if _nonempty(candidate) else "empty"})
-    # Workbench is an external adapter, not part of the 8-step workflow, but track it when present.
-    if _nonempty(out.get("workbench_calculations")) or _nonempty(out.get("calculation_trace")):
-        slots.append({"module_id": "workbench", "name": "Sustainable Catalyst Workbench", "artifact_key": "workbench_calculations", "packet_section": "calculation_trace", "status": "attached"})
     out["module_slots"] = slots
     return out
 
 
-def normalize_artifact(artifact: Dict[str, Any], module_id: Optional[str] = None, preserve_raw: bool = True) -> Dict[str, Any]:
+def normalize_legacy_artifact(artifact: Dict[str, Any], module_id: Optional[str] = None, preserve_raw: bool = True) -> Dict[str, Any]:
     adapter = detect_artifact_adapter(artifact, module_id)
     mid = adapter["module_id"]
     name = adapter["name"]
@@ -949,6 +1069,199 @@ def normalize_artifact(artifact: Dict[str, Any], module_id: Optional[str] = None
     return {"ok": True, "version": APP_VERSION, "adapter": adapter, "summary": summary, "packet_patch": patch, "warnings": warnings, "artifact": artifact}
 
 
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _canonical_hash(value: Any) -> str:
+    raw = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return "sha256:" + hashlib.sha256(raw).hexdigest()
+
+
+def _typed_envelope(artifact: Dict[str, Any], module_id: Optional[str] = None) -> Dict[str, Any]:
+    adapter = detect_artifact_adapter(artifact, module_id)
+    source = artifact.get("source", {}) if isinstance(artifact.get("source"), dict) else {}
+    provenance = artifact.get("provenance", {}) if isinstance(artifact.get("provenance"), dict) else {}
+    payload = artifact.get("payload") if isinstance(artifact.get("payload"), dict) else artifact
+    source_product = (
+        module_id or artifact.get("source_product") or artifact.get("sourceProduct")
+        or source.get("product") or source.get("product_id") or adapter["module_id"]
+    )
+    contract = platform_contract(str(source_product))
+    product_id = contract["product_id"] if contract else adapter["module_id"]
+    artifact_type = str(artifact.get("artifact_type") or artifact.get("type") or adapter["artifact_key"]).strip()
+    supplied_hash = str(provenance.get("integrity_hash") or artifact.get("integrity_hash") or "").strip()
+    calculated_hash = _canonical_hash(payload)
+    return {
+        "artifact_schema": str(artifact.get("artifact_schema") or PLATFORM_ARTIFACT_SCHEMA),
+        "artifact_id": str(artifact.get("artifact_id") or artifact.get("id") or calculated_hash.split(":", 1)[1][:20]),
+        "artifact_type": artifact_type,
+        "source": {
+            "product": product_id,
+            "product_version": str(source.get("product_version") or source.get("version") or artifact.get("source_version") or "unknown"),
+            "artifact_url": str(source.get("artifact_url") or source.get("url") or artifact.get("url") or ""),
+            "created_at": str(source.get("created_at") or artifact.get("created_at") or ""),
+            "exported_at": str(source.get("exported_at") or artifact.get("exported_at") or _utc_now()),
+        },
+        "provenance": {
+            "methodology": provenance.get("methodology") or artifact.get("methodology") or payload.get("methodology", ""),
+            "freshness": provenance.get("freshness") or artifact.get("freshness") or payload.get("freshness", "unspecified"),
+            "confidence": provenance.get("confidence") if provenance.get("confidence") is not None else artifact.get("confidence", payload.get("confidence", "unspecified")),
+            "integrity_hash": supplied_hash or calculated_hash,
+            "calculated_integrity_hash": calculated_hash,
+            "integrity_verified": bool(supplied_hash and supplied_hash == calculated_hash),
+            "transformation_history": _list(provenance.get("transformation_history")) + [{"at": _utc_now(), "action": "normalized", "by": "decision-studio", "version": APP_VERSION}],
+        },
+        "payload": payload,
+    }
+
+
+def validate_typed_artifact(artifact: Dict[str, Any], source_product: Optional[str] = None, strict: bool = False) -> Dict[str, Any]:
+    envelope = _typed_envelope(artifact, source_product)
+    product_id = envelope["source"]["product"]
+    contract = platform_contract(product_id)
+    errors: List[str] = []
+    warnings: List[str] = []
+    if not contract:
+        errors.append(f"Unsupported platform source product: {product_id}")
+    if envelope["artifact_schema"] != PLATFORM_ARTIFACT_SCHEMA:
+        message = f"Artifact schema {envelope['artifact_schema']} differs from supported {PLATFORM_ARTIFACT_SCHEMA}."
+        (errors if strict else warnings).append(message)
+    if not isinstance(envelope["payload"], dict) or not envelope["payload"]:
+        errors.append("Artifact payload must be a non-empty object.")
+    if contract and envelope["artifact_type"] not in contract["artifact_types"]:
+        warnings.append(f"Artifact type {envelope['artifact_type']} is not in the registered {product_id} type catalog.")
+    supplied = str((artifact.get("provenance") or {}).get("integrity_hash", "")) if isinstance(artifact.get("provenance"), dict) else str(artifact.get("integrity_hash", ""))
+    if supplied and not envelope["provenance"]["integrity_verified"]:
+        errors.append("Supplied integrity hash does not match the canonical payload hash.")
+    return {
+        "ok": not errors, "version": APP_VERSION, "schema": PLATFORM_ARTIFACT_SCHEMA,
+        "product_id": product_id, "contract": contract, "envelope": envelope,
+        "errors": errors, "warnings": warnings,
+    }
+
+
+def normalize_platform_artifact(artifact: Dict[str, Any], module_id: Optional[str] = None, preserve_raw: bool = True) -> Dict[str, Any]:
+    validation = validate_typed_artifact(artifact, module_id, strict=False)
+    envelope = validation["envelope"]
+    product_id = envelope["source"]["product"]
+    payload = envelope["payload"]
+    adapter = _adapter_by_id(product_id) or detect_artifact_adapter(artifact, module_id)
+    name = adapter["name"]
+    evidence_base = {
+        "evidence_schema": EVIDENCE_RECORD_SCHEMA,
+        "artifact_id": envelope["artifact_id"],
+        "artifact_type": envelope["artifact_type"],
+        "source_product": product_id,
+        "source_version": envelope["source"]["product_version"],
+        "source_url": envelope["source"]["artifact_url"],
+        "methodology": envelope["provenance"]["methodology"],
+        "freshness": envelope["provenance"]["freshness"],
+        "confidence": envelope["provenance"]["confidence"],
+        "integrity_hash": envelope["provenance"]["calculated_integrity_hash"],
+        "integrity_verified": envelope["provenance"]["integrity_verified"],
+    }
+    patch: Dict[str, Any] = {
+        "platform_handoffs": [envelope],
+        "integrity_checks": [{
+            "artifact_id": envelope["artifact_id"], "source_product": product_id,
+            "supplied_hash": envelope["provenance"]["integrity_hash"],
+            "calculated_hash": envelope["provenance"]["calculated_integrity_hash"],
+            "verified": envelope["provenance"]["integrity_verified"],
+        }],
+        "audit_trail": [{"event": "Typed platform artifact imported", "module": name, "module_id": product_id, "artifact_id": envelope["artifact_id"], "version": APP_VERSION}],
+    }
+    warnings = list(validation["warnings"])
+
+    if product_id == "knowledge-library":
+        records = _list(payload.get("sources") or payload.get("source_records") or payload.get("records"))
+        if not records:
+            records = [payload]
+        evidence_records, sources, citations, quotations = [], [], [], []
+        for item in records:
+            item = item if isinstance(item, dict) else {"title": str(item)}
+            title = str(item.get("title") or item.get("source_title") or payload.get("title") or "Knowledge Library source")
+            record = {**evidence_base, "title": title, "source_type": item.get("source_type", payload.get("source_type", "research source")), "citation": item.get("citation", payload.get("citation", "")), "authors": item.get("authors", payload.get("authors", [])), "published_at": item.get("published_at", payload.get("published_at", "")), "evidence_notes": item.get("evidence_notes", payload.get("evidence_notes", "")), "collection": item.get("collection", payload.get("collection", ""))}
+            evidence_records.append(record)
+            sources.append(_source_entry(title, record["source_type"], evidence_base["confidence"], "Knowledge Library evidence", str(record["evidence_notes"])))
+            if record["citation"]:
+                citations.append({"artifact_id": envelope["artifact_id"], "citation": record["citation"], "style": item.get("citation_style", payload.get("citation_style", "Harvard")), "title": title})
+            for quote in _list(item.get("quotes") or item.get("quotations") or payload.get("quotes") or payload.get("quotations")):
+                quotations.append({"artifact_id": envelope["artifact_id"], "source_title": title, "quote": quote.get("text", "") if isinstance(quote, dict) else str(quote), "locator": quote.get("locator", "") if isinstance(quote, dict) else "", "context": quote.get("context", "") if isinstance(quote, dict) else ""})
+        patch.update({"evidence_registry": evidence_records, "sources": sources, "citations": citations, "quotations": quotations, "knowledge_library_evidence": evidence_records})
+        title = evidence_records[0]["title"]
+    elif product_id == "research-librarian":
+        route = {**evidence_base, "query": payload.get("query", ""), "route": payload.get("route") or payload.get("research_route") or [], "recommended_sources": _list(payload.get("recommended_sources")), "related_titles": _list(payload.get("related_titles")), "notes": payload.get("notes", "")}
+        source_records = []
+        for source in route["recommended_sources"]:
+            src = source if isinstance(source, dict) else {"title": str(source)}
+            source_records.append(_source_entry(str(src.get("title") or src.get("name") or "Recommended source"), str(src.get("type") or "research recommendation"), src.get("confidence", evidence_base["confidence"]), "Research Librarian recommendation", str(src.get("reason") or "")))
+        patch.update({"research_routes": [route], "research_guidance": route, "sources": source_records, "evidence_gaps": _list(payload.get("evidence_gaps")), "follow_up_questions": _list(payload.get("follow_up_questions"))})
+        title = str(payload.get("query") or "Research Librarian route")
+    elif product_id == "site-intelligence":
+        record = {**evidence_base, "indicator": payload.get("indicator", {}), "geography": payload.get("geography") or payload.get("country") or payload.get("region") or "", "period": payload.get("period") or payload.get("observed_at") or "", "value": payload.get("value"), "unit": payload.get("unit", ""), "source": payload.get("source", {}), "source_health": payload.get("source_health", {}), "observation_type": envelope["artifact_type"]}
+        source = payload.get("source", {}) if isinstance(payload.get("source"), dict) else {"name": payload.get("source")}
+        source_title = str(source.get("name") or source.get("title") or "Site Intelligence source")
+        patch.update({"live_evidence": [record], "site_intelligence_evidence": [record], "evidence_registry": [record], "sources": [_source_entry(source_title, str(source.get("type") or "public data source"), evidence_base["confidence"], str(payload.get("indicator") or "indicator evidence"), str(evidence_base["methodology"]))], "methodologies": _list(payload.get("methodology_records") or payload.get("methodology"))})
+        title = str(payload.get("indicator") or payload.get("title") or "Site Intelligence observation")
+    elif product_id == "workbench":
+        calc = {**evidence_base, "calculation": payload.get("calculation") or payload.get("title") or "Workbench artifact", "formula": payload.get("formula", ""), "inputs": payload.get("inputs", {}), "results": payload.get("results", payload.get("result")), "assumptions": _list(payload.get("assumptions")), "validation_checks": _list(payload.get("validation_checks") or payload.get("checks")), "warnings": _list(payload.get("warnings")), "graph": payload.get("graph", {}), "report": payload.get("report", {})}
+        patch.update({"workbench_calculations": [calc], "technical_artifacts": [calc], "calculation_trace": [{"artifact_id": envelope["artifact_id"], "calculation": calc["calculation"], "formula": calc["formula"], "inputs": calc["inputs"], "result": calc["results"], "unit": payload.get("unit", ""), "validation_status": "imported from Workbench", "validation_checks": calc["validation_checks"]}], "assumptions": [_assumption(str(a.get("name") or a.get("assumption") or "Workbench assumption"), a.get("value"), name, "technical model", str(a.get("sensitivity") or "medium"), str(a.get("review_status") or "needs review")) if isinstance(a, dict) else _assumption(str(a), None, name, "technical model") for a in calc["assumptions"]]})
+        title = calc["calculation"]
+    elif product_id == "research-lab":
+        record = {**evidence_base, "title": payload.get("title") or payload.get("experiment") or "Research Lab artifact", "hypothesis": payload.get("hypothesis", ""), "method": payload.get("method", {}), "results": payload.get("results", {}), "validation": payload.get("validation", {}), "limitations": _list(payload.get("limitations")), "instruments": _list(payload.get("instruments")), "notebook": payload.get("notebook", {})}
+        datasets = _list(payload.get("datasets") or payload.get("dataset"))
+        patch.update({"experimental_evidence": [record], "research_lab_artifacts": [record], "datasets": datasets, "evidence_registry": [record]})
+        if payload.get("calculation_trace"):
+            patch["calculation_trace"] = _list(payload.get("calculation_trace"))
+        title = record["title"]
+    elif product_id == "platform-core":
+        entity = payload.get("entity") if isinstance(payload.get("entity"), dict) else {"name": payload.get("entity") or payload.get("name") or "Platform entity"}
+        registry = {**evidence_base, "entity": entity, "identifiers": payload.get("identifiers", {}), "relationships": _list(payload.get("relationships")), "signatures": _list(payload.get("signatures"))}
+        ledger = _list(payload.get("evidence_ledger") or payload.get("evidence_records"))
+        links = _list(payload.get("provenance_links") or payload.get("provenance"))
+        patch.update({"platform_registry": [registry], "platform_core_records": [registry], "entities": [entity], "evidence_ledger": ledger, "provenance_links": links})
+        title = str(entity.get("name") or entity.get("title") or "Platform Core entity")
+    else:
+        return normalize_legacy_artifact(artifact, module_id=module_id, preserve_raw=preserve_raw)
+
+    if preserve_raw:
+        patch.setdefault("module_artifacts_raw", {})[adapter["artifact_key"]] = artifact
+    summary = {
+        "module_id": product_id, "module_name": name, "artifact_key": adapter["artifact_key"],
+        "packet_section": adapter["packet_section"], "artifact_id": envelope["artifact_id"],
+        "artifact_type": envelope["artifact_type"], "title": title, "status": "typed_and_normalized",
+        "integrity_verified": envelope["provenance"]["integrity_verified"],
+    }
+    return {"ok": validation["ok"], "version": APP_VERSION, "schema": PLATFORM_ARTIFACT_SCHEMA, "adapter": adapter, "contract": validation["contract"], "summary": summary, "packet_patch": patch, "warnings": warnings, "validation": validation, "artifact": envelope}
+
+
+def normalize_artifact(artifact: Dict[str, Any], module_id: Optional[str] = None, preserve_raw: bool = True) -> Dict[str, Any]:
+    adapter = detect_artifact_adapter(artifact, module_id)
+    if platform_contract(adapter["module_id"]):
+        return normalize_platform_artifact(artifact, module_id=adapter["module_id"], preserve_raw=preserve_raw)
+    return normalize_legacy_artifact(artifact, module_id=module_id, preserve_raw=preserve_raw)
+
+
+def import_artifact_batch(artifacts: List[Dict[str, Any]], packet: Optional[Dict[str, Any]] = None, preserve_raw: bool = True, strict: bool = False) -> Dict[str, Any]:
+    updated = packet or decision_packet_template()
+    imported: List[Dict[str, Any]] = []
+    rejected: List[Dict[str, Any]] = []
+    for index, artifact in enumerate(artifacts[:100]):
+        if not isinstance(artifact, dict):
+            rejected.append({"index": index, "errors": ["Artifact must be an object."]})
+            continue
+        validation = validate_typed_artifact(artifact, None, strict=strict)
+        if strict and not validation["ok"]:
+            rejected.append({"index": index, "artifact_id": validation["envelope"]["artifact_id"], "errors": validation["errors"], "warnings": validation["warnings"]})
+            continue
+        result = import_artifact_into_packet(artifact, packet=updated, preserve_raw=preserve_raw)
+        updated = result["decision_packet"]
+        imported.append(result["import_result"]["summary"])
+    analysis = synthesize_decision_packet(updated, None)
+    return {"ok": not rejected or not strict, "version": APP_VERSION, "imported_count": len(imported), "rejected_count": len(rejected), "imports": imported, "rejected": rejected, "decision_packet": updated, "analysis": analysis}
+
 def import_artifact_into_packet(artifact: Dict[str, Any], module_id: Optional[str] = None, packet: Optional[Dict[str, Any]] = None, preserve_raw: bool = True) -> Dict[str, Any]:
     normalized = normalize_artifact(artifact, module_id=module_id, preserve_raw=preserve_raw)
     updated_packet = _apply_packet_patch(packet or decision_packet_template(), normalized["packet_patch"])
@@ -961,6 +1274,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
     modules = module_integrations()
     filled = []
     missing = []
+    legacy_filled = []
     for module in modules:
         key = module["artifact_key"]
         section = module["decision_packet_section"]
@@ -971,6 +1285,16 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
             filled.append(module["id"])
         else:
             missing.append(module["id"])
+    legacy_map = {
+        "catalyst-canvas": packet.get("decision_framing") or packet.get("framing"),
+        "catalyst-data": packet.get("evidence_and_measurement") or packet.get("evidence_records"),
+        "catalyst-analytics-r": packet.get("scenarios") or packet.get("scenario_analysis"),
+        "global-impact-catalyst": packet.get("impact_measurement") or packet.get("impact_records"),
+        "catalyst-narrative-risk": packet.get("claim_and_risk_review") or packet.get("claim_reviews"),
+        "catalyst-finance": packet.get("financial_tradeoffs") or packet.get("finance_analysis"),
+        "catalyst-grit": packet.get("execution_and_recovery") or packet.get("execution_recovery"),
+    }
+    legacy_filled = [module_id for module_id, value in legacy_map.items() if _nonempty(value)]
     workbench_attached = _nonempty(packet.get("workbench_calculations")) or _nonempty(packet.get("calculation_trace"))
     base_results = analyze(inputs or DecisionInputs())
     readiness = round((len(filled) / max(1, len(modules))) * 100, 1)
@@ -978,21 +1302,22 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
     assumption_count = len(packet.get("assumptions", [])) if isinstance(packet.get("assumptions", []), list) else 0
     calculation_count = len(packet.get("calculation_trace", [])) if isinstance(packet.get("calculation_trace", []), list) else 0
     review_flags = []
-    if "catalyst-data" in missing:
-        review_flags.append("Evidence records are missing; import Catalyst Data before external use.")
-    if "catalyst-finance" in missing:
-        review_flags.append("Finance artifact is missing; import Catalyst Finance before relying on tradeoff metrics.")
-    if "catalyst-narrative-risk" in missing:
-        review_flags.append("Narrative Risk artifact is missing; import claim review before publishing claims.")
+    if "knowledge-library" in missing and "site-intelligence" in missing and "catalyst-data" not in legacy_filled:
+        review_flags.append("Evidence records are missing; import Knowledge Library or Site Intelligence evidence before external use.")
+    if "workbench" in missing and "catalyst-finance" not in legacy_filled:
+        review_flags.append("Technical calculation evidence is missing; import Workbench outputs before relying on modeled tradeoffs.")
+    if "research-librarian" in missing:
+        review_flags.append("Research route is missing; document unresolved questions and evidence gaps before final review.")
     if source_count == 0:
         review_flags.append("No explicit source ledger entries are attached yet.")
     return {
         "ok": True,
         "version": APP_VERSION,
-        "decision_packet_version": "1.7.1",
+        "decision_packet_version": APP_VERSION,
         "workflow_readiness_percent": readiness,
         "filled_modules": filled,
         "missing_modules": missing,
+        "legacy_filled_modules": legacy_filled,
         "module_count": len(modules),
         "workbench_attached": workbench_attached,
         "packet_quality": {
@@ -1008,10 +1333,10 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
             "risk_level": base_results["risk"]["risk_level"],
             "risk_score": base_results["risk"]["risk_score"],
             "next_best_steps": [
-                "Import Canvas framing before finalizing the decision question.",
-                "Attach Catalyst Data records for each major claim and calculation.",
-                "Import Finance, Narrative Risk, and Grit artifacts before treating the brief as decision-ready.",
-                "Use Workbench handoffs for any calculation requiring deeper symbolic, graph, engineering, or domain-specific review.",
+                "Attach Knowledge Library sources and citations for major claims.",
+                "Import a Research Librarian route with evidence gaps and follow-up questions.",
+                "Attach Site Intelligence observations and Research Lab validation where relevant.",
+                "Use Workbench for calculations, graphs, sensitivity analysis, and technical review.",
             ],
         },
         "warnings": [
@@ -1023,7 +1348,7 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
 
 
 def review_status_catalog() -> Dict[str, Any]:
-    """Review state vocabulary used by v1.7.1 readiness gates."""
+    """Review state vocabulary used by v1.8.0 readiness gates."""
     return {
         "review_version": APP_VERSION,
         "states": [
@@ -1045,13 +1370,13 @@ def review_status_catalog() -> Dict[str, Any]:
 def readiness_sections() -> List[Dict[str, Any]]:
     """Section-level readiness model for integrated Decision Packets."""
     return [
-        {"id": "framing", "label": "Problem Framing", "module_id": "catalyst-canvas", "weight": 10, "required": True, "expert_review": False},
-        {"id": "evidence", "label": "Evidence & Measurement", "module_id": "catalyst-data", "weight": 16, "required": True, "expert_review": False},
-        {"id": "scenarios", "label": "Scenario Analysis", "module_id": "catalyst-analytics-r", "weight": 10, "required": False, "expert_review": False},
-        {"id": "impact", "label": "Impact Measurement", "module_id": "global-impact-catalyst", "weight": 12, "required": True, "expert_review": False},
-        {"id": "claims", "label": "Claim & Narrative Risk", "module_id": "catalyst-narrative-risk", "weight": 12, "required": True, "expert_review": True},
-        {"id": "finance", "label": "Financial Tradeoffs", "module_id": "catalyst-finance", "weight": 14, "required": True, "expert_review": True},
-        {"id": "recovery", "label": "Execution & Recovery", "module_id": "catalyst-grit", "weight": 8, "required": False, "expert_review": False},
+        {"id": "framing", "label": "Decision Framing", "module_id": "decision-studio", "weight": 10, "required": True, "expert_review": False},
+        {"id": "evidence", "label": "Evidence & Sources", "module_id": "knowledge-library", "weight": 16, "required": True, "expert_review": False},
+        {"id": "scenarios", "label": "Scenario & Model Evidence", "module_id": "workbench", "weight": 10, "required": False, "expert_review": False},
+        {"id": "impact", "label": "Live & Experimental Evidence", "module_id": "site-intelligence", "weight": 12, "required": True, "expert_review": False},
+        {"id": "claims", "label": "Research Gaps & Claims", "module_id": "research-librarian", "weight": 12, "required": True, "expert_review": True},
+        {"id": "finance", "label": "Calculated Tradeoffs", "module_id": "workbench", "weight": 14, "required": True, "expert_review": True},
+        {"id": "recovery", "label": "Entities & Provenance", "module_id": "platform-core", "weight": 8, "required": False, "expert_review": False},
         {"id": "audit", "label": "Audit & Provenance", "module_id": "audit", "weight": 10, "required": True, "expert_review": False},
         {"id": "synthesis", "label": "Integrated Brief", "module_id": "decision-studio", "weight": 8, "required": True, "expert_review": False},
     ]
@@ -1064,20 +1389,20 @@ def _section_value(packet: Dict[str, Any], sid: str, results: Optional[Dict[str,
         return packet.get("decision_framing") or packet.get("framing") or (packet.get("project") or {}).get("decision_question")
     if sid == "evidence":
         records = packet.get("evidence_and_measurement", {}).get("records", []) if isinstance(packet.get("evidence_and_measurement", {}), dict) else []
-        return records or packet.get("evidence_records") or packet.get("sources") or audit.get("source_ledger")
+        return packet.get("evidence_registry") or packet.get("live_evidence") or records or packet.get("evidence_records") or packet.get("sources") or audit.get("source_ledger")
     if sid == "scenarios":
         records = packet.get("scenarios", {}).get("records", []) if isinstance(packet.get("scenarios", {}), dict) else []
-        return records or packet.get("scenario_analysis") or results.get("scenarios")
+        return records or packet.get("scenario_analysis") or packet.get("workbench_calculations") or packet.get("technical_artifacts") or results.get("scenarios")
     if sid == "impact":
         records = packet.get("impact_measurement", {}).get("records", []) if isinstance(packet.get("impact_measurement", {}), dict) else []
-        return records or packet.get("impact_records")
+        return packet.get("live_evidence") or packet.get("experimental_evidence") or records or packet.get("impact_records")
     if sid == "claims":
         records = packet.get("claim_and_risk_review", {}).get("records", []) if isinstance(packet.get("claim_and_risk_review", {}), dict) else []
-        return records or packet.get("claim_reviews") or audit.get("claim_trace")
+        return packet.get("evidence_gaps") or packet.get("research_routes") or records or packet.get("claim_reviews") or audit.get("claim_trace")
     if sid == "finance":
         return packet.get("financial_tradeoffs") or packet.get("finance_analysis") or results.get("finance")
     if sid == "recovery":
-        return packet.get("execution_and_recovery") or packet.get("execution_recovery")
+        return packet.get("platform_registry") or packet.get("entities") or packet.get("provenance_links") or packet.get("execution_and_recovery") or packet.get("execution_recovery")
     if sid == "audit":
         return packet.get("audit_and_provenance") or audit or packet.get("audit_trail")
     if sid == "synthesis":
@@ -1095,6 +1420,9 @@ def _source_count_from(packet: Dict[str, Any], audit: Optional[Dict[str, Any]] =
     evidence = packet.get("evidence_and_measurement", {}).get("records", []) if isinstance(packet.get("evidence_and_measurement", {}), dict) else []
     if isinstance(evidence, list):
         count += len(evidence)
+    for key in ("evidence_registry", "live_evidence", "experimental_evidence", "evidence_ledger"):
+        if isinstance(packet.get(key), list):
+            count += len(packet.get(key, []))
     return count
 
 
@@ -1146,12 +1474,12 @@ def compute_brief_readiness(packet: Dict[str, Any], inputs: DecisionInputs, resu
             if dq:
                 score += 20
             else:
-                flags.append({"severity": "high", "section": sid, "issue": "Decision question is missing.", "action": "Import Catalyst Canvas or complete the intake decision question."})
+                flags.append({"severity": "high", "section": sid, "issue": "Decision question is missing.", "action": "Complete the intake decision question or import a compatible framing artifact."})
         elif sid == "evidence":
             if source_count:
                 score += min(25, source_count * 8)
             else:
-                flags.append({"severity": "critical", "section": sid, "issue": "No source or evidence records are attached.", "action": "Import Catalyst Data records or add source ledger entries."})
+                flags.append({"severity": "critical", "section": sid, "issue": "No source or evidence records are attached.", "action": "Import Knowledge Library or Site Intelligence evidence, or add source-ledger entries."})
             if float(inputs.dataConfidence or 0) < 60:
                 flags.append({"severity": "high", "section": sid, "issue": "Data confidence is below 60.", "action": "Document source quality, method notes, and review status."})
         elif sid == "scenarios":
@@ -1159,32 +1487,32 @@ def compute_brief_readiness(packet: Dict[str, Any], inputs: DecisionInputs, resu
                 score += 25
             else:
                 score = 35
-                flags.append({"severity": "medium", "section": sid, "issue": "No imported scenario artifact is attached.", "action": "Import Catalyst Analytics R or rely on Decision Studio's built-in scenario screen as a draft."})
+                flags.append({"severity": "medium", "section": sid, "issue": "No imported scenario artifact is attached.", "action": "Import Workbench model outputs or use Decision Studio's built-in scenario screen as a draft."})
         elif sid == "impact":
             if present:
                 score += 25
             else:
-                flags.append({"severity": "high", "section": sid, "issue": "Impact record is missing.", "action": "Import Global Impact Catalyst with baseline, current, target, source, and progress notes."})
+                flags.append({"severity": "high", "section": sid, "issue": "Impact record is missing.", "action": "Import Site Intelligence observations or Research Lab experimental evidence."})
         elif sid == "claims":
             if present:
                 score += 20
             else:
-                flags.append({"severity": "high", "section": sid, "issue": "Claim review is missing.", "action": "Import Narrative Risk before publishing external claims."})
+                flags.append({"severity": "high", "section": sid, "issue": "Claim review is missing.", "action": "Import Research Librarian evidence gaps and review claims before publication."})
         elif sid == "finance":
             if present:
                 score += 15
             if inputs.capex > 0 and inputs.annualSavings > 0:
                 score += 15
             else:
-                flags.append({"severity": "high", "section": sid, "issue": "Finance assumptions are incomplete.", "action": "Enter CAPEX and annual savings or import Catalyst Finance."})
+                flags.append({"severity": "high", "section": sid, "issue": "Finance assumptions are incomplete.", "action": "Enter CAPEX and annual savings or import Workbench calculation evidence."})
             if assumptions_count == 0:
-                flags.append({"severity": "medium", "section": sid, "issue": "No imported assumptions register is attached.", "action": "Import Catalyst Finance or generate audit/provenance before final export."})
+                flags.append({"severity": "medium", "section": sid, "issue": "No imported assumptions register is attached.", "action": "Import Workbench assumptions or generate audit/provenance before final export."})
         elif sid == "recovery":
             if present:
                 score += 30
             else:
                 score = 35
-                flags.append({"severity": "medium", "section": sid, "issue": "Execution/recovery artifact is missing.", "action": "Import Catalyst Grit to assess implementation pressure, support, clarity, and recovery actions."})
+                flags.append({"severity": "medium", "section": sid, "issue": "Execution/recovery artifact is missing.", "action": "Import Platform Core entities and provenance links for cross-product traceability."})
         elif sid == "audit":
             audit_present = bool(audit) or _nonempty(packet.get("audit_and_provenance")) or _nonempty(packet.get("audit_trail"))
             if audit_present:
@@ -1273,7 +1601,7 @@ def compute_brief_readiness(packet: Dict[str, Any], inputs: DecisionInputs, resu
         },
         "export_gate": export_gate,
         "required_reviews": [
-            "Data/source review" if source_count else "Data/source review required before export",
+            "Evidence/source review" if source_count else "Evidence/source review required before export",
             "Finance assumptions review",
             "Narrative/claim risk review",
             "Professional review where regulated, safety-critical, financial, legal, engineering, medical, tax, compliance, assurance, or certification use is possible",
@@ -1891,41 +2219,44 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.7.1."""
+    """Professional public-facing product-page structure for Decision Studio v1.8.0."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
-        "positioning": "An integrated sustainability decision-support workspace that turns framing, evidence, scenarios, impact measures, claims, financial tradeoffs, recovery factors, and audit provenance into a reviewable four-pillar decision brief.",
+        "positioning": "The governance and synthesis layer of the Sustainable Catalyst platform. Decision Studio receives typed evidence, research routes, live indicators, calculations, experiments, entities, and provenance records, then assembles them into a reviewable Decision Packet.",
         "primary_shortcode": "[sc_decision_studio mode=\"full\" title=\"Sustainable Catalyst Decision Studio\"]",
         "landing_shortcode": "[sc_decision_studio mode=\"landing\" title=\"Sustainable Catalyst Decision Studio\"]",
         "demo_shortcode": "[sc_decision_studio mode=\"demo\" title=\"Sustainable Catalyst Decision Studio Demo\"]",
         "workflow": [
-            {"step": "Frame", "module": "Catalyst Canvas", "output": "Decision question, audience, POV, HMW prompt, prototype, and test plan"},
-            {"step": "Anchor", "module": "Catalyst Data", "output": "Evidence records, sources, confidence, period, and method notes"},
-            {"step": "Model", "module": "Catalyst Analytics R", "output": "Scenario assumptions, emissions budget, trajectories, and interpretation notes"},
-            {"step": "Measure", "module": "Global Impact Catalyst", "output": "Impact records, baselines, current values, targets, and progress notes"},
-            {"step": "Review", "module": "Narrative Risk", "output": "Claim review, evidence strength, uncertainty, volatility, and consequence flags"},
-            {"step": "Evaluate", "module": "Catalyst Finance", "output": "NPV, ROI, payback, benefit-cost ratio, carbon cost, and tradeoff flags"},
-            {"step": "Sustain", "module": "Catalyst Grit", "output": "Recovery pressure, energy, support, clarity, next actions, and execution risk"},
-            {"step": "Decide", "module": "Decision Studio", "output": "Four-pillar brief, audit appendix, readiness gate, export bundle, and Workbench handoffs"},
+            {"step": "Source", "module": "Knowledge Library", "output": "Sources, quotations, Harvard-style citations, bibliographies, and collection context"},
+            {"step": "Route", "module": "Research Librarian", "output": "Research routes, recommended titles, evidence gaps, and follow-up questions"},
+            {"step": "Observe", "module": "Site Intelligence", "output": "Indicators, country dossiers, live observations, source health, freshness, and methodology"},
+            {"step": "Calculate", "module": "Workbench", "output": "Formulas, models, graphs, assumptions, validation checks, and technical reports"},
+            {"step": "Test", "module": "Research Lab", "output": "Experiments, notebooks, datasets, instruments, validation results, and limitations"},
+            {"step": "Connect", "module": "Platform Core", "output": "Shared entities, Evidence Ledger records, provenance links, relationships, and signed manifests"},
+            {"step": "Decide", "module": "Decision Studio", "output": "Alternatives, readiness gates, integrated briefs, audit history, and export bundles"},
         ],
         "sections": [
-            "Integrated platform workflow",
+            "Typed platform artifact contracts",
+            "Unified evidence registry",
+            "Integrity verification",
             "Decision Packet workspace",
-            "Module artifact adapters",
-            "Audit and provenance",
+            "Batch and legacy import",
             "Brief readiness and review status",
-            "Scenario comparison",
-            "Workbench handoff",
+            "Scenario comparison and Workbench handoff",
             "Saved packets and export center",
         ],
+        "schemas": {
+            "artifact": PLATFORM_ARTIFACT_SCHEMA,
+            "evidence": EVIDENCE_RECORD_SCHEMA,
+            "decision_packet": "scds-decision-packet/1.1",
+        },
         "boundaries": [
             "Educational and decision-support oriented; not professional advice.",
             "No ESG, SDG, assurance, compliance, engineering, legal, medical, financial, tax, or investment certification.",
-            "AI may assist drafting and interpretation; deterministic calculations, assumptions, and human review remain visible.",
+            "AI may assist drafting and interpretation; deterministic calculations, assumptions, integrity checks, provenance, and human review remain visible.",
         ],
     }
-
 
 def public_demo_template() -> Dict[str, Any]:
     """Professional demo-page structure for landing pages and platform demos."""
@@ -1933,20 +2264,20 @@ def public_demo_template() -> Dict[str, Any]:
         "demo_version": APP_VERSION,
         "headline": "Decision Studio Demo",
         "recommended_demo_flow": [
-            "Open the demo with default fleet-electrification inputs.",
-            "Run the scorecard and review four-pillar results.",
-            "Generate brief readiness and check unresolved issues.",
-            "Compare scenarios and inspect baseline deltas.",
+            "Load the Knowledge Library sample artifact and validate its typed envelope.",
+            "Inspect the normalized evidence, citation, provenance, and integrity records.",
+            "Import additional Site Intelligence, Workbench, Research Lab, Research Librarian, or Platform Core artifacts.",
+            "Run the scorecard, readiness review, and scenario comparison.",
             "Generate Workbench handoff recommendations.",
             "Save the Decision Packet locally or export a complete bundle.",
         ],
         "demo_cards": [
-            {"title": "Integrated Workflow", "description": "Show how Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, Grit, and Decision Studio fit together.", "shortcode": "[sc_decision_studio mode=\"workflow\"]"},
+            {"title": "Unified Platform Handoffs", "description": "Show how six current Sustainable Catalyst products feed a typed Decision Packet.", "shortcode": "[sc_decision_studio mode=\"workflow\"]"},
             {"title": "Readiness Review", "description": "Check whether the packet is complete enough for a draft brief or export.", "shortcode": "[sc_decision_studio mode=\"readiness\"]"},
             {"title": "Scenario Comparison", "description": "Rank baseline, conservative, expected, ambitious, and stress-test options.", "shortcode": "[sc_decision_studio mode=\"scenario\"]"},
             {"title": "Export Center", "description": "Generate JSON, Markdown, HTML, audit, readiness, scenario, and handoff exports.", "shortcode": "[sc_decision_studio mode=\"export\"]"},
         ],
-        "public_copy": "Use Canvas to frame. Use Data to anchor. Use Analytics R to model. Use Global Impact to measure. Use Narrative Risk to review. Use Finance to evaluate. Use Grit to sustain. Use Decision Studio to decide.",
+        "public_copy": "Use Knowledge Library to source. Research Librarian to route. Site Intelligence to observe. Workbench to calculate. Research Lab to test. Platform Core to connect. Decision Studio to decide.",
     }
 
 def _env_first(*names: str) -> str:
@@ -2136,6 +2467,8 @@ def health():
         "source_commit": SOURCE_COMMIT,
         "uptime_seconds": round(time.monotonic() - STARTED_AT_MONOTONIC, 3),
         "limits": {"max_request_bytes": MAX_REQUEST_BYTES, "public_rate_limit": PUBLIC_RATE_LIMIT, "rate_window_seconds": RATE_WINDOW_SECONDS},
+        "platform_artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
+        "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -2179,6 +2512,36 @@ def integrations_modules_endpoint():
 @app.get("/integrations/adapters")
 def integrations_adapters_endpoint():
     return {"ok": True, "version": APP_VERSION, "adapters": artifact_adapter_catalog()}
+
+@app.get("/integrations/platform")
+def integrations_platform_endpoint():
+    return {"ok": True, "version": APP_VERSION, "schema": PLATFORM_ARTIFACT_SCHEMA, "products": module_integrations(), "contracts": platform_handoff_contracts(), "legacy_modules": legacy_module_integrations()}
+
+@app.get("/integrations/contracts")
+def integrations_contracts_endpoint():
+    return {"ok": True, "version": APP_VERSION, "artifact_schema": PLATFORM_ARTIFACT_SCHEMA, "evidence_schema": EVIDENCE_RECORD_SCHEMA, "contracts": platform_handoff_contracts()}
+
+@app.get("/integrations/contracts/{product_id}")
+def integrations_contract_endpoint(product_id: str):
+    contract = platform_contract(product_id)
+    if not contract:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": "unknown_platform_product", "product_id": product_id})
+    return {"ok": True, "version": APP_VERSION, "artifact_schema": PLATFORM_ARTIFACT_SCHEMA, "contract": contract}
+
+@app.post("/integrations/validate")
+def integrations_validate_endpoint(req: TypedArtifactValidationRequest):
+    result = validate_typed_artifact(req.artifact, req.sourceProduct, req.strict)
+    if not result["ok"]:
+        return JSONResponse(status_code=422, content=result)
+    return result
+
+@app.post("/integrations/import-batch")
+def integrations_import_batch_endpoint(req: ArtifactBatchImportRequest):
+    return import_artifact_batch(req.artifacts, packet=req.packet, preserve_raw=req.preserveRaw, strict=req.strict)
+
+@app.get("/decision-packet/platform-handoffs")
+def decision_packet_platform_handoffs_endpoint():
+    return {"ok": True, "version": APP_VERSION, "artifact_schema": PLATFORM_ARTIFACT_SCHEMA, "evidence_schema": EVIDENCE_RECORD_SCHEMA, "contracts": platform_handoff_contracts(), "decision_packet": decision_packet_template()}
 
 @app.post("/integrations/import")
 def integrations_import_endpoint(req: ArtifactImportRequest):
@@ -2283,4 +2646,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"], "integration_endpoints": ["/release", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"]}

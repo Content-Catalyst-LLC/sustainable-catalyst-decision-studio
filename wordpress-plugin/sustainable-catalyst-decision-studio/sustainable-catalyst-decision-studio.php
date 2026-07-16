@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Integrated sustainability decision-support workflow with module artifact adapters, audit/provenance, brief readiness scoring, review status, scenario comparison, Workbench handoffs, integrated briefs, saved Decision Packets, an export center, professional public landing views, and polished platform demos.
- * Version: 1.7.1
+ * Description: Connected decision-support and governance workspace with typed evidence handoffs from Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core; legacy artifact adapters remain supported.
+ * Version: 1.8.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.7.1';
-    const BUILD_FINGERPRINT = 'scds-v1.7.1-53b729b';
-    const SOURCE_COMMIT = '53b729b6940bc6455cf7815c58951bce4a36fff7';
+    const VERSION = '1.8.0';
+    const BUILD_FINGERPRINT = 'scds-v1.8.0-unified-evidence';
+    const SOURCE_COMMIT = 'release-v1.8.0';
     const RELEASE_DATE = '2026-07-16';
-    const DB_VERSION = '1.1.0';
+    const DB_VERSION = '1.2.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -171,7 +171,7 @@ class Sustainable_Catalyst_Decision_Studio {
     public static function default_settings() {
         return [
             'brand_title' => 'Sustainable Catalyst Decision Studio',
-            'brand_subtitle' => 'Integrated sustainability decision support that connects problem framing, evidence records, scenarios, impact measurement, claim review, finance, recovery, and four-pillar synthesis.',
+            'brand_subtitle' => 'Connected decision intelligence that brings research sources, live indicators, calculations, experiments, entities, provenance, scenarios, and review status into one auditable Decision Packet.',
             'methodology_note' => 'AI in the toolkit, never in control. Outputs are decision-support drafts and educational analyses, not legal, financial, engineering, medical, sustainability assurance, tax, compliance, or investment advice.',
             'backend_url' => '',
             'backend_api_key' => '',
@@ -240,6 +240,11 @@ class Sustainable_Catalyst_Decision_Studio {
             'restIntegrationsUrl' => esc_url_raw(rest_url('scds/v1/integrations')),
             'restDecisionPacketTemplateUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/template')),
             'restAdaptersUrl' => esc_url_raw(rest_url('scds/v1/integrations/adapters')),
+            'restPlatformIntegrationsUrl' => esc_url_raw(rest_url('scds/v1/integrations/platform')),
+            'restContractsUrl' => esc_url_raw(rest_url('scds/v1/integrations/contracts')),
+            'restValidateArtifactUrl' => esc_url_raw(rest_url('scds/v1/integrations/validate')),
+            'restImportBatchUrl' => esc_url_raw(rest_url('scds/v1/integrations/import-batch')),
+            'restPlatformHandoffsUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/platform-handoffs')),
             'restImportArtifactUrl' => esc_url_raw(rest_url('scds/v1/integrations/import')),
             'restDecisionPacketImportUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/import')),
             'restAuditTemplateUrl' => esc_url_raw(rest_url('scds/v1/audit/template')),
@@ -262,7 +267,7 @@ class Sustainable_Catalyst_Decision_Studio {
             'restDecisionPacketExportBundleUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/export-bundle')),
             'restPublicLandingTemplateUrl' => esc_url_raw(rest_url('scds/v1/public/landing-template')),
             'restPublicDemoTemplateUrl' => esc_url_raw(rest_url('scds/v1/public/demo-template')),
-            'storageKey' => 'scds_saved_decision_packets_v1_7_0',
+            'storageKey' => 'scds_saved_decision_packets_v1_8_0',
             'nonce' => wp_create_nonce(self::NONCE_ACTION),
             'backendEnabled' => $settings['backend_enabled'] === '1' && !empty($settings['backend_url']),
             'aiBriefingEnabled' => $settings['ai_briefing_enabled'] === '1',
@@ -326,24 +331,23 @@ class Sustainable_Catalyst_Decision_Studio {
     private function public_landing_template() {
         return [
             'headline' => 'Decision Studio',
-            'positioning' => 'An integrated sustainability decision-support workspace that turns framing, evidence, scenarios, impact measures, claims, financial tradeoffs, recovery factors, and audit provenance into a reviewable four-pillar decision brief.',
+            'positioning' => 'The governance and synthesis layer of the Sustainable Catalyst platform. Decision Studio receives typed evidence, research routes, live indicators, calculations, experiments, entities, and provenance records, then assembles them into a reviewable Decision Packet.',
             'workflow' => [
-                ['step'=>'Frame','module'=>'Catalyst Canvas','description'=>'Define the challenge, audience, POV, HMW prompt, prototype, and test plan.'],
-                ['step'=>'Anchor','module'=>'Catalyst Data','description'=>'Attach evidence records, source details, confidence, periods, and method notes.'],
-                ['step'=>'Model','module'=>'Catalyst Analytics R','description'=>'Explore scenarios, assumptions, emissions budgets, and interpretation notes.'],
-                ['step'=>'Measure','module'=>'Global Impact Catalyst','description'=>'Track impact records with baseline, current value, target, indicator, and progress notes.'],
-                ['step'=>'Review','module'=>'Narrative Risk','description'=>'Evaluate claims, evidence strength, uncertainty, stakeholder pressure, volatility, and consequences.'],
-                ['step'=>'Evaluate','module'=>'Catalyst Finance','description'=>'Estimate NPV, ROI, payback, benefit-cost ratio, carbon cost, and financial flags.'],
-                ['step'=>'Sustain','module'=>'Catalyst Grit','description'=>'Assess recovery pressure, energy, support, clarity, and next actions.'],
-                ['step'=>'Decide','module'=>'Decision Studio','description'=>'Generate the integrated decision packet, brief, audit appendix, readiness review, and export bundle.'],
+                ['step'=>'Source','module'=>'Knowledge Library','description'=>'Import structured sources, quotations, Harvard-style citations, bibliographies, and collection context.'],
+                ['step'=>'Route','module'=>'Research Librarian','description'=>'Carry research routes, recommended titles, evidence gaps, and follow-up questions into the packet.'],
+                ['step'=>'Observe','module'=>'Site Intelligence','description'=>'Attach indicators, country dossiers, live observations, source health, freshness, and methodology.'],
+                ['step'=>'Calculate','module'=>'Workbench','description'=>'Import formulas, models, graphs, assumptions, validation checks, and technical reports.'],
+                ['step'=>'Test','module'=>'Research Lab','description'=>'Attach experiments, notebooks, datasets, instruments, validation results, and scientific limitations.'],
+                ['step'=>'Connect','module'=>'Platform Core','description'=>'Resolve shared entities, Evidence Ledger records, provenance links, relationships, and signed manifests.'],
+                ['step'=>'Decide','module'=>'Decision Studio','description'=>'Compare alternatives, expose uncertainty, generate briefs, apply readiness gates, and preserve audit history.'],
             ],
             'features' => [
-                ['title'=>'Decision Packet workspace','description'=>'One structured object for project inputs, module artifacts, evidence, assumptions, risks, scenarios, readiness, audit, and exports.'],
-                ['title'=>'Module artifact adapters','description'=>'Import JSON outputs from Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, Grit, and Workbench.'],
-                ['title'=>'Audit and provenance','description'=>'Track artifacts, sources, assumptions, calculations, claims, changes, unresolved issues, and review status.'],
-                ['title'=>'Brief readiness','description'=>'Score whether the decision packet is ready for a draft, export, or further evidence review.'],
-                ['title'=>'Scenario comparison','description'=>'Rank options, compare deltas versus baseline, flag sensitivity issues, and identify tradeoffs.'],
-                ['title'=>'Workbench handoff','description'=>'Route deeper modeling, graphing, symbolic review, engineering notes, and calculator work to Workbench.'],
+                ['title'=>'Typed platform artifacts','description'=>'Validate the additive scds-platform-artifact/1.0 envelope across six current Sustainable Catalyst products.'],
+                ['title'=>'Unified evidence registry','description'=>'Retain source identity, methodology, freshness, confidence, citations, evidence notes, and transformation history.'],
+                ['title'=>'Integrity verification','description'=>'Calculate canonical payload hashes and flag supplied hashes that do not match the imported artifact.'],
+                ['title'=>'Decision Packet workspace','description'=>'Use scds-decision-packet/1.1 to hold platform handoffs, evidence, assumptions, scenarios, experiments, calculations, entities, provenance, and audit records.'],
+                ['title'=>'Batch and legacy import','description'=>'Import multiple typed artifacts while preserving compatibility with earlier Catalyst module exports.'],
+                ['title'=>'Readiness and scenario review','description'=>'Evaluate evidence completeness, compare alternatives, surface unresolved issues, and route deeper modeling to Workbench.'],
                 ['title'=>'Saved packets and export center','description'=>'Save working packets and export JSON, Markdown, HTML, audit, readiness, scenario, and handoff artifacts.'],
             ],
         ];
@@ -362,7 +366,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <p><?php echo esc_html($t['positioning']); ?></p>
                 <div class="scds-public-actions"><a class="scds-button scds-button-primary" href="#scds-live-demo">Open Live Studio →</a><a class="scds-button" href="#scds-workflow-map">View Workflow →</a><a class="scds-button" href="#scds-public-boundary">Boundaries →</a></div>
             </header>
-            <section id="scds-workflow-map" class="scds-public-section"><p class="scds-section-kicker">Integrated workflow</p><h3>Frame → Anchor → Model → Measure → Review → Evaluate → Sustain → Decide</h3><div class="scds-public-workflow">
+            <section id="scds-workflow-map" class="scds-public-section"><p class="scds-section-kicker">Integrated workflow</p><h3>Source → Route → Observe → Calculate → Test → Connect → Decide</h3><div class="scds-public-workflow">
                 <?php foreach ($t['workflow'] as $item): ?><article><p class="scds-card-label"><?php echo esc_html($item['step']); ?></p><h4><?php echo esc_html($item['module']); ?></h4><p><?php echo esc_html($item['description']); ?></p></article><?php endforeach; ?>
             </div></section>
             <section class="scds-public-section"><p class="scds-section-kicker">Platform capabilities</p><h3>What Decision Studio now supports</h3><div class="scds-public-grid">
@@ -413,12 +417,12 @@ class Sustainable_Catalyst_Decision_Studio {
     private function render_panel_workflow($mode) { ?>
         <section class="scds-panel" data-scds-panel="workflow">
             <div class="scds-panel-head">
-                <p class="scds-section-kicker">Integrated platform workflow</p>
-                <h3>Frame → Anchor → Model → Measure → Review → Evaluate → Sustain → Decide</h3>
-                <p>Use Decision Studio as the synthesis layer for the broader Sustainable Catalyst module ecosystem. Each module can contribute a structured artifact to the Decision Packet before the final four-pillar brief is generated.</p>
+                <p class="scds-section-kicker">Unified evidence and platform handoffs</p>
+                <h3>Source → Research → Observe → Model → Validate → Trace → Decide</h3>
+                <p>Decision Studio now accepts a shared typed-artifact envelope from the current Sustainable Catalyst platform. Every import can retain its source product, version, artifact identifier, methodology, freshness, confidence, integrity hash, and transformation history.</p>
             </div>
-            <div class="scds-workflow-strip" aria-label="Decision Studio integrated workflow">
-                <span>Canvas</span><span>Data</span><span>Analytics R</span><span>Impact</span><span>Narrative Risk</span><span>Finance</span><span>Grit</span><span>Decision Studio</span>
+            <div class="scds-workflow-strip" aria-label="Decision Studio connected platform workflow">
+                <span>Knowledge Library</span><span>Research Librarian</span><span>Site Intelligence</span><span>Workbench</span><span>Research Lab</span><span>Platform Core</span><span>Decision Studio</span>
             </div>
             <div class="scds-integration-grid">
                 <?php foreach ($this->module_integrations() as $module) : ?>
@@ -426,47 +430,53 @@ class Sustainable_Catalyst_Decision_Studio {
                         <p class="scds-card-label"><?php echo esc_html($module['label']); ?></p>
                         <h4><?php echo esc_html($module['name']); ?></h4>
                         <p><?php echo esc_html($module['summary']); ?></p>
-                        <p class="scds-integration-use"><strong>Feeds:</strong> <?php echo esc_html($module['feeds']); ?></p>
+                        <p class="scds-integration-use"><strong>Packet target:</strong> <?php echo esc_html($module['packet_section']); ?></p>
                         <div class="scds-card-actions">
-                            <a class="scds-mini-button" href="<?php echo esc_url($module['url']); ?>">Open module →</a>
+                            <a class="scds-mini-button" href="<?php echo esc_url($module['url']); ?>">Open product →</a>
                             <button type="button" class="scds-mini-button" data-scds-mark-artifact="<?php echo esc_attr($module['artifact_key']); ?>">Mark for packet</button>
                         </div>
                     </article>
                 <?php endforeach; ?>
             </div>
-            <div class="scds-note"><strong>Artifact adapter boundary:</strong> this release adds Module Artifact Adapters. Paste or import a JSON export from a module and Decision Studio will normalize it into the correct Decision Packet section.</div>
+            <div class="scds-note"><strong>v1.8.0 contract:</strong> <code>scds-platform-artifact/1.0</code> is additive. Legacy Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, and Grit JSON exports remain importable through compatibility adapters.</div>
             <div class="scds-import-box">
                 <div class="scds-panel-head scds-panel-head-small">
-                    <p class="scds-section-kicker">Module artifact import</p>
-                    <h4>Paste a module JSON export</h4>
-                    <p>Choose the module, paste its JSON export, and import it into the Decision Packet. Auto-detect is available for known Catalyst module schemas.</p>
+                    <p class="scds-section-kicker">Typed artifact import</p>
+                    <h4>Paste a product artifact or legacy JSON export</h4>
+                    <p>Select a source product or use auto-detect. Typed envelopes are validated before they are normalized into evidence, research, model, experiment, entity, provenance, and audit sections.</p>
                 </div>
                 <div class="scds-form-grid">
-                    <label>Artifact type
+                    <label>Source product
                         <select data-scds-import-module>
                             <option value="">Auto-detect</option>
-                            <option value="catalyst-canvas">Catalyst Canvas</option>
-                            <option value="catalyst-data">Catalyst Data</option>
-                            <option value="catalyst-analytics-r">Catalyst Analytics R</option>
-                            <option value="global-impact-catalyst">Global Impact Catalyst</option>
-                            <option value="catalyst-narrative-risk">Narrative Risk</option>
-                            <option value="catalyst-finance">Catalyst Finance</option>
-                            <option value="catalyst-grit">Catalyst Grit</option>
-                            <option value="workbench">Workbench calculation/report</option>
+                            <option value="knowledge-library">Knowledge Library</option>
+                            <option value="research-librarian">Research Librarian</option>
+                            <option value="site-intelligence">Site Intelligence</option>
+                            <option value="workbench">Workbench</option>
+                            <option value="research-lab">Research Lab</option>
+                            <option value="platform-core">Platform Core</option>
+                            <optgroup label="Legacy compatibility">
+                                <option value="catalyst-canvas">Catalyst Canvas</option>
+                                <option value="catalyst-data">Catalyst Data</option>
+                                <option value="catalyst-analytics-r">Catalyst Analytics R</option>
+                                <option value="global-impact-catalyst">Global Impact Catalyst</option>
+                                <option value="catalyst-narrative-risk">Narrative Risk</option>
+                                <option value="catalyst-finance">Catalyst Finance</option>
+                                <option value="catalyst-grit">Catalyst Grit</option>
+                            </optgroup>
                         </select>
                     </label>
                     <label>Import action
                         <select data-scds-import-action>
-                            <option value="merge">Merge into current Decision Packet</option>
+                            <option value="merge">Validate and merge into packet</option>
                             <option value="preview">Preview normalized patch only</option>
                         </select>
                     </label>
                 </div>
-                <label class="scds-wide">Artifact JSON<textarea rows="8" data-scds-artifact-json placeholder='Paste a Catalyst module JSON export here'></textarea></label>
-                <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-import-artifact>Import Artifact</button><button type="button" class="scds-button" data-scds-load-sample-artifact>Load Sample Artifact</button><button type="button" class="scds-button" data-scds-download-packet>Download Decision Packet JSON</button></div>
+                <label class="scds-wide">Artifact JSON<textarea rows="10" data-scds-artifact-json placeholder='Paste an scds-platform-artifact/1.0 envelope or a supported legacy export'></textarea></label>
+                <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-import-artifact>Validate &amp; Import</button><button type="button" class="scds-button" data-scds-load-sample-artifact>Load Knowledge Library Sample</button><button type="button" class="scds-button" data-scds-download-packet>Download Decision Packet JSON</button></div>
                 <div class="scds-import-result" data-scds-import-result></div>
             </div>
-            <div class="scds-note"><strong>Artifact adapter boundary:</strong> Module Artifact Adapters normalize structured exports into a Decision Packet. They map fields and preserve provenance, but they do not verify source truth, professional compliance, certification, or decision approval.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-packet-template>Preview Decision Packet</button><button type="button" class="scds-button" data-scds-run>Run Current Decision Analysis</button></div>
             <div class="scds-packet-preview" data-scds-packet-preview></div>
         </section>
@@ -480,7 +490,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Quality gates before export</h3>
                 <p>Review whether the Decision Packet is ready for a draft brief, reviewed export, or further evidence work. The readiness gate checks framing, evidence, scenarios, impact, claims, finance, recovery, audit/provenance, and synthesis.</p>
             </div>
-            <div class="scds-note"><strong>v1.7.1:</strong> readiness scoring now surfaces section status, unresolved issues, required reviews, and export gates. It is a workflow quality screen, not approval or professional signoff.</div>
+            <div class="scds-note"><strong>v1.8.0:</strong> readiness scoring now surfaces section status, unresolved issues, required reviews, and export gates. It is a workflow quality screen, not approval or professional signoff.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-readiness>Check Brief Readiness</button>
                 <button type="button" class="scds-button" data-scds-generate-review-status>Generate Review Status</button>
@@ -526,7 +536,7 @@ class Sustainable_Catalyst_Decision_Studio {
         <section class="scds-panel" data-scds-panel="scenario">
             <div class="scds-panel-head"><p class="scds-section-kicker">Scenario comparison</p><h3>Compare options, deltas, tradeoffs, and readiness before the brief</h3><p>Generate a normalized comparison matrix across baseline, conservative, expected, ambitious, stress-test, or imported scenario artifacts.</p></div>
             <div class="scds-form-grid"><label>Savings uncertainty (%)<input type="number" data-scds-field="savingsVolatility" value="15" min="0" max="100"></label><label>CAPEX uncertainty (%)<input type="number" data-scds-field="capexVolatility" value="18" min="0" max="100"></label><label>Carbon price assumption ($/tCO₂e)<input type="number" data-scds-field="carbonPrice" value="45" min="0" step="1"></label><label>Social benefit score (0–100)<input type="number" data-scds-field="socialBenefit" value="58" min="0" max="100"></label></div>
-            <div class="scds-note"><strong>v1.7.1:</strong> scenario comparison now ranks options, shows deltas versus baseline, adds tradeoff notes, and identifies Workbench handoff candidates for deeper modeling.</div>
+            <div class="scds-note"><strong>v1.8.0:</strong> scenario comparison now ranks options, shows deltas versus baseline, adds tradeoff notes, and identifies Workbench handoff candidates for deeper modeling.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-scenario-compare>Compare Scenarios</button><button type="button" class="scds-button" data-scds-export-scenario-json>Download Scenario JSON</button><button type="button" class="scds-button" data-scds-workbench-handoff>Recommend Workbench Handoffs</button></div>
             <div class="scds-scenario-comparison" data-scds-scenario-output></div>
         </section>
@@ -535,7 +545,7 @@ class Sustainable_Catalyst_Decision_Studio {
     private function render_panel_handoff($mode) { ?>
         <section class="scds-panel" data-scds-panel="handoff">
             <div class="scds-panel-head"><p class="scds-section-kicker">Workbench handoff</p><h3>Send deeper calculations, graphs, and technical checks to Workbench</h3><p>Decision Studio synthesizes the decision. Workbench performs deeper symbolic, graph, engineering, scenario, risk, economics, environmental QA/QC, and domain-specific analysis.</p></div>
-            <div class="scds-note"><strong>v1.7.1:</strong> handoff recommendations include tool IDs, reasons, priorities, shortcodes, and a payload summary that can be used to continue analysis in Workbench.</div>
+            <div class="scds-note"><strong>v1.8.0:</strong> handoff recommendations include tool IDs, reasons, priorities, shortcodes, and a payload summary that can be used to continue analysis in Workbench.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-workbench-handoff>Generate Workbench Handoff Plan</button><button type="button" class="scds-button" data-scds-export-handoff-json>Download Handoff JSON</button><button type="button" class="scds-button" data-scds-scenario-compare>Refresh Scenario Matrix</button></div>
             <div class="scds-workbench-handoff" data-scds-handoff-output></div>
         </section>
@@ -549,7 +559,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Save the packet, reload prior work, and export the full decision bundle</h3>
                 <p>Decision Studio can preserve the current Decision Packet as a browser-saved working record, generate a complete export bundle, and prepare JSON, Markdown, HTML, audit, readiness, scenario, and Workbench handoff exports.</p>
             </div>
-            <div class="scds-note"><strong>v1.7.1:</strong> saved packets are working records for review and continuation. Exports preserve user-entered and imported material; review confidential or sensitive information before sharing.</div>
+            <div class="scds-note"><strong>v1.8.0:</strong> saved packets are working records for review and continuation. Exports preserve user-entered and imported material; review confidential or sensitive information before sharing.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-save-packet-local>Save Packet Locally</button>
                 <button type="button" class="scds-button" data-scds-refresh-packets>Refresh Saved Packets</button>
@@ -578,7 +588,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Professional decision memo from the full Decision Packet</h3>
                 <p>Generate a structured brief that synthesizes framing, evidence, scenarios, impact records, claim review, finance, recovery, four-pillar scores, audit/provenance, and Workbench handoffs.</p>
             </div>
-            <div class="scds-note"><strong>v1.7.1:</strong> the brief generator now includes readiness status, scenario comparison matrix, Workbench handoff details, audit appendix summary, and Markdown/HTML/JSON exports.</div>
+            <div class="scds-note"><strong>v1.8.0:</strong> the brief generator now includes readiness status, scenario comparison matrix, Workbench handoff details, audit appendix summary, and Markdown/HTML/JSON exports.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-integrated-brief>Generate Integrated Brief</button>
                 <button type="button" class="scds-button" data-scds-run>Generate Basic Brief</button>
@@ -603,7 +613,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Decision packet ledger, sources, assumptions, calculations, claims, changes, and review status</h3>
                 <p>Generate a structured audit appendix that shows what was entered, which module artifacts are present, which sources support the decision, which calculations were used, and which assumptions still require review.</p>
             </div>
-            <div class="scds-note"><strong>v1.7.1:</strong> audit works with the readiness gate so unresolved evidence, source, calculation, finance, claim, and review issues can be surfaced before export.</div>
+            <div class="scds-note"><strong>v1.8.0:</strong> audit works with the readiness gate so unresolved evidence, source, calculation, finance, claim, and review issues can be surfaced before export.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-audit-generate>Generate Audit Appendix</button><button type="button" class="scds-button" data-scds-export-audit-json>Download Audit JSON</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div>
             <div class="scds-audit-list" data-scds-audit></div>
             <div class="scds-workbench-links" data-scds-workbench-links></div>
@@ -650,7 +660,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
 
     public function render_admin_integrations() {
-        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.7.1 maps specialized modules into one Decision Packet, compares scenarios, routes deeper analysis to Workbench, and prepares saved packet/export workflows.');
+        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.8.0 maps specialized modules into one Decision Packet, compares scenarios, routes deeper analysis to Workbench, and prepares saved packet/export workflows.');
         echo '<p>Use this map as the integration contract for the next build: module artifact exports should feed the Decision Packet sections listed below.</p>';
         echo '<table class="widefat striped"><thead><tr><th>Step</th><th>Module</th><th>Role</th><th>Feeds Decision Packet</th><th>URL</th></tr></thead><tbody>';
         foreach ($this->module_integrations() as $m) {
@@ -671,7 +681,7 @@ class Sustainable_Catalyst_Decision_Studio {
     }
 
     public function render_admin_templates() { $this->admin_wrap_start('Scenario Templates', 'Bundled scenario structures for sustainability decisions.'); $this->render_csv_table($this->scenario_templates()); $this->admin_wrap_end(); }
-    public function render_admin_scenario_handoff() { $this->admin_wrap_start('Scenario Comparison and Workbench Handoff', 'v1.7.1 quality layer for comparing options, routing deeper analysis to Workbench, and feeding export bundles.'); echo '<p><strong>Endpoints:</strong> /scenario-comparison, /decision-packet/scenario-comparison, /workbench/handoff, /decision-packet/workbench-handoff.</p>'; echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($this->workbench_handoff_catalog(), JSON_PRETTY_PRINT)) . '</pre>'; $this->admin_wrap_end(); }
+    public function render_admin_scenario_handoff() { $this->admin_wrap_start('Scenario Comparison and Workbench Handoff', 'v1.8.0 quality layer for comparing options, routing deeper analysis to Workbench, and feeding export bundles.'); echo '<p><strong>Endpoints:</strong> /scenario-comparison, /decision-packet/scenario-comparison, /workbench/handoff, /decision-packet/workbench-handoff.</p>'; echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($this->workbench_handoff_catalog(), JSON_PRETTY_PRINT)) . '</pre>'; $this->admin_wrap_end(); }
     public function render_admin_scorecard() { $this->admin_wrap_start('Scorecard Builder', 'Default indicators and weights for four-pillar decision support.'); $this->render_csv_table($this->scorecard_rows()); $this->admin_wrap_end(); }
     public function render_admin_reports() { $this->admin_wrap_start('Report Templates', 'Decision brief structure used by the public interface and backend.'); echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html($this->report_template_markdown()) . '</pre>'; $this->admin_wrap_end(); }
 
@@ -717,7 +727,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
 
     public function render_admin_public_pages() {
-        $this->admin_wrap_start('Public Landing & Demo', 'Decision Studio v1.7.1 launch-ready public page structure, demo flow, and shortcode guidance.');
+        $this->admin_wrap_start('Public Landing & Demo', 'Decision Studio v1.8.0 launch-ready public page structure, demo flow, and shortcode guidance.');
         $template = $this->public_landing_template();
         echo '<h2>Recommended public shortcodes</h2><textarea readonly style="width:100%;height:120px">[sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]&#10;[sc_decision_studio mode="demo" title="Decision Studio Demo"]&#10;[sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]&#10;[sc_decision_studio mode="export" title="Decision Studio Export Center"]</textarea>';
         echo '<h2>Workflow copy</h2><p><strong>Use Canvas to frame. Use Data to anchor. Use Analytics R to model. Use Global Impact to measure. Use Narrative Risk to review. Use Finance to evaluate. Use Grit to sustain. Use Decision Studio to decide.</strong></p>';
@@ -800,18 +810,22 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Production Reliability and Roadmap Repair',
+            'release_name'=>'Unified Evidence and Platform Handoffs',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
             'database_version'=>self::DB_VERSION,
-            'decision_packet_schema'=>'scds-decision-packet/1.0',
+            'decision_packet_schema'=>'scds-decision-packet/1.1',
+            'platform_artifact_schema'=>'scds-platform-artifact/1.0',
+            'evidence_record_schema'=>'scds-evidence-record/1.0',
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
                 'backend'=>self::VERSION,
                 'api_namespace'=>'scds/v1',
                 'shortcodes_preserved'=>true,
                 'packet_schema_breaking_changes'=>false,
+                'typed_platform_artifacts'=>true,
+                'legacy_artifact_adapters_preserved'=>true,
             ],
         ];
     }
@@ -862,6 +876,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/public/demo-template', ['methods'=>'GET','callback'=>[$this,'rest_public_demo_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/integrations', ['methods'=>'GET','callback'=>[$this,'rest_integrations'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/integrations/adapters', ['methods'=>'GET','callback'=>[$this,'rest_adapters'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/integrations/platform', ['methods'=>'GET','callback'=>[$this,'rest_platform_integrations'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/integrations/contracts', ['methods'=>'GET','callback'=>[$this,'rest_handoff_contracts'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/integrations/validate', ['methods'=>'POST','callback'=>[$this,'rest_validate_typed_artifact'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/integrations/import-batch', ['methods'=>'POST','callback'=>[$this,'rest_import_artifact_batch'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/platform-handoffs', ['methods'=>'GET','callback'=>[$this,'rest_platform_handoff_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/integrations/import', ['methods'=>'POST','callback'=>[$this,'rest_import_artifact'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/import', ['methods'=>'POST','callback'=>[$this,'rest_import_artifact'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/template', ['methods'=>'GET','callback'=>[$this,'rest_decision_packet_template'],'permission_callback'=>'__return_true']);
@@ -900,7 +919,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
 
     public function rest_public_landing_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'landing'=>$this->public_landing_template()]); }
-    public function rest_public_demo_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'demo'=>['demo_version'=>self::VERSION,'headline'=>'Decision Studio Demo','public_copy'=>'Use Canvas to frame. Use Data to anchor. Use Analytics R to model. Use Global Impact to measure. Use Narrative Risk to review. Use Finance to evaluate. Use Grit to sustain. Use Decision Studio to decide.','shortcodes'=>['[sc_decision_studio mode="demo"]','[sc_decision_studio mode="workflow"]','[sc_decision_studio mode="readiness"]','[sc_decision_studio mode="export"]']]]); }
+    public function rest_public_demo_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'demo'=>['demo_version'=>self::VERSION,'headline'=>'Decision Studio Demo','public_copy'=>'Use Knowledge Library to source. Use Research Librarian to route. Use Site Intelligence to observe. Use Workbench to model. Use Research Lab to validate. Use Platform Core to trace. Use Decision Studio to decide.','shortcodes'=>['[sc_decision_studio mode="demo"]','[sc_decision_studio mode="workflow"]','[sc_decision_studio mode="readiness"]','[sc_decision_studio mode="export"]']]]); }
 
     public function rest_adapters() {
         if ($this->settings()['backend_enabled'] === '1' && !empty($this->settings()['backend_url'])) {
@@ -909,6 +928,33 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         }
         return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'adapters'=>$this->artifact_adapter_catalog()]);
     }
+
+    public function rest_platform_integrations() {
+        if ($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])) { $backend=$this->backend_request('/integrations/platform',[],'GET'); if(!is_wp_error($backend))return rest_ensure_response($backend); }
+        return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'schema'=>'scds-platform-artifact/1.0','products'=>$this->module_integrations(),'contracts'=>$this->platform_handoff_contracts(),'legacy_modules'=>['catalyst-canvas','catalyst-data','catalyst-analytics-r','global-impact-catalyst','catalyst-narrative-risk','catalyst-finance','catalyst-grit']]);
+    }
+
+    public function rest_handoff_contracts() {
+        if ($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])) { $backend=$this->backend_request('/integrations/contracts',[],'GET'); if(!is_wp_error($backend))return rest_ensure_response($backend); }
+        return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'artifact_schema'=>'scds-platform-artifact/1.0','evidence_schema'=>'scds-evidence-record/1.0','contracts'=>$this->platform_handoff_contracts()]);
+    }
+
+    public function rest_validate_typed_artifact(WP_REST_Request $request) {
+        $payload=$request->get_json_params(); if(!is_array($payload))$payload=[];
+        if ($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])) { $backend=$this->backend_request('/integrations/validate',$payload); if(!is_wp_error($backend))return rest_ensure_response($backend); }
+        $result=$this->validate_typed_artifact_local(is_array($payload['artifact']??null)?$payload['artifact']:[],sanitize_text_field($payload['sourceProduct']??''),!empty($payload['strict']));
+        return new WP_REST_Response($result,$result['ok']?200:422);
+    }
+
+    public function rest_import_artifact_batch(WP_REST_Request $request) {
+        $payload=$request->get_json_params(); if(!is_array($payload))$payload=[];
+        if ($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])) { $backend=$this->backend_request('/integrations/import-batch',$payload); if(!is_wp_error($backend))return rest_ensure_response($backend); }
+        $packet=is_array($payload['packet']??null)?$payload['packet']:$this->decision_packet_template();$imports=[];$rejected=[];
+        foreach(array_slice($this->arr($payload['artifacts']??[]),0,100) as $index=>$artifact){if(!is_array($artifact)){$rejected[]=['index'=>$index,'errors'=>['Artifact must be an object.']];continue;}$validation=$this->validate_typed_artifact_local($artifact,'',!empty($payload['strict']));if(!empty($payload['strict'])&&!$validation['ok']){$rejected[]=['index'=>$index,'errors'=>$validation['errors']];continue;}$result=$this->import_artifact_into_packet($artifact,'',$packet);$packet=$result['decision_packet'];$imports[]=$result['import_result']['summary'];}
+        return rest_ensure_response(['ok'=>empty($rejected)||empty($payload['strict']),'version'=>self::VERSION,'imported_count'=>count($imports),'rejected_count'=>count($rejected),'imports'=>$imports,'rejected'=>$rejected,'decision_packet'=>$packet]);
+    }
+
+    public function rest_platform_handoff_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'artifact_schema'=>'scds-platform-artifact/1.0','evidence_schema'=>'scds-evidence-record/1.0','contracts'=>$this->platform_handoff_contracts(),'decision_packet'=>$this->decision_packet_template()]); }
 
     public function rest_import_artifact(WP_REST_Request $request) {
         $payload = $request->get_json_params(); if (!is_array($payload)) $payload = [];
@@ -1209,13 +1255,18 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     }
 
     private function csv_response($filename, $rows) { $fh = fopen('php://temp','w+'); if ($rows) { fputcsv($fh, array_keys($rows[0])); foreach($rows as $row) fputcsv($fh, $row); } rewind($fh); $csv = stream_get_contents($fh); fclose($fh); return new WP_REST_Response($csv, 200, ['Content-Type'=>'text/csv; charset=utf-8','Content-Disposition'=>'attachment; filename="'.$filename.'"']); }
-    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.7.1.csv', $this->scenario_templates()); }
-    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.7.1.csv', $this->workbench_tool_map()); }
-    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.7.1.csv', $rows ?: []); }
+    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.8.0.csv', $this->scenario_templates()); }
+    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.8.0.csv', $this->workbench_tool_map()); }
+    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.8.0.csv', $rows ?: []); }
 
 
     private function artifact_adapter_catalog() {
         return [
+            ['module_id'=>'knowledge-library','name'=>'Knowledge Library','artifact_key'=>'knowledge_library_evidence','packet_section'=>'evidence_registry','detects'=>['citation','bibliography','quotes','source_record','evidence_notes'],'summary'=>'Sources, quotations, citations, bibliographies, collections, and evidence notes.'],
+            ['module_id'=>'research-librarian','name'=>'Research Librarian','artifact_key'=>'research_guidance','packet_section'=>'research_routes','detects'=>['research_route','recommended_sources','evidence_gaps','follow_up_questions','related_titles'],'summary'=>'Research routes, source recommendations, related titles, evidence gaps, and follow-up questions.'],
+            ['module_id'=>'site-intelligence','name'=>'Site Intelligence','artifact_key'=>'site_intelligence_evidence','packet_section'=>'live_evidence','detects'=>['indicator','geography','period','value','methodology','freshness'],'summary'=>'Indicators, observations, methods, source health, freshness, and confidence.'],
+            ['module_id'=>'research-lab','name'=>'Research Lab','artifact_key'=>'research_lab_artifacts','packet_section'=>'experimental_evidence','detects'=>['experiment','hypothesis','method','dataset','validation','instruments'],'summary'=>'Experiments, notebooks, datasets, instruments, validation results, and limitations.'],
+            ['module_id'=>'platform-core','name'=>'Platform Core','artifact_key'=>'platform_core_records','packet_section'=>'platform_registry','detects'=>['entity','identifiers','evidence_ledger','relationships','provenance','signatures'],'summary'=>'Canonical entities, Evidence Ledger records, provenance links, relationships, and signatures.'],
             ['module_id'=>'catalyst-canvas','name'=>'Catalyst Canvas','artifact_key'=>'framing','packet_section'=>'decision_framing','detects'=>['challenge','audience','point_of_view','how_might_we','prototype','test_plan']],
             ['module_id'=>'catalyst-data','name'=>'Catalyst Data','artifact_key'=>'evidence_records','packet_section'=>'evidence_and_measurement.records','detects'=>['entity','indicator','period','values','source','confidence','trace_path']],
             ['module_id'=>'catalyst-analytics-r','name'=>'Catalyst Analytics R','artifact_key'=>'scenario_analysis','packet_section'=>'scenarios.records','detects'=>['demo','inputs','final','composite_score','budget_ratio','trajectory']],
@@ -1229,9 +1280,20 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function detect_artifact_module($artifact, $module_id='') {
         $mid = sanitize_key(str_replace('_','-', $module_id));
-        $aliases = ['canvas'=>'catalyst-canvas','data'=>'catalyst-data','analytics-r'=>'catalyst-analytics-r','impact'=>'global-impact-catalyst','global-impact'=>'global-impact-catalyst','narrative-risk'=>'catalyst-narrative-risk','finance'=>'catalyst-finance','grit'=>'catalyst-grit','calculation'=>'workbench'];
+        $aliases = ['canvas'=>'catalyst-canvas','data'=>'catalyst-data','analytics-r'=>'catalyst-analytics-r','impact'=>'global-impact-catalyst','global-impact'=>'global-impact-catalyst','narrative-risk'=>'catalyst-narrative-risk','finance'=>'catalyst-finance','grit'=>'catalyst-grit','calculation'=>'workbench','library'=>'knowledge-library','knowledge'=>'knowledge-library','librarian'=>'research-librarian','research-guidance'=>'research-librarian','site'=>'site-intelligence','intelligence'=>'site-intelligence','lab'=>'research-lab','core'=>'platform-core','platform'=>'platform-core'];
         if (isset($aliases[$mid])) $mid = $aliases[$mid];
         foreach ($this->artifact_adapter_catalog() as $a) if ($a['module_id'] === $mid || $a['artifact_key'] === $mid) return $a;
+        $source = is_array($artifact['source'] ?? null) ? $artifact['source'] : [];
+        $source_product = sanitize_key(str_replace('_','-', strval($artifact['source_product'] ?? ($artifact['sourceProduct'] ?? ($source['product'] ?? ($source['product_id'] ?? ''))))));
+        if ($source_product) { $candidate = $this->adapter_by_id($source_product); if (($candidate['module_id'] ?? '') === $source_product) return $candidate; }
+        $payload = is_array($artifact['payload'] ?? null) ? $artifact['payload'] : $artifact;
+        $artifact_type = sanitize_key(str_replace('_','-', strval($artifact['artifact_type'] ?? ($artifact['type'] ?? ''))));
+        if (in_array($artifact_type, ['source-record','quotation-evidence','citation-bundle','bibliography','collection-context'], true)) return $this->adapter_by_id('knowledge-library');
+        if (in_array($artifact_type, ['research-route','source-recommendations','evidence-gap-report','related-titles'], true)) return $this->adapter_by_id('research-librarian');
+        if (in_array($artifact_type, ['indicator-record','country-dossier','live-observation','methodology-record','source-health'], true)) return $this->adapter_by_id('site-intelligence');
+        if (in_array($artifact_type, ['experiment','notebook','dataset','instrument-run','validation-result','scientific-report'], true)) return $this->adapter_by_id('research-lab');
+        if (in_array($artifact_type, ['entity-record','evidence-ledger-record','provenance-link','signed-manifest','relationship-bundle'], true)) return $this->adapter_by_id('platform-core');
+        $artifact = $payload;
         $record_type = strtolower(strval($artifact['record_type'] ?? ''));
         if ($record_type === 'global_impact_catalyst_record') return $this->adapter_by_id('global-impact-catalyst');
         if ($record_type === 'catalyst_narrative_risk_record') return $this->adapter_by_id('catalyst-narrative-risk');
@@ -1248,14 +1310,78 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         return $this->adapter_by_id('workbench');
     }
 
-    private function adapter_by_id($id) { foreach ($this->artifact_adapter_catalog() as $a) if ($a['module_id'] === $id) return $a; return $this->artifact_adapter_catalog()[0]; }
+    private function adapter_by_id($id) { $catalog=$this->artifact_adapter_catalog(); foreach ($catalog as $a) if ($a['module_id'] === $id) return $a; foreach ($catalog as $a) if ($a['module_id'] === 'workbench') return $a; return $catalog[0]; }
     private function arr($value) { if (is_array($value)) return array_values($value); if ($value === null || $value === '') return []; return [$value]; }
     private function source_entry($title,$type,$confidence,$used_for,$notes='') { return ['source_title'=>$title ?: 'Unspecified source','source_type'=>$type ?: 'unspecified','confidence'=>$confidence ?: 'unspecified','used_for'=>$used_for ?: 'unspecified','method_notes'=>$notes ?: '']; }
     private function assumption_entry($label,$value,$source,$used_in,$sensitivity='medium',$status='needs review') { return ['assumption'=>$label,'value'=>$value,'module_or_source'=>$source,'used_in'=>$used_in,'sensitivity'=>$sensitivity,'review_status'=>$status]; }
     private function merge_list($a,$b) { $base = is_array($a) ? $a : []; foreach((is_array($b)?$b:[$b]) as $item) if ($item !== null && $item !== '') $base[] = $item; return $base; }
 
+    private function platform_handoff_contracts() {
+        $required = ['artifact_schema','artifact_id','artifact_type','source','provenance','payload'];
+        return [
+            ['product_id'=>'knowledge-library','product_name'=>'Knowledge Library','artifact_types'=>['source_record','quotation_evidence','citation_bundle','bibliography','collection_context'],'packet_targets'=>['evidence_registry','sources','citations','quotations'],'required_envelope'=>$required],
+            ['product_id'=>'research-librarian','product_name'=>'Research Librarian','artifact_types'=>['research_route','source_recommendations','evidence_gap_report','related_titles'],'packet_targets'=>['research_routes','sources','evidence_gaps','follow_up_questions'],'required_envelope'=>$required],
+            ['product_id'=>'site-intelligence','product_name'=>'Site Intelligence','artifact_types'=>['indicator_record','country_dossier','live_observation','methodology_record','source_health'],'packet_targets'=>['live_evidence','evidence_registry','sources','methodologies'],'required_envelope'=>$required],
+            ['product_id'=>'workbench','product_name'=>'Workbench','artifact_types'=>['calculation','model_output','graph','code_result','technical_report'],'packet_targets'=>['calculation_trace','workbench_calculations','assumptions','technical_artifacts'],'required_envelope'=>$required],
+            ['product_id'=>'research-lab','product_name'=>'Research Lab','artifact_types'=>['experiment','notebook','dataset','instrument_run','validation_result','scientific_report'],'packet_targets'=>['experimental_evidence','datasets','evidence_registry','calculation_trace'],'required_envelope'=>$required],
+            ['product_id'=>'platform-core','product_name'=>'Platform Core','artifact_types'=>['entity_record','evidence_ledger_record','provenance_link','signed_manifest','relationship_bundle'],'packet_targets'=>['platform_registry','entities','evidence_ledger','provenance_links'],'required_envelope'=>$required],
+        ];
+    }
+
+    private function platform_contract($product_id) {
+        $id = sanitize_key(str_replace('_','-', strval($product_id)));
+        $aliases=['library'=>'knowledge-library','knowledge'=>'knowledge-library','librarian'=>'research-librarian','research-guidance'=>'research-librarian','site'=>'site-intelligence','intelligence'=>'site-intelligence','lab'=>'research-lab','core'=>'platform-core','platform'=>'platform-core'];
+        if(isset($aliases[$id])) $id=$aliases[$id];
+        foreach($this->platform_handoff_contracts() as $contract) if($contract['product_id']===$id) return $contract;
+        return null;
+    }
+
+    private function canonical_hash($value) {
+        if (is_array($value)) { ksort($value); foreach($value as $key=>$item) if(is_array($item)) $value[$key]=$this->canonical_sort($item); }
+        return 'sha256:' . hash('sha256', wp_json_encode($value, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+    }
+
+    private function canonical_sort($value) {
+        if (!is_array($value)) return $value;
+        if (array_keys($value) !== range(0, count($value)-1)) ksort($value);
+        foreach($value as $key=>$item) if(is_array($item)) $value[$key]=$this->canonical_sort($item);
+        return $value;
+    }
+
+    private function typed_envelope($artifact, $module_id='') {
+        $adapter=$this->detect_artifact_module($artifact,$module_id); $source=is_array($artifact['source']??null)?$artifact['source']:[]; $provenance=is_array($artifact['provenance']??null)?$artifact['provenance']:[]; $payload=is_array($artifact['payload']??null)?$artifact['payload']:$artifact;
+        $product=$module_id ?: ($artifact['source_product']??($artifact['sourceProduct']??($source['product']??($source['product_id']??$adapter['module_id'])))); $contract=$this->platform_contract($product); $product=$contract?$contract['product_id']:$adapter['module_id'];
+        $calculated=$this->canonical_hash($payload); $supplied=sanitize_text_field($provenance['integrity_hash']??($artifact['integrity_hash']??''));
+        return ['artifact_schema'=>sanitize_text_field($artifact['artifact_schema']??'scds-platform-artifact/1.0'),'artifact_id'=>sanitize_text_field($artifact['artifact_id']??($artifact['id']??substr(str_replace('sha256:','',$calculated),0,20))),'artifact_type'=>sanitize_key($artifact['artifact_type']??($artifact['type']??$adapter['artifact_key'])),'source'=>['product'=>$product,'product_version'=>sanitize_text_field($source['product_version']??($source['version']??($artifact['source_version']??'unknown'))),'artifact_url'=>esc_url_raw($source['artifact_url']??($source['url']??($artifact['url']??''))),'created_at'=>sanitize_text_field($source['created_at']??($artifact['created_at']??'')),'exported_at'=>sanitize_text_field($source['exported_at']??($artifact['exported_at']??gmdate('c'))) ],'provenance'=>['methodology'=>$provenance['methodology']??($artifact['methodology']??($payload['methodology']??'')),'freshness'=>$provenance['freshness']??($artifact['freshness']??($payload['freshness']??'unspecified')),'confidence'=>$provenance['confidence']??($artifact['confidence']??($payload['confidence']??'unspecified')),'integrity_hash'=>$supplied?:$calculated,'calculated_integrity_hash'=>$calculated,'integrity_verified'=>($supplied && hash_equals($supplied,$calculated)),'transformation_history'=>array_merge($this->arr($provenance['transformation_history']??[]),[['at'=>gmdate('c'),'action'=>'normalized','by'=>'decision-studio','version'=>self::VERSION]])],'payload'=>$payload];
+    }
+
+    private function validate_typed_artifact_local($artifact,$source_product='',$strict=false) {
+        $envelope=$this->typed_envelope($artifact,$source_product); $contract=$this->platform_contract($envelope['source']['product']); $errors=[]; $warnings=[];
+        if(!$contract) $errors[]='Unsupported platform source product: '.$envelope['source']['product'];
+        if($envelope['artifact_schema']!=='scds-platform-artifact/1.0') { if($strict) $errors[]='Artifact schema differs from scds-platform-artifact/1.0.'; else $warnings[]='Artifact schema differs from scds-platform-artifact/1.0.'; }
+        if(empty($envelope['payload'])||!is_array($envelope['payload'])) $errors[]='Artifact payload must be a non-empty object.';
+        $original=is_array($artifact['provenance']??null)?sanitize_text_field($artifact['provenance']['integrity_hash']??''):sanitize_text_field($artifact['integrity_hash']??'');
+        if($original&&!$envelope['provenance']['integrity_verified']) $errors[]='Supplied integrity hash does not match the canonical payload hash.';
+        return ['ok'=>empty($errors),'version'=>self::VERSION,'schema'=>'scds-platform-artifact/1.0','product_id'=>$envelope['source']['product'],'contract'=>$contract,'envelope'=>$envelope,'errors'=>$errors,'warnings'=>$warnings];
+    }
+
+    private function normalize_typed_artifact($artifact,$module_id='') {
+        $validation=$this->validate_typed_artifact_local($artifact,$module_id,false); $envelope=$validation['envelope']; $mid=$envelope['source']['product']; $payload=$envelope['payload']; $adapter=$this->adapter_by_id($mid); $name=$adapter['name'];
+        $base=['evidence_schema'=>'scds-evidence-record/1.0','artifact_id'=>$envelope['artifact_id'],'artifact_type'=>$envelope['artifact_type'],'source_product'=>$mid,'source_version'=>$envelope['source']['product_version'],'source_url'=>$envelope['source']['artifact_url'],'methodology'=>$envelope['provenance']['methodology'],'freshness'=>$envelope['provenance']['freshness'],'confidence'=>$envelope['provenance']['confidence'],'integrity_hash'=>$envelope['provenance']['calculated_integrity_hash'],'integrity_verified'=>$envelope['provenance']['integrity_verified']];
+        $patch=['platform_handoffs'=>[$envelope],'integrity_checks'=>[['artifact_id'=>$envelope['artifact_id'],'source_product'=>$mid,'supplied_hash'=>$envelope['provenance']['integrity_hash'],'calculated_hash'=>$envelope['provenance']['calculated_integrity_hash'],'verified'=>$envelope['provenance']['integrity_verified']]],'audit_trail'=>[['event'=>'Typed platform artifact imported','module'=>$name,'module_id'=>$mid,'artifact_id'=>$envelope['artifact_id'],'version'=>self::VERSION]]]; $title=$name.' artifact';
+        if($mid==='knowledge-library') { $record=array_merge($base,['title'=>$payload['title']??($payload['source_title']??'Knowledge Library source'),'source_type'=>$payload['source_type']??'research source','citation'=>$payload['citation']??'','authors'=>$payload['authors']??[],'published_at'=>$payload['published_at']??'','evidence_notes'=>$payload['evidence_notes']??'','collection'=>$payload['collection']??'']); $patch['evidence_registry']=[$record]; $patch['knowledge_library_evidence']=[$record]; $patch['sources']=[$this->source_entry($record['title'],$record['source_type'],$base['confidence'],'Knowledge Library evidence',$record['evidence_notes'])]; if($record['citation'])$patch['citations']=[['artifact_id'=>$envelope['artifact_id'],'citation'=>$record['citation'],'style'=>$payload['citation_style']??'Harvard','title'=>$record['title']]]; $patch['quotations']=[]; foreach($this->arr($payload['quotes']??($payload['quotations']??[])) as $quote)$patch['quotations'][]=['artifact_id'=>$envelope['artifact_id'],'source_title'=>$record['title'],'quote'=>is_array($quote)?($quote['text']??''):strval($quote),'locator'=>is_array($quote)?($quote['locator']??''):'','context'=>is_array($quote)?($quote['context']??''):'' ]; $title=$record['title']; }
+        elseif($mid==='research-librarian'){ $route=array_merge($base,['query'=>$payload['query']??'','route'=>$payload['route']??($payload['research_route']??[]),'recommended_sources'=>$this->arr($payload['recommended_sources']??[]),'related_titles'=>$this->arr($payload['related_titles']??[]),'notes'=>$payload['notes']??'']); $patch['research_routes']=[$route];$patch['research_guidance']=$route;$patch['evidence_gaps']=$this->arr($payload['evidence_gaps']??[]);$patch['follow_up_questions']=$this->arr($payload['follow_up_questions']??[]);$title=$route['query']?:'Research route'; }
+        elseif($mid==='site-intelligence'){ $record=array_merge($base,['indicator'=>$payload['indicator']??[],'geography'=>$payload['geography']??($payload['country']??($payload['region']??'')),'period'=>$payload['period']??($payload['observed_at']??''),'value'=>$payload['value']??null,'unit'=>$payload['unit']??'','source'=>$payload['source']??[],'source_health'=>$payload['source_health']??[],'observation_type'=>$envelope['artifact_type']]); $patch['live_evidence']=[$record];$patch['site_intelligence_evidence']=[$record];$patch['evidence_registry']=[$record];$src=is_array($payload['source']??null)?$payload['source']:['name'=>$payload['source']??'Site Intelligence source'];$patch['sources']=[$this->source_entry($src['name']??'Site Intelligence source',$src['type']??'public data source',$base['confidence'],is_string($record['indicator'])?$record['indicator']:'indicator evidence',strval($base['methodology']))];$patch['methodologies']=$this->arr($payload['methodology_records']??($payload['methodology']??[]));$title=is_string($record['indicator'])?$record['indicator']:'Site Intelligence observation'; }
+        elseif($mid==='workbench'){ $calc=array_merge($base,['calculation'=>$payload['calculation']??($payload['title']??'Workbench artifact'),'formula'=>$payload['formula']??'','inputs'=>$payload['inputs']??[],'results'=>$payload['results']??($payload['result']??null),'assumptions'=>$this->arr($payload['assumptions']??[]),'validation_checks'=>$this->arr($payload['validation_checks']??($payload['checks']??[])),'warnings'=>$this->arr($payload['warnings']??[]),'graph'=>$payload['graph']??[],'report'=>$payload['report']??[]]);$patch['workbench_calculations']=[$calc];$patch['technical_artifacts']=[$calc];$patch['calculation_trace']=[['artifact_id'=>$envelope['artifact_id'],'calculation'=>$calc['calculation'],'formula'=>$calc['formula'],'inputs'=>$calc['inputs'],'result'=>$calc['results'],'validation_status'=>'imported from Workbench','validation_checks'=>$calc['validation_checks']]];$title=$calc['calculation']; }
+        elseif($mid==='research-lab'){ $record=array_merge($base,['title'=>$payload['title']??($payload['experiment']??'Research Lab artifact'),'hypothesis'=>$payload['hypothesis']??'','method'=>$payload['method']??[],'results'=>$payload['results']??[],'validation'=>$payload['validation']??[],'limitations'=>$this->arr($payload['limitations']??[]),'instruments'=>$this->arr($payload['instruments']??[]),'notebook'=>$payload['notebook']??[]]);$patch['experimental_evidence']=[$record];$patch['research_lab_artifacts']=[$record];$patch['datasets']=$this->arr($payload['datasets']??($payload['dataset']??[]));$patch['evidence_registry']=[$record];$title=$record['title']; }
+        elseif($mid==='platform-core'){ $entity=is_array($payload['entity']??null)?$payload['entity']:['name'=>$payload['entity']??($payload['name']??'Platform entity')];$record=array_merge($base,['entity'=>$entity,'identifiers'=>$payload['identifiers']??[],'relationships'=>$this->arr($payload['relationships']??[]),'signatures'=>$this->arr($payload['signatures']??[])]);$patch['platform_registry']=[$record];$patch['platform_core_records']=[$record];$patch['entities']=[$entity];$patch['evidence_ledger']=$this->arr($payload['evidence_ledger']??($payload['evidence_records']??[]));$patch['provenance_links']=$this->arr($payload['provenance_links']??($payload['provenance']??[]));$title=$entity['name']??'Platform Core entity'; }
+        $patch['module_artifacts_raw']=[$adapter['artifact_key']=>$artifact]; $summary=['module_id'=>$mid,'module_name'=>$name,'artifact_key'=>$adapter['artifact_key'],'packet_section'=>$adapter['packet_section'],'artifact_id'=>$envelope['artifact_id'],'artifact_type'=>$envelope['artifact_type'],'title'=>$title,'status'=>'typed_and_normalized','integrity_verified'=>$envelope['provenance']['integrity_verified']];
+        return ['ok'=>$validation['ok'],'version'=>self::VERSION,'schema'=>'scds-platform-artifact/1.0','adapter'=>$adapter,'contract'=>$validation['contract'],'summary'=>$summary,'packet_patch'=>$patch,'warnings'=>$validation['warnings'],'validation'=>$validation,'artifact'=>$envelope];
+    }
+
     private function normalize_artifact($artifact, $module_id='') {
         $adapter = $this->detect_artifact_module($artifact, $module_id); $mid=$adapter['module_id']; $name=$adapter['name'];
+        if ($this->platform_contract($mid)) return $this->normalize_typed_artifact($artifact, $mid);
         $patch = ['audit_trail'=>[['event'=>'Artifact imported','module'=>$name,'module_id'=>$mid,'version'=>self::VERSION]]];
         $summary = ['module_id'=>$mid,'module_name'=>$name,'artifact_key'=>$adapter['artifact_key'],'packet_section'=>$adapter['packet_section'],'status'=>'normalized'];
         if ($mid === 'catalyst-canvas') {
@@ -1291,7 +1417,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function apply_packet_patch($packet, $patch) {
         if (!is_array($packet) || !$packet) $packet = $this->decision_packet_template();
         foreach($patch as $key=>$value) {
-            if (in_array($key, ['assumptions','risks','sources','audit_trail','calculation_trace','claim_reviews','workbench_calculations'], true)) $packet[$key] = $this->merge_list($packet[$key] ?? [], $value);
+            if (in_array($key, ['assumptions','risks','sources','audit_trail','calculation_trace','claim_reviews','workbench_calculations','evidence_registry','citations','quotations','research_routes','evidence_gaps','follow_up_questions','live_evidence','methodologies','experimental_evidence','datasets','technical_artifacts','platform_registry','entities','evidence_ledger','provenance_links','platform_handoffs','integrity_checks'], true)) $packet[$key] = $this->merge_list($packet[$key] ?? [], $value);
             elseif ($key === 'evidence_and_measurement' || $key === 'scenarios' || $key === 'impact_measurement' || $key === 'claim_and_risk_review') { if(!isset($packet[$key]) || !is_array($packet[$key])) $packet[$key]=['records'=>[]]; $packet[$key]['records']=$this->merge_list($packet[$key]['records'] ?? [], $value['records'] ?? []); }
             elseif (isset($packet[$key]) && is_array($packet[$key]) && is_array($value)) $packet[$key] = array_merge($packet[$key], $value);
             else $packet[$key] = $value;
@@ -1302,51 +1428,37 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function import_artifact_into_packet($artifact, $module_id='', $packet=[]) {
         $normalized = $this->normalize_artifact($artifact, $module_id);
         $updated = $this->apply_packet_patch($packet, $normalized['packet_patch']);
-        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.7.1']];
+        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.8.0']];
     }
 
     private function module_integrations() {
         return [
-            ['step'=>1,'phase'=>'Frame','id'=>'catalyst-canvas','name'=>'Catalyst Canvas','label'=>'Problem framing','url'=>'/catalyst-canvas/#demo','artifact_key'=>'framing','feeds'=>'Decision framing: challenge, audience, POV, HMW prompt, prototype, test plan.','summary'=>'Frame a challenge, define an audience, generate POV and HMW prompts, shape a prototype, design a test plan, and export a structured brief.'],
-            ['step'=>2,'phase'=>'Anchor','id'=>'catalyst-data','name'=>'Catalyst Data','label'=>'Data records','url'=>'/catalyst-data/#demo','artifact_key'=>'evidence_records','feeds'=>'Evidence and measurement: entity, indicator, source, period, confidence, method notes, review status.','summary'=>'Create a traceable measurement record with entity, indicator, source, period, confidence, method notes, review status, and JSON export.'],
-            ['step'=>3,'phase'=>'Model','id'=>'catalyst-analytics-r','name'=>'Catalyst Analytics R','label'=>'Scenario analysis','url'=>'/catalyst-analytics-r/#demo','artifact_key'=>'scenario_analysis','feeds'=>'Scenarios: assumptions, capital values, emissions budget, interpretation notes, model outputs.','summary'=>'Explore a simplified sustainable-development scenario with assumptions, capital values, emissions budget, interpretation notes, and export logic.'],
-            ['step'=>4,'phase'=>'Measure','id'=>'global-impact-catalyst','name'=>'Global Impact Catalyst','label'=>'Impact measurement','url'=>'/global-impact-catalyst/#demo','artifact_key'=>'impact_records','feeds'=>'Impact measurement: initiative, goal, SDG-style theme, baseline, current value, target, source.','summary'=>'Create a traceable impact record with initiative, goal, SDG-style theme, indicator, baseline, current value, target, source, and progress notes.'],
-            ['step'=>5,'phase'=>'Review','id'=>'catalyst-narrative-risk','name'=>'Narrative Risk','label'=>'Claim review','url'=>'/narrative-risk/#demo','artifact_key'=>'claim_reviews','feeds'=>'Claim and risk review: evidence strength, uncertainty, source type, stakeholder pressure, volatility, consequences.','summary'=>'Evaluate a claim by evidence strength, uncertainty, source type, stakeholder pressure, narrative volatility, consequences, and review status.'],
-            ['step'=>6,'phase'=>'Evaluate','id'=>'catalyst-finance','name'=>'Catalyst Finance','label'=>'Tradeoff analysis','url'=>'/catalyst-finance/#demo','artifact_key'=>'finance_analysis','feeds'=>'Financial tradeoffs: NPV, ROI, payback, benefit-cost ratio, carbon cost per ton, risk-adjusted score.','summary'=>'Estimate NPV, ROI, payback, benefit-cost ratio, carbon cost per ton, risk-adjusted score, review flags, and decision notes.'],
-            ['step'=>7,'phase'=>'Sustain','id'=>'catalyst-grit','name'=>'Catalyst Grit','label'=>'Recovery tracking','url'=>'/human-systems/catalyst-grit/#demo','artifact_key'=>'execution_recovery','feeds'=>'Execution and recovery: setback, pressure, energy, support, clarity, recovery actions, recovery score.','summary'=>'Describe a setback, assess pressure, impact, energy, support, clarity, recovery actions, and generate a recovery score and next actions.'],
-            ['step'=>8,'phase'=>'Decide','id'=>'decision-studio','name'=>'Decision Studio','label'=>'Decision support','url'=>'/platform/decision-studio/','artifact_key'=>'synthesis','feeds'=>'Integrated decision brief: four-pillar synthesis, assumptions, scenarios, outputs, risks, SDG mapping, audit trail.','summary'=>'Generate a four-pillar sustainability decision brief with assumptions, scenarios, calculator-backed outputs, risks, SDG mapping, and auditable review notes.'],
+            ['step'=>1,'phase'=>'Source','id'=>'knowledge-library','name'=>'Knowledge Library','label'=>'Sources and citations','url'=>'/knowledge-library/','artifact_key'=>'knowledge_library_evidence','packet_section'=>'evidence_registry','feeds'=>'Sources, quotations, citations, bibliographies, collection context, and evidence notes.','summary'=>'Import durable source records, quotations, Harvard-style citations, bibliographies, collections, and evidence notes.'],
+            ['step'=>2,'phase'=>'Research','id'=>'research-librarian','name'=>'Research Librarian','label'=>'Research routes and gaps','url'=>'/research-librarian/','artifact_key'=>'research_guidance','packet_section'=>'research_routes','feeds'=>'Research path, source recommendations, unanswered questions, and evidence gaps.','summary'=>'Import research routes, recommended sources, evidence gaps, related titles, and follow-up questions.'],
+            ['step'=>3,'phase'=>'Observe','id'=>'site-intelligence','name'=>'Site Intelligence','label'=>'Indicators and observations','url'=>'/platform/site-intelligence/','artifact_key'=>'site_intelligence_evidence','packet_section'=>'live_evidence','feeds'=>'Indicators, observations, geographic context, source health, freshness, and methodology.','summary'=>'Import indicators, country dossiers, live observations, methodology records, source health, and freshness context.'],
+            ['step'=>4,'phase'=>'Model','id'=>'workbench','name'=>'Workbench','label'=>'Calculations and models','url'=>'/platform/workbench/','artifact_key'=>'workbench_calculations','packet_section'=>'calculation_trace','feeds'=>'Calculated outputs, formulas, graphs, assumptions, validation checks, warnings, and reports.','summary'=>'Import formulas, calculations, graphs, models, code outputs, validation checks, assumptions, and technical reports.'],
+            ['step'=>5,'phase'=>'Validate','id'=>'research-lab','name'=>'Research Lab','label'=>'Experiments and scientific artifacts','url'=>'/lab/','artifact_key'=>'research_lab_artifacts','packet_section'=>'experimental_evidence','feeds'=>'Experimental methods, datasets, results, validation status, limitations, and provenance.','summary'=>'Import experiments, notebooks, datasets, instrument context, validation results, provenance, and scientific reports.'],
+            ['step'=>6,'phase'=>'Trace','id'=>'platform-core','name'=>'Platform Core','label'=>'Entities and Evidence Ledger','url'=>'/platform/','artifact_key'=>'platform_core_records','packet_section'=>'platform_registry','feeds'=>'Canonical entity identity, Evidence Ledger links, provenance, integrity, and relationships.','summary'=>'Import canonical entities, Evidence Ledger records, provenance links, identifiers, signatures, and shared exchange metadata.'],
+            ['step'=>7,'phase'=>'Decide','id'=>'decision-studio','name'=>'Decision Studio','label'=>'Decision synthesis','url'=>'/platform/decision-studio/','artifact_key'=>'synthesis','packet_section'=>'integrated_decision_brief','feeds'=>'Integrated synthesis, alternatives, assumptions, risks, caveats, readiness, and audit.','summary'=>'Synthesize typed evidence into scenarios, readiness findings, an auditable brief, and export bundle.'],
         ];
     }
 
+
     private function decision_packet_template() {
         return [
-            'packet_version'=>'1.7.1',
-            'workflow'=>'Canvas → Data → Analytics R → Global Impact → Narrative Risk → Finance → Grit → Decision Studio',
+            'packet_version'=>'1.8.0','artifact_schema'=>'scds-platform-artifact/1.0','evidence_record_schema'=>'scds-evidence-record/1.0',
+            'workflow'=>'Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio',
             'project'=>['project_name'=>'','organization_type'=>'','sector'=>'','location'=>'','time_horizon'=>'','decision_question'=>''],
-            'framing'=>[],
-            'evidence_records'=>[],
-            'scenario_analysis'=>[],
-            'impact_records'=>[],
-            'claim_reviews'=>[],
-            'finance_analysis'=>[],
-            'execution_recovery'=>[],
-            'synthesis'=>[],
-            'scenario_comparison'=>[],
-            'workbench_handoffs'=>[],
-            'four_pillar_scores'=>[],
-            'assumptions'=>[],
-            'risks'=>[],
-            'sources'=>[],
-            'audit_trail'=>[],
-            'audit_and_provenance'=>$this->audit_provenance_template(),
-            'module_slots'=>array_map(function($m){ return ['module_id'=>$m['id'],'name'=>$m['name'],'artifact_key'=>$m['artifact_key'],'status'=>'empty']; }, $this->module_integrations()),
+            'decision_framing'=>[],'evidence_registry'=>[],'citations'=>[],'quotations'=>[],'research_routes'=>[],'evidence_gaps'=>[],'follow_up_questions'=>[],'live_evidence'=>[],'methodologies'=>[],'experimental_evidence'=>[],'datasets'=>[],'technical_artifacts'=>[],'platform_registry'=>[],'entities'=>[],'evidence_ledger'=>[],'provenance_links'=>[],'platform_handoffs'=>[],'integrity_checks'=>[],
+            'framing'=>[],'evidence_records'=>[],'scenario_analysis'=>[],'impact_records'=>[],'claim_reviews'=>[],'finance_analysis'=>[],'execution_recovery'=>[],'synthesis'=>[],'scenario_comparison'=>[],'workbench_handoffs'=>[],'four_pillar_scores'=>[],'assumptions'=>[],'risks'=>[],'sources'=>[],'audit_trail'=>[],'calculation_trace'=>[],'workbench_calculations'=>[],'audit_and_provenance'=>$this->audit_provenance_template(),
+            'module_slots'=>array_map(function($m){ return ['module_id'=>$m['id'],'name'=>$m['name'],'artifact_key'=>$m['artifact_key'],'packet_section'=>$m['packet_section'],'status'=>'empty']; }, $this->module_integrations()),
         ];
     }
 
 
     private function audit_provenance_template() {
         return [
-            'audit_version'=>'1.7.1',
+            'audit_version'=>'1.8.0',
             'decision_packet_id'=>'SCDS-DRAFT',
             'review_status'=>[
                 'status'=>'draft',

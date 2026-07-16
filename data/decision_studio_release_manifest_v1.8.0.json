@@ -1,0 +1,54 @@
+{
+  "release": "1.8.0",
+  "release_name": "Unified Evidence and Platform Handoffs",
+  "release_date": "2026-07-16",
+  "build_fingerprint": "scds-v1.8.0-unified-evidence",
+  "source_commit": "release-v1.8.0",
+  "schemas": {
+    "decision_packet": "scds-decision-packet/1.1",
+    "platform_artifact": "scds-platform-artifact/1.0",
+    "evidence_record": "scds-evidence-record/1.0"
+  },
+  "wordpress": {
+    "plugin_version": "1.8.0",
+    "database_version": "1.2.0",
+    "api_namespace": "scds/v1"
+  },
+  "backend": {
+    "version": "1.8.0",
+    "root_dir": "backend",
+    "start_command": "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+  },
+  "platform_products": [
+    "knowledge-library",
+    "research-librarian",
+    "site-intelligence",
+    "workbench",
+    "research-lab",
+    "platform-core"
+  ],
+  "limits": {
+    "max_request_bytes": 1048576,
+    "public_rate_limit": 60,
+    "window_seconds": 60,
+    "batch_import_maximum": 100
+  },
+  "compatibility": {
+    "shortcodes_preserved": true,
+    "rest_routes_preserved": true,
+    "packet_schema_breaking_changes": false,
+    "typed_platform_artifacts": true,
+    "legacy_artifact_adapters_preserved": true
+  },
+  "checks": [
+    "backend tests",
+    "backend compile",
+    "JavaScript syntax",
+    "PHP syntax",
+    "JSON validation",
+    "typed contract validation",
+    "legacy adapter compatibility",
+    "version parity",
+    "plugin package structure"
+  ]
+}
