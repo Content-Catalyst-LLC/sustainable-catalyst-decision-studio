@@ -1,0 +1,34 @@
+Sustainable Catalyst Decision Studio v1.12.0
+Institutional and Domain Decision Packs
+
+LOCAL VALIDATION
+
+cd /path/to/sustainable-catalyst-decision-studio
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install --prefer-binary -r backend/requirements.txt
+cd backend
+python -m pytest
+cd ..
+python scripts/test_release.py
+php -l wordpress-plugin/sustainable-catalyst-decision-studio/sustainable-catalyst-decision-studio.php
+node --check wordpress-plugin/sustainable-catalyst-decision-studio/assets/js/scds-decision-studio.js
+
+RENDER
+
+Root Directory: backend
+Build Command: pip install -r requirements.txt
+Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Health Check Path: /health
+Python: 3.12.11
+
+WORDPRESS SHORTCODE
+
+[sc_decision_studio mode="packs" title="Institutional Decision Packs"]
+
+RELEASE SCRIPT
+
+cd ~/Downloads
+chmod +x install_and_push_sustainable_catalyst_decision_studio_v1_12_0_macos.sh
+./install_and_push_sustainable_catalyst_decision_studio_v1_12_0_macos.sh

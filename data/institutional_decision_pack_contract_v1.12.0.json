@@ -1,0 +1,39 @@
+{
+  "schema": "scds-institutional-decision-pack/1.0",
+  "application_schema": "scds-decision-pack-application/1.0",
+  "decision_packet_schema": "scds-decision-packet/1.5",
+  "release": "1.12.0",
+  "pack_count": 10,
+  "required_pack_sections": [
+    "required_intake_fields",
+    "criteria",
+    "required_evidence",
+    "suggested_indicators",
+    "workbench_models",
+    "review_roles",
+    "risk_questions",
+    "readiness_rules",
+    "brief_templates",
+    "boundaries"
+  ],
+  "application_sections": [
+    "organization_profile",
+    "intake_responses",
+    "criteria",
+    "evidence_plan",
+    "indicator_plan",
+    "workbench_model_plan",
+    "review_plan",
+    "validation"
+  ],
+  "governance_boundary": {
+    "ai_approval_allowed": false,
+    "professional_reliance_allowed": false,
+    "regulated_review_external": true
+  },
+  "persistence": {
+    "wordpress_column": "decision_pack_json",
+    "packet_section": "institutional_decision_pack",
+    "export": "decision_pack_json"
+  }
+}

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.12.0 — Institutional and Domain Decision Packs
+
+- Added ten reusable institutional and domain decision methodologies.
+- Added pack catalog, detail, validation, application, and Decision Packet routes.
+- Added intake, evidence, review-role, and readiness diagnostics.
+- Added criteria, indicator, Workbench model, governance-role, risk-question, readiness-rule, and briefing-template application.
+- Added WordPress Decision Packs workspace, admin catalog, local fallback parity, database persistence, and export support.
+- Advanced the additive Decision Packet schema to `scds-decision-packet/1.5` and WordPress database schema to 1.6.0.
+- Preserved collaboration rooms, governance, advanced scenarios, typed platform handoffs, and legacy adapters.
+- Expanded the backend suite to 87 tests.
+
 ## 1.11.0 — Collaborative Decision Rooms
 
 - Added private, restricted, and institutional WordPress-managed Decision Rooms.

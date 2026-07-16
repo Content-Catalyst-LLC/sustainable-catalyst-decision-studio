@@ -15,11 +15,11 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
-APP_VERSION = "1.11.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.11.0-collaborative-decision-rooms")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.11.0")
+APP_VERSION = "1.12.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.12.0-institutional-domain-decision-packs")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.12.0")
 RELEASE_DATE = "2026-07-16"
-DECISION_PACKET_SCHEMA = "scds-decision-packet/1.4"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/1.5"
 PLATFORM_ARTIFACT_SCHEMA = "scds-platform-artifact/1.0"
 EVIDENCE_RECORD_SCHEMA = "scds-evidence-record/1.0"
 GOVERNANCE_SCHEMA = "scds-decision-governance/1.0"
@@ -27,6 +27,8 @@ REVIEW_EVENT_SCHEMA = "scds-review-event/1.0"
 SCENARIO_STUDIO_SCHEMA = "scds-scenario-studio/1.0"
 COLLABORATION_ROOM_SCHEMA = "scds-collaborative-decision-room/1.0"
 COLLABORATION_EVENT_SCHEMA = "scds-collaboration-event/1.0"
+DECISION_PACK_SCHEMA = "scds-institutional-decision-pack/1.0"
+DECISION_PACK_APPLICATION_SCHEMA = "scds-decision-pack-application/1.0"
 MAX_REQUEST_BYTES = max(65536, int(os.getenv("SCDS_MAX_REQUEST_BYTES", "1048576")))
 PUBLIC_RATE_LIMIT = max(10, int(os.getenv("SCDS_PUBLIC_RATE_LIMIT", "60")))
 RATE_WINDOW_SECONDS = max(10, int(os.getenv("SCDS_RATE_WINDOW_SECONDS", "60")))
@@ -47,6 +49,7 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/collaboration/room", "/collaboration/action", "/collaboration/comment",
     "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share",
     "/collaboration/contact-handoff", "/decision-packet/collaboration",
+    "/decision-packs/apply", "/decision-packs/validate", "/decision-packet/domain-pack",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -55,7 +58,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Collaborative Decision Rooms",
+        "release_name": "Institutional and Domain Decision Packs",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -67,6 +70,8 @@ def release_manifest() -> Dict[str, Any]:
         "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
         "collaboration_room_schema": COLLABORATION_ROOM_SCHEMA,
         "collaboration_event_schema": COLLABORATION_EVENT_SCHEMA,
+        "decision_pack_schema": DECISION_PACK_SCHEMA,
+        "decision_pack_application_schema": DECISION_PACK_APPLICATION_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -85,6 +90,9 @@ def release_manifest() -> Dict[str, Any]:
             "wordpress_canonical_room_persistence": True,
             "private_room_sharing": True,
             "locked_approved_versions": True,
+            "institutional_domain_decision_packs": True,
+            "domain_pack_validation": True,
+            "regulated_assurance_prohibited": True,
         },
     }
 
@@ -289,6 +297,7 @@ class SavedDecisionPacketRequest(BaseModel):
     workbenchHandoff: Optional[Dict[str, Any]] = None
     integratedBrief: Optional[Dict[str, Any]] = None
     collaboration: Optional[Dict[str, Any]] = None
+    decisionPack: Optional[Dict[str, Any]] = None
     title: str = ""
     status: str = "draft"
     notes: str = ""
@@ -306,6 +315,7 @@ class ExportBundleRequest(BaseModel):
     integratedBrief: Optional[Dict[str, Any]] = None
     governance: Optional[Dict[str, Any]] = None
     collaboration: Optional[Dict[str, Any]] = None
+    decisionPack: Optional[Dict[str, Any]] = None
     exportAudience: str = "internal"
     includeRawArtifacts: bool = True
     exportLabel: str = "Decision Studio Export Bundle"
@@ -340,6 +350,21 @@ class CollaborativeRoomRequest(BaseModel):
     targetId: str = ""
     payload: Dict[str, Any] = Field(default_factory=dict)
     reason: str = ""
+
+
+class DecisionPackRequest(BaseModel):
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    packId: str = "climate-energy-strategy"
+    organizationProfile: Dict[str, Any] = Field(default_factory=dict)
+    intakeResponses: Dict[str, Any] = Field(default_factory=dict)
+    selectedCriteria: List[str] = Field(default_factory=list, max_length=100)
+    selectedEvidence: List[str] = Field(default_factory=list, max_length=100)
+    selectedIndicators: List[str] = Field(default_factory=list, max_length=100)
+    selectedWorkbenchModels: List[str] = Field(default_factory=list, max_length=100)
+    reviewerAssignments: List[Dict[str, Any]] = Field(default_factory=list, max_length=100)
+    actor: str = ""
+    notes: str = ""
+    strict: bool = False
 
 
 def clamp(value: float, low: float = 0, high: float = 100) -> float:
@@ -505,10 +530,314 @@ def platform_contract(product_id: Optional[str]) -> Optional[Dict[str, Any]]:
     normalized = aliases.get(normalized, normalized)
     return next((c for c in platform_handoff_contracts() if c["product_id"] == normalized), None)
 
+def institutional_decision_pack_catalog() -> List[Dict[str, Any]]:
+    """Reusable institutional methodologies with explicit human-review boundaries."""
+    shared_boundaries = [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision.",
+    ]
+    definitions = [
+        (
+            "climate-energy-strategy", "Climate and Energy Strategy", "climate_energy",
+            "Evaluate decarbonization, energy transition, resilience, affordability, and implementation pathways.",
+            ["decision_question", "geography", "time_horizon", "baseline_year", "emissions_boundary", "energy_system_scope"],
+            [("emissions_reduction", "Emissions reduction potential", 22), ("system_reliability", "Energy-system reliability", 16), ("lifecycle_cost", "Lifecycle cost and affordability", 18), ("implementation_feasibility", "Implementation feasibility", 14), ("equity_just_transition", "Equity and just-transition effects", 16), ("climate_resilience", "Climate resilience", 14)],
+            ["emissions_inventory", "energy_consumption_baseline", "technology_performance", "cost_and_financing", "grid_or_fuel_context", "stakeholder_distribution"],
+            ["scope_1_2_3_emissions", "energy_intensity", "renewable_share", "levelized_cost", "reliability", "energy_burden"],
+            ["energy-systems-model", "emissions-pathway-model", "lifecycle-cost-model", "risk-resilience-impact-matrix"],
+            ["decision_owner", "energy_subject_matter_reviewer", "finance_reviewer", "community_or_equity_reviewer", "governance_reviewer"],
+            ["Are lifecycle and rebound effects included?", "What assumptions depend on future grid or fuel conditions?", "Who bears transition costs and who receives benefits?"],
+            ["baseline_boundary_documented", "alternatives_include_no_action", "uncertainty_ranges_present", "stakeholder_distribution_reviewed"],
+            ["climate_strategy_memo", "energy_transition_options_analysis", "public_decarbonization_dossier"],
+        ),
+        (
+            "infrastructure-capital-investment", "Infrastructure and Capital Investment", "infrastructure_capital",
+            "Compare capital programs using lifecycle performance, resilience, public value, delivery risk, and maintainability.",
+            ["decision_question", "asset_or_program", "service_area", "design_life", "capital_envelope", "delivery_constraints"],
+            [("service_performance", "Service performance", 18), ("whole_life_cost", "Whole-life cost", 18), ("resilience_safety", "Resilience and safety", 20), ("delivery_feasibility", "Delivery feasibility", 14), ("environmental_impact", "Environmental impact", 14), ("public_equity", "Public access and equity", 16)],
+            ["asset_condition", "demand_forecast", "capital_and_operating_costs", "hazard_exposure", "delivery_schedule", "community_impacts"],
+            ["service_reliability", "condition_index", "lifecycle_cost", "schedule_risk", "hazard_downtime", "access_distribution"],
+            ["infrastructure-lifecycle-model", "capital-scenario-model", "reliability-model", "risk-resilience-impact-matrix"],
+            ["decision_owner", "engineering_reviewer", "finance_reviewer", "operations_reviewer", "public_interest_reviewer"],
+            ["Are design standards and external safety reviews complete?", "How does deferred maintenance alter the comparison?", "What failure modes create disproportionate public harm?"],
+            ["asset_baseline_documented", "whole_life_cost_present", "failure_modes_reviewed", "qualified_engineering_review_required"],
+            ["capital_investment_memo", "infrastructure_options_analysis", "public_value_case"],
+        ),
+        (
+            "urban-resilience", "Urban Resilience", "urban_resilience",
+            "Assess urban interventions across hazards, infrastructure interdependencies, vulnerable populations, and recovery capacity.",
+            ["decision_question", "place", "hazards", "population_scope", "infrastructure_scope", "planning_horizon"],
+            [("risk_reduction", "Risk reduction", 22), ("critical_services", "Critical-service continuity", 18), ("vulnerable_populations", "Protection of vulnerable populations", 18), ("adaptability", "Adaptability under changing conditions", 14), ("implementation_capacity", "Institutional implementation capacity", 14), ("co_benefits", "Environmental and social co-benefits", 14)],
+            ["hazard_profile", "exposure_and_vulnerability", "critical_infrastructure", "social_vulnerability", "response_capacity", "land_use_and_environment"],
+            ["hazard_exposure", "service_downtime", "social_vulnerability", "heat_or_flood_risk", "recovery_time", "adaptive_capacity"],
+            ["urban-resilience-model", "spatial-risk-screen", "critical-infrastructure-dependency-model", "scenario-stress-test"],
+            ["decision_owner", "planning_reviewer", "infrastructure_reviewer", "community_reviewer", "emergency_management_reviewer"],
+            ["Which populations are missing from aggregate data?", "What cascading infrastructure failures are plausible?", "Does the intervention transfer risk elsewhere?"],
+            ["hazard_scenarios_present", "distributional_impacts_present", "critical_dependencies_mapped", "community_review_planned"],
+            ["urban_resilience_strategy", "hazard_adaptation_options", "community_resilience_brief"],
+        ),
+        (
+            "sustainable-procurement", "Sustainable Procurement", "procurement",
+            "Compare procurement choices using total cost, supplier risk, lifecycle impact, labor and human-rights concerns, and contract governance.",
+            ["decision_question", "procurement_category", "spend_or_volume", "contract_horizon", "jurisdiction", "critical_requirements"],
+            [("total_cost", "Total cost of ownership", 18), ("supplier_resilience", "Supplier and continuity resilience", 16), ("environmental_lifecycle", "Environmental lifecycle performance", 16), ("labor_human_rights", "Labor and human-rights safeguards", 20), ("quality_performance", "Quality and performance", 16), ("contract_governance", "Contract transparency and governance", 14)],
+            ["requirements_specification", "total_cost", "supplier_due_diligence", "lifecycle_impacts", "labor_and_human_rights", "contract_controls"],
+            ["total_cost_of_ownership", "supplier_concentration", "scope_3_emissions", "due_diligence_status", "delivery_reliability", "corrective_action_closure"],
+            ["total-cost-of-ownership", "supplier-risk-model", "lifecycle-comparison", "procurement-scenario-model"],
+            ["decision_owner", "procurement_reviewer", "finance_reviewer", "legal_or_compliance_reviewer", "human_rights_reviewer"],
+            ["Are supplier claims independently evidenced?", "What contractual controls exist for remediation?", "Could low price mask externalized labor or environmental costs?"],
+            ["requirements_traceable", "supplier_evidence_reviewed", "contract_controls_defined", "qualified_legal_review_required_when_regulated"],
+            ["procurement_recommendation", "supplier_options_analysis", "responsible_sourcing_record"],
+        ),
+        (
+            "responsible-ai-governance", "Responsible AI and Technology Governance", "responsible_ai",
+            "Evaluate AI or digital-system adoption across purpose, evidence, rights, safety, accountability, data governance, and operational controls.",
+            ["decision_question", "system_purpose", "affected_people", "data_scope", "deployment_context", "decision_authority"],
+            [("public_or_user_value", "Demonstrated user or public value", 16), ("rights_fairness", "Rights, fairness, and non-discrimination", 20), ("safety_reliability", "Safety, reliability, and robustness", 18), ("privacy_data_governance", "Privacy and data governance", 18), ("transparency_contestability", "Transparency and contestability", 14), ("accountability_operations", "Accountability and operational control", 14)],
+            ["purpose_and_necessity", "data_provenance", "performance_and_failure_testing", "rights_impact", "security_and_privacy", "human_oversight_and_incident_response"],
+            ["error_by_group", "override_rate", "appeal_outcome", "incident_rate", "data_quality", "monitoring_coverage"],
+            ["model-performance-analysis", "fairness-error-analysis", "risk-resilience-impact-matrix", "monitoring-threshold-model"],
+            ["decision_owner", "technical_reviewer", "privacy_or_security_reviewer", "rights_or_ethics_reviewer", "operations_reviewer"],
+            ["Is AI necessary for the stated purpose?", "Can affected people understand and contest consequential outcomes?", "What happens when the system fails or conditions drift?"],
+            ["purpose_and_necessity_documented", "affected_groups_identified", "failure_testing_present", "human_accountability_named", "qualified_legal_review_required_when_applicable"],
+            ["responsible_ai_decision_memo", "technology_governance_assessment", "system_deployment_conditions"],
+        ),
+        (
+            "research-program-approval", "Research Program Approval", "research_governance",
+            "Review a proposed research program across significance, methodology, feasibility, ethics, data stewardship, and reproducibility.",
+            ["decision_question", "research_question", "program_scope", "methods", "participants_or_subjects", "resource_horizon"],
+            [("significance", "Scientific or public significance", 18), ("methodological_rigor", "Methodological rigor", 22), ("feasibility", "Feasibility and resources", 14), ("ethics_safeguards", "Ethics and participant safeguards", 20), ("data_reproducibility", "Data stewardship and reproducibility", 16), ("knowledge_translation", "Knowledge translation and openness", 10)],
+            ["literature_basis", "protocol", "sampling_and_analysis", "ethics_and_consent", "data_management", "reproducibility_plan"],
+            ["protocol_completeness", "power_or_sample_adequacy", "data_management_readiness", "reproducibility_controls", "ethics_review_status", "dissemination_plan"],
+            ["experimental-design", "power-and-sample-analysis", "uncertainty-analysis", "research-validation-plan"],
+            ["program_owner", "methods_reviewer", "ethics_reviewer", "data_steward", "domain_reviewer"],
+            ["Does the design answer the research question?", "Are ethical and regulatory approvals outside Decision Studio identified?", "Can results be reproduced and independently interpreted?"],
+            ["protocol_present", "methods_review_planned", "ethics_pathway_identified", "data_management_present", "reproducibility_plan_present"],
+            ["research_program_memo", "protocol_readiness_review", "research_governance_record"],
+        ),
+        (
+            "environmental-intervention", "Environmental Intervention", "environmental_management",
+            "Compare restoration, conservation, remediation, or management interventions using ecological evidence, uncertainty, durability, and community effects.",
+            ["decision_question", "ecosystem_or_site", "intervention_type", "baseline_condition", "spatial_scope", "monitoring_horizon"],
+            [("ecological_effectiveness", "Ecological effectiveness", 24), ("durability", "Durability and adaptive capacity", 16), ("unintended_effects", "Avoidance of unintended effects", 16), ("community_rights", "Community rights and benefits", 16), ("feasibility_cost", "Feasibility and lifecycle cost", 14), ("monitorability", "Monitoring and learning capacity", 14)],
+            ["ecological_baseline", "causal_mechanism", "alternatives_and_counterfactual", "community_and_rights", "implementation_feasibility", "monitoring_design"],
+            ["habitat_condition", "species_or_biodiversity", "water_or_soil_quality", "ecosystem_service", "community_access", "intervention_durability"],
+            ["environmental-monitoring-qaqc-tool", "ecological-scenario-model", "spatial-impact-analysis", "adaptive-management-thresholds"],
+            ["decision_owner", "ecology_reviewer", "community_or_rights_reviewer", "monitoring_reviewer", "implementation_reviewer"],
+            ["What is the counterfactual without intervention?", "Could the intervention shift ecological harm elsewhere?", "What monitoring result would trigger adaptation or termination?"],
+            ["baseline_present", "causal_model_documented", "community_impacts_reviewed", "monitoring_thresholds_defined", "qualified_environmental_review_required"],
+            ["environmental_intervention_memo", "restoration_options_analysis", "adaptive_management_plan"],
+        ),
+        (
+            "humanitarian-development-program", "Humanitarian and Development Programming", "humanitarian_development",
+            "Assess programs across need, protection, effectiveness, localization, feasibility, accountability, and conflict sensitivity.",
+            ["decision_question", "population_and_place", "needs_and_problem", "program_horizon", "delivery_partners", "operating_constraints"],
+            [("needs_relevance", "Relevance to evidenced needs", 20), ("protection_do_no_harm", "Protection and do-no-harm safeguards", 22), ("effectiveness", "Expected effectiveness", 16), ("localization_participation", "Localization and participation", 16), ("feasibility_access", "Feasibility and access", 14), ("accountability_learning", "Accountability and learning", 12)],
+            ["needs_assessment", "protection_analysis", "stakeholder_participation", "conflict_and_context", "delivery_feasibility", "monitoring_accountability"],
+            ["people_in_need", "coverage", "protection_incidents", "access_constraints", "local_partner_share", "feedback_resolution"],
+            ["humanitarian-scenario-model", "needs-prioritization", "distributional-impact-analysis", "monitoring-threshold-model"],
+            ["program_owner", "protection_reviewer", "local_partner_or_community_reviewer", "monitoring_reviewer", "security_or_access_reviewer"],
+            ["Could assistance expose people to additional harm?", "Whose priorities shaped the program design?", "How will exclusion, diversion, or conflict effects be detected?"],
+            ["needs_evidence_present", "protection_review_present", "participation_documented", "feedback_and_safeguarding_defined", "context_monitoring_present"],
+            ["humanitarian_program_memo", "development_options_analysis", "protection_and_accountability_record"],
+        ),
+        (
+            "organizational-policy", "Organizational Policy", "policy_governance",
+            "Evaluate organizational policies across purpose, authority, evidence, feasibility, rights, implementation, and reviewability.",
+            ["decision_question", "policy_problem", "authority_and_scope", "affected_groups", "implementation_owner", "review_horizon"],
+            [("problem_fit", "Fit to the evidenced problem", 18), ("authority_legitimacy", "Authority and legitimacy", 16), ("rights_equity", "Rights and equity effects", 18), ("implementation_feasibility", "Implementation feasibility", 16), ("clarity_enforceability", "Clarity and enforceability", 14), ("monitoring_review", "Monitoring and reviewability", 18)],
+            ["problem_definition", "authority_and_constraints", "affected_group_analysis", "alternatives", "implementation_plan", "monitoring_and_review"],
+            ["policy_compliance", "service_or_process_outcome", "distributional_effect", "implementation_cost", "appeal_or_exception_rate", "review_trigger"],
+            ["policy-options-matrix", "distributional-impact-analysis", "implementation-capacity-model", "monitoring-threshold-model"],
+            ["policy_owner", "legal_or_authority_reviewer", "operations_reviewer", "affected_group_reviewer", "governance_reviewer"],
+            ["Is the policy within the institution's authority?", "Which groups face unequal burdens or barriers?", "What evidence would justify amendment or repeal?"],
+            ["authority_review_identified", "affected_groups_present", "implementation_owner_named", "exceptions_and_appeals_defined", "review_trigger_defined"],
+            ["organizational_policy_memo", "policy_options_analysis", "implementation_and_review_plan"],
+        ),
+        (
+            "advisory-diagnostic-recommendation", "Advisory Diagnostic and Recommendation", "advisory",
+            "Structure evidence-based advisory diagnostics, options, recommendations, implementation conditions, and client approval records.",
+            ["decision_question", "client_or_institution", "diagnostic_scope", "desired_outcomes", "constraints", "engagement_horizon"],
+            [("evidence_fit", "Fit to the evidence and diagnosis", 20), ("strategic_value", "Strategic value", 18), ("implementation_feasibility", "Implementation feasibility", 18), ("risk_and_ethics", "Risk and ethical safeguards", 16), ("client_capacity", "Institutional capacity and ownership", 14), ("measurability", "Measurability and learning", 14)],
+            ["diagnostic_findings", "source_and_interview_record", "constraints_and_dependencies", "options_considered", "implementation_capacity", "success_and_review_measures"],
+            ["diagnostic_confidence", "stakeholder_alignment", "implementation_capacity", "risk_exposure", "milestone_completion", "outcome_signal"],
+            ["strategy-options-matrix", "implementation-roadmap-model", "risk-resilience-impact-matrix", "monitoring-threshold-model"],
+            ["engagement_owner", "client_decision_owner", "subject_matter_reviewer", "implementation_owner", "quality_reviewer"],
+            ["Which findings are evidence versus interpretation?", "What client dependencies could invalidate the recommendation?", "What would cause the recommendation to be revised?"],
+            ["diagnostic_evidence_traceable", "options_compared", "client_owner_named", "implementation_conditions_present", "approval_and_reassessment_defined"],
+            ["advisory_recommendation_memo", "diagnostic_findings_report", "implementation_conditions_and_approvals"],
+        ),
+    ]
+    packs: List[Dict[str, Any]] = []
+    for item in definitions:
+        pack_id, name, domain, summary, intake, criteria, evidence, indicators, models, roles, risks, readiness, briefs = item
+        packs.append({
+            "schema": DECISION_PACK_SCHEMA,
+            "pack_version": "1.0",
+            "id": pack_id,
+            "name": name,
+            "domain": domain,
+            "summary": summary,
+            "required_intake_fields": intake,
+            "criteria": [{"id": cid, "label": label, "weight": weight, "type": "benefit"} for cid, label, weight in criteria],
+            "required_evidence": evidence,
+            "suggested_indicators": indicators,
+            "workbench_models": models,
+            "review_roles": roles,
+            "risk_questions": risks,
+            "readiness_rules": readiness,
+            "brief_templates": briefs,
+            "governance_defaults": {
+                "approval_authority": "Named human decision owner",
+                "ai_approval_allowed": False,
+                "independent_review_required": True,
+                "regulated_review_external": True,
+            },
+            "boundaries": list(shared_boundaries),
+        })
+    return packs
+
+
+def institutional_decision_pack(pack_id: str) -> Optional[Dict[str, Any]]:
+    normalized = str(pack_id or "").strip().lower().replace("_", "-")
+    aliases = {
+        "climate": "climate-energy-strategy", "energy": "climate-energy-strategy",
+        "infrastructure": "infrastructure-capital-investment", "capital": "infrastructure-capital-investment",
+        "urban": "urban-resilience", "procurement": "sustainable-procurement",
+        "ai": "responsible-ai-governance", "responsible-ai": "responsible-ai-governance",
+        "research": "research-program-approval", "environment": "environmental-intervention",
+        "humanitarian": "humanitarian-development-program", "development": "humanitarian-development-program",
+        "policy": "organizational-policy", "advisory": "advisory-diagnostic-recommendation",
+    }
+    normalized = aliases.get(normalized, normalized)
+    return next((pack for pack in institutional_decision_pack_catalog() if pack["id"] == normalized), None)
+
+
+def _pack_packet_evidence_ids(packet: Dict[str, Any]) -> set[str]:
+    identifiers: set[str] = set()
+    for section in ("evidence_registry", "live_evidence", "experimental_evidence", "technical_artifacts", "sources", "datasets"):
+        records = packet.get(section, []) if isinstance(packet, dict) else []
+        if isinstance(records, dict):
+            records = records.get("records", [])
+        for item in records if isinstance(records, list) else []:
+            if not isinstance(item, dict):
+                continue
+            for key in ("requirement_id", "evidence_type", "artifact_type", "type", "id", "title", "name"):
+                value = item.get(key)
+                if value:
+                    identifiers.add(str(value).strip().lower().replace(" ", "_"))
+    return identifiers
+
+
+def validate_institutional_decision_pack(req: DecisionPackRequest) -> Dict[str, Any]:
+    pack = institutional_decision_pack(req.packId)
+    if not pack:
+        return {"ok": False, "version": APP_VERSION, "error": "unknown_decision_pack", "pack_id": req.packId}
+    combined = {**(req.organizationProfile or {}), **(req.intakeResponses or {})}
+    intake_status = []
+    for field in pack["required_intake_fields"]:
+        value = combined.get(field)
+        complete = value not in (None, "", [], {})
+        intake_status.append({"id": field, "complete": complete, "value_present": complete})
+    selected_evidence = {str(item).strip().lower().replace(" ", "_") for item in req.selectedEvidence}
+    packet_evidence = _pack_packet_evidence_ids(req.packet)
+    evidence_status = []
+    for evidence_id in pack["required_evidence"]:
+        normalized = evidence_id.lower().replace(" ", "_")
+        present = normalized in selected_evidence or normalized in packet_evidence
+        evidence_status.append({"id": evidence_id, "present": present, "source": "selected" if normalized in selected_evidence else "decision_packet" if present else "missing"})
+    assigned_roles = {str(item.get("role", "")).strip() for item in req.reviewerAssignments if isinstance(item, dict)}
+    role_status = [{"id": role, "assigned": role in assigned_roles} for role in pack["review_roles"]]
+    intake_pct = round(100 * sum(1 for item in intake_status if item["complete"]) / max(1, len(intake_status)), 1)
+    evidence_pct = round(100 * sum(1 for item in evidence_status if item["present"]) / max(1, len(evidence_status)), 1)
+    roles_pct = round(100 * sum(1 for item in role_status if item["assigned"]) / max(1, len(role_status)), 1)
+    readiness = round(intake_pct * 0.35 + evidence_pct * 0.45 + roles_pct * 0.20, 1)
+    blockers = []
+    blockers += [{"code": "missing_intake", "item": item["id"], "severity": "medium", "message": f"Required intake field is missing: {item['id']}"} for item in intake_status if not item["complete"]]
+    blockers += [{"code": "missing_evidence", "item": item["id"], "severity": "high", "message": f"Required evidence is missing: {item['id']}"} for item in evidence_status if not item["present"]]
+    blockers += [{"code": "missing_review_role", "item": item["id"], "severity": "high" if "reviewer" in item["id"] else "medium", "message": f"Required human role is not assigned: {item['id']}"} for item in role_status if not item["assigned"]]
+    return {
+        "ok": True,
+        "version": APP_VERSION,
+        "schema": DECISION_PACK_APPLICATION_SCHEMA,
+        "pack": pack,
+        "validation": {
+            "pack_id": pack["id"],
+            "pack_name": pack["name"],
+            "readiness_percent": readiness,
+            "intake_completion_percent": intake_pct,
+            "evidence_completion_percent": evidence_pct,
+            "review_role_completion_percent": roles_pct,
+            "intake_status": intake_status,
+            "evidence_status": evidence_status,
+            "review_role_status": role_status,
+            "blockers": blockers,
+            "ready_for_governance_review": not any(item["severity"] == "high" for item in blockers),
+            "professional_reliance_allowed": False,
+        },
+    }
+
+
+def apply_institutional_decision_pack(req: DecisionPackRequest) -> Dict[str, Any]:
+    checked = validate_institutional_decision_pack(req)
+    if not checked.get("ok"):
+        return checked
+    pack = checked["pack"]
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    selected_criteria = set(req.selectedCriteria or [item["id"] for item in pack["criteria"]])
+    selected_indicators = set(req.selectedIndicators or pack["suggested_indicators"])
+    selected_models = set(req.selectedWorkbenchModels or pack["workbench_models"])
+    seed = {"pack_id": pack["id"], "project": packet.get("project", {}), "actor": req.actor, "responses": req.intakeResponses}
+    application_id = "SCDS-PACK-" + hashlib.sha256(json.dumps(seed, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16].upper()
+    application = {
+        "schema": DECISION_PACK_APPLICATION_SCHEMA,
+        "application_id": application_id,
+        "applied_at": _utc_now(),
+        "applied_by": req.actor,
+        "source_product": "decision-studio",
+        "source_version": APP_VERSION,
+        "pack_id": pack["id"],
+        "pack_name": pack["name"],
+        "domain": pack["domain"],
+        "pack_version": pack["pack_version"],
+        "organization_profile": req.organizationProfile,
+        "intake_responses": req.intakeResponses,
+        "criteria": [{**item, "selected": item["id"] in selected_criteria} for item in pack["criteria"]],
+        "evidence_plan": [{"id": item, "required": True, "status": next((status["source"] for status in checked["validation"]["evidence_status"] if status["id"] == item), "missing")} for item in pack["required_evidence"]],
+        "indicator_plan": [{"id": item, "selected": item in selected_indicators} for item in pack["suggested_indicators"]],
+        "workbench_model_plan": [{"id": item, "selected": item in selected_models, "execution_authority": "workbench"} for item in pack["workbench_models"]],
+        "review_plan": {"required_roles": pack["review_roles"], "assignments": req.reviewerAssignments, "approval_authority": "named_human_decision_owner", "ai_approval_allowed": False},
+        "risk_questions": pack["risk_questions"],
+        "readiness_rules": pack["readiness_rules"],
+        "brief_templates": pack["brief_templates"],
+        "boundaries": pack["boundaries"],
+        "validation": checked["validation"],
+        "notes": req.notes,
+    }
+    packet["packet_version"] = APP_VERSION
+    packet["decision_pack_schema"] = DECISION_PACK_SCHEMA
+    packet["decision_pack_application_schema"] = DECISION_PACK_APPLICATION_SCHEMA
+    packet["institutional_decision_pack"] = application
+    packet.setdefault("decision_framing", {})["institutional_domain"] = {"pack_id": pack["id"], "pack_name": pack["name"], "domain": pack["domain"]}
+    packet["criteria_registry"] = application["criteria"]
+    packet["evidence_plan"] = application["evidence_plan"]
+    packet["indicator_plan"] = application["indicator_plan"]
+    packet["model_plan"] = application["workbench_model_plan"]
+    packet.setdefault("governance_center", governance_template())["domain_pack_requirements"] = application["review_plan"]
+    packet["domain_readiness_rules"] = application["readiness_rules"]
+    packet["domain_brief_templates"] = application["brief_templates"]
+    formats = packet.setdefault("export_center", {}).setdefault("available_formats", [])
+    if "decision_pack_json" not in formats:
+        formats.append("decision_pack_json")
+    return {"ok": True, "version": APP_VERSION, "schema": DECISION_PACK_APPLICATION_SCHEMA, "decision_pack": application, "validation": checked["validation"], "decision_packet": packet}
+
+
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.11.0",
+        "packet_version": "1.12.0",
         "workflow": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
@@ -517,6 +846,8 @@ def decision_packet_template() -> Dict[str, Any]:
         "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
         "collaboration_room_schema": COLLABORATION_ROOM_SCHEMA,
         "collaboration_event_schema": COLLABORATION_EVENT_SCHEMA,
+        "decision_pack_schema": DECISION_PACK_SCHEMA,
+        "decision_pack_application_schema": DECISION_PACK_APPLICATION_SCHEMA,
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -557,6 +888,13 @@ def decision_packet_template() -> Dict[str, Any]:
         "audit_and_provenance": audit_provenance_template(),
         "governance_center": governance_template(),
         "collaboration_room": collaborative_room_template(),
+        "institutional_decision_pack": {},
+        "criteria_registry": [],
+        "evidence_plan": [],
+        "indicator_plan": [],
+        "model_plan": [],
+        "domain_readiness_rules": [],
+        "domain_brief_templates": [],
         "integrated_decision_brief": {},
         "scenario_comparison": {},
         "scenario_studio": {},
@@ -565,7 +903,7 @@ def decision_packet_template() -> Dict[str, Any]:
         "uncertainty_analysis": {},
         "workbench_handoffs": [],
         "saved_packet": {"saved_at": "", "saved_by": "", "status": "draft", "storage": "browser_or_wordpress"},
-        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json"]},
+        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json"]},
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -583,7 +921,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.11.0",
+        "audit_version": "1.12.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -2017,7 +2355,7 @@ def generate_collaborative_room(req: CollaborativeRoomRequest) -> Dict[str, Any]
     return {"ok": True, "version": APP_VERSION, "schema": COLLABORATION_ROOM_SCHEMA, "room": room, "decision_packet": packet, "actor_permissions": permissions, **result_extra}
 
 def review_status_catalog() -> Dict[str, Any]:
-    """Review state vocabulary used by v1.11.0 readiness and scenario governance gates."""
+    """Review state vocabulary used by v1.12.0 readiness and scenario governance gates."""
     return {
         "review_version": APP_VERSION,
         "states": [
@@ -3205,6 +3543,7 @@ def export_center_template() -> Dict[str, Any]:
             {"id": "handoff_json", "label": "Workbench Handoff JSON", "description": "Recommended Workbench tools, reasons, priorities, shortcodes, and payload summary."},
             {"id": "governance_json", "label": "Decision Governance JSON", "description": "Decision state, owner, reviewers, conditions, exceptions, conflicts, sign-offs, export gates, and immutable review history."},
             {"id": "collaboration_json", "label": "Collaborative Decision Room JSON", "description": "Private room members, comments, change requests, snapshots, comparisons, notifications, share grants, locks, and activity history."},
+            {"id": "decision_pack_json", "label": "Institutional Decision Pack JSON", "description": "Applied domain methodology, required evidence, criteria, indicators, Workbench models, governance roles, readiness rules, and briefing templates."},
         ],
         "warnings": [
             "Saved Decision Packets are working records, not approvals or professional signoff.",
@@ -3238,6 +3577,8 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
     saved_status = governance_state if req.status == "draft" and governance_state != "draft" else req.status
     collaboration = req.collaboration or packet.get("collaboration_room") or collaborative_room_template()
     packet["collaboration_room"] = collaboration
+    decision_pack = req.decisionPack or packet.get("institutional_decision_pack") or {}
+    packet["institutional_decision_pack"] = decision_pack
     packet["saved_packet"] = {"status": saved_status, "storage": "wordpress_canonical_or_client_fallback", "notes": req.notes}
     saved = {
         "packet_version": APP_VERSION,
@@ -3257,6 +3598,7 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
         "integrated_brief": integrated,
         "governance": packet.get("governance_center", governance_template()),
         "collaboration": collaboration,
+        "decision_pack": decision_pack,
         "notes": req.notes,
         "warnings": ["Saved packet is a review artifact; it is not approval, certification, assurance, or professional advice."],
     }
@@ -3278,6 +3620,8 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
     packet["governance_center"] = governance
     collaboration = req.collaboration or packet.get("collaboration_room") or collaborative_room_template()
     packet["collaboration_room"] = collaboration
+    decision_pack = req.decisionPack or packet.get("institutional_decision_pack") or {}
+    packet["institutional_decision_pack"] = decision_pack
     audience = str(req.exportAudience or "internal").strip().lower()
     gate = governance.get("export_gate", {}) if isinstance(governance, dict) else {}
     if audience == "reviewed" and not gate.get("reviewed_export_allowed", False):
@@ -3312,6 +3656,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
             "collaboration_json": collaboration,
             "room_activity_json": collaboration.get("activity_timeline", []) if isinstance(collaboration, dict) else [],
             "snapshot_comparison_json": collaboration.get("snapshot_comparisons", []) if isinstance(collaboration, dict) else [],
+            "decision_pack_json": decision_pack,
         },
         "export_manifest": export_center_template()["exports"],
         "warnings": export_center_template()["warnings"],
@@ -3323,7 +3668,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.11.0."""
+    """Professional public-facing product-page structure for Decision Studio v1.12.0."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
@@ -3347,6 +3692,7 @@ def public_landing_template() -> Dict[str, Any]:
             "Decision Packet workspace",
             "Batch and legacy import",
             "Brief readiness and review status",
+            "Institutional and domain decision packs",
             "Advanced scenario, sensitivity, threshold, and Workbench handoff",
             "Saved packets and export center",
         ],
@@ -3354,6 +3700,8 @@ def public_landing_template() -> Dict[str, Any]:
             "artifact": PLATFORM_ARTIFACT_SCHEMA,
             "evidence": EVIDENCE_RECORD_SCHEMA,
             "decision_packet": DECISION_PACKET_SCHEMA,
+            "decision_pack": DECISION_PACK_SCHEMA,
+            "decision_pack_application": DECISION_PACK_APPLICATION_SCHEMA,
         },
         "boundaries": [
             "Educational and decision-support oriented; not professional advice.",
@@ -3368,6 +3716,7 @@ def public_demo_template() -> Dict[str, Any]:
         "demo_version": APP_VERSION,
         "headline": "Decision Studio Demo",
         "recommended_demo_flow": [
+            "Select an institutional or domain Decision Pack and inspect its evidence, criteria, review, and readiness requirements.",
             "Load the Knowledge Library sample artifact and validate its typed envelope.",
             "Inspect the normalized evidence, citation, provenance, and integrity records.",
             "Import additional Site Intelligence, Workbench, Research Lab, Research Librarian, or Platform Core artifacts.",
@@ -3376,6 +3725,7 @@ def public_demo_template() -> Dict[str, Any]:
             "Save the Decision Packet locally or export a complete bundle.",
         ],
         "demo_cards": [
+            {"title": "Institutional Decision Packs", "description": "Apply reusable climate, infrastructure, urban, procurement, responsible AI, research, environmental, humanitarian, policy, or advisory methodologies.", "shortcode": "[sc_decision_studio mode=\"packs\"]"},
             {"title": "Unified Platform Handoffs", "description": "Show how six current Sustainable Catalyst products feed a typed Decision Packet.", "shortcode": "[sc_decision_studio mode=\"workflow\"]"},
             {"title": "Readiness Review", "description": "Check whether the packet is complete enough for a draft brief or export.", "shortcode": "[sc_decision_studio mode=\"readiness\"]"},
             {"title": "Advanced Scenario Studio", "description": "Compare any number of alternatives, vary assumptions, find thresholds, and inspect stakeholder and time-horizon tradeoffs.", "shortcode": "[sc_decision_studio mode=\"scenario\"]"},
@@ -3578,6 +3928,8 @@ def health():
         "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
         "collaboration_room_schema": COLLABORATION_ROOM_SCHEMA,
         "collaboration_event_schema": COLLABORATION_EVENT_SCHEMA,
+        "decision_pack_schema": DECISION_PACK_SCHEMA,
+        "decision_pack_application_schema": DECISION_PACK_APPLICATION_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -3714,6 +4066,39 @@ def decision_packet_governance_endpoint(req: GovernanceRequest):
 @app.post("/governance/history/verify")
 def governance_history_verify_endpoint(req: GovernanceRequest):
     return {"ok": True, "version": APP_VERSION, "integrity": verify_review_history(req.reviewHistory)}
+
+@app.get("/decision-packs/catalog")
+def decision_packs_catalog_endpoint():
+    packs = institutional_decision_pack_catalog()
+    return {"ok": True, "version": APP_VERSION, "schema": DECISION_PACK_SCHEMA, "packs": packs, "count": len(packs)}
+
+@app.get("/decision-packs/{pack_id}")
+def decision_pack_endpoint(pack_id: str):
+    pack = institutional_decision_pack(pack_id)
+    if not pack:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": "unknown_decision_pack", "pack_id": pack_id})
+    return {"ok": True, "version": APP_VERSION, "schema": DECISION_PACK_SCHEMA, "pack": pack}
+
+@app.post("/decision-packs/validate")
+def decision_pack_validate_endpoint(req: DecisionPackRequest):
+    result = validate_institutional_decision_pack(req)
+    if not result.get("ok"):
+        return JSONResponse(status_code=404, content=result)
+    return result
+
+@app.post("/decision-packs/apply")
+def decision_pack_apply_endpoint(req: DecisionPackRequest):
+    result = apply_institutional_decision_pack(req)
+    if not result.get("ok"):
+        return JSONResponse(status_code=404, content=result)
+    return result
+
+@app.post("/decision-packet/domain-pack")
+def decision_packet_domain_pack_endpoint(req: DecisionPackRequest):
+    result = apply_institutional_decision_pack(req)
+    if not result.get("ok"):
+        return JSONResponse(status_code=404, content=result)
+    return result
 
 @app.get("/collaboration/roles")
 def collaboration_roles_endpoint():
@@ -3865,4 +4250,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack"]}

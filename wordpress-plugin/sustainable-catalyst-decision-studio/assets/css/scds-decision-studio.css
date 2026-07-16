@@ -121,3 +121,16 @@
 .scds-room-list h4{font-family:Spartan,Montserrat,Arial,sans-serif;margin:0 0 10px}
 .scds-panel[data-scds-panel="room"] .scds-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:900px){.scds-panel[data-scds-panel="room"] .scds-grid-3{grid-template-columns:1fr}.scds-panel[data-scds-panel="room"] .scds-panel-head{display:block}.scds-panel[data-scds-panel="room"] .scds-status{margin-top:10px}}
+
+
+/* v1.12.0 Institutional and Domain Decision Packs */
+.scds-pack-catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:22px}
+.scds-pack-card,.scds-pack-result{border:1px solid rgba(20,20,20,.14);border-radius:14px;background:#fff;padding:18px;box-shadow:0 8px 24px rgba(20,20,20,.05)}
+.scds-pack-card h4,.scds-pack-result h4{margin:.2rem 0 .65rem}
+.scds-pack-output{margin-top:18px}
+.scds-pack-readiness{margin:16px 0}
+.scds-pack-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}
+.scds-pack-result details{border-top:1px solid rgba(20,20,20,.1);padding:12px 0}
+.scds-pack-result summary{cursor:pointer;font-weight:700}
+.scds-pack-blockers{margin-top:16px}
+@media (max-width:760px){.scds-pack-catalog{grid-template-columns:1fr}.scds-pack-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}

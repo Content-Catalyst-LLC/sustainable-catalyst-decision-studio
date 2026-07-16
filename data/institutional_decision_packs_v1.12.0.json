@@ -1,0 +1,1112 @@
+{
+  "schema": "scds-institutional-decision-pack/1.0",
+  "release": "1.12.0",
+  "packs": [
+    {
+      "schema": "scds-institutional-decision-pack/1.0",
+      "pack_version": "1.0",
+      "id": "climate-energy-strategy",
+      "name": "Climate and Energy Strategy",
+      "domain": "climate_energy",
+      "summary": "Evaluate decarbonization, energy transition, resilience, affordability, and implementation pathways.",
+      "required_intake_fields": [
+        "decision_question",
+        "geography",
+        "time_horizon",
+        "baseline_year",
+        "emissions_boundary",
+        "energy_system_scope"
+      ],
+      "criteria": [
+        {
+          "id": "emissions_reduction",
+          "label": "Emissions reduction potential",
+          "weight": 22,
+          "type": "benefit"
+        },
+        {
+          "id": "system_reliability",
+          "label": "Energy-system reliability",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "lifecycle_cost",
+          "label": "Lifecycle cost and affordability",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "implementation_feasibility",
+          "label": "Implementation feasibility",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "equity_just_transition",
+          "label": "Equity and just-transition effects",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "climate_resilience",
+          "label": "Climate resilience",
+          "weight": 14,
+          "type": "benefit"
+        }
+      ],
+      "required_evidence": [
+        "emissions_inventory",
+        "energy_consumption_baseline",
+        "technology_performance",
+        "cost_and_financing",
+        "grid_or_fuel_context",
+        "stakeholder_distribution"
+      ],
+      "suggested_indicators": [
+        "scope_1_2_3_emissions",
+        "energy_intensity",
+        "renewable_share",
+        "levelized_cost",
+        "reliability",
+        "energy_burden"
+      ],
+      "workbench_models": [
+        "energy-systems-model",
+        "emissions-pathway-model",
+        "lifecycle-cost-model",
+        "risk-resilience-impact-matrix"
+      ],
+      "review_roles": [
+        "decision_owner",
+        "energy_subject_matter_reviewer",
+        "finance_reviewer",
+        "community_or_equity_reviewer",
+        "governance_reviewer"
+      ],
+      "risk_questions": [
+        "Are lifecycle and rebound effects included?",
+        "What assumptions depend on future grid or fuel conditions?",
+        "Who bears transition costs and who receives benefits?"
+      ],
+      "readiness_rules": [
+        "baseline_boundary_documented",
+        "alternatives_include_no_action",
+        "uncertainty_ranges_present",
+        "stakeholder_distribution_reviewed"
+      ],
+      "brief_templates": [
+        "climate_strategy_memo",
+        "energy_transition_options_analysis",
+        "public_decarbonization_dossier"
+      ],
+      "governance_defaults": {
+        "approval_authority": "Named human decision owner",
+        "ai_approval_allowed": false,
+        "independent_review_required": true,
+        "regulated_review_external": true
+      },
+      "boundaries": [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision."
+      ]
+    },
+    {
+      "schema": "scds-institutional-decision-pack/1.0",
+      "pack_version": "1.0",
+      "id": "infrastructure-capital-investment",
+      "name": "Infrastructure and Capital Investment",
+      "domain": "infrastructure_capital",
+      "summary": "Compare capital programs using lifecycle performance, resilience, public value, delivery risk, and maintainability.",
+      "required_intake_fields": [
+        "decision_question",
+        "asset_or_program",
+        "service_area",
+        "design_life",
+        "capital_envelope",
+        "delivery_constraints"
+      ],
+      "criteria": [
+        {
+          "id": "service_performance",
+          "label": "Service performance",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "whole_life_cost",
+          "label": "Whole-life cost",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "resilience_safety",
+          "label": "Resilience and safety",
+          "weight": 20,
+          "type": "benefit"
+        },
+        {
+          "id": "delivery_feasibility",
+          "label": "Delivery feasibility",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "environmental_impact",
+          "label": "Environmental impact",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "public_equity",
+          "label": "Public access and equity",
+          "weight": 16,
+          "type": "benefit"
+        }
+      ],
+      "required_evidence": [
+        "asset_condition",
+        "demand_forecast",
+        "capital_and_operating_costs",
+        "hazard_exposure",
+        "delivery_schedule",
+        "community_impacts"
+      ],
+      "suggested_indicators": [
+        "service_reliability",
+        "condition_index",
+        "lifecycle_cost",
+        "schedule_risk",
+        "hazard_downtime",
+        "access_distribution"
+      ],
+      "workbench_models": [
+        "infrastructure-lifecycle-model",
+        "capital-scenario-model",
+        "reliability-model",
+        "risk-resilience-impact-matrix"
+      ],
+      "review_roles": [
+        "decision_owner",
+        "engineering_reviewer",
+        "finance_reviewer",
+        "operations_reviewer",
+        "public_interest_reviewer"
+      ],
+      "risk_questions": [
+        "Are design standards and external safety reviews complete?",
+        "How does deferred maintenance alter the comparison?",
+        "What failure modes create disproportionate public harm?"
+      ],
+      "readiness_rules": [
+        "asset_baseline_documented",
+        "whole_life_cost_present",
+        "failure_modes_reviewed",
+        "qualified_engineering_review_required"
+      ],
+      "brief_templates": [
+        "capital_investment_memo",
+        "infrastructure_options_analysis",
+        "public_value_case"
+      ],
+      "governance_defaults": {
+        "approval_authority": "Named human decision owner",
+        "ai_approval_allowed": false,
+        "independent_review_required": true,
+        "regulated_review_external": true
+      },
+      "boundaries": [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision."
+      ]
+    },
+    {
+      "schema": "scds-institutional-decision-pack/1.0",
+      "pack_version": "1.0",
+      "id": "urban-resilience",
+      "name": "Urban Resilience",
+      "domain": "urban_resilience",
+      "summary": "Assess urban interventions across hazards, infrastructure interdependencies, vulnerable populations, and recovery capacity.",
+      "required_intake_fields": [
+        "decision_question",
+        "place",
+        "hazards",
+        "population_scope",
+        "infrastructure_scope",
+        "planning_horizon"
+      ],
+      "criteria": [
+        {
+          "id": "risk_reduction",
+          "label": "Risk reduction",
+          "weight": 22,
+          "type": "benefit"
+        },
+        {
+          "id": "critical_services",
+          "label": "Critical-service continuity",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "vulnerable_populations",
+          "label": "Protection of vulnerable populations",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "adaptability",
+          "label": "Adaptability under changing conditions",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "implementation_capacity",
+          "label": "Institutional implementation capacity",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "co_benefits",
+          "label": "Environmental and social co-benefits",
+          "weight": 14,
+          "type": "benefit"
+        }
+      ],
+      "required_evidence": [
+        "hazard_profile",
+        "exposure_and_vulnerability",
+        "critical_infrastructure",
+        "social_vulnerability",
+        "response_capacity",
+        "land_use_and_environment"
+      ],
+      "suggested_indicators": [
+        "hazard_exposure",
+        "service_downtime",
+        "social_vulnerability",
+        "heat_or_flood_risk",
+        "recovery_time",
+        "adaptive_capacity"
+      ],
+      "workbench_models": [
+        "urban-resilience-model",
+        "spatial-risk-screen",
+        "critical-infrastructure-dependency-model",
+        "scenario-stress-test"
+      ],
+      "review_roles": [
+        "decision_owner",
+        "planning_reviewer",
+        "infrastructure_reviewer",
+        "community_reviewer",
+        "emergency_management_reviewer"
+      ],
+      "risk_questions": [
+        "Which populations are missing from aggregate data?",
+        "What cascading infrastructure failures are plausible?",
+        "Does the intervention transfer risk elsewhere?"
+      ],
+      "readiness_rules": [
+        "hazard_scenarios_present",
+        "distributional_impacts_present",
+        "critical_dependencies_mapped",
+        "community_review_planned"
+      ],
+      "brief_templates": [
+        "urban_resilience_strategy",
+        "hazard_adaptation_options",
+        "community_resilience_brief"
+      ],
+      "governance_defaults": {
+        "approval_authority": "Named human decision owner",
+        "ai_approval_allowed": false,
+        "independent_review_required": true,
+        "regulated_review_external": true
+      },
+      "boundaries": [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision."
+      ]
+    },
+    {
+      "schema": "scds-institutional-decision-pack/1.0",
+      "pack_version": "1.0",
+      "id": "sustainable-procurement",
+      "name": "Sustainable Procurement",
+      "domain": "procurement",
+      "summary": "Compare procurement choices using total cost, supplier risk, lifecycle impact, labor and human-rights concerns, and contract governance.",
+      "required_intake_fields": [
+        "decision_question",
+        "procurement_category",
+        "spend_or_volume",
+        "contract_horizon",
+        "jurisdiction",
+        "critical_requirements"
+      ],
+      "criteria": [
+        {
+          "id": "total_cost",
+          "label": "Total cost of ownership",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "supplier_resilience",
+          "label": "Supplier and continuity resilience",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "environmental_lifecycle",
+          "label": "Environmental lifecycle performance",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "labor_human_rights",
+          "label": "Labor and human-rights safeguards",
+          "weight": 20,
+          "type": "benefit"
+        },
+        {
+          "id": "quality_performance",
+          "label": "Quality and performance",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "contract_governance",
+          "label": "Contract transparency and governance",
+          "weight": 14,
+          "type": "benefit"
+        }
+      ],
+      "required_evidence": [
+        "requirements_specification",
+        "total_cost",
+        "supplier_due_diligence",
+        "lifecycle_impacts",
+        "labor_and_human_rights",
+        "contract_controls"
+      ],
+      "suggested_indicators": [
+        "total_cost_of_ownership",
+        "supplier_concentration",
+        "scope_3_emissions",
+        "due_diligence_status",
+        "delivery_reliability",
+        "corrective_action_closure"
+      ],
+      "workbench_models": [
+        "total-cost-of-ownership",
+        "supplier-risk-model",
+        "lifecycle-comparison",
+        "procurement-scenario-model"
+      ],
+      "review_roles": [
+        "decision_owner",
+        "procurement_reviewer",
+        "finance_reviewer",
+        "legal_or_compliance_reviewer",
+        "human_rights_reviewer"
+      ],
+      "risk_questions": [
+        "Are supplier claims independently evidenced?",
+        "What contractual controls exist for remediation?",
+        "Could low price mask externalized labor or environmental costs?"
+      ],
+      "readiness_rules": [
+        "requirements_traceable",
+        "supplier_evidence_reviewed",
+        "contract_controls_defined",
+        "qualified_legal_review_required_when_regulated"
+      ],
+      "brief_templates": [
+        "procurement_recommendation",
+        "supplier_options_analysis",
+        "responsible_sourcing_record"
+      ],
+      "governance_defaults": {
+        "approval_authority": "Named human decision owner",
+        "ai_approval_allowed": false,
+        "independent_review_required": true,
+        "regulated_review_external": true
+      },
+      "boundaries": [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision."
+      ]
+    },
+    {
+      "schema": "scds-institutional-decision-pack/1.0",
+      "pack_version": "1.0",
+      "id": "responsible-ai-governance",
+      "name": "Responsible AI and Technology Governance",
+      "domain": "responsible_ai",
+      "summary": "Evaluate AI or digital-system adoption across purpose, evidence, rights, safety, accountability, data governance, and operational controls.",
+      "required_intake_fields": [
+        "decision_question",
+        "system_purpose",
+        "affected_people",
+        "data_scope",
+        "deployment_context",
+        "decision_authority"
+      ],
+      "criteria": [
+        {
+          "id": "public_or_user_value",
+          "label": "Demonstrated user or public value",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "rights_fairness",
+          "label": "Rights, fairness, and non-discrimination",
+          "weight": 20,
+          "type": "benefit"
+        },
+        {
+          "id": "safety_reliability",
+          "label": "Safety, reliability, and robustness",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "privacy_data_governance",
+          "label": "Privacy and data governance",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "transparency_contestability",
+          "label": "Transparency and contestability",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "accountability_operations",
+          "label": "Accountability and operational control",
+          "weight": 14,
+          "type": "benefit"
+        }
+      ],
+      "required_evidence": [
+        "purpose_and_necessity",
+        "data_provenance",
+        "performance_and_failure_testing",
+        "rights_impact",
+        "security_and_privacy",
+        "human_oversight_and_incident_response"
+      ],
+      "suggested_indicators": [
+        "error_by_group",
+        "override_rate",
+        "appeal_outcome",
+        "incident_rate",
+        "data_quality",
+        "monitoring_coverage"
+      ],
+      "workbench_models": [
+        "model-performance-analysis",
+        "fairness-error-analysis",
+        "risk-resilience-impact-matrix",
+        "monitoring-threshold-model"
+      ],
+      "review_roles": [
+        "decision_owner",
+        "technical_reviewer",
+        "privacy_or_security_reviewer",
+        "rights_or_ethics_reviewer",
+        "operations_reviewer"
+      ],
+      "risk_questions": [
+        "Is AI necessary for the stated purpose?",
+        "Can affected people understand and contest consequential outcomes?",
+        "What happens when the system fails or conditions drift?"
+      ],
+      "readiness_rules": [
+        "purpose_and_necessity_documented",
+        "affected_groups_identified",
+        "failure_testing_present",
+        "human_accountability_named",
+        "qualified_legal_review_required_when_applicable"
+      ],
+      "brief_templates": [
+        "responsible_ai_decision_memo",
+        "technology_governance_assessment",
+        "system_deployment_conditions"
+      ],
+      "governance_defaults": {
+        "approval_authority": "Named human decision owner",
+        "ai_approval_allowed": false,
+        "independent_review_required": true,
+        "regulated_review_external": true
+      },
+      "boundaries": [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision."
+      ]
+    },
+    {
+      "schema": "scds-institutional-decision-pack/1.0",
+      "pack_version": "1.0",
+      "id": "research-program-approval",
+      "name": "Research Program Approval",
+      "domain": "research_governance",
+      "summary": "Review a proposed research program across significance, methodology, feasibility, ethics, data stewardship, and reproducibility.",
+      "required_intake_fields": [
+        "decision_question",
+        "research_question",
+        "program_scope",
+        "methods",
+        "participants_or_subjects",
+        "resource_horizon"
+      ],
+      "criteria": [
+        {
+          "id": "significance",
+          "label": "Scientific or public significance",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "methodological_rigor",
+          "label": "Methodological rigor",
+          "weight": 22,
+          "type": "benefit"
+        },
+        {
+          "id": "feasibility",
+          "label": "Feasibility and resources",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "ethics_safeguards",
+          "label": "Ethics and participant safeguards",
+          "weight": 20,
+          "type": "benefit"
+        },
+        {
+          "id": "data_reproducibility",
+          "label": "Data stewardship and reproducibility",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "knowledge_translation",
+          "label": "Knowledge translation and openness",
+          "weight": 10,
+          "type": "benefit"
+        }
+      ],
+      "required_evidence": [
+        "literature_basis",
+        "protocol",
+        "sampling_and_analysis",
+        "ethics_and_consent",
+        "data_management",
+        "reproducibility_plan"
+      ],
+      "suggested_indicators": [
+        "protocol_completeness",
+        "power_or_sample_adequacy",
+        "data_management_readiness",
+        "reproducibility_controls",
+        "ethics_review_status",
+        "dissemination_plan"
+      ],
+      "workbench_models": [
+        "experimental-design",
+        "power-and-sample-analysis",
+        "uncertainty-analysis",
+        "research-validation-plan"
+      ],
+      "review_roles": [
+        "program_owner",
+        "methods_reviewer",
+        "ethics_reviewer",
+        "data_steward",
+        "domain_reviewer"
+      ],
+      "risk_questions": [
+        "Does the design answer the research question?",
+        "Are ethical and regulatory approvals outside Decision Studio identified?",
+        "Can results be reproduced and independently interpreted?"
+      ],
+      "readiness_rules": [
+        "protocol_present",
+        "methods_review_planned",
+        "ethics_pathway_identified",
+        "data_management_present",
+        "reproducibility_plan_present"
+      ],
+      "brief_templates": [
+        "research_program_memo",
+        "protocol_readiness_review",
+        "research_governance_record"
+      ],
+      "governance_defaults": {
+        "approval_authority": "Named human decision owner",
+        "ai_approval_allowed": false,
+        "independent_review_required": true,
+        "regulated_review_external": true
+      },
+      "boundaries": [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision."
+      ]
+    },
+    {
+      "schema": "scds-institutional-decision-pack/1.0",
+      "pack_version": "1.0",
+      "id": "environmental-intervention",
+      "name": "Environmental Intervention",
+      "domain": "environmental_management",
+      "summary": "Compare restoration, conservation, remediation, or management interventions using ecological evidence, uncertainty, durability, and community effects.",
+      "required_intake_fields": [
+        "decision_question",
+        "ecosystem_or_site",
+        "intervention_type",
+        "baseline_condition",
+        "spatial_scope",
+        "monitoring_horizon"
+      ],
+      "criteria": [
+        {
+          "id": "ecological_effectiveness",
+          "label": "Ecological effectiveness",
+          "weight": 24,
+          "type": "benefit"
+        },
+        {
+          "id": "durability",
+          "label": "Durability and adaptive capacity",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "unintended_effects",
+          "label": "Avoidance of unintended effects",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "community_rights",
+          "label": "Community rights and benefits",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "feasibility_cost",
+          "label": "Feasibility and lifecycle cost",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "monitorability",
+          "label": "Monitoring and learning capacity",
+          "weight": 14,
+          "type": "benefit"
+        }
+      ],
+      "required_evidence": [
+        "ecological_baseline",
+        "causal_mechanism",
+        "alternatives_and_counterfactual",
+        "community_and_rights",
+        "implementation_feasibility",
+        "monitoring_design"
+      ],
+      "suggested_indicators": [
+        "habitat_condition",
+        "species_or_biodiversity",
+        "water_or_soil_quality",
+        "ecosystem_service",
+        "community_access",
+        "intervention_durability"
+      ],
+      "workbench_models": [
+        "environmental-monitoring-qaqc-tool",
+        "ecological-scenario-model",
+        "spatial-impact-analysis",
+        "adaptive-management-thresholds"
+      ],
+      "review_roles": [
+        "decision_owner",
+        "ecology_reviewer",
+        "community_or_rights_reviewer",
+        "monitoring_reviewer",
+        "implementation_reviewer"
+      ],
+      "risk_questions": [
+        "What is the counterfactual without intervention?",
+        "Could the intervention shift ecological harm elsewhere?",
+        "What monitoring result would trigger adaptation or termination?"
+      ],
+      "readiness_rules": [
+        "baseline_present",
+        "causal_model_documented",
+        "community_impacts_reviewed",
+        "monitoring_thresholds_defined",
+        "qualified_environmental_review_required"
+      ],
+      "brief_templates": [
+        "environmental_intervention_memo",
+        "restoration_options_analysis",
+        "adaptive_management_plan"
+      ],
+      "governance_defaults": {
+        "approval_authority": "Named human decision owner",
+        "ai_approval_allowed": false,
+        "independent_review_required": true,
+        "regulated_review_external": true
+      },
+      "boundaries": [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision."
+      ]
+    },
+    {
+      "schema": "scds-institutional-decision-pack/1.0",
+      "pack_version": "1.0",
+      "id": "humanitarian-development-program",
+      "name": "Humanitarian and Development Programming",
+      "domain": "humanitarian_development",
+      "summary": "Assess programs across need, protection, effectiveness, localization, feasibility, accountability, and conflict sensitivity.",
+      "required_intake_fields": [
+        "decision_question",
+        "population_and_place",
+        "needs_and_problem",
+        "program_horizon",
+        "delivery_partners",
+        "operating_constraints"
+      ],
+      "criteria": [
+        {
+          "id": "needs_relevance",
+          "label": "Relevance to evidenced needs",
+          "weight": 20,
+          "type": "benefit"
+        },
+        {
+          "id": "protection_do_no_harm",
+          "label": "Protection and do-no-harm safeguards",
+          "weight": 22,
+          "type": "benefit"
+        },
+        {
+          "id": "effectiveness",
+          "label": "Expected effectiveness",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "localization_participation",
+          "label": "Localization and participation",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "feasibility_access",
+          "label": "Feasibility and access",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "accountability_learning",
+          "label": "Accountability and learning",
+          "weight": 12,
+          "type": "benefit"
+        }
+      ],
+      "required_evidence": [
+        "needs_assessment",
+        "protection_analysis",
+        "stakeholder_participation",
+        "conflict_and_context",
+        "delivery_feasibility",
+        "monitoring_accountability"
+      ],
+      "suggested_indicators": [
+        "people_in_need",
+        "coverage",
+        "protection_incidents",
+        "access_constraints",
+        "local_partner_share",
+        "feedback_resolution"
+      ],
+      "workbench_models": [
+        "humanitarian-scenario-model",
+        "needs-prioritization",
+        "distributional-impact-analysis",
+        "monitoring-threshold-model"
+      ],
+      "review_roles": [
+        "program_owner",
+        "protection_reviewer",
+        "local_partner_or_community_reviewer",
+        "monitoring_reviewer",
+        "security_or_access_reviewer"
+      ],
+      "risk_questions": [
+        "Could assistance expose people to additional harm?",
+        "Whose priorities shaped the program design?",
+        "How will exclusion, diversion, or conflict effects be detected?"
+      ],
+      "readiness_rules": [
+        "needs_evidence_present",
+        "protection_review_present",
+        "participation_documented",
+        "feedback_and_safeguarding_defined",
+        "context_monitoring_present"
+      ],
+      "brief_templates": [
+        "humanitarian_program_memo",
+        "development_options_analysis",
+        "protection_and_accountability_record"
+      ],
+      "governance_defaults": {
+        "approval_authority": "Named human decision owner",
+        "ai_approval_allowed": false,
+        "independent_review_required": true,
+        "regulated_review_external": true
+      },
+      "boundaries": [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision."
+      ]
+    },
+    {
+      "schema": "scds-institutional-decision-pack/1.0",
+      "pack_version": "1.0",
+      "id": "organizational-policy",
+      "name": "Organizational Policy",
+      "domain": "policy_governance",
+      "summary": "Evaluate organizational policies across purpose, authority, evidence, feasibility, rights, implementation, and reviewability.",
+      "required_intake_fields": [
+        "decision_question",
+        "policy_problem",
+        "authority_and_scope",
+        "affected_groups",
+        "implementation_owner",
+        "review_horizon"
+      ],
+      "criteria": [
+        {
+          "id": "problem_fit",
+          "label": "Fit to the evidenced problem",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "authority_legitimacy",
+          "label": "Authority and legitimacy",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "rights_equity",
+          "label": "Rights and equity effects",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "implementation_feasibility",
+          "label": "Implementation feasibility",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "clarity_enforceability",
+          "label": "Clarity and enforceability",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "monitoring_review",
+          "label": "Monitoring and reviewability",
+          "weight": 18,
+          "type": "benefit"
+        }
+      ],
+      "required_evidence": [
+        "problem_definition",
+        "authority_and_constraints",
+        "affected_group_analysis",
+        "alternatives",
+        "implementation_plan",
+        "monitoring_and_review"
+      ],
+      "suggested_indicators": [
+        "policy_compliance",
+        "service_or_process_outcome",
+        "distributional_effect",
+        "implementation_cost",
+        "appeal_or_exception_rate",
+        "review_trigger"
+      ],
+      "workbench_models": [
+        "policy-options-matrix",
+        "distributional-impact-analysis",
+        "implementation-capacity-model",
+        "monitoring-threshold-model"
+      ],
+      "review_roles": [
+        "policy_owner",
+        "legal_or_authority_reviewer",
+        "operations_reviewer",
+        "affected_group_reviewer",
+        "governance_reviewer"
+      ],
+      "risk_questions": [
+        "Is the policy within the institution's authority?",
+        "Which groups face unequal burdens or barriers?",
+        "What evidence would justify amendment or repeal?"
+      ],
+      "readiness_rules": [
+        "authority_review_identified",
+        "affected_groups_present",
+        "implementation_owner_named",
+        "exceptions_and_appeals_defined",
+        "review_trigger_defined"
+      ],
+      "brief_templates": [
+        "organizational_policy_memo",
+        "policy_options_analysis",
+        "implementation_and_review_plan"
+      ],
+      "governance_defaults": {
+        "approval_authority": "Named human decision owner",
+        "ai_approval_allowed": false,
+        "independent_review_required": true,
+        "regulated_review_external": true
+      },
+      "boundaries": [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision."
+      ]
+    },
+    {
+      "schema": "scds-institutional-decision-pack/1.0",
+      "pack_version": "1.0",
+      "id": "advisory-diagnostic-recommendation",
+      "name": "Advisory Diagnostic and Recommendation",
+      "domain": "advisory",
+      "summary": "Structure evidence-based advisory diagnostics, options, recommendations, implementation conditions, and client approval records.",
+      "required_intake_fields": [
+        "decision_question",
+        "client_or_institution",
+        "diagnostic_scope",
+        "desired_outcomes",
+        "constraints",
+        "engagement_horizon"
+      ],
+      "criteria": [
+        {
+          "id": "evidence_fit",
+          "label": "Fit to the evidence and diagnosis",
+          "weight": 20,
+          "type": "benefit"
+        },
+        {
+          "id": "strategic_value",
+          "label": "Strategic value",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "implementation_feasibility",
+          "label": "Implementation feasibility",
+          "weight": 18,
+          "type": "benefit"
+        },
+        {
+          "id": "risk_and_ethics",
+          "label": "Risk and ethical safeguards",
+          "weight": 16,
+          "type": "benefit"
+        },
+        {
+          "id": "client_capacity",
+          "label": "Institutional capacity and ownership",
+          "weight": 14,
+          "type": "benefit"
+        },
+        {
+          "id": "measurability",
+          "label": "Measurability and learning",
+          "weight": 14,
+          "type": "benefit"
+        }
+      ],
+      "required_evidence": [
+        "diagnostic_findings",
+        "source_and_interview_record",
+        "constraints_and_dependencies",
+        "options_considered",
+        "implementation_capacity",
+        "success_and_review_measures"
+      ],
+      "suggested_indicators": [
+        "diagnostic_confidence",
+        "stakeholder_alignment",
+        "implementation_capacity",
+        "risk_exposure",
+        "milestone_completion",
+        "outcome_signal"
+      ],
+      "workbench_models": [
+        "strategy-options-matrix",
+        "implementation-roadmap-model",
+        "risk-resilience-impact-matrix",
+        "monitoring-threshold-model"
+      ],
+      "review_roles": [
+        "engagement_owner",
+        "client_decision_owner",
+        "subject_matter_reviewer",
+        "implementation_owner",
+        "quality_reviewer"
+      ],
+      "risk_questions": [
+        "Which findings are evidence versus interpretation?",
+        "What client dependencies could invalidate the recommendation?",
+        "What would cause the recommendation to be revised?"
+      ],
+      "readiness_rules": [
+        "diagnostic_evidence_traceable",
+        "options_compared",
+        "client_owner_named",
+        "implementation_conditions_present",
+        "approval_and_reassessment_defined"
+      ],
+      "brief_templates": [
+        "advisory_recommendation_memo",
+        "diagnostic_findings_report",
+        "implementation_conditions_and_approvals"
+      ],
+      "governance_defaults": {
+        "approval_authority": "Named human decision owner",
+        "ai_approval_allowed": false,
+        "independent_review_required": true,
+        "regulated_review_external": true
+      },
+      "boundaries": [
+        "Decision-support methodology only; not legal, engineering, financial, medical, tax, compliance, or assurance certification.",
+        "Qualified human review is required for regulated, safety-critical, fiduciary, clinical, or public-authority decisions.",
+        "AI may organize evidence and draft questions, but cannot approve, certify, assure, or sign off a decision."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "request": {
+    "packId": "responsible-ai-governance",
+    "organizationProfile": {
+      "decision_question": "sample value",
+      "system_purpose": "sample value",
+      "affected_people": "sample value",
+      "data_scope": "sample value",
+      "deployment_context": "sample value",
+      "decision_authority": "sample value"
+    },
+    "selectedEvidence": [
+      "purpose_and_necessity",
+      "data_provenance",
+      "performance_and_failure_testing",
+      "rights_impact",
+      "security_and_privacy",
+      "human_oversight_and_incident_response"
+    ],
+    "reviewerAssignments": [
+      {
+        "role": "decision_owner",
+        "name": "Assigned reviewer"
+      },
+      {
+        "role": "technical_reviewer",
+        "name": "Assigned reviewer"
+      },
+      {
+        "role": "privacy_or_security_reviewer",
+        "name": "Assigned reviewer"
+      },
+      {
+        "role": "rights_or_ethics_reviewer",
+        "name": "Assigned reviewer"
+      },
+      {
+        "role": "operations_reviewer",
+        "name": "Assigned reviewer"
+      }
+    ],
+    "actor": "Decision owner"
+  },
+  "expected": {
+    "readiness_percent": 100,
+    "pack_id": "responsible-ai-governance",
+    "ai_approval_allowed": false,
+    "workbench_execution_authority": "workbench"
+  }
+}
