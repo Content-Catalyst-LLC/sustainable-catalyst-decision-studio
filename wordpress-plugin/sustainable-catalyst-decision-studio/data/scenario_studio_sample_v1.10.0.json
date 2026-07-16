@@ -1,0 +1,4446 @@
+{
+  "request": {
+    "inputs": {
+      "projectName": "Municipal clean energy modernization",
+      "orgType": "Mid-sized logistics company",
+      "sector": "Transportation and logistics",
+      "location": "United States / Midwest",
+      "horizon": "5 years",
+      "decisionType": "Capital project",
+      "decisionQuestion": "Which implementation pathway should be approved?",
+      "constraints": "",
+      "baselineEmissions": 4200.0,
+      "reductionRate": 34.0,
+      "adoptionRate": 68.0,
+      "capex": 950000.0,
+      "annualSavings": 190000.0,
+      "discountRate": 5.0,
+      "modelYears": 10,
+      "complexity": "Medium",
+      "weightEnv": 30,
+      "weightSocial": 20,
+      "weightEconomic": 30,
+      "weightGovernance": 20,
+      "exposure": 50.0,
+      "vulnerability": 44.0,
+      "resilience": 62.0,
+      "stakeholderSensitivity": 58.0,
+      "governanceReadiness": 72.0,
+      "dataConfidence": 78.0,
+      "socialBenefit": 67.0,
+      "savingsVolatility": 15,
+      "capexVolatility": 18,
+      "carbonPrice": 55.0
+    },
+    "packet": {},
+    "alternatives": [
+      {
+        "id": "phased",
+        "label": "Phased implementation",
+        "parameters": {
+          "capex": 820000,
+          "annualSavings": 155000,
+          "reductionRate": 27,
+          "adoptionRate": 55
+        },
+        "reversibility": 82,
+        "stakeholderEquity": 61,
+        "implementationComplexity": "Low"
+      },
+      {
+        "id": "balanced",
+        "label": "Balanced program",
+        "parameters": {},
+        "reversibility": 62,
+        "stakeholderEquity": 70,
+        "implementationComplexity": "Medium",
+        "stakeholder_impacts": [
+          {
+            "stakeholder": "Residents",
+            "impact_score": 72,
+            "weight": 2
+          },
+          {
+            "stakeholder": "Workers",
+            "impact_score": 65,
+            "weight": 1
+          }
+        ]
+      },
+      {
+        "id": "accelerated",
+        "label": "Accelerated transition",
+        "parameters": {
+          "capex": 1200000,
+          "annualSavings": 255000,
+          "reductionRate": 48,
+          "adoptionRate": 86
+        },
+        "reversibility": 38,
+        "stakeholderEquity": 76,
+        "implementationComplexity": "High"
+      }
+    ],
+    "criteria": [],
+    "parameterRanges": {
+      "capex": {
+        "min": 700000,
+        "max": 1300000,
+        "steps": 5
+      },
+      "annualSavings": {
+        "min": 110000,
+        "max": 290000,
+        "steps": 5
+      },
+      "adoptionRate": {
+        "min": 45,
+        "max": 92,
+        "steps": 5
+      },
+      "reductionRate": {
+        "min": 20,
+        "max": 52,
+        "steps": 5
+      }
+    },
+    "sensitivityParameters": [
+      "capex",
+      "annualSavings",
+      "adoptionRate",
+      "reductionRate"
+    ],
+    "thresholdTarget": {
+      "parameter": "annualSavings",
+      "metric": "npv",
+      "operator": ">=",
+      "value": 0
+    },
+    "timeHorizons": [
+      3,
+      5,
+      10,
+      15
+    ],
+    "gridPoints": 5,
+    "includeMultiVariable": true,
+    "notes": "Illustrative deterministic screening fixture; not a forecast."
+  },
+  "response": {
+    "ok": true,
+    "version": "1.10.0",
+    "schema": "scds-scenario-studio/1.0",
+    "scenario_studio": {
+      "schema": "scds-scenario-studio/1.0",
+      "studio_version": "1.10.0",
+      "analysis_mode": "full",
+      "alternative_count": 3,
+      "criteria": [
+        {
+          "id": "financial_value",
+          "label": "Financial value",
+          "metric": "npv",
+          "weight": 20,
+          "direction": "higher",
+          "normalization": "financial"
+        },
+        {
+          "id": "emissions_impact",
+          "label": "Emissions impact",
+          "metric": "annual_avoided_tco2e",
+          "weight": 18,
+          "direction": "higher",
+          "normalization": "emissions"
+        },
+        {
+          "id": "risk_resilience",
+          "label": "Risk and resilience",
+          "metric": "risk_score",
+          "weight": 16,
+          "direction": "lower",
+          "normalization": "risk"
+        },
+        {
+          "id": "evidence_confidence",
+          "label": "Evidence confidence",
+          "metric": "confidence",
+          "weight": 10,
+          "direction": "higher",
+          "normalization": "score"
+        },
+        {
+          "id": "stakeholder_equity",
+          "label": "Stakeholder and distributional impact",
+          "metric": "stakeholder_equity",
+          "weight": 10,
+          "direction": "higher",
+          "normalization": "score"
+        },
+        {
+          "id": "implementation_feasibility",
+          "label": "Implementation feasibility",
+          "metric": "implementation_feasibility",
+          "weight": 10,
+          "direction": "higher",
+          "normalization": "score"
+        },
+        {
+          "id": "reversibility",
+          "label": "Reversibility and option value",
+          "metric": "reversibility",
+          "weight": 8,
+          "direction": "higher",
+          "normalization": "score"
+        },
+        {
+          "id": "time_to_value",
+          "label": "Time to value",
+          "metric": "payback_years",
+          "weight": 8,
+          "direction": "lower",
+          "normalization": "payback"
+        }
+      ],
+      "parameter_ranges": {
+        "capex": {
+          "min": 700000.0,
+          "max": 1300000.0,
+          "steps": 5
+        },
+        "annualSavings": {
+          "min": 110000.0,
+          "max": 290000.0,
+          "steps": 5
+        },
+        "adoptionRate": {
+          "min": 45.0,
+          "max": 92.0,
+          "steps": 5
+        },
+        "reductionRate": {
+          "min": 20.0,
+          "max": 52.0,
+          "steps": 5
+        },
+        "discountRate": {
+          "min": 2.0,
+          "max": 8.0,
+          "steps": 5
+        }
+      },
+      "alternatives": [
+        {
+          "alternative_id": "phased",
+          "label": "Phased implementation",
+          "description": "",
+          "parameters": {
+            "projectName": "Municipal clean energy modernization",
+            "orgType": "Mid-sized logistics company",
+            "sector": "Transportation and logistics",
+            "location": "United States / Midwest",
+            "horizon": "5 years",
+            "decisionType": "Capital project",
+            "decisionQuestion": "Which implementation pathway should be approved?",
+            "constraints": "",
+            "baselineEmissions": 4200.0,
+            "reductionRate": 27.0,
+            "adoptionRate": 55.0,
+            "capex": 820000.0,
+            "annualSavings": 155000.0,
+            "discountRate": 5.0,
+            "modelYears": 10,
+            "complexity": "Medium",
+            "weightEnv": 30.0,
+            "weightSocial": 20.0,
+            "weightEconomic": 30.0,
+            "weightGovernance": 20.0,
+            "exposure": 50.0,
+            "vulnerability": 44.0,
+            "resilience": 62.0,
+            "stakeholderSensitivity": 58.0,
+            "governanceReadiness": 72.0,
+            "dataConfidence": 78.0,
+            "socialBenefit": 67.0,
+            "savingsVolatility": 15.0,
+            "capexVolatility": 18.0,
+            "carbonPrice": 55.0
+          },
+          "results": {
+            "scores": {
+              "environmental": 51.45,
+              "social": 69.10000000000001,
+              "economic": 74.62367041886661,
+              "governance": 84.36,
+              "weighted": 68.51410112565998
+            },
+            "finance": {
+              "npv": 376868.9140236457,
+              "payback_years": 5.290322580645161,
+              "roi_percent": 89.02439024390245
+            },
+            "emissions": {
+              "annual_avoided_tco2e": 623.7,
+              "total_avoided_tco2e": 6237.0
+            },
+            "risk": {
+              "risk_score": 47.580000000000005,
+              "risk_level": "Medium"
+            },
+            "status": "Promising but needs mitigation",
+            "scenarios": [
+              {
+                "label": "Baseline",
+                "annual_avoided_tco2e": 0.0,
+                "npv": 0.0,
+                "payback_years": null
+              },
+              {
+                "label": "Conservative",
+                "annual_avoided_tco2e": 350.83125,
+                "npv": 14495.131218916751,
+                "payback_years": 7.604838709677418
+              },
+              {
+                "label": "Expected",
+                "annual_avoided_tco2e": 623.7,
+                "npv": 376868.9140236457,
+                "payback_years": 5.290322580645161
+              },
+              {
+                "label": "Ambitious",
+                "annual_avoided_tco2e": 896.56875,
+                "npv": 455555.8054260104,
+                "payback_years": 5.0498533724340176
+              },
+              {
+                "label": "Stress test",
+                "annual_avoided_tco2e": 243.243,
+                "npv": -288035.20588463027,
+                "payback_years": 10.580645161290322
+              }
+            ],
+            "warnings": [
+              "Educational decision support only. Not professional advice or certification."
+            ],
+            "workbench_handoffs": [
+              "risk-resilience-impact-matrix",
+              "economics-forecasting-and-scenario-tool",
+              "environmental-monitoring-qaqc-tool",
+              "systems-modeling-tool"
+            ]
+          },
+          "metrics": {
+            "npv": 376868.9140236457,
+            "roi_percent": 89.02439024390245,
+            "payback_years": 5.290322580645161,
+            "annual_avoided_tco2e": 623.7,
+            "total_avoided_tco2e": 6237.0,
+            "risk_score": 47.580000000000005,
+            "confidence": 78.0,
+            "stakeholder_equity": 61.0,
+            "implementation_feasibility": 81.7,
+            "reversibility": 82.0,
+            "option_value": 81.34
+          },
+          "criterion_scores": {
+            "financial_value": 66.09,
+            "emissions_impact": 14.85,
+            "risk_resilience": 52.42,
+            "evidence_confidence": 78.0,
+            "stakeholder_equity": 61.0,
+            "implementation_feasibility": 81.7,
+            "reversibility": 82.0,
+            "time_to_value": 62.97
+          },
+          "stakeholder_distribution": {
+            "records": [],
+            "weighted_average": 61.0,
+            "minimum_group_score": 61.0,
+            "maximum_group_score": 61.0,
+            "equity_score": 61.0
+          },
+          "implementation_complexity": "Low",
+          "custom_criteria": {},
+          "criteria": [
+            {
+              "criterion_id": "financial_value",
+              "label": "Financial value",
+              "metric": "npv",
+              "weight": 20.0,
+              "score": 66.09,
+              "weighted_contribution": 13.22
+            },
+            {
+              "criterion_id": "emissions_impact",
+              "label": "Emissions impact",
+              "metric": "annual_avoided_tco2e",
+              "weight": 18.0,
+              "score": 14.85,
+              "weighted_contribution": 2.67
+            },
+            {
+              "criterion_id": "risk_resilience",
+              "label": "Risk and resilience",
+              "metric": "risk_score",
+              "weight": 16.0,
+              "score": 52.42,
+              "weighted_contribution": 8.39
+            },
+            {
+              "criterion_id": "evidence_confidence",
+              "label": "Evidence confidence",
+              "metric": "confidence",
+              "weight": 10.0,
+              "score": 78.0,
+              "weighted_contribution": 7.8
+            },
+            {
+              "criterion_id": "stakeholder_equity",
+              "label": "Stakeholder and distributional impact",
+              "metric": "stakeholder_equity",
+              "weight": 10.0,
+              "score": 61.0,
+              "weighted_contribution": 6.1
+            },
+            {
+              "criterion_id": "implementation_feasibility",
+              "label": "Implementation feasibility",
+              "metric": "implementation_feasibility",
+              "weight": 10.0,
+              "score": 81.7,
+              "weighted_contribution": 8.17
+            },
+            {
+              "criterion_id": "reversibility",
+              "label": "Reversibility and option value",
+              "metric": "reversibility",
+              "weight": 8.0,
+              "score": 82.0,
+              "weighted_contribution": 6.56
+            },
+            {
+              "criterion_id": "time_to_value",
+              "label": "Time to value",
+              "metric": "payback_years",
+              "weight": 8.0,
+              "score": 62.97,
+              "weighted_contribution": 5.04
+            }
+          ],
+          "decision_score": 57.95,
+          "unweighted_score": 62.38
+        },
+        {
+          "alternative_id": "balanced",
+          "label": "Balanced program",
+          "description": "",
+          "parameters": {
+            "projectName": "Municipal clean energy modernization",
+            "orgType": "Mid-sized logistics company",
+            "sector": "Transportation and logistics",
+            "location": "United States / Midwest",
+            "horizon": "5 years",
+            "decisionType": "Capital project",
+            "decisionQuestion": "Which implementation pathway should be approved?",
+            "constraints": "",
+            "baselineEmissions": 4200.0,
+            "reductionRate": 34.0,
+            "adoptionRate": 68.0,
+            "capex": 950000.0,
+            "annualSavings": 190000.0,
+            "discountRate": 5.0,
+            "modelYears": 10,
+            "complexity": "Medium",
+            "weightEnv": 30.0,
+            "weightSocial": 20.0,
+            "weightEconomic": 30.0,
+            "weightGovernance": 20.0,
+            "exposure": 50.0,
+            "vulnerability": 44.0,
+            "resilience": 62.0,
+            "stakeholderSensitivity": 58.0,
+            "governanceReadiness": 72.0,
+            "dataConfidence": 78.0,
+            "socialBenefit": 67.0,
+            "savingsVolatility": 15.0,
+            "capexVolatility": 18.0,
+            "carbonPrice": 55.0
+          },
+          "results": {
+            "scores": {
+              "environmental": 57.46,
+              "social": 70.14,
+              "economic": 79.33446418512338,
+              "governance": 84.36,
+              "weighted": 71.93833925553702
+            },
+            "finance": {
+              "npv": 517129.636545114,
+              "payback_years": 5.0,
+              "roi_percent": 100.0
+            },
+            "emissions": {
+              "annual_avoided_tco2e": 971.0400000000001,
+              "total_avoided_tco2e": 9710.400000000001
+            },
+            "risk": {
+              "risk_score": 47.580000000000005,
+              "risk_level": "Medium"
+            },
+            "status": "Promising but needs mitigation",
+            "scenarios": [
+              {
+                "label": "Baseline",
+                "annual_avoided_tco2e": 0.0,
+                "npv": 0.0,
+                "payback_years": null
+              },
+              {
+                "label": "Conservative",
+                "annual_avoided_tco2e": 546.21,
+                "npv": 81203.70923609131,
+                "payback_years": 7.1875
+              },
+              {
+                "label": "Expected",
+                "annual_avoided_tco2e": 971.04,
+                "npv": 517129.636545114,
+                "payback_years": 5.0
+              },
+              {
+                "label": "Ambitious",
+                "annual_avoided_tco2e": 1395.8699999999997,
+                "npv": 616342.6001996256,
+                "payback_years": 4.7727272727272725
+              },
+              {
+                "label": "Stress test",
+                "annual_avoided_tco2e": 378.7056,
+                "npv": -281365.7362456759,
+                "payback_years": 10.0
+              }
+            ],
+            "warnings": [
+              "Educational decision support only. Not professional advice or certification."
+            ],
+            "workbench_handoffs": [
+              "risk-resilience-impact-matrix",
+              "economics-forecasting-and-scenario-tool",
+              "environmental-monitoring-qaqc-tool",
+              "systems-modeling-tool"
+            ]
+          },
+          "metrics": {
+            "npv": 517129.636545114,
+            "roi_percent": 100.0,
+            "payback_years": 5.0,
+            "annual_avoided_tco2e": 971.0400000000001,
+            "total_avoided_tco2e": 9710.400000000001,
+            "risk_score": 47.580000000000005,
+            "confidence": 78.0,
+            "stakeholder_equity": 68.27,
+            "implementation_feasibility": 69.05,
+            "reversibility": 62.0,
+            "option_value": 65.81
+          },
+          "criterion_scores": {
+            "financial_value": 69.05,
+            "emissions_impact": 23.12,
+            "risk_resilience": 52.42,
+            "evidence_confidence": 78.0,
+            "stakeholder_equity": 68.27,
+            "implementation_feasibility": 69.05,
+            "reversibility": 62.0,
+            "time_to_value": 65.0
+          },
+          "stakeholder_distribution": {
+            "records": [
+              {
+                "stakeholder": "Residents",
+                "impact_score": 72.0,
+                "weight": 2.0,
+                "notes": ""
+              },
+              {
+                "stakeholder": "Workers",
+                "impact_score": 65.0,
+                "weight": 1.0,
+                "notes": ""
+              }
+            ],
+            "weighted_average": 69.67,
+            "minimum_group_score": 65.0,
+            "maximum_group_score": 72.0,
+            "equity_score": 68.27
+          },
+          "implementation_complexity": "Medium",
+          "custom_criteria": {},
+          "criteria": [
+            {
+              "criterion_id": "financial_value",
+              "label": "Financial value",
+              "metric": "npv",
+              "weight": 20.0,
+              "score": 69.05,
+              "weighted_contribution": 13.81
+            },
+            {
+              "criterion_id": "emissions_impact",
+              "label": "Emissions impact",
+              "metric": "annual_avoided_tco2e",
+              "weight": 18.0,
+              "score": 23.12,
+              "weighted_contribution": 4.16
+            },
+            {
+              "criterion_id": "risk_resilience",
+              "label": "Risk and resilience",
+              "metric": "risk_score",
+              "weight": 16.0,
+              "score": 52.42,
+              "weighted_contribution": 8.39
+            },
+            {
+              "criterion_id": "evidence_confidence",
+              "label": "Evidence confidence",
+              "metric": "confidence",
+              "weight": 10.0,
+              "score": 78.0,
+              "weighted_contribution": 7.8
+            },
+            {
+              "criterion_id": "stakeholder_equity",
+              "label": "Stakeholder and distributional impact",
+              "metric": "stakeholder_equity",
+              "weight": 10.0,
+              "score": 68.27,
+              "weighted_contribution": 6.83
+            },
+            {
+              "criterion_id": "implementation_feasibility",
+              "label": "Implementation feasibility",
+              "metric": "implementation_feasibility",
+              "weight": 10.0,
+              "score": 69.05,
+              "weighted_contribution": 6.91
+            },
+            {
+              "criterion_id": "reversibility",
+              "label": "Reversibility and option value",
+              "metric": "reversibility",
+              "weight": 8.0,
+              "score": 62.0,
+              "weighted_contribution": 4.96
+            },
+            {
+              "criterion_id": "time_to_value",
+              "label": "Time to value",
+              "metric": "payback_years",
+              "weight": 8.0,
+              "score": 65.0,
+              "weighted_contribution": 5.2
+            }
+          ],
+          "decision_score": 58.05,
+          "unweighted_score": 60.86
+        },
+        {
+          "alternative_id": "accelerated",
+          "label": "Accelerated transition",
+          "description": "",
+          "parameters": {
+            "projectName": "Municipal clean energy modernization",
+            "orgType": "Mid-sized logistics company",
+            "sector": "Transportation and logistics",
+            "location": "United States / Midwest",
+            "horizon": "5 years",
+            "decisionType": "Capital project",
+            "decisionQuestion": "Which implementation pathway should be approved?",
+            "constraints": "",
+            "baselineEmissions": 4200.0,
+            "reductionRate": 48.0,
+            "adoptionRate": 86.0,
+            "capex": 1200000.0,
+            "annualSavings": 255000.0,
+            "discountRate": 5.0,
+            "modelYears": 10,
+            "complexity": "Medium",
+            "weightEnv": 30.0,
+            "weightSocial": 20.0,
+            "weightEconomic": 30.0,
+            "weightGovernance": 20.0,
+            "exposure": 50.0,
+            "vulnerability": 44.0,
+            "resilience": 62.0,
+            "stakeholderSensitivity": 58.0,
+            "governanceReadiness": 72.0,
+            "dataConfidence": 78.0,
+            "socialBenefit": 67.0,
+            "savingsVolatility": 15.0,
+            "capexVolatility": 18.0,
+            "carbonPrice": 55.0
+          },
+          "results": {
+            "scores": {
+              "environmental": 67.72000000000001,
+              "social": 71.58,
+              "economic": 84.69953486336026,
+              "governance": 84.36,
+              "weighted": 76.91386045900808
+            },
+            "finance": {
+              "npv": 769042.4069421268,
+              "payback_years": 4.705882352941177,
+              "roi_percent": 112.5
+            },
+            "emissions": {
+              "annual_avoided_tco2e": 1733.76,
+              "total_avoided_tco2e": 17337.6
+            },
+            "risk": {
+              "risk_score": 47.580000000000005,
+              "risk_level": "Medium"
+            },
+            "status": "Strong candidate with review",
+            "scenarios": [
+              {
+                "label": "Baseline",
+                "annual_avoided_tco2e": 0.0,
+                "npv": 0.0,
+                "payback_years": null
+              },
+              {
+                "label": "Conservative",
+                "annual_avoided_tco2e": 975.24,
+                "npv": 195233.9255537014,
+                "payback_years": 6.764705882352941
+              },
+              {
+                "label": "Expected",
+                "annual_avoided_tco2e": 1733.76,
+                "npv": 769042.4069421268,
+                "payback_years": 4.705882352941177
+              },
+              {
+                "label": "Ambitious",
+                "annual_avoided_tco2e": 2318.3999999999996,
+                "npv": 905946.6476363394,
+                "payback_years": 4.491978609625669
+              },
+              {
+                "label": "Stress test",
+                "annual_avoided_tco2e": 676.1664000000002,
+                "npv": -280122.43548761774,
+                "payback_years": 9.411764705882353
+              }
+            ],
+            "warnings": [
+              "Educational decision support only. Not professional advice or certification."
+            ],
+            "workbench_handoffs": [
+              "risk-resilience-impact-matrix",
+              "economics-forecasting-and-scenario-tool",
+              "environmental-monitoring-qaqc-tool",
+              "systems-modeling-tool"
+            ]
+          },
+          "metrics": {
+            "npv": 769042.4069421268,
+            "roi_percent": 112.5,
+            "payback_years": 4.705882352941177,
+            "annual_avoided_tco2e": 1733.76,
+            "total_avoided_tco2e": 17337.6,
+            "risk_score": 47.580000000000005,
+            "confidence": 78.0,
+            "stakeholder_equity": 76.0,
+            "implementation_feasibility": 56.4,
+            "reversibility": 38.0,
+            "option_value": 47.68
+          },
+          "criterion_scores": {
+            "financial_value": 72.43,
+            "emissions_impact": 41.28,
+            "risk_resilience": 52.42,
+            "evidence_confidence": 78.0,
+            "stakeholder_equity": 76.0,
+            "implementation_feasibility": 56.4,
+            "reversibility": 38.0,
+            "time_to_value": 67.06
+          },
+          "stakeholder_distribution": {
+            "records": [],
+            "weighted_average": 76.0,
+            "minimum_group_score": 76.0,
+            "maximum_group_score": 76.0,
+            "equity_score": 76.0
+          },
+          "implementation_complexity": "High",
+          "custom_criteria": {},
+          "criteria": [
+            {
+              "criterion_id": "financial_value",
+              "label": "Financial value",
+              "metric": "npv",
+              "weight": 20.0,
+              "score": 72.43,
+              "weighted_contribution": 14.49
+            },
+            {
+              "criterion_id": "emissions_impact",
+              "label": "Emissions impact",
+              "metric": "annual_avoided_tco2e",
+              "weight": 18.0,
+              "score": 41.28,
+              "weighted_contribution": 7.43
+            },
+            {
+              "criterion_id": "risk_resilience",
+              "label": "Risk and resilience",
+              "metric": "risk_score",
+              "weight": 16.0,
+              "score": 52.42,
+              "weighted_contribution": 8.39
+            },
+            {
+              "criterion_id": "evidence_confidence",
+              "label": "Evidence confidence",
+              "metric": "confidence",
+              "weight": 10.0,
+              "score": 78.0,
+              "weighted_contribution": 7.8
+            },
+            {
+              "criterion_id": "stakeholder_equity",
+              "label": "Stakeholder and distributional impact",
+              "metric": "stakeholder_equity",
+              "weight": 10.0,
+              "score": 76.0,
+              "weighted_contribution": 7.6
+            },
+            {
+              "criterion_id": "implementation_feasibility",
+              "label": "Implementation feasibility",
+              "metric": "implementation_feasibility",
+              "weight": 10.0,
+              "score": 56.4,
+              "weighted_contribution": 5.64
+            },
+            {
+              "criterion_id": "reversibility",
+              "label": "Reversibility and option value",
+              "metric": "reversibility",
+              "weight": 8.0,
+              "score": 38.0,
+              "weighted_contribution": 3.04
+            },
+            {
+              "criterion_id": "time_to_value",
+              "label": "Time to value",
+              "metric": "payback_years",
+              "weight": 8.0,
+              "score": 67.06,
+              "weighted_contribution": 5.36
+            }
+          ],
+          "decision_score": 59.75,
+          "unweighted_score": 60.2
+        }
+      ],
+      "weighted_ranking": [
+        {
+          "rank": 1,
+          "alternative_id": "accelerated",
+          "label": "Accelerated transition",
+          "score": 59.75
+        },
+        {
+          "rank": 2,
+          "alternative_id": "balanced",
+          "label": "Balanced program",
+          "score": 58.05
+        },
+        {
+          "rank": 3,
+          "alternative_id": "phased",
+          "label": "Phased implementation",
+          "score": 57.95
+        }
+      ],
+      "unweighted_ranking": [
+        {
+          "rank": 1,
+          "alternative_id": "phased",
+          "label": "Phased implementation",
+          "score": 62.38
+        },
+        {
+          "rank": 2,
+          "alternative_id": "balanced",
+          "label": "Balanced program",
+          "score": 60.86
+        },
+        {
+          "rank": 3,
+          "alternative_id": "accelerated",
+          "label": "Accelerated transition",
+          "score": 60.2
+        }
+      ],
+      "recommended_alternative_id": "accelerated",
+      "recommended_alternative": {
+        "alternative_id": "accelerated",
+        "label": "Accelerated transition",
+        "description": "",
+        "parameters": {
+          "projectName": "Municipal clean energy modernization",
+          "orgType": "Mid-sized logistics company",
+          "sector": "Transportation and logistics",
+          "location": "United States / Midwest",
+          "horizon": "5 years",
+          "decisionType": "Capital project",
+          "decisionQuestion": "Which implementation pathway should be approved?",
+          "constraints": "",
+          "baselineEmissions": 4200.0,
+          "reductionRate": 48.0,
+          "adoptionRate": 86.0,
+          "capex": 1200000.0,
+          "annualSavings": 255000.0,
+          "discountRate": 5.0,
+          "modelYears": 10,
+          "complexity": "Medium",
+          "weightEnv": 30.0,
+          "weightSocial": 20.0,
+          "weightEconomic": 30.0,
+          "weightGovernance": 20.0,
+          "exposure": 50.0,
+          "vulnerability": 44.0,
+          "resilience": 62.0,
+          "stakeholderSensitivity": 58.0,
+          "governanceReadiness": 72.0,
+          "dataConfidence": 78.0,
+          "socialBenefit": 67.0,
+          "savingsVolatility": 15.0,
+          "capexVolatility": 18.0,
+          "carbonPrice": 55.0
+        },
+        "results": {
+          "scores": {
+            "environmental": 67.72000000000001,
+            "social": 71.58,
+            "economic": 84.69953486336026,
+            "governance": 84.36,
+            "weighted": 76.91386045900808
+          },
+          "finance": {
+            "npv": 769042.4069421268,
+            "payback_years": 4.705882352941177,
+            "roi_percent": 112.5
+          },
+          "emissions": {
+            "annual_avoided_tco2e": 1733.76,
+            "total_avoided_tco2e": 17337.6
+          },
+          "risk": {
+            "risk_score": 47.580000000000005,
+            "risk_level": "Medium"
+          },
+          "status": "Strong candidate with review",
+          "scenarios": [
+            {
+              "label": "Baseline",
+              "annual_avoided_tco2e": 0.0,
+              "npv": 0.0,
+              "payback_years": null
+            },
+            {
+              "label": "Conservative",
+              "annual_avoided_tco2e": 975.24,
+              "npv": 195233.9255537014,
+              "payback_years": 6.764705882352941
+            },
+            {
+              "label": "Expected",
+              "annual_avoided_tco2e": 1733.76,
+              "npv": 769042.4069421268,
+              "payback_years": 4.705882352941177
+            },
+            {
+              "label": "Ambitious",
+              "annual_avoided_tco2e": 2318.3999999999996,
+              "npv": 905946.6476363394,
+              "payback_years": 4.491978609625669
+            },
+            {
+              "label": "Stress test",
+              "annual_avoided_tco2e": 676.1664000000002,
+              "npv": -280122.43548761774,
+              "payback_years": 9.411764705882353
+            }
+          ],
+          "warnings": [
+            "Educational decision support only. Not professional advice or certification."
+          ],
+          "workbench_handoffs": [
+            "risk-resilience-impact-matrix",
+            "economics-forecasting-and-scenario-tool",
+            "environmental-monitoring-qaqc-tool",
+            "systems-modeling-tool"
+          ]
+        },
+        "metrics": {
+          "npv": 769042.4069421268,
+          "roi_percent": 112.5,
+          "payback_years": 4.705882352941177,
+          "annual_avoided_tco2e": 1733.76,
+          "total_avoided_tco2e": 17337.6,
+          "risk_score": 47.580000000000005,
+          "confidence": 78.0,
+          "stakeholder_equity": 76.0,
+          "implementation_feasibility": 56.4,
+          "reversibility": 38.0,
+          "option_value": 47.68
+        },
+        "criterion_scores": {
+          "financial_value": 72.43,
+          "emissions_impact": 41.28,
+          "risk_resilience": 52.42,
+          "evidence_confidence": 78.0,
+          "stakeholder_equity": 76.0,
+          "implementation_feasibility": 56.4,
+          "reversibility": 38.0,
+          "time_to_value": 67.06
+        },
+        "stakeholder_distribution": {
+          "records": [],
+          "weighted_average": 76.0,
+          "minimum_group_score": 76.0,
+          "maximum_group_score": 76.0,
+          "equity_score": 76.0
+        },
+        "implementation_complexity": "High",
+        "custom_criteria": {},
+        "criteria": [
+          {
+            "criterion_id": "financial_value",
+            "label": "Financial value",
+            "metric": "npv",
+            "weight": 20.0,
+            "score": 72.43,
+            "weighted_contribution": 14.49
+          },
+          {
+            "criterion_id": "emissions_impact",
+            "label": "Emissions impact",
+            "metric": "annual_avoided_tco2e",
+            "weight": 18.0,
+            "score": 41.28,
+            "weighted_contribution": 7.43
+          },
+          {
+            "criterion_id": "risk_resilience",
+            "label": "Risk and resilience",
+            "metric": "risk_score",
+            "weight": 16.0,
+            "score": 52.42,
+            "weighted_contribution": 8.39
+          },
+          {
+            "criterion_id": "evidence_confidence",
+            "label": "Evidence confidence",
+            "metric": "confidence",
+            "weight": 10.0,
+            "score": 78.0,
+            "weighted_contribution": 7.8
+          },
+          {
+            "criterion_id": "stakeholder_equity",
+            "label": "Stakeholder and distributional impact",
+            "metric": "stakeholder_equity",
+            "weight": 10.0,
+            "score": 76.0,
+            "weighted_contribution": 7.6
+          },
+          {
+            "criterion_id": "implementation_feasibility",
+            "label": "Implementation feasibility",
+            "metric": "implementation_feasibility",
+            "weight": 10.0,
+            "score": 56.4,
+            "weighted_contribution": 5.64
+          },
+          {
+            "criterion_id": "reversibility",
+            "label": "Reversibility and option value",
+            "metric": "reversibility",
+            "weight": 8.0,
+            "score": 38.0,
+            "weighted_contribution": 3.04
+          },
+          {
+            "criterion_id": "time_to_value",
+            "label": "Time to value",
+            "metric": "payback_years",
+            "weight": 8.0,
+            "score": 67.06,
+            "weighted_contribution": 5.36
+          }
+        ],
+        "decision_score": 59.75,
+        "unweighted_score": 60.2
+      },
+      "dominance_analysis": [
+        {
+          "alternative_id": "phased",
+          "dominates": [],
+          "dominated_count": 0
+        },
+        {
+          "alternative_id": "balanced",
+          "dominates": [],
+          "dominated_count": 0
+        },
+        {
+          "alternative_id": "accelerated",
+          "dominates": [],
+          "dominated_count": 0
+        }
+      ],
+      "one_way_sensitivity": {
+        "parameters": [
+          {
+            "parameter": "capex",
+            "min": 700000.0,
+            "max": 1300000.0,
+            "observations": [
+              {
+                "parameter_value": 700000.0,
+                "decision_score": 66.36,
+                "npv": 1269042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 850000.0,
+                "decision_score": 65.25,
+                "npv": 1119042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 1000000.0,
+                "decision_score": 62.49,
+                "npv": 969042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 1150000.0,
+                "decision_score": 60.36,
+                "npv": 819042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 1300000.0,
+                "decision_score": 58.64,
+                "npv": 669042.4069421266,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 7.72,
+            "most_sensitive": false
+          },
+          {
+            "parameter": "annualSavings",
+            "min": 110000.0,
+            "max": 290000.0,
+            "observations": [
+              {
+                "parameter_value": 110000.0,
+                "decision_score": 49.74,
+                "npv": -350609.15778967086,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 155000.0,
+                "decision_score": 53.54,
+                "npv": -3131.085976354385,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 200000.0,
+                "decision_score": 56.55,
+                "npv": 344346.98583696224,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 245000.0,
+                "decision_score": 59.19,
+                "npv": 691825.0576502787,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 290000.0,
+                "decision_score": 61.64,
+                "npv": 1039303.1294635952,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 11.9,
+            "most_sensitive": true
+          },
+          {
+            "parameter": "adoptionRate",
+            "min": 45.0,
+            "max": 92.0,
+            "observations": [
+              {
+                "parameter_value": 45.0,
+                "decision_score": 56.21,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 907.2,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 56.75,
+                "decision_score": 57.22,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1144.08,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 68.5,
+                "decision_score": 58.24,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1380.96,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 80.25,
+                "decision_score": 59.25,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1617.84,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 92.0,
+                "decision_score": 60.27,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1854.72,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 4.06,
+            "most_sensitive": false
+          },
+          {
+            "parameter": "reductionRate",
+            "min": 20.0,
+            "max": 52.0,
+            "observations": [
+              {
+                "parameter_value": 20.0,
+                "decision_score": 55.41,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 722.4,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 28.0,
+                "decision_score": 56.65,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1011.36,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 36.0,
+                "decision_score": 57.89,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1300.32,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 44.0,
+                "decision_score": 59.13,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1589.28,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 52.0,
+                "decision_score": 60.37,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1878.24,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 4.96,
+            "most_sensitive": false
+          }
+        ],
+        "tornado_ranking": [
+          {
+            "parameter": "annualSavings",
+            "score_range": 11.9
+          },
+          {
+            "parameter": "capex",
+            "score_range": 7.72
+          },
+          {
+            "parameter": "reductionRate",
+            "score_range": 4.96
+          },
+          {
+            "parameter": "adoptionRate",
+            "score_range": 4.06
+          }
+        ]
+      },
+      "multi_variable_sensitivity": {
+        "parameters": [
+          "capex",
+          "annualSavings"
+        ],
+        "x_values": [
+          700000.0,
+          1000000.0,
+          1300000.0
+        ],
+        "y_values": [
+          110000.0,
+          200000.0,
+          290000.0
+        ],
+        "grid": [
+          {
+            "capex": 700000.0,
+            "annualSavings": 110000.0,
+            "decision_score": 55.83,
+            "npv": 149390.84221032908,
+            "risk_score": 47.580000000000005
+          },
+          {
+            "capex": 700000.0,
+            "annualSavings": 200000.0,
+            "decision_score": 64.38,
+            "npv": 844346.9858369622,
+            "risk_score": 47.580000000000005
+          },
+          {
+            "capex": 700000.0,
+            "annualSavings": 290000.0,
+            "decision_score": 66.55,
+            "npv": 1539303.1294635949,
+            "risk_score": 47.580000000000005
+          },
+          {
+            "capex": 1000000.0,
+            "annualSavings": 110000.0,
+            "decision_score": 51.75,
+            "npv": -150609.15778967098,
+            "risk_score": 47.580000000000005
+          },
+          {
+            "capex": 1000000.0,
+            "annualSavings": 200000.0,
+            "decision_score": 58.91,
+            "npv": 544346.9858369622,
+            "risk_score": 47.580000000000005
+          },
+          {
+            "capex": 1000000.0,
+            "annualSavings": 290000.0,
+            "decision_score": 64.64,
+            "npv": 1239303.129463595,
+            "risk_score": 47.580000000000005
+          },
+          {
+            "capex": 1300000.0,
+            "annualSavings": 110000.0,
+            "decision_score": 48.85,
+            "npv": -450609.15778967075,
+            "risk_score": 47.580000000000005
+          },
+          {
+            "capex": 1300000.0,
+            "annualSavings": 200000.0,
+            "decision_score": 55.57,
+            "npv": 244346.98583696224,
+            "risk_score": 47.580000000000005
+          },
+          {
+            "capex": 1300000.0,
+            "annualSavings": 290000.0,
+            "decision_score": 60.45,
+            "npv": 939303.1294635952,
+            "risk_score": 47.580000000000005
+          }
+        ],
+        "screening_only": true
+      },
+      "threshold_analysis": {
+        "parameter": "annualSavings",
+        "metric": "npv",
+        "operator": ">=",
+        "target_value": 0,
+        "range": {
+          "min": 110000.0,
+          "max": 290000.0,
+          "steps": 5
+        },
+        "break_even": {
+          "parameter_value": 162500.0,
+          "metric_value": 54781.92599253183,
+          "target_met": true
+        },
+        "observations": [
+          {
+            "parameter_value": 110000.0,
+            "metric_value": -350609.15778967086,
+            "target_met": false
+          },
+          {
+            "parameter_value": 117500.0,
+            "metric_value": -292696.1458207848,
+            "target_met": false
+          },
+          {
+            "parameter_value": 125000.0,
+            "metric_value": -234783.13385189878,
+            "target_met": false
+          },
+          {
+            "parameter_value": 132500.0,
+            "metric_value": -176870.12188301247,
+            "target_met": false
+          },
+          {
+            "parameter_value": 140000.0,
+            "metric_value": -118957.10991412662,
+            "target_met": false
+          },
+          {
+            "parameter_value": 147500.0,
+            "metric_value": -61044.09794524034,
+            "target_met": false
+          },
+          {
+            "parameter_value": 155000.0,
+            "metric_value": -3131.085976354385,
+            "target_met": false
+          },
+          {
+            "parameter_value": 162500.0,
+            "metric_value": 54781.92599253183,
+            "target_met": true
+          },
+          {
+            "parameter_value": 170000.0,
+            "metric_value": 112694.93796141777,
+            "target_met": true
+          },
+          {
+            "parameter_value": 177500.0,
+            "metric_value": 170607.9499303039,
+            "target_met": true
+          },
+          {
+            "parameter_value": 185000.0,
+            "metric_value": 228520.96189919004,
+            "target_met": true
+          },
+          {
+            "parameter_value": 192500.0,
+            "metric_value": 286433.97386807605,
+            "target_met": true
+          },
+          {
+            "parameter_value": 200000.0,
+            "metric_value": 344346.98583696224,
+            "target_met": true
+          },
+          {
+            "parameter_value": 207500.0,
+            "metric_value": 402259.99780584825,
+            "target_met": true
+          },
+          {
+            "parameter_value": 215000.0,
+            "metric_value": 460173.0097747344,
+            "target_met": true
+          },
+          {
+            "parameter_value": 222500.0,
+            "metric_value": 518086.0217436204,
+            "target_met": true
+          },
+          {
+            "parameter_value": 230000.0,
+            "metric_value": 575999.0337125065,
+            "target_met": true
+          },
+          {
+            "parameter_value": 237500.0,
+            "metric_value": 633912.0456813925,
+            "target_met": true
+          },
+          {
+            "parameter_value": 245000.0,
+            "metric_value": 691825.0576502787,
+            "target_met": true
+          },
+          {
+            "parameter_value": 252500.0,
+            "metric_value": 749738.0696191649,
+            "target_met": true
+          },
+          {
+            "parameter_value": 260000.0,
+            "metric_value": 807651.0815880508,
+            "target_met": true
+          },
+          {
+            "parameter_value": 267500.0,
+            "metric_value": 865564.0935569368,
+            "target_met": true
+          },
+          {
+            "parameter_value": 275000.0,
+            "metric_value": 923477.1055258228,
+            "target_met": true
+          },
+          {
+            "parameter_value": 282500.0,
+            "metric_value": 981390.1174947091,
+            "target_met": true
+          },
+          {
+            "parameter_value": 290000.0,
+            "metric_value": 1039303.1294635952,
+            "target_met": true
+          }
+        ],
+        "found": true,
+        "screening_resolution": 25
+      },
+      "uncertainty_envelopes": [
+        {
+          "alternative_id": "phased",
+          "label": "Phased implementation",
+          "screening_low": 55.95,
+          "base": 57.95,
+          "screening_high": 64.6,
+          "spread": 8.65,
+          "interpretation": "Combined range endpoints; not a probability interval."
+        },
+        {
+          "alternative_id": "balanced",
+          "label": "Balanced program",
+          "screening_low": 53.82,
+          "base": 58.05,
+          "screening_high": 62.46,
+          "spread": 8.64,
+          "interpretation": "Combined range endpoints; not a probability interval."
+        },
+        {
+          "alternative_id": "accelerated",
+          "label": "Accelerated transition",
+          "screening_low": 51.4,
+          "base": 59.75,
+          "screening_high": 60.05,
+          "spread": 8.65,
+          "interpretation": "Combined range endpoints; not a probability interval."
+        }
+      ],
+      "time_horizon_comparison": [
+        {
+          "years": 3,
+          "decision_score": 46.95,
+          "npv": -505571.7525105281,
+          "total_avoided_tco2e": 5201.28,
+          "payback_years": 4.705882352941177
+        },
+        {
+          "years": 5,
+          "decision_score": 52.07,
+          "npv": -95983.44898914121,
+          "total_avoided_tco2e": 8668.8,
+          "payback_years": 4.705882352941177
+        },
+        {
+          "years": 10,
+          "decision_score": 59.75,
+          "npv": 769042.4069421268,
+          "total_avoided_tco2e": 17337.6,
+          "payback_years": 4.705882352941177
+        },
+        {
+          "years": 15,
+          "decision_score": 64.58,
+          "npv": 1446812.7997360504,
+          "total_avoided_tco2e": 26006.4,
+          "payback_years": 4.705882352941177
+        }
+      ],
+      "stakeholder_distribution": [
+        {
+          "alternative_id": "phased",
+          "records": [],
+          "weighted_average": 61.0,
+          "minimum_group_score": 61.0,
+          "maximum_group_score": 61.0,
+          "equity_score": 61.0
+        },
+        {
+          "alternative_id": "balanced",
+          "records": [
+            {
+              "stakeholder": "Residents",
+              "impact_score": 72.0,
+              "weight": 2.0,
+              "notes": ""
+            },
+            {
+              "stakeholder": "Workers",
+              "impact_score": 65.0,
+              "weight": 1.0,
+              "notes": ""
+            }
+          ],
+          "weighted_average": 69.67,
+          "minimum_group_score": 65.0,
+          "maximum_group_score": 72.0,
+          "equity_score": 68.27
+        },
+        {
+          "alternative_id": "accelerated",
+          "records": [],
+          "weighted_average": 76.0,
+          "minimum_group_score": 76.0,
+          "maximum_group_score": 76.0,
+          "equity_score": 76.0
+        }
+      ],
+      "reversibility_option_value": [
+        {
+          "alternative_id": "phased",
+          "label": "Phased implementation",
+          "reversibility": 82.0,
+          "option_value": 81.34
+        },
+        {
+          "alternative_id": "balanced",
+          "label": "Balanced program",
+          "reversibility": 62.0,
+          "option_value": 65.81
+        },
+        {
+          "alternative_id": "accelerated",
+          "label": "Accelerated transition",
+          "reversibility": 38.0,
+          "option_value": 47.68
+        }
+      ],
+      "chart_data": {
+        "alternative_scores": [
+          {
+            "label": "Phased implementation",
+            "weighted": 57.95,
+            "unweighted": 62.38
+          },
+          {
+            "label": "Balanced program",
+            "weighted": 58.05,
+            "unweighted": 60.86
+          },
+          {
+            "label": "Accelerated transition",
+            "weighted": 59.75,
+            "unweighted": 60.2
+          }
+        ],
+        "sensitivity_series": [
+          {
+            "parameter": "capex",
+            "min": 700000.0,
+            "max": 1300000.0,
+            "observations": [
+              {
+                "parameter_value": 700000.0,
+                "decision_score": 66.36,
+                "npv": 1269042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 850000.0,
+                "decision_score": 65.25,
+                "npv": 1119042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 1000000.0,
+                "decision_score": 62.49,
+                "npv": 969042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 1150000.0,
+                "decision_score": 60.36,
+                "npv": 819042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 1300000.0,
+                "decision_score": 58.64,
+                "npv": 669042.4069421266,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 7.72,
+            "most_sensitive": false
+          },
+          {
+            "parameter": "annualSavings",
+            "min": 110000.0,
+            "max": 290000.0,
+            "observations": [
+              {
+                "parameter_value": 110000.0,
+                "decision_score": 49.74,
+                "npv": -350609.15778967086,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 155000.0,
+                "decision_score": 53.54,
+                "npv": -3131.085976354385,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 200000.0,
+                "decision_score": 56.55,
+                "npv": 344346.98583696224,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 245000.0,
+                "decision_score": 59.19,
+                "npv": 691825.0576502787,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 290000.0,
+                "decision_score": 61.64,
+                "npv": 1039303.1294635952,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 11.9,
+            "most_sensitive": true
+          },
+          {
+            "parameter": "adoptionRate",
+            "min": 45.0,
+            "max": 92.0,
+            "observations": [
+              {
+                "parameter_value": 45.0,
+                "decision_score": 56.21,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 907.2,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 56.75,
+                "decision_score": 57.22,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1144.08,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 68.5,
+                "decision_score": 58.24,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1380.96,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 80.25,
+                "decision_score": 59.25,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1617.84,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 92.0,
+                "decision_score": 60.27,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1854.72,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 4.06,
+            "most_sensitive": false
+          },
+          {
+            "parameter": "reductionRate",
+            "min": 20.0,
+            "max": 52.0,
+            "observations": [
+              {
+                "parameter_value": 20.0,
+                "decision_score": 55.41,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 722.4,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 28.0,
+                "decision_score": 56.65,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1011.36,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 36.0,
+                "decision_score": 57.89,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1300.32,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 44.0,
+                "decision_score": 59.13,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1589.28,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 52.0,
+                "decision_score": 60.37,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1878.24,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 4.96,
+            "most_sensitive": false
+          }
+        ],
+        "time_horizon_series": [
+          {
+            "years": 3,
+            "decision_score": 46.95,
+            "npv": -505571.7525105281,
+            "total_avoided_tco2e": 5201.28,
+            "payback_years": 4.705882352941177
+          },
+          {
+            "years": 5,
+            "decision_score": 52.07,
+            "npv": -95983.44898914121,
+            "total_avoided_tco2e": 8668.8,
+            "payback_years": 4.705882352941177
+          },
+          {
+            "years": 10,
+            "decision_score": 59.75,
+            "npv": 769042.4069421268,
+            "total_avoided_tco2e": 17337.6,
+            "payback_years": 4.705882352941177
+          },
+          {
+            "years": 15,
+            "decision_score": 64.58,
+            "npv": 1446812.7997360504,
+            "total_avoided_tco2e": 26006.4,
+            "payback_years": 4.705882352941177
+          }
+        ]
+      },
+      "workbench_handoff": {
+        "required_for": [
+          "probabilistic simulation",
+          "optimization",
+          "engineering models",
+          "domain forecasting",
+          "large sensitivity grids"
+        ],
+        "recommended_tools": [
+          "economics-forecasting-and-scenario-tool",
+          "graph-studio-parameter-sensitivity",
+          "risk-resilience-impact-matrix",
+          "systems-modeling-tool"
+        ]
+      },
+      "notes": "Illustrative deterministic screening fixture; not a forecast.",
+      "warnings": [
+        "Scenario outputs are conditional decision-support results, not forecasts or guarantees.",
+        "Ranges describe assumptions supplied by the user; they are not probability distributions unless modeled and validated elsewhere."
+      ]
+    },
+    "decision_packet": {
+      "packet_version": "1.10.0",
+      "workflow": "Knowledge Library \u2192 Research Librarian \u2192 Site Intelligence \u2192 Workbench \u2192 Research Lab \u2192 Platform Core \u2192 Decision Studio",
+      "artifact_schema": "scds-platform-artifact/1.0",
+      "evidence_record_schema": "scds-evidence-record/1.0",
+      "governance_schema": "scds-decision-governance/1.0",
+      "review_event_schema": "scds-review-event/1.0",
+      "scenario_studio_schema": "scds-scenario-studio/1.0",
+      "project": {
+        "project_name": "",
+        "organization_type": "",
+        "sector": "",
+        "location": "",
+        "time_horizon": "",
+        "decision_question": ""
+      },
+      "decision_framing": {},
+      "evidence_registry": [],
+      "citations": [],
+      "quotations": [],
+      "research_routes": [],
+      "evidence_gaps": [],
+      "follow_up_questions": [],
+      "live_evidence": [],
+      "methodologies": [],
+      "experimental_evidence": [],
+      "datasets": [],
+      "technical_artifacts": [],
+      "platform_registry": [],
+      "entities": [],
+      "evidence_ledger": [],
+      "provenance_links": [],
+      "platform_handoffs": [],
+      "integrity_checks": [],
+      "evidence_and_measurement": {
+        "records": []
+      },
+      "scenarios": {
+        "records": []
+      },
+      "impact_measurement": {
+        "records": []
+      },
+      "claim_and_risk_review": {
+        "records": []
+      },
+      "financial_tradeoffs": {},
+      "execution_and_recovery": {},
+      "four_pillar_scores": {},
+      "assumptions": [],
+      "risks": [],
+      "sources": [],
+      "audit_trail": [],
+      "audit_and_provenance": {
+        "audit_version": "1.10.0",
+        "decision_packet_id": "SCDS-DRAFT",
+        "created_at": "generated-at-runtime",
+        "last_updated_at": "generated-at-runtime",
+        "review_status": {
+          "status": "draft",
+          "prepared_by": "",
+          "reviewed_by": "",
+          "required_reviews": [
+            "data/source review",
+            "finance assumptions review",
+            "risk and claims review",
+            "professional review where regulated or safety-critical"
+          ],
+          "open_questions": []
+        },
+        "module_artifact_ledger": [],
+        "source_ledger": [],
+        "assumptions_register": [],
+        "calculation_trace": [],
+        "claim_trace": [],
+        "change_log": [],
+        "warnings": [
+          "Educational decision support only; not certification, assurance, legal, financial, engineering, medical, tax, compliance, or investment advice.",
+          "Audit entries are generated from user-provided inputs and imported artifacts; they must be reviewed before operational use."
+        ]
+      },
+      "governance_center": {
+        "governance_version": "1.10.0",
+        "schema": "scds-decision-governance/1.0",
+        "current_state": "draft",
+        "decision_owner": {
+          "name": "",
+          "role": "",
+          "organization": "",
+          "accountable": true
+        },
+        "reviewers": [],
+        "approval_conditions": [],
+        "exceptions": [],
+        "conflict_declarations": [],
+        "signoffs": [],
+        "review_history": [],
+        "approval_expires_at": "",
+        "reassessment_due_at": "",
+        "transition_status": {
+          "allowed": true,
+          "requested_state": "draft",
+          "blockers": []
+        },
+        "export_gate": {
+          "internal_draft_allowed": true,
+          "reviewed_export_allowed": false,
+          "public_export_allowed": false,
+          "professional_reliance_allowed": false,
+          "blocking_reasons": [
+            "Decision has not been approved by accountable human reviewers."
+          ]
+        },
+        "warnings": [
+          "Decision Studio records governance actions but does not approve decisions autonomously.",
+          "AI may flag gaps or contradictions but cannot provide sign-off, certification, assurance, or regulated professional approval."
+        ]
+      },
+      "integrated_decision_brief": {},
+      "scenario_comparison": {
+        "comparison_version": "1.10.0",
+        "scenario_count": 3,
+        "recommended_option": "Accelerated transition",
+        "recommended_option_id": "scenario-3",
+        "matrix": [
+          {
+            "option_id": "scenario-1",
+            "label": "Phased implementation",
+            "annual_avoided_tco2e": 623.7,
+            "total_avoided_tco2e": 6237.0,
+            "npv": 376868.9140236457,
+            "payback_years": 5.290322580645161,
+            "risk_score": 47.580000000000005,
+            "confidence": 78.0,
+            "implementation_complexity": "Medium",
+            "decision_score": 51.66,
+            "interpretation": "Scenario generated from Decision Studio assumptions or imported artifact.",
+            "source": "decision_studio_model",
+            "rank": 3,
+            "delta_vs_baseline": {
+              "annual_avoided_tco2e": 0.0,
+              "npv": 0.0,
+              "risk_score": 0.0
+            },
+            "tradeoff_note": "Moderate option; review tradeoffs, sources, and mitigation requirements."
+          },
+          {
+            "option_id": "scenario-2",
+            "label": "Balanced program",
+            "annual_avoided_tco2e": 971.0400000000001,
+            "total_avoided_tco2e": 9710.400000000001,
+            "npv": 517129.636545114,
+            "payback_years": 5.0,
+            "risk_score": 47.580000000000005,
+            "confidence": 78.0,
+            "implementation_complexity": "Medium",
+            "decision_score": 55.41,
+            "interpretation": "Scenario generated from Decision Studio assumptions or imported artifact.",
+            "source": "decision_studio_model",
+            "rank": 2,
+            "delta_vs_baseline": {
+              "annual_avoided_tco2e": 347.34,
+              "npv": 140260.72,
+              "risk_score": 0.0
+            },
+            "tradeoff_note": "Moderate option; review tradeoffs, sources, and mitigation requirements."
+          },
+          {
+            "option_id": "scenario-3",
+            "label": "Accelerated transition",
+            "annual_avoided_tco2e": 1733.76,
+            "total_avoided_tco2e": 17337.6,
+            "npv": 769042.4069421268,
+            "payback_years": 4.705882352941177,
+            "risk_score": 47.580000000000005,
+            "confidence": 78.0,
+            "implementation_complexity": "Medium",
+            "decision_score": 62.8,
+            "interpretation": "Scenario generated from Decision Studio assumptions or imported artifact.",
+            "source": "decision_studio_model",
+            "rank": 1,
+            "delta_vs_baseline": {
+              "annual_avoided_tco2e": 1110.06,
+              "npv": 392173.49,
+              "risk_score": 0.0
+            },
+            "tradeoff_note": "Moderate option; review tradeoffs, sources, and mitigation requirements."
+          }
+        ],
+        "ranked_options": [
+          {
+            "option_id": "scenario-3",
+            "label": "Accelerated transition",
+            "annual_avoided_tco2e": 1733.76,
+            "total_avoided_tco2e": 17337.6,
+            "npv": 769042.4069421268,
+            "payback_years": 4.705882352941177,
+            "risk_score": 47.580000000000005,
+            "confidence": 78.0,
+            "implementation_complexity": "Medium",
+            "decision_score": 62.8,
+            "interpretation": "Scenario generated from Decision Studio assumptions or imported artifact.",
+            "source": "decision_studio_model"
+          },
+          {
+            "option_id": "scenario-2",
+            "label": "Balanced program",
+            "annual_avoided_tco2e": 971.0400000000001,
+            "total_avoided_tco2e": 9710.400000000001,
+            "npv": 517129.636545114,
+            "payback_years": 5.0,
+            "risk_score": 47.580000000000005,
+            "confidence": 78.0,
+            "implementation_complexity": "Medium",
+            "decision_score": 55.41,
+            "interpretation": "Scenario generated from Decision Studio assumptions or imported artifact.",
+            "source": "decision_studio_model"
+          },
+          {
+            "option_id": "scenario-1",
+            "label": "Phased implementation",
+            "annual_avoided_tco2e": 623.7,
+            "total_avoided_tco2e": 6237.0,
+            "npv": 376868.9140236457,
+            "payback_years": 5.290322580645161,
+            "risk_score": 47.580000000000005,
+            "confidence": 78.0,
+            "implementation_complexity": "Medium",
+            "decision_score": 51.66,
+            "interpretation": "Scenario generated from Decision Studio assumptions or imported artifact.",
+            "source": "decision_studio_model"
+          }
+        ],
+        "sensitivity_flags": [
+          "Review savings volatility and CAPEX volatility before treating scenario ranks as stable.",
+          "Use Workbench Graph Studio or economics forecasting for deeper sensitivity curves.",
+          "Use Catalyst Data records to replace screening-level assumptions with source-backed indicators."
+        ],
+        "workbench_handoff_candidates": [
+          "economics-forecasting-and-scenario-tool",
+          "risk-resilience-impact-matrix",
+          "graph-studio-parameter-sensitivity",
+          "environmental-monitoring-qaqc-tool"
+        ],
+        "warnings": [
+          "Scenario comparison is a decision-support screen, not a forecast.",
+          "Use reviewed sources and Workbench calculations before relying on outputs."
+        ]
+      },
+      "scenario_studio": {
+        "schema": "scds-scenario-studio/1.0",
+        "studio_version": "1.10.0",
+        "analysis_mode": "full",
+        "alternative_count": 3,
+        "criteria": [
+          {
+            "id": "financial_value",
+            "label": "Financial value",
+            "metric": "npv",
+            "weight": 20,
+            "direction": "higher",
+            "normalization": "financial"
+          },
+          {
+            "id": "emissions_impact",
+            "label": "Emissions impact",
+            "metric": "annual_avoided_tco2e",
+            "weight": 18,
+            "direction": "higher",
+            "normalization": "emissions"
+          },
+          {
+            "id": "risk_resilience",
+            "label": "Risk and resilience",
+            "metric": "risk_score",
+            "weight": 16,
+            "direction": "lower",
+            "normalization": "risk"
+          },
+          {
+            "id": "evidence_confidence",
+            "label": "Evidence confidence",
+            "metric": "confidence",
+            "weight": 10,
+            "direction": "higher",
+            "normalization": "score"
+          },
+          {
+            "id": "stakeholder_equity",
+            "label": "Stakeholder and distributional impact",
+            "metric": "stakeholder_equity",
+            "weight": 10,
+            "direction": "higher",
+            "normalization": "score"
+          },
+          {
+            "id": "implementation_feasibility",
+            "label": "Implementation feasibility",
+            "metric": "implementation_feasibility",
+            "weight": 10,
+            "direction": "higher",
+            "normalization": "score"
+          },
+          {
+            "id": "reversibility",
+            "label": "Reversibility and option value",
+            "metric": "reversibility",
+            "weight": 8,
+            "direction": "higher",
+            "normalization": "score"
+          },
+          {
+            "id": "time_to_value",
+            "label": "Time to value",
+            "metric": "payback_years",
+            "weight": 8,
+            "direction": "lower",
+            "normalization": "payback"
+          }
+        ],
+        "parameter_ranges": {
+          "capex": {
+            "min": 700000.0,
+            "max": 1300000.0,
+            "steps": 5
+          },
+          "annualSavings": {
+            "min": 110000.0,
+            "max": 290000.0,
+            "steps": 5
+          },
+          "adoptionRate": {
+            "min": 45.0,
+            "max": 92.0,
+            "steps": 5
+          },
+          "reductionRate": {
+            "min": 20.0,
+            "max": 52.0,
+            "steps": 5
+          },
+          "discountRate": {
+            "min": 2.0,
+            "max": 8.0,
+            "steps": 5
+          }
+        },
+        "alternatives": [
+          {
+            "alternative_id": "phased",
+            "label": "Phased implementation",
+            "description": "",
+            "parameters": {
+              "projectName": "Municipal clean energy modernization",
+              "orgType": "Mid-sized logistics company",
+              "sector": "Transportation and logistics",
+              "location": "United States / Midwest",
+              "horizon": "5 years",
+              "decisionType": "Capital project",
+              "decisionQuestion": "Which implementation pathway should be approved?",
+              "constraints": "",
+              "baselineEmissions": 4200.0,
+              "reductionRate": 27.0,
+              "adoptionRate": 55.0,
+              "capex": 820000.0,
+              "annualSavings": 155000.0,
+              "discountRate": 5.0,
+              "modelYears": 10,
+              "complexity": "Medium",
+              "weightEnv": 30.0,
+              "weightSocial": 20.0,
+              "weightEconomic": 30.0,
+              "weightGovernance": 20.0,
+              "exposure": 50.0,
+              "vulnerability": 44.0,
+              "resilience": 62.0,
+              "stakeholderSensitivity": 58.0,
+              "governanceReadiness": 72.0,
+              "dataConfidence": 78.0,
+              "socialBenefit": 67.0,
+              "savingsVolatility": 15.0,
+              "capexVolatility": 18.0,
+              "carbonPrice": 55.0
+            },
+            "results": {
+              "scores": {
+                "environmental": 51.45,
+                "social": 69.10000000000001,
+                "economic": 74.62367041886661,
+                "governance": 84.36,
+                "weighted": 68.51410112565998
+              },
+              "finance": {
+                "npv": 376868.9140236457,
+                "payback_years": 5.290322580645161,
+                "roi_percent": 89.02439024390245
+              },
+              "emissions": {
+                "annual_avoided_tco2e": 623.7,
+                "total_avoided_tco2e": 6237.0
+              },
+              "risk": {
+                "risk_score": 47.580000000000005,
+                "risk_level": "Medium"
+              },
+              "status": "Promising but needs mitigation",
+              "scenarios": [
+                {
+                  "label": "Baseline",
+                  "annual_avoided_tco2e": 0.0,
+                  "npv": 0.0,
+                  "payback_years": null
+                },
+                {
+                  "label": "Conservative",
+                  "annual_avoided_tco2e": 350.83125,
+                  "npv": 14495.131218916751,
+                  "payback_years": 7.604838709677418
+                },
+                {
+                  "label": "Expected",
+                  "annual_avoided_tco2e": 623.7,
+                  "npv": 376868.9140236457,
+                  "payback_years": 5.290322580645161
+                },
+                {
+                  "label": "Ambitious",
+                  "annual_avoided_tco2e": 896.56875,
+                  "npv": 455555.8054260104,
+                  "payback_years": 5.0498533724340176
+                },
+                {
+                  "label": "Stress test",
+                  "annual_avoided_tco2e": 243.243,
+                  "npv": -288035.20588463027,
+                  "payback_years": 10.580645161290322
+                }
+              ],
+              "warnings": [
+                "Educational decision support only. Not professional advice or certification."
+              ],
+              "workbench_handoffs": [
+                "risk-resilience-impact-matrix",
+                "economics-forecasting-and-scenario-tool",
+                "environmental-monitoring-qaqc-tool",
+                "systems-modeling-tool"
+              ]
+            },
+            "metrics": {
+              "npv": 376868.9140236457,
+              "roi_percent": 89.02439024390245,
+              "payback_years": 5.290322580645161,
+              "annual_avoided_tco2e": 623.7,
+              "total_avoided_tco2e": 6237.0,
+              "risk_score": 47.580000000000005,
+              "confidence": 78.0,
+              "stakeholder_equity": 61.0,
+              "implementation_feasibility": 81.7,
+              "reversibility": 82.0,
+              "option_value": 81.34
+            },
+            "criterion_scores": {
+              "financial_value": 66.09,
+              "emissions_impact": 14.85,
+              "risk_resilience": 52.42,
+              "evidence_confidence": 78.0,
+              "stakeholder_equity": 61.0,
+              "implementation_feasibility": 81.7,
+              "reversibility": 82.0,
+              "time_to_value": 62.97
+            },
+            "stakeholder_distribution": {
+              "records": [],
+              "weighted_average": 61.0,
+              "minimum_group_score": 61.0,
+              "maximum_group_score": 61.0,
+              "equity_score": 61.0
+            },
+            "implementation_complexity": "Low",
+            "custom_criteria": {},
+            "criteria": [
+              {
+                "criterion_id": "financial_value",
+                "label": "Financial value",
+                "metric": "npv",
+                "weight": 20.0,
+                "score": 66.09,
+                "weighted_contribution": 13.22
+              },
+              {
+                "criterion_id": "emissions_impact",
+                "label": "Emissions impact",
+                "metric": "annual_avoided_tco2e",
+                "weight": 18.0,
+                "score": 14.85,
+                "weighted_contribution": 2.67
+              },
+              {
+                "criterion_id": "risk_resilience",
+                "label": "Risk and resilience",
+                "metric": "risk_score",
+                "weight": 16.0,
+                "score": 52.42,
+                "weighted_contribution": 8.39
+              },
+              {
+                "criterion_id": "evidence_confidence",
+                "label": "Evidence confidence",
+                "metric": "confidence",
+                "weight": 10.0,
+                "score": 78.0,
+                "weighted_contribution": 7.8
+              },
+              {
+                "criterion_id": "stakeholder_equity",
+                "label": "Stakeholder and distributional impact",
+                "metric": "stakeholder_equity",
+                "weight": 10.0,
+                "score": 61.0,
+                "weighted_contribution": 6.1
+              },
+              {
+                "criterion_id": "implementation_feasibility",
+                "label": "Implementation feasibility",
+                "metric": "implementation_feasibility",
+                "weight": 10.0,
+                "score": 81.7,
+                "weighted_contribution": 8.17
+              },
+              {
+                "criterion_id": "reversibility",
+                "label": "Reversibility and option value",
+                "metric": "reversibility",
+                "weight": 8.0,
+                "score": 82.0,
+                "weighted_contribution": 6.56
+              },
+              {
+                "criterion_id": "time_to_value",
+                "label": "Time to value",
+                "metric": "payback_years",
+                "weight": 8.0,
+                "score": 62.97,
+                "weighted_contribution": 5.04
+              }
+            ],
+            "decision_score": 57.95,
+            "unweighted_score": 62.38
+          },
+          {
+            "alternative_id": "balanced",
+            "label": "Balanced program",
+            "description": "",
+            "parameters": {
+              "projectName": "Municipal clean energy modernization",
+              "orgType": "Mid-sized logistics company",
+              "sector": "Transportation and logistics",
+              "location": "United States / Midwest",
+              "horizon": "5 years",
+              "decisionType": "Capital project",
+              "decisionQuestion": "Which implementation pathway should be approved?",
+              "constraints": "",
+              "baselineEmissions": 4200.0,
+              "reductionRate": 34.0,
+              "adoptionRate": 68.0,
+              "capex": 950000.0,
+              "annualSavings": 190000.0,
+              "discountRate": 5.0,
+              "modelYears": 10,
+              "complexity": "Medium",
+              "weightEnv": 30.0,
+              "weightSocial": 20.0,
+              "weightEconomic": 30.0,
+              "weightGovernance": 20.0,
+              "exposure": 50.0,
+              "vulnerability": 44.0,
+              "resilience": 62.0,
+              "stakeholderSensitivity": 58.0,
+              "governanceReadiness": 72.0,
+              "dataConfidence": 78.0,
+              "socialBenefit": 67.0,
+              "savingsVolatility": 15.0,
+              "capexVolatility": 18.0,
+              "carbonPrice": 55.0
+            },
+            "results": {
+              "scores": {
+                "environmental": 57.46,
+                "social": 70.14,
+                "economic": 79.33446418512338,
+                "governance": 84.36,
+                "weighted": 71.93833925553702
+              },
+              "finance": {
+                "npv": 517129.636545114,
+                "payback_years": 5.0,
+                "roi_percent": 100.0
+              },
+              "emissions": {
+                "annual_avoided_tco2e": 971.0400000000001,
+                "total_avoided_tco2e": 9710.400000000001
+              },
+              "risk": {
+                "risk_score": 47.580000000000005,
+                "risk_level": "Medium"
+              },
+              "status": "Promising but needs mitigation",
+              "scenarios": [
+                {
+                  "label": "Baseline",
+                  "annual_avoided_tco2e": 0.0,
+                  "npv": 0.0,
+                  "payback_years": null
+                },
+                {
+                  "label": "Conservative",
+                  "annual_avoided_tco2e": 546.21,
+                  "npv": 81203.70923609131,
+                  "payback_years": 7.1875
+                },
+                {
+                  "label": "Expected",
+                  "annual_avoided_tco2e": 971.04,
+                  "npv": 517129.636545114,
+                  "payback_years": 5.0
+                },
+                {
+                  "label": "Ambitious",
+                  "annual_avoided_tco2e": 1395.8699999999997,
+                  "npv": 616342.6001996256,
+                  "payback_years": 4.7727272727272725
+                },
+                {
+                  "label": "Stress test",
+                  "annual_avoided_tco2e": 378.7056,
+                  "npv": -281365.7362456759,
+                  "payback_years": 10.0
+                }
+              ],
+              "warnings": [
+                "Educational decision support only. Not professional advice or certification."
+              ],
+              "workbench_handoffs": [
+                "risk-resilience-impact-matrix",
+                "economics-forecasting-and-scenario-tool",
+                "environmental-monitoring-qaqc-tool",
+                "systems-modeling-tool"
+              ]
+            },
+            "metrics": {
+              "npv": 517129.636545114,
+              "roi_percent": 100.0,
+              "payback_years": 5.0,
+              "annual_avoided_tco2e": 971.0400000000001,
+              "total_avoided_tco2e": 9710.400000000001,
+              "risk_score": 47.580000000000005,
+              "confidence": 78.0,
+              "stakeholder_equity": 68.27,
+              "implementation_feasibility": 69.05,
+              "reversibility": 62.0,
+              "option_value": 65.81
+            },
+            "criterion_scores": {
+              "financial_value": 69.05,
+              "emissions_impact": 23.12,
+              "risk_resilience": 52.42,
+              "evidence_confidence": 78.0,
+              "stakeholder_equity": 68.27,
+              "implementation_feasibility": 69.05,
+              "reversibility": 62.0,
+              "time_to_value": 65.0
+            },
+            "stakeholder_distribution": {
+              "records": [
+                {
+                  "stakeholder": "Residents",
+                  "impact_score": 72.0,
+                  "weight": 2.0,
+                  "notes": ""
+                },
+                {
+                  "stakeholder": "Workers",
+                  "impact_score": 65.0,
+                  "weight": 1.0,
+                  "notes": ""
+                }
+              ],
+              "weighted_average": 69.67,
+              "minimum_group_score": 65.0,
+              "maximum_group_score": 72.0,
+              "equity_score": 68.27
+            },
+            "implementation_complexity": "Medium",
+            "custom_criteria": {},
+            "criteria": [
+              {
+                "criterion_id": "financial_value",
+                "label": "Financial value",
+                "metric": "npv",
+                "weight": 20.0,
+                "score": 69.05,
+                "weighted_contribution": 13.81
+              },
+              {
+                "criterion_id": "emissions_impact",
+                "label": "Emissions impact",
+                "metric": "annual_avoided_tco2e",
+                "weight": 18.0,
+                "score": 23.12,
+                "weighted_contribution": 4.16
+              },
+              {
+                "criterion_id": "risk_resilience",
+                "label": "Risk and resilience",
+                "metric": "risk_score",
+                "weight": 16.0,
+                "score": 52.42,
+                "weighted_contribution": 8.39
+              },
+              {
+                "criterion_id": "evidence_confidence",
+                "label": "Evidence confidence",
+                "metric": "confidence",
+                "weight": 10.0,
+                "score": 78.0,
+                "weighted_contribution": 7.8
+              },
+              {
+                "criterion_id": "stakeholder_equity",
+                "label": "Stakeholder and distributional impact",
+                "metric": "stakeholder_equity",
+                "weight": 10.0,
+                "score": 68.27,
+                "weighted_contribution": 6.83
+              },
+              {
+                "criterion_id": "implementation_feasibility",
+                "label": "Implementation feasibility",
+                "metric": "implementation_feasibility",
+                "weight": 10.0,
+                "score": 69.05,
+                "weighted_contribution": 6.91
+              },
+              {
+                "criterion_id": "reversibility",
+                "label": "Reversibility and option value",
+                "metric": "reversibility",
+                "weight": 8.0,
+                "score": 62.0,
+                "weighted_contribution": 4.96
+              },
+              {
+                "criterion_id": "time_to_value",
+                "label": "Time to value",
+                "metric": "payback_years",
+                "weight": 8.0,
+                "score": 65.0,
+                "weighted_contribution": 5.2
+              }
+            ],
+            "decision_score": 58.05,
+            "unweighted_score": 60.86
+          },
+          {
+            "alternative_id": "accelerated",
+            "label": "Accelerated transition",
+            "description": "",
+            "parameters": {
+              "projectName": "Municipal clean energy modernization",
+              "orgType": "Mid-sized logistics company",
+              "sector": "Transportation and logistics",
+              "location": "United States / Midwest",
+              "horizon": "5 years",
+              "decisionType": "Capital project",
+              "decisionQuestion": "Which implementation pathway should be approved?",
+              "constraints": "",
+              "baselineEmissions": 4200.0,
+              "reductionRate": 48.0,
+              "adoptionRate": 86.0,
+              "capex": 1200000.0,
+              "annualSavings": 255000.0,
+              "discountRate": 5.0,
+              "modelYears": 10,
+              "complexity": "Medium",
+              "weightEnv": 30.0,
+              "weightSocial": 20.0,
+              "weightEconomic": 30.0,
+              "weightGovernance": 20.0,
+              "exposure": 50.0,
+              "vulnerability": 44.0,
+              "resilience": 62.0,
+              "stakeholderSensitivity": 58.0,
+              "governanceReadiness": 72.0,
+              "dataConfidence": 78.0,
+              "socialBenefit": 67.0,
+              "savingsVolatility": 15.0,
+              "capexVolatility": 18.0,
+              "carbonPrice": 55.0
+            },
+            "results": {
+              "scores": {
+                "environmental": 67.72000000000001,
+                "social": 71.58,
+                "economic": 84.69953486336026,
+                "governance": 84.36,
+                "weighted": 76.91386045900808
+              },
+              "finance": {
+                "npv": 769042.4069421268,
+                "payback_years": 4.705882352941177,
+                "roi_percent": 112.5
+              },
+              "emissions": {
+                "annual_avoided_tco2e": 1733.76,
+                "total_avoided_tco2e": 17337.6
+              },
+              "risk": {
+                "risk_score": 47.580000000000005,
+                "risk_level": "Medium"
+              },
+              "status": "Strong candidate with review",
+              "scenarios": [
+                {
+                  "label": "Baseline",
+                  "annual_avoided_tco2e": 0.0,
+                  "npv": 0.0,
+                  "payback_years": null
+                },
+                {
+                  "label": "Conservative",
+                  "annual_avoided_tco2e": 975.24,
+                  "npv": 195233.9255537014,
+                  "payback_years": 6.764705882352941
+                },
+                {
+                  "label": "Expected",
+                  "annual_avoided_tco2e": 1733.76,
+                  "npv": 769042.4069421268,
+                  "payback_years": 4.705882352941177
+                },
+                {
+                  "label": "Ambitious",
+                  "annual_avoided_tco2e": 2318.3999999999996,
+                  "npv": 905946.6476363394,
+                  "payback_years": 4.491978609625669
+                },
+                {
+                  "label": "Stress test",
+                  "annual_avoided_tco2e": 676.1664000000002,
+                  "npv": -280122.43548761774,
+                  "payback_years": 9.411764705882353
+                }
+              ],
+              "warnings": [
+                "Educational decision support only. Not professional advice or certification."
+              ],
+              "workbench_handoffs": [
+                "risk-resilience-impact-matrix",
+                "economics-forecasting-and-scenario-tool",
+                "environmental-monitoring-qaqc-tool",
+                "systems-modeling-tool"
+              ]
+            },
+            "metrics": {
+              "npv": 769042.4069421268,
+              "roi_percent": 112.5,
+              "payback_years": 4.705882352941177,
+              "annual_avoided_tco2e": 1733.76,
+              "total_avoided_tco2e": 17337.6,
+              "risk_score": 47.580000000000005,
+              "confidence": 78.0,
+              "stakeholder_equity": 76.0,
+              "implementation_feasibility": 56.4,
+              "reversibility": 38.0,
+              "option_value": 47.68
+            },
+            "criterion_scores": {
+              "financial_value": 72.43,
+              "emissions_impact": 41.28,
+              "risk_resilience": 52.42,
+              "evidence_confidence": 78.0,
+              "stakeholder_equity": 76.0,
+              "implementation_feasibility": 56.4,
+              "reversibility": 38.0,
+              "time_to_value": 67.06
+            },
+            "stakeholder_distribution": {
+              "records": [],
+              "weighted_average": 76.0,
+              "minimum_group_score": 76.0,
+              "maximum_group_score": 76.0,
+              "equity_score": 76.0
+            },
+            "implementation_complexity": "High",
+            "custom_criteria": {},
+            "criteria": [
+              {
+                "criterion_id": "financial_value",
+                "label": "Financial value",
+                "metric": "npv",
+                "weight": 20.0,
+                "score": 72.43,
+                "weighted_contribution": 14.49
+              },
+              {
+                "criterion_id": "emissions_impact",
+                "label": "Emissions impact",
+                "metric": "annual_avoided_tco2e",
+                "weight": 18.0,
+                "score": 41.28,
+                "weighted_contribution": 7.43
+              },
+              {
+                "criterion_id": "risk_resilience",
+                "label": "Risk and resilience",
+                "metric": "risk_score",
+                "weight": 16.0,
+                "score": 52.42,
+                "weighted_contribution": 8.39
+              },
+              {
+                "criterion_id": "evidence_confidence",
+                "label": "Evidence confidence",
+                "metric": "confidence",
+                "weight": 10.0,
+                "score": 78.0,
+                "weighted_contribution": 7.8
+              },
+              {
+                "criterion_id": "stakeholder_equity",
+                "label": "Stakeholder and distributional impact",
+                "metric": "stakeholder_equity",
+                "weight": 10.0,
+                "score": 76.0,
+                "weighted_contribution": 7.6
+              },
+              {
+                "criterion_id": "implementation_feasibility",
+                "label": "Implementation feasibility",
+                "metric": "implementation_feasibility",
+                "weight": 10.0,
+                "score": 56.4,
+                "weighted_contribution": 5.64
+              },
+              {
+                "criterion_id": "reversibility",
+                "label": "Reversibility and option value",
+                "metric": "reversibility",
+                "weight": 8.0,
+                "score": 38.0,
+                "weighted_contribution": 3.04
+              },
+              {
+                "criterion_id": "time_to_value",
+                "label": "Time to value",
+                "metric": "payback_years",
+                "weight": 8.0,
+                "score": 67.06,
+                "weighted_contribution": 5.36
+              }
+            ],
+            "decision_score": 59.75,
+            "unweighted_score": 60.2
+          }
+        ],
+        "weighted_ranking": [
+          {
+            "rank": 1,
+            "alternative_id": "accelerated",
+            "label": "Accelerated transition",
+            "score": 59.75
+          },
+          {
+            "rank": 2,
+            "alternative_id": "balanced",
+            "label": "Balanced program",
+            "score": 58.05
+          },
+          {
+            "rank": 3,
+            "alternative_id": "phased",
+            "label": "Phased implementation",
+            "score": 57.95
+          }
+        ],
+        "unweighted_ranking": [
+          {
+            "rank": 1,
+            "alternative_id": "phased",
+            "label": "Phased implementation",
+            "score": 62.38
+          },
+          {
+            "rank": 2,
+            "alternative_id": "balanced",
+            "label": "Balanced program",
+            "score": 60.86
+          },
+          {
+            "rank": 3,
+            "alternative_id": "accelerated",
+            "label": "Accelerated transition",
+            "score": 60.2
+          }
+        ],
+        "recommended_alternative_id": "accelerated",
+        "recommended_alternative": {
+          "alternative_id": "accelerated",
+          "label": "Accelerated transition",
+          "description": "",
+          "parameters": {
+            "projectName": "Municipal clean energy modernization",
+            "orgType": "Mid-sized logistics company",
+            "sector": "Transportation and logistics",
+            "location": "United States / Midwest",
+            "horizon": "5 years",
+            "decisionType": "Capital project",
+            "decisionQuestion": "Which implementation pathway should be approved?",
+            "constraints": "",
+            "baselineEmissions": 4200.0,
+            "reductionRate": 48.0,
+            "adoptionRate": 86.0,
+            "capex": 1200000.0,
+            "annualSavings": 255000.0,
+            "discountRate": 5.0,
+            "modelYears": 10,
+            "complexity": "Medium",
+            "weightEnv": 30.0,
+            "weightSocial": 20.0,
+            "weightEconomic": 30.0,
+            "weightGovernance": 20.0,
+            "exposure": 50.0,
+            "vulnerability": 44.0,
+            "resilience": 62.0,
+            "stakeholderSensitivity": 58.0,
+            "governanceReadiness": 72.0,
+            "dataConfidence": 78.0,
+            "socialBenefit": 67.0,
+            "savingsVolatility": 15.0,
+            "capexVolatility": 18.0,
+            "carbonPrice": 55.0
+          },
+          "results": {
+            "scores": {
+              "environmental": 67.72000000000001,
+              "social": 71.58,
+              "economic": 84.69953486336026,
+              "governance": 84.36,
+              "weighted": 76.91386045900808
+            },
+            "finance": {
+              "npv": 769042.4069421268,
+              "payback_years": 4.705882352941177,
+              "roi_percent": 112.5
+            },
+            "emissions": {
+              "annual_avoided_tco2e": 1733.76,
+              "total_avoided_tco2e": 17337.6
+            },
+            "risk": {
+              "risk_score": 47.580000000000005,
+              "risk_level": "Medium"
+            },
+            "status": "Strong candidate with review",
+            "scenarios": [
+              {
+                "label": "Baseline",
+                "annual_avoided_tco2e": 0.0,
+                "npv": 0.0,
+                "payback_years": null
+              },
+              {
+                "label": "Conservative",
+                "annual_avoided_tco2e": 975.24,
+                "npv": 195233.9255537014,
+                "payback_years": 6.764705882352941
+              },
+              {
+                "label": "Expected",
+                "annual_avoided_tco2e": 1733.76,
+                "npv": 769042.4069421268,
+                "payback_years": 4.705882352941177
+              },
+              {
+                "label": "Ambitious",
+                "annual_avoided_tco2e": 2318.3999999999996,
+                "npv": 905946.6476363394,
+                "payback_years": 4.491978609625669
+              },
+              {
+                "label": "Stress test",
+                "annual_avoided_tco2e": 676.1664000000002,
+                "npv": -280122.43548761774,
+                "payback_years": 9.411764705882353
+              }
+            ],
+            "warnings": [
+              "Educational decision support only. Not professional advice or certification."
+            ],
+            "workbench_handoffs": [
+              "risk-resilience-impact-matrix",
+              "economics-forecasting-and-scenario-tool",
+              "environmental-monitoring-qaqc-tool",
+              "systems-modeling-tool"
+            ]
+          },
+          "metrics": {
+            "npv": 769042.4069421268,
+            "roi_percent": 112.5,
+            "payback_years": 4.705882352941177,
+            "annual_avoided_tco2e": 1733.76,
+            "total_avoided_tco2e": 17337.6,
+            "risk_score": 47.580000000000005,
+            "confidence": 78.0,
+            "stakeholder_equity": 76.0,
+            "implementation_feasibility": 56.4,
+            "reversibility": 38.0,
+            "option_value": 47.68
+          },
+          "criterion_scores": {
+            "financial_value": 72.43,
+            "emissions_impact": 41.28,
+            "risk_resilience": 52.42,
+            "evidence_confidence": 78.0,
+            "stakeholder_equity": 76.0,
+            "implementation_feasibility": 56.4,
+            "reversibility": 38.0,
+            "time_to_value": 67.06
+          },
+          "stakeholder_distribution": {
+            "records": [],
+            "weighted_average": 76.0,
+            "minimum_group_score": 76.0,
+            "maximum_group_score": 76.0,
+            "equity_score": 76.0
+          },
+          "implementation_complexity": "High",
+          "custom_criteria": {},
+          "criteria": [
+            {
+              "criterion_id": "financial_value",
+              "label": "Financial value",
+              "metric": "npv",
+              "weight": 20.0,
+              "score": 72.43,
+              "weighted_contribution": 14.49
+            },
+            {
+              "criterion_id": "emissions_impact",
+              "label": "Emissions impact",
+              "metric": "annual_avoided_tco2e",
+              "weight": 18.0,
+              "score": 41.28,
+              "weighted_contribution": 7.43
+            },
+            {
+              "criterion_id": "risk_resilience",
+              "label": "Risk and resilience",
+              "metric": "risk_score",
+              "weight": 16.0,
+              "score": 52.42,
+              "weighted_contribution": 8.39
+            },
+            {
+              "criterion_id": "evidence_confidence",
+              "label": "Evidence confidence",
+              "metric": "confidence",
+              "weight": 10.0,
+              "score": 78.0,
+              "weighted_contribution": 7.8
+            },
+            {
+              "criterion_id": "stakeholder_equity",
+              "label": "Stakeholder and distributional impact",
+              "metric": "stakeholder_equity",
+              "weight": 10.0,
+              "score": 76.0,
+              "weighted_contribution": 7.6
+            },
+            {
+              "criterion_id": "implementation_feasibility",
+              "label": "Implementation feasibility",
+              "metric": "implementation_feasibility",
+              "weight": 10.0,
+              "score": 56.4,
+              "weighted_contribution": 5.64
+            },
+            {
+              "criterion_id": "reversibility",
+              "label": "Reversibility and option value",
+              "metric": "reversibility",
+              "weight": 8.0,
+              "score": 38.0,
+              "weighted_contribution": 3.04
+            },
+            {
+              "criterion_id": "time_to_value",
+              "label": "Time to value",
+              "metric": "payback_years",
+              "weight": 8.0,
+              "score": 67.06,
+              "weighted_contribution": 5.36
+            }
+          ],
+          "decision_score": 59.75,
+          "unweighted_score": 60.2
+        },
+        "dominance_analysis": [
+          {
+            "alternative_id": "phased",
+            "dominates": [],
+            "dominated_count": 0
+          },
+          {
+            "alternative_id": "balanced",
+            "dominates": [],
+            "dominated_count": 0
+          },
+          {
+            "alternative_id": "accelerated",
+            "dominates": [],
+            "dominated_count": 0
+          }
+        ],
+        "one_way_sensitivity": {
+          "parameters": [
+            {
+              "parameter": "capex",
+              "min": 700000.0,
+              "max": 1300000.0,
+              "observations": [
+                {
+                  "parameter_value": 700000.0,
+                  "decision_score": 66.36,
+                  "npv": 1269042.4069421268,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 850000.0,
+                  "decision_score": 65.25,
+                  "npv": 1119042.4069421268,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 1000000.0,
+                  "decision_score": 62.49,
+                  "npv": 969042.4069421268,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 1150000.0,
+                  "decision_score": 60.36,
+                  "npv": 819042.4069421268,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 1300000.0,
+                  "decision_score": 58.64,
+                  "npv": 669042.4069421266,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                }
+              ],
+              "score_range": 7.72,
+              "most_sensitive": false
+            },
+            {
+              "parameter": "annualSavings",
+              "min": 110000.0,
+              "max": 290000.0,
+              "observations": [
+                {
+                  "parameter_value": 110000.0,
+                  "decision_score": 49.74,
+                  "npv": -350609.15778967086,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 155000.0,
+                  "decision_score": 53.54,
+                  "npv": -3131.085976354385,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 200000.0,
+                  "decision_score": 56.55,
+                  "npv": 344346.98583696224,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 245000.0,
+                  "decision_score": 59.19,
+                  "npv": 691825.0576502787,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 290000.0,
+                  "decision_score": 61.64,
+                  "npv": 1039303.1294635952,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                }
+              ],
+              "score_range": 11.9,
+              "most_sensitive": true
+            },
+            {
+              "parameter": "adoptionRate",
+              "min": 45.0,
+              "max": 92.0,
+              "observations": [
+                {
+                  "parameter_value": 45.0,
+                  "decision_score": 56.21,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 907.2,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 56.75,
+                  "decision_score": 57.22,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1144.08,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 68.5,
+                  "decision_score": 58.24,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1380.96,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 80.25,
+                  "decision_score": 59.25,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1617.84,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 92.0,
+                  "decision_score": 60.27,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1854.72,
+                  "risk_score": 47.580000000000005
+                }
+              ],
+              "score_range": 4.06,
+              "most_sensitive": false
+            },
+            {
+              "parameter": "reductionRate",
+              "min": 20.0,
+              "max": 52.0,
+              "observations": [
+                {
+                  "parameter_value": 20.0,
+                  "decision_score": 55.41,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 722.4,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 28.0,
+                  "decision_score": 56.65,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1011.36,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 36.0,
+                  "decision_score": 57.89,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1300.32,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 44.0,
+                  "decision_score": 59.13,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1589.28,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 52.0,
+                  "decision_score": 60.37,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1878.24,
+                  "risk_score": 47.580000000000005
+                }
+              ],
+              "score_range": 4.96,
+              "most_sensitive": false
+            }
+          ],
+          "tornado_ranking": [
+            {
+              "parameter": "annualSavings",
+              "score_range": 11.9
+            },
+            {
+              "parameter": "capex",
+              "score_range": 7.72
+            },
+            {
+              "parameter": "reductionRate",
+              "score_range": 4.96
+            },
+            {
+              "parameter": "adoptionRate",
+              "score_range": 4.06
+            }
+          ]
+        },
+        "multi_variable_sensitivity": {
+          "parameters": [
+            "capex",
+            "annualSavings"
+          ],
+          "x_values": [
+            700000.0,
+            1000000.0,
+            1300000.0
+          ],
+          "y_values": [
+            110000.0,
+            200000.0,
+            290000.0
+          ],
+          "grid": [
+            {
+              "capex": 700000.0,
+              "annualSavings": 110000.0,
+              "decision_score": 55.83,
+              "npv": 149390.84221032908,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 700000.0,
+              "annualSavings": 200000.0,
+              "decision_score": 64.38,
+              "npv": 844346.9858369622,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 700000.0,
+              "annualSavings": 290000.0,
+              "decision_score": 66.55,
+              "npv": 1539303.1294635949,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1000000.0,
+              "annualSavings": 110000.0,
+              "decision_score": 51.75,
+              "npv": -150609.15778967098,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1000000.0,
+              "annualSavings": 200000.0,
+              "decision_score": 58.91,
+              "npv": 544346.9858369622,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1000000.0,
+              "annualSavings": 290000.0,
+              "decision_score": 64.64,
+              "npv": 1239303.129463595,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1300000.0,
+              "annualSavings": 110000.0,
+              "decision_score": 48.85,
+              "npv": -450609.15778967075,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1300000.0,
+              "annualSavings": 200000.0,
+              "decision_score": 55.57,
+              "npv": 244346.98583696224,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1300000.0,
+              "annualSavings": 290000.0,
+              "decision_score": 60.45,
+              "npv": 939303.1294635952,
+              "risk_score": 47.580000000000005
+            }
+          ],
+          "screening_only": true
+        },
+        "threshold_analysis": {
+          "parameter": "annualSavings",
+          "metric": "npv",
+          "operator": ">=",
+          "target_value": 0,
+          "range": {
+            "min": 110000.0,
+            "max": 290000.0,
+            "steps": 5
+          },
+          "break_even": {
+            "parameter_value": 162500.0,
+            "metric_value": 54781.92599253183,
+            "target_met": true
+          },
+          "observations": [
+            {
+              "parameter_value": 110000.0,
+              "metric_value": -350609.15778967086,
+              "target_met": false
+            },
+            {
+              "parameter_value": 117500.0,
+              "metric_value": -292696.1458207848,
+              "target_met": false
+            },
+            {
+              "parameter_value": 125000.0,
+              "metric_value": -234783.13385189878,
+              "target_met": false
+            },
+            {
+              "parameter_value": 132500.0,
+              "metric_value": -176870.12188301247,
+              "target_met": false
+            },
+            {
+              "parameter_value": 140000.0,
+              "metric_value": -118957.10991412662,
+              "target_met": false
+            },
+            {
+              "parameter_value": 147500.0,
+              "metric_value": -61044.09794524034,
+              "target_met": false
+            },
+            {
+              "parameter_value": 155000.0,
+              "metric_value": -3131.085976354385,
+              "target_met": false
+            },
+            {
+              "parameter_value": 162500.0,
+              "metric_value": 54781.92599253183,
+              "target_met": true
+            },
+            {
+              "parameter_value": 170000.0,
+              "metric_value": 112694.93796141777,
+              "target_met": true
+            },
+            {
+              "parameter_value": 177500.0,
+              "metric_value": 170607.9499303039,
+              "target_met": true
+            },
+            {
+              "parameter_value": 185000.0,
+              "metric_value": 228520.96189919004,
+              "target_met": true
+            },
+            {
+              "parameter_value": 192500.0,
+              "metric_value": 286433.97386807605,
+              "target_met": true
+            },
+            {
+              "parameter_value": 200000.0,
+              "metric_value": 344346.98583696224,
+              "target_met": true
+            },
+            {
+              "parameter_value": 207500.0,
+              "metric_value": 402259.99780584825,
+              "target_met": true
+            },
+            {
+              "parameter_value": 215000.0,
+              "metric_value": 460173.0097747344,
+              "target_met": true
+            },
+            {
+              "parameter_value": 222500.0,
+              "metric_value": 518086.0217436204,
+              "target_met": true
+            },
+            {
+              "parameter_value": 230000.0,
+              "metric_value": 575999.0337125065,
+              "target_met": true
+            },
+            {
+              "parameter_value": 237500.0,
+              "metric_value": 633912.0456813925,
+              "target_met": true
+            },
+            {
+              "parameter_value": 245000.0,
+              "metric_value": 691825.0576502787,
+              "target_met": true
+            },
+            {
+              "parameter_value": 252500.0,
+              "metric_value": 749738.0696191649,
+              "target_met": true
+            },
+            {
+              "parameter_value": 260000.0,
+              "metric_value": 807651.0815880508,
+              "target_met": true
+            },
+            {
+              "parameter_value": 267500.0,
+              "metric_value": 865564.0935569368,
+              "target_met": true
+            },
+            {
+              "parameter_value": 275000.0,
+              "metric_value": 923477.1055258228,
+              "target_met": true
+            },
+            {
+              "parameter_value": 282500.0,
+              "metric_value": 981390.1174947091,
+              "target_met": true
+            },
+            {
+              "parameter_value": 290000.0,
+              "metric_value": 1039303.1294635952,
+              "target_met": true
+            }
+          ],
+          "found": true,
+          "screening_resolution": 25
+        },
+        "uncertainty_envelopes": [
+          {
+            "alternative_id": "phased",
+            "label": "Phased implementation",
+            "screening_low": 55.95,
+            "base": 57.95,
+            "screening_high": 64.6,
+            "spread": 8.65,
+            "interpretation": "Combined range endpoints; not a probability interval."
+          },
+          {
+            "alternative_id": "balanced",
+            "label": "Balanced program",
+            "screening_low": 53.82,
+            "base": 58.05,
+            "screening_high": 62.46,
+            "spread": 8.64,
+            "interpretation": "Combined range endpoints; not a probability interval."
+          },
+          {
+            "alternative_id": "accelerated",
+            "label": "Accelerated transition",
+            "screening_low": 51.4,
+            "base": 59.75,
+            "screening_high": 60.05,
+            "spread": 8.65,
+            "interpretation": "Combined range endpoints; not a probability interval."
+          }
+        ],
+        "time_horizon_comparison": [
+          {
+            "years": 3,
+            "decision_score": 46.95,
+            "npv": -505571.7525105281,
+            "total_avoided_tco2e": 5201.28,
+            "payback_years": 4.705882352941177
+          },
+          {
+            "years": 5,
+            "decision_score": 52.07,
+            "npv": -95983.44898914121,
+            "total_avoided_tco2e": 8668.8,
+            "payback_years": 4.705882352941177
+          },
+          {
+            "years": 10,
+            "decision_score": 59.75,
+            "npv": 769042.4069421268,
+            "total_avoided_tco2e": 17337.6,
+            "payback_years": 4.705882352941177
+          },
+          {
+            "years": 15,
+            "decision_score": 64.58,
+            "npv": 1446812.7997360504,
+            "total_avoided_tco2e": 26006.4,
+            "payback_years": 4.705882352941177
+          }
+        ],
+        "stakeholder_distribution": [
+          {
+            "alternative_id": "phased",
+            "records": [],
+            "weighted_average": 61.0,
+            "minimum_group_score": 61.0,
+            "maximum_group_score": 61.0,
+            "equity_score": 61.0
+          },
+          {
+            "alternative_id": "balanced",
+            "records": [
+              {
+                "stakeholder": "Residents",
+                "impact_score": 72.0,
+                "weight": 2.0,
+                "notes": ""
+              },
+              {
+                "stakeholder": "Workers",
+                "impact_score": 65.0,
+                "weight": 1.0,
+                "notes": ""
+              }
+            ],
+            "weighted_average": 69.67,
+            "minimum_group_score": 65.0,
+            "maximum_group_score": 72.0,
+            "equity_score": 68.27
+          },
+          {
+            "alternative_id": "accelerated",
+            "records": [],
+            "weighted_average": 76.0,
+            "minimum_group_score": 76.0,
+            "maximum_group_score": 76.0,
+            "equity_score": 76.0
+          }
+        ],
+        "reversibility_option_value": [
+          {
+            "alternative_id": "phased",
+            "label": "Phased implementation",
+            "reversibility": 82.0,
+            "option_value": 81.34
+          },
+          {
+            "alternative_id": "balanced",
+            "label": "Balanced program",
+            "reversibility": 62.0,
+            "option_value": 65.81
+          },
+          {
+            "alternative_id": "accelerated",
+            "label": "Accelerated transition",
+            "reversibility": 38.0,
+            "option_value": 47.68
+          }
+        ],
+        "chart_data": {
+          "alternative_scores": [
+            {
+              "label": "Phased implementation",
+              "weighted": 57.95,
+              "unweighted": 62.38
+            },
+            {
+              "label": "Balanced program",
+              "weighted": 58.05,
+              "unweighted": 60.86
+            },
+            {
+              "label": "Accelerated transition",
+              "weighted": 59.75,
+              "unweighted": 60.2
+            }
+          ],
+          "sensitivity_series": [
+            {
+              "parameter": "capex",
+              "min": 700000.0,
+              "max": 1300000.0,
+              "observations": [
+                {
+                  "parameter_value": 700000.0,
+                  "decision_score": 66.36,
+                  "npv": 1269042.4069421268,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 850000.0,
+                  "decision_score": 65.25,
+                  "npv": 1119042.4069421268,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 1000000.0,
+                  "decision_score": 62.49,
+                  "npv": 969042.4069421268,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 1150000.0,
+                  "decision_score": 60.36,
+                  "npv": 819042.4069421268,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 1300000.0,
+                  "decision_score": 58.64,
+                  "npv": 669042.4069421266,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                }
+              ],
+              "score_range": 7.72,
+              "most_sensitive": false
+            },
+            {
+              "parameter": "annualSavings",
+              "min": 110000.0,
+              "max": 290000.0,
+              "observations": [
+                {
+                  "parameter_value": 110000.0,
+                  "decision_score": 49.74,
+                  "npv": -350609.15778967086,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 155000.0,
+                  "decision_score": 53.54,
+                  "npv": -3131.085976354385,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 200000.0,
+                  "decision_score": 56.55,
+                  "npv": 344346.98583696224,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 245000.0,
+                  "decision_score": 59.19,
+                  "npv": 691825.0576502787,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 290000.0,
+                  "decision_score": 61.64,
+                  "npv": 1039303.1294635952,
+                  "annual_avoided_tco2e": 1733.76,
+                  "risk_score": 47.580000000000005
+                }
+              ],
+              "score_range": 11.9,
+              "most_sensitive": true
+            },
+            {
+              "parameter": "adoptionRate",
+              "min": 45.0,
+              "max": 92.0,
+              "observations": [
+                {
+                  "parameter_value": 45.0,
+                  "decision_score": 56.21,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 907.2,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 56.75,
+                  "decision_score": 57.22,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1144.08,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 68.5,
+                  "decision_score": 58.24,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1380.96,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 80.25,
+                  "decision_score": 59.25,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1617.84,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 92.0,
+                  "decision_score": 60.27,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1854.72,
+                  "risk_score": 47.580000000000005
+                }
+              ],
+              "score_range": 4.06,
+              "most_sensitive": false
+            },
+            {
+              "parameter": "reductionRate",
+              "min": 20.0,
+              "max": 52.0,
+              "observations": [
+                {
+                  "parameter_value": 20.0,
+                  "decision_score": 55.41,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 722.4,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 28.0,
+                  "decision_score": 56.65,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1011.36,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 36.0,
+                  "decision_score": 57.89,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1300.32,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 44.0,
+                  "decision_score": 59.13,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1589.28,
+                  "risk_score": 47.580000000000005
+                },
+                {
+                  "parameter_value": 52.0,
+                  "decision_score": 60.37,
+                  "npv": 769042.4069421268,
+                  "annual_avoided_tco2e": 1878.24,
+                  "risk_score": 47.580000000000005
+                }
+              ],
+              "score_range": 4.96,
+              "most_sensitive": false
+            }
+          ],
+          "time_horizon_series": [
+            {
+              "years": 3,
+              "decision_score": 46.95,
+              "npv": -505571.7525105281,
+              "total_avoided_tco2e": 5201.28,
+              "payback_years": 4.705882352941177
+            },
+            {
+              "years": 5,
+              "decision_score": 52.07,
+              "npv": -95983.44898914121,
+              "total_avoided_tco2e": 8668.8,
+              "payback_years": 4.705882352941177
+            },
+            {
+              "years": 10,
+              "decision_score": 59.75,
+              "npv": 769042.4069421268,
+              "total_avoided_tco2e": 17337.6,
+              "payback_years": 4.705882352941177
+            },
+            {
+              "years": 15,
+              "decision_score": 64.58,
+              "npv": 1446812.7997360504,
+              "total_avoided_tco2e": 26006.4,
+              "payback_years": 4.705882352941177
+            }
+          ]
+        },
+        "workbench_handoff": {
+          "required_for": [
+            "probabilistic simulation",
+            "optimization",
+            "engineering models",
+            "domain forecasting",
+            "large sensitivity grids"
+          ],
+          "recommended_tools": [
+            "economics-forecasting-and-scenario-tool",
+            "graph-studio-parameter-sensitivity",
+            "risk-resilience-impact-matrix",
+            "systems-modeling-tool"
+          ]
+        },
+        "notes": "Illustrative deterministic screening fixture; not a forecast.",
+        "warnings": [
+          "Scenario outputs are conditional decision-support results, not forecasts or guarantees.",
+          "Ranges describe assumptions supplied by the user; they are not probability distributions unless modeled and validated elsewhere."
+        ]
+      },
+      "sensitivity_analysis": {
+        "parameters": [
+          {
+            "parameter": "capex",
+            "min": 700000.0,
+            "max": 1300000.0,
+            "observations": [
+              {
+                "parameter_value": 700000.0,
+                "decision_score": 66.36,
+                "npv": 1269042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 850000.0,
+                "decision_score": 65.25,
+                "npv": 1119042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 1000000.0,
+                "decision_score": 62.49,
+                "npv": 969042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 1150000.0,
+                "decision_score": 60.36,
+                "npv": 819042.4069421268,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 1300000.0,
+                "decision_score": 58.64,
+                "npv": 669042.4069421266,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 7.72,
+            "most_sensitive": false
+          },
+          {
+            "parameter": "annualSavings",
+            "min": 110000.0,
+            "max": 290000.0,
+            "observations": [
+              {
+                "parameter_value": 110000.0,
+                "decision_score": 49.74,
+                "npv": -350609.15778967086,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 155000.0,
+                "decision_score": 53.54,
+                "npv": -3131.085976354385,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 200000.0,
+                "decision_score": 56.55,
+                "npv": 344346.98583696224,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 245000.0,
+                "decision_score": 59.19,
+                "npv": 691825.0576502787,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 290000.0,
+                "decision_score": 61.64,
+                "npv": 1039303.1294635952,
+                "annual_avoided_tco2e": 1733.76,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 11.9,
+            "most_sensitive": true
+          },
+          {
+            "parameter": "adoptionRate",
+            "min": 45.0,
+            "max": 92.0,
+            "observations": [
+              {
+                "parameter_value": 45.0,
+                "decision_score": 56.21,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 907.2,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 56.75,
+                "decision_score": 57.22,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1144.08,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 68.5,
+                "decision_score": 58.24,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1380.96,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 80.25,
+                "decision_score": 59.25,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1617.84,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 92.0,
+                "decision_score": 60.27,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1854.72,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 4.06,
+            "most_sensitive": false
+          },
+          {
+            "parameter": "reductionRate",
+            "min": 20.0,
+            "max": 52.0,
+            "observations": [
+              {
+                "parameter_value": 20.0,
+                "decision_score": 55.41,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 722.4,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 28.0,
+                "decision_score": 56.65,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1011.36,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 36.0,
+                "decision_score": 57.89,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1300.32,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 44.0,
+                "decision_score": 59.13,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1589.28,
+                "risk_score": 47.580000000000005
+              },
+              {
+                "parameter_value": 52.0,
+                "decision_score": 60.37,
+                "npv": 769042.4069421268,
+                "annual_avoided_tco2e": 1878.24,
+                "risk_score": 47.580000000000005
+              }
+            ],
+            "score_range": 4.96,
+            "most_sensitive": false
+          }
+        ],
+        "tornado_ranking": [
+          {
+            "parameter": "annualSavings",
+            "score_range": 11.9
+          },
+          {
+            "parameter": "capex",
+            "score_range": 7.72
+          },
+          {
+            "parameter": "reductionRate",
+            "score_range": 4.96
+          },
+          {
+            "parameter": "adoptionRate",
+            "score_range": 4.06
+          }
+        ]
+      },
+      "threshold_analysis": {
+        "parameter": "annualSavings",
+        "metric": "npv",
+        "operator": ">=",
+        "target_value": 0,
+        "range": {
+          "min": 110000.0,
+          "max": 290000.0,
+          "steps": 5
+        },
+        "break_even": {
+          "parameter_value": 162500.0,
+          "metric_value": 54781.92599253183,
+          "target_met": true
+        },
+        "observations": [
+          {
+            "parameter_value": 110000.0,
+            "metric_value": -350609.15778967086,
+            "target_met": false
+          },
+          {
+            "parameter_value": 117500.0,
+            "metric_value": -292696.1458207848,
+            "target_met": false
+          },
+          {
+            "parameter_value": 125000.0,
+            "metric_value": -234783.13385189878,
+            "target_met": false
+          },
+          {
+            "parameter_value": 132500.0,
+            "metric_value": -176870.12188301247,
+            "target_met": false
+          },
+          {
+            "parameter_value": 140000.0,
+            "metric_value": -118957.10991412662,
+            "target_met": false
+          },
+          {
+            "parameter_value": 147500.0,
+            "metric_value": -61044.09794524034,
+            "target_met": false
+          },
+          {
+            "parameter_value": 155000.0,
+            "metric_value": -3131.085976354385,
+            "target_met": false
+          },
+          {
+            "parameter_value": 162500.0,
+            "metric_value": 54781.92599253183,
+            "target_met": true
+          },
+          {
+            "parameter_value": 170000.0,
+            "metric_value": 112694.93796141777,
+            "target_met": true
+          },
+          {
+            "parameter_value": 177500.0,
+            "metric_value": 170607.9499303039,
+            "target_met": true
+          },
+          {
+            "parameter_value": 185000.0,
+            "metric_value": 228520.96189919004,
+            "target_met": true
+          },
+          {
+            "parameter_value": 192500.0,
+            "metric_value": 286433.97386807605,
+            "target_met": true
+          },
+          {
+            "parameter_value": 200000.0,
+            "metric_value": 344346.98583696224,
+            "target_met": true
+          },
+          {
+            "parameter_value": 207500.0,
+            "metric_value": 402259.99780584825,
+            "target_met": true
+          },
+          {
+            "parameter_value": 215000.0,
+            "metric_value": 460173.0097747344,
+            "target_met": true
+          },
+          {
+            "parameter_value": 222500.0,
+            "metric_value": 518086.0217436204,
+            "target_met": true
+          },
+          {
+            "parameter_value": 230000.0,
+            "metric_value": 575999.0337125065,
+            "target_met": true
+          },
+          {
+            "parameter_value": 237500.0,
+            "metric_value": 633912.0456813925,
+            "target_met": true
+          },
+          {
+            "parameter_value": 245000.0,
+            "metric_value": 691825.0576502787,
+            "target_met": true
+          },
+          {
+            "parameter_value": 252500.0,
+            "metric_value": 749738.0696191649,
+            "target_met": true
+          },
+          {
+            "parameter_value": 260000.0,
+            "metric_value": 807651.0815880508,
+            "target_met": true
+          },
+          {
+            "parameter_value": 267500.0,
+            "metric_value": 865564.0935569368,
+            "target_met": true
+          },
+          {
+            "parameter_value": 275000.0,
+            "metric_value": 923477.1055258228,
+            "target_met": true
+          },
+          {
+            "parameter_value": 282500.0,
+            "metric_value": 981390.1174947091,
+            "target_met": true
+          },
+          {
+            "parameter_value": 290000.0,
+            "metric_value": 1039303.1294635952,
+            "target_met": true
+          }
+        ],
+        "found": true,
+        "screening_resolution": 25
+      },
+      "uncertainty_analysis": {
+        "envelopes": [
+          {
+            "alternative_id": "phased",
+            "label": "Phased implementation",
+            "screening_low": 55.95,
+            "base": 57.95,
+            "screening_high": 64.6,
+            "spread": 8.65,
+            "interpretation": "Combined range endpoints; not a probability interval."
+          },
+          {
+            "alternative_id": "balanced",
+            "label": "Balanced program",
+            "screening_low": 53.82,
+            "base": 58.05,
+            "screening_high": 62.46,
+            "spread": 8.64,
+            "interpretation": "Combined range endpoints; not a probability interval."
+          },
+          {
+            "alternative_id": "accelerated",
+            "label": "Accelerated transition",
+            "screening_low": 51.4,
+            "base": 59.75,
+            "screening_high": 60.05,
+            "spread": 8.65,
+            "interpretation": "Combined range endpoints; not a probability interval."
+          }
+        ],
+        "multi_variable": {
+          "parameters": [
+            "capex",
+            "annualSavings"
+          ],
+          "x_values": [
+            700000.0,
+            1000000.0,
+            1300000.0
+          ],
+          "y_values": [
+            110000.0,
+            200000.0,
+            290000.0
+          ],
+          "grid": [
+            {
+              "capex": 700000.0,
+              "annualSavings": 110000.0,
+              "decision_score": 55.83,
+              "npv": 149390.84221032908,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 700000.0,
+              "annualSavings": 200000.0,
+              "decision_score": 64.38,
+              "npv": 844346.9858369622,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 700000.0,
+              "annualSavings": 290000.0,
+              "decision_score": 66.55,
+              "npv": 1539303.1294635949,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1000000.0,
+              "annualSavings": 110000.0,
+              "decision_score": 51.75,
+              "npv": -150609.15778967098,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1000000.0,
+              "annualSavings": 200000.0,
+              "decision_score": 58.91,
+              "npv": 544346.9858369622,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1000000.0,
+              "annualSavings": 290000.0,
+              "decision_score": 64.64,
+              "npv": 1239303.129463595,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1300000.0,
+              "annualSavings": 110000.0,
+              "decision_score": 48.85,
+              "npv": -450609.15778967075,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1300000.0,
+              "annualSavings": 200000.0,
+              "decision_score": 55.57,
+              "npv": 244346.98583696224,
+              "risk_score": 47.580000000000005
+            },
+            {
+              "capex": 1300000.0,
+              "annualSavings": 290000.0,
+              "decision_score": 60.45,
+              "npv": 939303.1294635952,
+              "risk_score": 47.580000000000005
+            }
+          ],
+          "screening_only": true
+        }
+      },
+      "workbench_handoffs": [],
+      "saved_packet": {
+        "saved_at": "",
+        "saved_by": "",
+        "status": "draft",
+        "storage": "browser_or_wordpress"
+      },
+      "export_center": {
+        "last_exported_at": "",
+        "available_formats": [
+          "json",
+          "markdown",
+          "html",
+          "audit_json",
+          "readiness_json",
+          "scenario_json",
+          "scenario_studio_json",
+          "sensitivity_json",
+          "threshold_json",
+          "handoff_json",
+          "governance_json"
+        ]
+      },
+      "module_slots": [
+        {
+          "module_id": "knowledge-library",
+          "name": "Knowledge Library",
+          "artifact_key": "knowledge_library_evidence",
+          "packet_section": "evidence_registry",
+          "status": "empty"
+        },
+        {
+          "module_id": "research-librarian",
+          "name": "Research Librarian",
+          "artifact_key": "research_guidance",
+          "packet_section": "research_routes",
+          "status": "empty"
+        },
+        {
+          "module_id": "site-intelligence",
+          "name": "Site Intelligence",
+          "artifact_key": "site_intelligence_evidence",
+          "packet_section": "live_evidence",
+          "status": "empty"
+        },
+        {
+          "module_id": "workbench",
+          "name": "Workbench",
+          "artifact_key": "workbench_calculations",
+          "packet_section": "calculation_trace",
+          "status": "empty"
+        },
+        {
+          "module_id": "research-lab",
+          "name": "Research Lab",
+          "artifact_key": "research_lab_artifacts",
+          "packet_section": "experimental_evidence",
+          "status": "empty"
+        },
+        {
+          "module_id": "platform-core",
+          "name": "Platform Core",
+          "artifact_key": "platform_core_records",
+          "packet_section": "platform_registry",
+          "status": "empty"
+        },
+        {
+          "module_id": "decision-studio",
+          "name": "Decision Studio",
+          "artifact_key": "synthesis",
+          "packet_section": "integrated_decision_brief",
+          "status": "empty"
+        }
+      ]
+    }
+  }
+}

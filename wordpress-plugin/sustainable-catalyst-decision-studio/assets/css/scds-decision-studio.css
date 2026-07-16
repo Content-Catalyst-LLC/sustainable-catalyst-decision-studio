@@ -72,7 +72,7 @@
 @media(max-width:860px){.scds-readiness-grid{grid-template-columns:1fr}}
 
 
-/* v1.9.0 Saved Decision Packets, Governance, and Export Center */
+/* v1.10.0 Saved Decision Packets, Governance, and Export Center */
 .scds-export-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:16px}
 .scds-export-panel{border:1px solid var(--scds-line);background:#fff;padding:16px;border-radius:14px}
 .scds-export-panel h4{margin-top:0;font-family:Spartan,Montserrat,Arial,sans-serif}
@@ -84,7 +84,7 @@
 @media(max-width:900px){.scds-export-layout{grid-template-columns:1fr}}
 
 
-/* Decision Studio v1.9.0 public landing/demo polish */
+/* Decision Studio v1.10.0 public landing/demo polish */
 .scds-public-shell{font-family:Montserrat,Arial,sans-serif;color:var(--scds-ink);background:var(--scds-cream);border:1px solid var(--scds-line);padding:28px;margin:28px 0}.scds-public-hero{background:linear-gradient(180deg,#fff,#f6efe2);border:1px solid var(--scds-line);border-bottom:3px solid #000;padding:30px}.scds-public-hero h2{font-family:Spartan,Montserrat,Arial,sans-serif;font-size:clamp(34px,5vw,64px);line-height:1.05;margin:0 0 12px;color:#000}.scds-public-hero p{font-size:18px;line-height:1.75;max-width:980px}.scds-public-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.scds-public-section{background:#fff;border:1px solid var(--scds-line);padding:24px;margin-top:22px}.scds-public-section h3{font-family:Spartan,Montserrat,Arial,sans-serif;font-size:clamp(24px,3vw,36px);margin:0 0 14px;color:#000}.scds-public-workflow,.scds-public-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.scds-public-workflow article,.scds-public-grid article{border:1px solid var(--scds-line);background:#fffdf8;padding:16px}.scds-public-workflow h4,.scds-public-grid h4{margin:4px 0 8px;font-family:Spartan,Montserrat,Arial,sans-serif}.scds-demo-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;counter-reset:demo;list-style:none;padding:0}.scds-demo-steps li{background:#fffdf8;border:1px solid var(--scds-line);padding:14px;font-weight:700}.scds-public-boundary{border-left:4px solid var(--scds-red)}@media(max-width:1000px){.scds-public-workflow,.scds-public-grid,.scds-demo-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:700px){.scds-public-workflow,.scds-public-grid,.scds-demo-steps{grid-template-columns:1fr}.scds-public-shell{padding:18px}.scds-public-hero{padding:22px}}
 
 /* v1.9.0 Decision Governance and Review Center */
@@ -92,3 +92,17 @@
 .scds-governance-output .scds-readiness-card{border-left:4px solid #6f1024}
 .scds-governance-output details{margin-top:14px}
 .scds-governance-output summary{cursor:pointer;font-weight:700}
+
+/* v1.10.0 Advanced Scenario and Sensitivity Studio */
+.scds-scenario-studio-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
+.scds-scenario-studio-grid textarea{min-height:250px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;font-size:12px;line-height:1.5;resize:vertical}
+.scds-scenario-controls{grid-template-columns:repeat(3,minmax(0,1fr))}
+.scds-scenario-studio-output{margin-top:18px}
+.scds-scenario-studio-result{border:1px solid var(--scds-line);background:#fffdf8;padding:18px}
+.scds-scenario-studio-result>.scds-readiness-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.scds-scenario-studio-result h4{font-family:Spartan,Montserrat,Arial,sans-serif;margin:22px 0 8px}
+.scds-table-wrap{max-width:100%;overflow-x:auto}
+.scds-compatibility-details{margin-top:18px;border:1px solid var(--scds-line);background:#fff;padding:14px}
+.scds-compatibility-details summary{cursor:pointer;font-weight:800}
+@media(max-width:1100px){.scds-scenario-studio-grid{grid-template-columns:1fr}.scds-scenario-studio-result>.scds-readiness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.scds-scenario-controls,.scds-scenario-studio-result>.scds-readiness-grid{grid-template-columns:1fr}.scds-scenario-studio-grid textarea{min-height:190px}}

@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.9.0'
+    assert r.json()['version'] == '1.10.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '1.9.0'
+    assert data['decision_packet']['packet_version'] == '1.10.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -87,7 +87,7 @@ def test_audit_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.9.0'
+    assert data['audit']['audit_version'] == '1.10.0'
     assert 'module_artifact_ledger' in data['audit']
 
 
@@ -96,7 +96,7 @@ def test_audit_generate_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.9.0'
+    assert data['audit']['audit_version'] == '1.10.0'
     assert data['audit_summary']['assumptions_count'] >= 5
     assert data['audit_summary']['calculation_trace_count'] >= 4
 
@@ -161,7 +161,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.9.0'
+    assert data['version'] == '1.10.0'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -189,7 +189,7 @@ def test_review_status_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.9.0'
+    assert data['version'] == '1.10.0'
     assert len(data['sections']) >= 8
     assert any(s['id'] == 'finance' for s in data['sections'])
 
@@ -200,7 +200,7 @@ def test_brief_readiness_default():
     data = r.json()
     assert data['ok'] is True
     readiness = data['readiness']
-    assert readiness['readiness_version'] == '1.9.0'
+    assert readiness['readiness_version'] == '1.10.0'
     assert 0 <= readiness['readiness_percent'] <= 100
     assert 'sections' in readiness
     assert 'export_gate' in readiness
@@ -232,7 +232,7 @@ def test_scenario_comparison_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.9.0'
+    assert data['version'] == '1.10.0'
     comparison = data['scenario_comparison']
     assert comparison['scenario_count'] >= 4
     assert 'matrix' in comparison
@@ -263,7 +263,7 @@ def test_workbench_handoff_default():
     data = r.json()
     assert data['ok'] is True
     handoff = data['workbench_handoff']
-    assert handoff['handoff_version'] == '1.9.0'
+    assert handoff['handoff_version'] == '1.10.0'
     ids = [h['tool_id'] for h in handoff['recommended_handoffs']]
     assert 'economics-forecasting-and-scenario-tool' in ids
     assert any('sc_workbench' in h['shortcode'] for h in handoff['recommended_handoffs'])
@@ -273,7 +273,7 @@ def test_integrated_brief_includes_scenario_and_handoff():
     r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
     assert r.status_code == 200
     data = r.json()
-    assert data['version'] == '1.9.0'
+    assert data['version'] == '1.10.0'
     assert 'scenario_comparison' in data
     assert 'workbench_handoff' in data
     assert 'scenario_comparison_matrix' in data['brief']
@@ -286,7 +286,7 @@ def test_export_center_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['export_center']['export_center_version'] == '1.9.0'
+    assert data['export_center']['export_center_version'] == '1.10.0'
     assert any(e['id'] == 'packet_json' for e in data['export_center']['exports'])
 
 
@@ -296,7 +296,7 @@ def test_decision_packet_save_template():
     data = r.json()
     assert data['ok'] is True
     saved = data['saved_packet']
-    assert saved['packet_version'] == '1.9.0'
+    assert saved['packet_version'] == '1.10.0'
     assert saved['project_name'] == 'Saved packet test'
     assert 'readiness' in saved
     assert 'integrated_brief' in saved
@@ -308,7 +308,7 @@ def test_export_center_bundle_default():
     data = r.json()
     assert data['ok'] is True
     bundle = data['export_bundle']
-    assert bundle['bundle_version'] == '1.9.0'
+    assert bundle['bundle_version'] == '1.10.0'
     assert 'decision_packet_json' in bundle['exports']
     assert 'integrated_brief_markdown' in bundle['exports']
     assert 'audit_json' in bundle['exports']
@@ -321,8 +321,8 @@ def test_public_landing_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.9.0'
-    assert data['landing']['page_version'] == '1.9.0'
+    assert data['version'] == '1.10.0'
+    assert data['landing']['page_version'] == '1.10.0'
     assert 'Decision Studio' in data['landing']['headline']
     assert len(data['landing']['workflow']) == 7
     assert data['landing']['workflow'][0]['module'] == 'Knowledge Library'
@@ -334,7 +334,7 @@ def test_public_demo_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['demo']['demo_version'] == '1.9.0'
+    assert data['demo']['demo_version'] == '1.10.0'
     assert len(data['demo']['demo_cards']) >= 4
     assert 'Knowledge Library to source' in data['demo']['public_copy']
     assert 'Decision Studio to decide' in data['demo']['public_copy']
@@ -344,9 +344,9 @@ def test_release_manifest_identity():
     response = client.get('/release')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '1.9.0'
-    assert data['release']['build_fingerprint'] == 'scds-v1.9.0-decision-governance'
-    assert data['release']['decision_packet_schema'] == 'scds-decision-packet/1.2'
+    assert data['version'] == '1.10.0'
+    assert data['release']['build_fingerprint'] == 'scds-v1.10.0-advanced-scenario-sensitivity'
+    assert data['release']['decision_packet_schema'] == 'scds-decision-packet/1.3'
     assert data['release']['compatibility']['packet_schema_breaking_changes'] is False
 
 
@@ -358,7 +358,7 @@ def test_health_reports_cold_start_and_limits():
     assert data['cold_start_ready'] is True
     assert data['uptime_seconds'] >= 0
     assert data['limits']['max_request_bytes'] == 1048576
-    assert response.headers['x-scds-version'] == '1.9.0'
+    assert response.headers['x-scds-version'] == '1.10.0'
 
 
 def test_oversized_public_request_is_rejected():
@@ -558,7 +558,7 @@ def test_platform_handoff_template_has_new_packet_sections():
     r = client.get('/decision-packet/platform-handoffs')
     assert r.status_code == 200
     packet = r.json()['decision_packet']
-    assert packet['packet_version'] == '1.9.0'
+    assert packet['packet_version'] == '1.10.0'
     assert packet['artifact_schema'] == 'scds-platform-artifact/1.0'
     for key in ['evidence_registry', 'research_routes', 'live_evidence', 'experimental_evidence', 'platform_registry', 'integrity_checks']:
         assert key in packet
@@ -663,7 +663,7 @@ def test_review_history_detects_tampering():
 
 def test_governance_is_in_decision_packet_and_export_bundle():
     packet = client.get('/decision-packet/template').json()['decision_packet']
-    assert packet['packet_version'] == '1.9.0'
+    assert packet['packet_version'] == '1.10.0'
     assert packet['governance_schema'] == 'scds-decision-governance/1.0'
     assert packet['governance_center']['current_state'] == 'draft'
     governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
@@ -697,3 +697,136 @@ def test_saved_packet_uses_governance_state():
     response = client.post('/decision-packet/save-template', json={'inputs': {}, 'packet': {'governance_center': governance}})
     assert response.status_code == 200
     assert response.json()['saved_packet']['status'] == 'approved'
+
+
+
+def advanced_scenario_payload():
+    return {
+        'inputs': {},
+        'alternatives': [
+            {'id': 'option-a', 'label': 'Option A', 'parameters': {'capex': 800000, 'annualSavings': 190000, 'reductionRate': 30}, 'reversibility': 75, 'stakeholderEquity': 62},
+            {'id': 'option-b', 'label': 'Option B', 'parameters': {'capex': 1100000, 'annualSavings': 260000, 'reductionRate': 45}, 'reversibility': 42, 'stakeholderEquity': 76},
+            {'id': 'option-c', 'label': 'Option C', 'parameters': {'capex': 600000, 'annualSavings': 100000, 'reductionRate': 18}, 'reversibility': 88, 'stakeholderEquity': 55},
+        ],
+        'parameterRanges': {
+            'capex': {'min': 700000, 'max': 1300000, 'steps': 5},
+            'annualSavings': {'min': 90000, 'max': 300000, 'steps': 5},
+            'adoptionRate': {'min': 45, 'max': 85, 'steps': 5},
+        },
+        'sensitivityParameters': ['capex', 'annualSavings', 'adoptionRate'],
+        'thresholdTarget': {'parameter': 'annualSavings', 'metric': 'npv', 'operator': '>=', 'value': 0},
+        'timeHorizons': [1, 3, 5, 10],
+        'gridPoints': 5,
+    }
+
+
+def test_scenario_studio_template():
+    response = client.get('/scenario-studio/template')
+    assert response.status_code == 200
+    template = response.json()['template']
+    assert template['schema'] == 'scds-scenario-studio/1.0'
+    assert template['alternative_limit'] == 100
+    assert 'threshold and break-even search' in template['analyses']
+    assert len(template['criteria']) >= 8
+
+
+def test_scenario_studio_default_analysis():
+    response = client.post('/scenario-studio/analyze', json={'inputs': {}})
+    assert response.status_code == 200
+    data = response.json()
+    studio = data['scenario_studio']
+    assert data['version'] == '1.10.0'
+    assert studio['schema'] == 'scds-scenario-studio/1.0'
+    assert studio['alternative_count'] == 5
+    assert len(studio['weighted_ranking']) == 5
+    assert studio['recommended_alternative_id']
+    assert len(studio['uncertainty_envelopes']) == 5
+
+
+def test_scenario_studio_supports_custom_alternatives_and_weighted_unweighted_rankings():
+    payload = advanced_scenario_payload()
+    payload['criteria'] = [
+        {'id': 'financial_value', 'label': 'Financial value', 'metric': 'npv', 'weight': 80},
+        {'id': 'reversibility', 'label': 'Reversibility', 'metric': 'reversibility', 'weight': 20},
+    ]
+    studio = client.post('/scenario-studio/analyze', json=payload).json()['scenario_studio']
+    assert studio['alternative_count'] == 3
+    assert len(studio['weighted_ranking']) == 3
+    assert len(studio['unweighted_ranking']) == 3
+    assert studio['alternatives'][0]['criteria'][0]['weight'] == 80
+
+
+def test_scenario_studio_one_way_sensitivity_and_tornado_ranking():
+    data = client.post('/scenario-studio/sensitivity', json=advanced_scenario_payload()).json()
+    sensitivity = data['sensitivity_analysis']
+    assert len(sensitivity['parameters']) == 3
+    assert len(sensitivity['tornado_ranking']) == 3
+    assert any(item['most_sensitive'] for item in sensitivity['parameters'])
+    assert all(len(item['observations']) == 5 for item in sensitivity['parameters'])
+
+
+def test_scenario_studio_multi_variable_grid():
+    studio = client.post('/scenario-studio/analyze', json=advanced_scenario_payload()).json()['scenario_studio']
+    grid = studio['multi_variable_sensitivity']
+    assert grid['parameters'] == ['capex', 'annualSavings']
+    assert len(grid['grid']) == 9
+    assert all('decision_score' in row for row in grid['grid'])
+
+
+def test_scenario_studio_threshold_break_even_search():
+    data = client.post('/scenario-studio/threshold', json=advanced_scenario_payload()).json()
+    threshold = data['threshold_analysis']
+    assert threshold['parameter'] == 'annualSavings'
+    assert threshold['metric'] == 'npv'
+    assert threshold['screening_resolution'] == 25
+    assert isinstance(threshold['observations'], list)
+    assert all('target_met' in item for item in threshold['observations'])
+
+
+def test_scenario_studio_stakeholder_distribution_and_option_value():
+    payload = advanced_scenario_payload()
+    payload['alternatives'][0]['stakeholder_impacts'] = [
+        {'stakeholder': 'Workers', 'impact_score': 80, 'weight': 2},
+        {'stakeholder': 'Residents', 'impact_score': 40, 'weight': 1},
+    ]
+    studio = client.post('/scenario-studio/analyze', json=payload).json()['scenario_studio']
+    distribution = studio['stakeholder_distribution'][0]
+    assert distribution['minimum_group_score'] == 40
+    assert distribution['maximum_group_score'] == 80
+    assert len(studio['reversibility_option_value']) == 3
+    assert all('option_value' in item for item in studio['reversibility_option_value'])
+
+
+def test_scenario_studio_time_horizon_comparison():
+    studio = client.post('/scenario-studio/analyze', json=advanced_scenario_payload()).json()['scenario_studio']
+    horizons = studio['time_horizon_comparison']
+    assert [item['years'] for item in horizons] == [1, 3, 5, 10]
+    assert all('npv' in item and 'total_avoided_tco2e' in item for item in horizons)
+
+
+def test_scenario_studio_updates_decision_packet():
+    response = client.post('/decision-packet/scenario-studio', json=advanced_scenario_payload())
+    packet = response.json()['decision_packet']
+    assert packet['packet_version'] == '1.10.0'
+    assert packet['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
+    assert packet['scenario_studio']['alternative_count'] == 3
+    assert packet['sensitivity_analysis']['parameters']
+    assert 'threshold_analysis' in packet
+    assert 'uncertainty_analysis' in packet
+
+
+def test_scenario_studio_is_saved_and_exported():
+    studio = client.post('/scenario-studio/analyze', json=advanced_scenario_payload()).json()['scenario_studio']
+    saved = client.post('/decision-packet/save-template', json={'inputs': {}, 'packet': {'scenario_studio': studio}, 'scenarioStudio': studio}).json()['saved_packet']
+    assert saved['scenario_studio']['schema'] == 'scds-scenario-studio/1.0'
+    bundle = client.post('/export-center/bundle', json={'inputs': {}, 'packet': {'scenario_studio': studio}, 'scenarioStudio': studio}).json()['export_bundle']
+    assert bundle['exports']['scenario_studio_json']['alternative_count'] == 3
+    assert any(item['id'] == 'scenario_studio_json' for item in bundle['export_manifest'])
+
+
+def test_health_and_release_publish_scenario_studio_schema():
+    health = client.get('/health').json()
+    release = client.get('/release').json()['release']
+    assert health['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
+    assert release['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
+    assert release['compatibility']['advanced_scenario_studio'] is True

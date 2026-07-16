@@ -3,10 +3,10 @@ Contributors: Content Catalyst LLC
 Tags: sustainability, decision support, scenario analysis, scorecards, risk
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 1.9.0
+Stable tag: 1.10.0
 License: MIT
 
-Sustainable Catalyst Decision Studio is the platform governance and synthesis workspace. v1.9.0 adds controlled decision states, named accountability, reviewers, approval conditions, exceptions, conflicts, human sign-offs, immutable review history, and governance-aware export restrictions while preserving typed platform handoffs and legacy adapters.
+Sustainable Catalyst Decision Studio is the platform governance, scenario, and synthesis workspace. v1.10.0 adds advanced alternatives, weighted and unweighted criteria, sensitivity analysis, break-even thresholds, uncertainty screening, stakeholder distribution, time horizons, dominance, reversibility, and Workbench handoffs while preserving human governance and typed platform evidence.
 
 == Shortcodes ==
 [sc_decision_studio mode="landing"]
@@ -25,6 +25,14 @@ Sustainable Catalyst Decision Studio is the platform governance and synthesis wo
 [sc_decision_studio mode="drawer"]
 
 == Changelog ==
+
+= 1.10.0 =
+* Added the Advanced Scenario and Sensitivity Studio.
+* Added up to 100 custom alternatives and 50 weighted or unweighted criteria.
+* Added one-way sensitivity, tornado ranking, two-variable screening, and break-even search.
+* Added uncertainty envelopes, time-horizon comparison, stakeholder distribution, dominance, reversibility, and option value.
+* Added scenario persistence, Decision Packet schema 1.3, and advanced scenario exports.
+* Preserved v1.9.0 governance, v1.8.0 platform handoffs, and legacy adapters.
 
 = 1.9.0 =
 * Added the Decision Governance and Review Center.

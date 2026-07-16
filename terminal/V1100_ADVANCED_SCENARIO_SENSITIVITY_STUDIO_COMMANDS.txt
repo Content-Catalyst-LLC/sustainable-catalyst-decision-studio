@@ -1,0 +1,35 @@
+Sustainable Catalyst Decision Studio v1.10.0
+Advanced Scenario and Sensitivity Studio
+
+Backend validation
+------------------
+cd backend
+python -m pip install -r requirements.txt
+python -m pytest
+cd ..
+python scripts/test_release.py
+
+Local backend
+-------------
+cd backend
+uvicorn app.main:app --reload --port 8000
+
+Key endpoints
+-------------
+GET  /scenario-studio/template
+POST /scenario-studio/analyze
+POST /scenario-studio/sensitivity
+POST /scenario-studio/threshold
+POST /decision-packet/scenario-studio
+
+Release packaging
+-----------------
+bash scripts/build_release.sh
+
+Render settings
+---------------
+Root directory: backend
+Build command: pip install -r requirements.txt
+Start command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Health check: /health
+Python: 3.12.11

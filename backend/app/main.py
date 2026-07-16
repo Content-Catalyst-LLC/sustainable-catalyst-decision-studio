@@ -14,15 +14,16 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
-APP_VERSION = "1.9.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.9.0-decision-governance")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.9.0")
+APP_VERSION = "1.10.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.10.0-advanced-scenario-sensitivity")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.10.0")
 RELEASE_DATE = "2026-07-16"
-DECISION_PACKET_SCHEMA = "scds-decision-packet/1.2"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/1.3"
 PLATFORM_ARTIFACT_SCHEMA = "scds-platform-artifact/1.0"
 EVIDENCE_RECORD_SCHEMA = "scds-evidence-record/1.0"
 GOVERNANCE_SCHEMA = "scds-decision-governance/1.0"
 REVIEW_EVENT_SCHEMA = "scds-review-event/1.0"
+SCENARIO_STUDIO_SCHEMA = "scds-scenario-studio/1.0"
 MAX_REQUEST_BYTES = max(65536, int(os.getenv("SCDS_MAX_REQUEST_BYTES", "1048576")))
 PUBLIC_RATE_LIMIT = max(10, int(os.getenv("SCDS_PUBLIC_RATE_LIMIT", "60")))
 RATE_WINDOW_SECONDS = max(10, int(os.getenv("SCDS_RATE_WINDOW_SECONDS", "60")))
@@ -34,6 +35,7 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/decision-packet/brief", "/decision-packet/analyze",
     "/brief-readiness", "/decision-packet/readiness", "/review/status",
     "/scenario-comparison", "/decision-packet/scenario-comparison",
+    "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio",
     "/workbench/handoff", "/decision-packet/workbench-handoff",
     "/integrations/import", "/integrations/import-batch", "/decision-packet/import",
     "/decision-packet/save-template", "/export-center/bundle",
@@ -47,7 +49,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Decision Governance and Review Center",
+        "release_name": "Advanced Scenario and Sensitivity Studio",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -56,6 +58,7 @@ def release_manifest() -> Dict[str, Any]:
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
         "governance_schema": GOVERNANCE_SCHEMA,
         "review_event_schema": REVIEW_EVENT_SCHEMA,
+        "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -66,6 +69,10 @@ def release_manifest() -> Dict[str, Any]:
             "legacy_artifact_adapters_preserved": True,
             "governance_center": True,
             "immutable_review_history": True,
+            "advanced_scenario_studio": True,
+            "one_way_sensitivity": True,
+            "multi_variable_sensitivity": True,
+            "threshold_break_even_analysis": True,
         },
     }
 
@@ -235,6 +242,20 @@ class ScenarioComparisonRequest(BaseModel):
     notes: str = ""
 
 
+class ScenarioStudioRequest(BaseModel):
+    inputs: DecisionInputs = Field(default_factory=DecisionInputs)
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    alternatives: List[Dict[str, Any]] = Field(default_factory=list, max_length=100)
+    criteria: List[Dict[str, Any]] = Field(default_factory=list, max_length=50)
+    parameterRanges: Dict[str, Any] = Field(default_factory=dict)
+    sensitivityParameters: List[str] = Field(default_factory=list, max_length=20)
+    thresholdTarget: Dict[str, Any] = Field(default_factory=dict)
+    timeHorizons: List[int] = Field(default_factory=list, max_length=20)
+    gridPoints: int = Field(5, ge=3, le=21)
+    includeMultiVariable: bool = True
+    notes: str = ""
+
+
 class WorkbenchHandoffRequest(BaseModel):
     inputs: DecisionInputs = Field(default_factory=DecisionInputs)
     results: Optional[Dict[str, Any]] = None
@@ -252,6 +273,7 @@ class SavedDecisionPacketRequest(BaseModel):
     audit: Optional[Dict[str, Any]] = None
     readiness: Optional[Dict[str, Any]] = None
     scenarioComparison: Optional[Dict[str, Any]] = None
+    scenarioStudio: Optional[Dict[str, Any]] = None
     workbenchHandoff: Optional[Dict[str, Any]] = None
     integratedBrief: Optional[Dict[str, Any]] = None
     title: str = ""
@@ -266,6 +288,7 @@ class ExportBundleRequest(BaseModel):
     audit: Optional[Dict[str, Any]] = None
     readiness: Optional[Dict[str, Any]] = None
     scenarioComparison: Optional[Dict[str, Any]] = None
+    scenarioStudio: Optional[Dict[str, Any]] = None
     workbenchHandoff: Optional[Dict[str, Any]] = None
     integratedBrief: Optional[Dict[str, Any]] = None
     governance: Optional[Dict[str, Any]] = None
@@ -459,12 +482,13 @@ def platform_contract(product_id: Optional[str]) -> Optional[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.9.0",
+        "packet_version": "1.10.0",
         "workflow": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
         "governance_schema": GOVERNANCE_SCHEMA,
         "review_event_schema": REVIEW_EVENT_SCHEMA,
+        "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -506,9 +530,13 @@ def decision_packet_template() -> Dict[str, Any]:
         "governance_center": governance_template(),
         "integrated_decision_brief": {},
         "scenario_comparison": {},
+        "scenario_studio": {},
+        "sensitivity_analysis": {},
+        "threshold_analysis": {},
+        "uncertainty_analysis": {},
         "workbench_handoffs": [],
         "saved_packet": {"saved_at": "", "saved_by": "", "status": "draft", "storage": "browser_or_wordpress"},
-        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "handoff_json", "governance_json"]},
+        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json"]},
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -526,7 +554,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.9.0",
+        "audit_version": "1.10.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -1579,7 +1607,7 @@ def evaluate_governance(req: GovernanceRequest) -> Dict[str, Any]:
 
 
 def review_status_catalog() -> Dict[str, Any]:
-    """Review state vocabulary used by v1.9.0 readiness gates."""
+    """Review state vocabulary used by v1.10.0 readiness and scenario governance gates."""
     return {
         "review_version": APP_VERSION,
         "states": [
@@ -2211,6 +2239,8 @@ def _packet_scenarios(packet: Dict[str, Any]) -> List[Dict[str, Any]]:
 def scenario_comparison_template() -> Dict[str, Any]:
     return {
         "comparison_version": APP_VERSION,
+        "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
+        "advanced_studio_available": True,
         "default_options": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"],
         "metrics": ["annual_avoided_tco2e", "total_avoided_tco2e", "npv", "payback_years", "risk_score", "confidence", "governance_burden", "implementation_complexity"],
         "decision_use": "Compare scenario options before generating the integrated brief; use Workbench handoffs for deeper modeling, graphs, sensitivity analysis, engineering review, or calculator-backed validation.",
@@ -2290,6 +2320,404 @@ def generate_scenario_comparison(req: ScenarioComparisonRequest) -> Dict[str, An
     return {"ok": True, "version": APP_VERSION, "scenario_comparison": comparison, "results": results, "decision_packet": packet}
 
 
+
+def scenario_studio_criteria() -> List[Dict[str, Any]]:
+    return [
+        {"id": "financial_value", "label": "Financial value", "metric": "npv", "weight": 20, "direction": "higher", "normalization": "financial"},
+        {"id": "emissions_impact", "label": "Emissions impact", "metric": "annual_avoided_tco2e", "weight": 18, "direction": "higher", "normalization": "emissions"},
+        {"id": "risk_resilience", "label": "Risk and resilience", "metric": "risk_score", "weight": 16, "direction": "lower", "normalization": "risk"},
+        {"id": "evidence_confidence", "label": "Evidence confidence", "metric": "confidence", "weight": 10, "direction": "higher", "normalization": "score"},
+        {"id": "stakeholder_equity", "label": "Stakeholder and distributional impact", "metric": "stakeholder_equity", "weight": 10, "direction": "higher", "normalization": "score"},
+        {"id": "implementation_feasibility", "label": "Implementation feasibility", "metric": "implementation_feasibility", "weight": 10, "direction": "higher", "normalization": "score"},
+        {"id": "reversibility", "label": "Reversibility and option value", "metric": "reversibility", "weight": 8, "direction": "higher", "normalization": "score"},
+        {"id": "time_to_value", "label": "Time to value", "metric": "payback_years", "weight": 8, "direction": "lower", "normalization": "payback"},
+    ]
+
+
+def scenario_studio_template() -> Dict[str, Any]:
+    return {
+        "schema": SCENARIO_STUDIO_SCHEMA,
+        "studio_version": APP_VERSION,
+        "alternative_limit": 100,
+        "default_alternatives": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress Test"],
+        "criteria": scenario_studio_criteria(),
+        "supported_parameters": [
+            "capex", "annualSavings", "discountRate", "modelYears", "baselineEmissions",
+            "reductionRate", "adoptionRate", "exposure", "vulnerability", "resilience",
+            "stakeholderSensitivity", "governanceReadiness", "dataConfidence", "socialBenefit",
+            "carbonPrice", "reversibility", "stakeholderEquity", "implementationComplexity",
+        ],
+        "supported_metrics": [
+            "decision_score", "npv", "roi_percent", "payback_years", "annual_avoided_tco2e",
+            "total_avoided_tco2e", "risk_score", "confidence", "stakeholder_equity",
+            "implementation_feasibility", "reversibility", "option_value",
+        ],
+        "analyses": [
+            "weighted and unweighted ranking", "one-way sensitivity", "two-variable screening grid",
+            "threshold and break-even search", "uncertainty envelopes", "time-horizon comparison",
+            "stakeholder distribution", "dominance and tradeoff analysis", "reversibility and option value",
+        ],
+        "workbench_boundary": "Decision Studio provides deterministic screening and comparison. Route probabilistic simulation, optimization, engineering models, and domain-specific forecasting to Workbench.",
+        "warnings": [
+            "Scenario outputs are conditional decision-support results, not forecasts or guarantees.",
+            "Ranges describe assumptions supplied by the user; they are not probability distributions unless modeled and validated elsewhere.",
+        ],
+    }
+
+
+def _scenario_default_alternatives(inputs: DecisionInputs) -> List[Dict[str, Any]]:
+    return [
+        {"id": "baseline", "label": "Baseline", "parameters": {"reductionRate": 0, "adoptionRate": 0, "annualSavings": 0, "capex": 0}, "reversibility": 90, "stakeholderEquity": 45, "implementationComplexity": "Low"},
+        {"id": "conservative", "label": "Conservative", "parameters": {"reductionRate": inputs.reductionRate * .75, "adoptionRate": inputs.adoptionRate * .80, "annualSavings": inputs.annualSavings * .80, "capex": inputs.capex * 1.10}, "reversibility": 75, "stakeholderEquity": max(0, inputs.socialBenefit - 5), "implementationComplexity": "Low"},
+        {"id": "expected", "label": "Expected", "parameters": {}, "reversibility": 60, "stakeholderEquity": inputs.socialBenefit, "implementationComplexity": inputs.complexity},
+        {"id": "ambitious", "label": "Ambitious", "parameters": {"reductionRate": min(100, inputs.reductionRate * 1.30), "adoptionRate": min(100, inputs.adoptionRate * 1.20), "annualSavings": inputs.annualSavings * 1.12, "capex": inputs.capex * 1.18}, "reversibility": 40, "stakeholderEquity": min(100, inputs.socialBenefit + 8), "implementationComplexity": "High"},
+        {"id": "stress-test", "label": "Stress Test", "parameters": {"reductionRate": inputs.reductionRate * .65, "adoptionRate": inputs.adoptionRate * .65, "annualSavings": inputs.annualSavings * .65, "capex": inputs.capex * 1.25, "exposure": min(100, inputs.exposure + 15), "vulnerability": min(100, inputs.vulnerability + 15), "governanceReadiness": max(0, inputs.governanceReadiness - 15)}, "reversibility": 45, "stakeholderEquity": max(0, inputs.socialBenefit - 10), "implementationComplexity": "High"},
+    ]
+
+
+def _scenario_parameter_ranges(inputs: DecisionInputs, supplied: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    defaults: Dict[str, Dict[str, Any]] = {
+        "capex": {"min": max(0, inputs.capex * (1 - inputs.capexVolatility / 100)), "max": inputs.capex * (1 + inputs.capexVolatility / 100), "steps": 5},
+        "annualSavings": {"min": max(0, inputs.annualSavings * (1 - inputs.savingsVolatility / 100)), "max": inputs.annualSavings * (1 + inputs.savingsVolatility / 100), "steps": 5},
+        "adoptionRate": {"min": max(0, inputs.adoptionRate - 15), "max": min(100, inputs.adoptionRate + 15), "steps": 5},
+        "reductionRate": {"min": max(0, inputs.reductionRate - 12), "max": min(100, inputs.reductionRate + 12), "steps": 5},
+        "discountRate": {"min": max(0, inputs.discountRate - 3), "max": min(100, inputs.discountRate + 3), "steps": 5},
+    }
+    for key, raw in (supplied or {}).items():
+        if isinstance(raw, (list, tuple)) and len(raw) >= 2:
+            low, high = _numeric(raw[0]), _numeric(raw[1])
+            steps = 5
+        elif isinstance(raw, dict):
+            low, high = _numeric(raw.get("min", raw.get("low"))), _numeric(raw.get("max", raw.get("high")))
+            steps = int(_numeric(raw.get("steps"), 5) or 5)
+        else:
+            continue
+        if low is None or high is None:
+            continue
+        if low > high:
+            low, high = high, low
+        defaults[str(key)] = {"min": low, "max": high, "steps": max(3, min(21, steps))}
+    return defaults
+
+
+def _scenario_linspace(low: float, high: float, points: int) -> List[float]:
+    if points <= 1 or low == high:
+        return [round(low, 8)]
+    return [round(low + (high - low) * idx / (points - 1), 8) for idx in range(points)]
+
+
+def _scenario_complexity_score(value: Any) -> float:
+    text = str(value or "medium").strip().lower()
+    return 88.0 if text in {"low", "simple"} else 65.0 if text in {"medium", "moderate"} else 42.0
+
+
+def _scenario_stakeholder_summary(alternative: Dict[str, Any], inputs: DecisionInputs) -> Dict[str, Any]:
+    records = alternative.get("stakeholder_impacts", alternative.get("stakeholderImpacts", []))
+    normalized: List[Dict[str, Any]] = []
+    if isinstance(records, list):
+        for idx, record in enumerate(records):
+            if not isinstance(record, dict):
+                continue
+            score = clamp(_numeric(record.get("impact_score", record.get("score")), inputs.socialBenefit) or 0)
+            weight = max(0, _numeric(record.get("weight"), 1) or 1)
+            normalized.append({
+                "stakeholder": _first_present(record.get("stakeholder"), record.get("group"), default=f"Group {idx + 1}"),
+                "impact_score": round(score, 2), "weight": round(weight, 4),
+                "notes": str(record.get("notes", "")),
+            })
+    explicit = _numeric(alternative.get("stakeholderEquity", alternative.get("stakeholder_equity")), None)
+    if normalized:
+        total_weight = sum(item["weight"] for item in normalized) or len(normalized)
+        average = sum(item["impact_score"] * item["weight"] for item in normalized) / total_weight
+        minimum = min(item["impact_score"] for item in normalized)
+        maximum = max(item["impact_score"] for item in normalized)
+        equity = clamp((average * .70) + (minimum * .30))
+    else:
+        equity = clamp(explicit if explicit is not None else inputs.socialBenefit)
+        average = minimum = maximum = equity
+    return {"records": normalized, "weighted_average": round(average, 2), "minimum_group_score": round(minimum, 2), "maximum_group_score": round(maximum, 2), "equity_score": round(equity, 2)}
+
+
+def _scenario_model(inputs: DecisionInputs, alternative: Dict[str, Any], extra: Optional[Dict[str, Any]] = None) -> tuple[DecisionInputs, Dict[str, Any]]:
+    data = inputs.model_dump()
+    params: Dict[str, Any] = {}
+    if isinstance(alternative.get("parameters"), dict):
+        params.update(alternative["parameters"])
+    for key in list(data):
+        if key in alternative:
+            params[key] = alternative[key]
+    if extra:
+        params.update(extra)
+    aliases = {"implementation_complexity": "complexity", "implementationComplexity": "complexity"}
+    for key, value in list(params.items()):
+        target = aliases.get(key, key)
+        if target in data and value not in (None, ""):
+            data[target] = value
+    # Keep user-supplied screening values inside the DecisionInputs boundaries.
+    for key in ["reductionRate", "adoptionRate", "discountRate", "exposure", "vulnerability", "resilience", "stakeholderSensitivity", "governanceReadiness", "dataConfidence", "socialBenefit", "savingsVolatility", "capexVolatility"]:
+        if key in data:
+            data[key] = clamp(_numeric(data[key], getattr(inputs, key)) or 0)
+    for key in ["baselineEmissions", "capex", "annualSavings", "carbonPrice"]:
+        if key in data:
+            data[key] = max(0, _numeric(data[key], getattr(inputs, key)) or 0)
+    data["modelYears"] = max(1, min(50, int(_numeric(data.get("modelYears"), inputs.modelYears) or inputs.modelYears)))
+    model = DecisionInputs(**data)
+    return model, analyze(model)
+
+
+def _scenario_raw_evaluation(inputs: DecisionInputs, alternative: Dict[str, Any], extra: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    model, results = _scenario_model(inputs, alternative, extra)
+    stakeholder = _scenario_stakeholder_summary(alternative, model)
+    reversibility = clamp(_numeric(alternative.get("reversibility"), 55) or 55)
+    complexity = alternative.get("implementationComplexity", alternative.get("implementation_complexity", model.complexity))
+    feasibility = clamp((_scenario_complexity_score(complexity) * .55) + (model.governanceReadiness * .30) + (model.dataConfidence * .15))
+    payback = results.get("finance", {}).get("payback_years")
+    payback_score = 50 if payback is None else clamp(100 - (float(payback) / max(model.modelYears, 1)) * 70)
+    npv_value = _numeric(results.get("finance", {}).get("npv"), 0) or 0
+    financial_score = clamp(50 + (npv_value / max(model.capex, 1)) * 35)
+    annual = _numeric(results.get("emissions", {}).get("annual_avoided_tco2e"), 0) or 0
+    emissions_score = clamp(annual / max(model.baselineEmissions, 1) * 100)
+    risk_score = clamp(100 - (_numeric(results.get("risk", {}).get("risk_score"), 50) or 50))
+    option_value = clamp(reversibility * .65 + feasibility * .20 + model.dataConfidence * .15)
+    return {
+        "alternative_id": str(alternative.get("id", alternative.get("option_id", "alternative"))),
+        "label": _first_present(alternative.get("label"), alternative.get("name"), default="Alternative"),
+        "description": str(alternative.get("description", alternative.get("notes", ""))),
+        "parameters": model.model_dump(),
+        "results": results,
+        "metrics": {
+            "npv": npv_value,
+            "roi_percent": _numeric(results.get("finance", {}).get("roi_percent"), 0) or 0,
+            "payback_years": payback,
+            "annual_avoided_tco2e": annual,
+            "total_avoided_tco2e": _numeric(results.get("emissions", {}).get("total_avoided_tco2e"), 0) or 0,
+            "risk_score": _numeric(results.get("risk", {}).get("risk_score"), 50) or 50,
+            "confidence": model.dataConfidence,
+            "stakeholder_equity": stakeholder["equity_score"],
+            "implementation_feasibility": round(feasibility, 2),
+            "reversibility": round(reversibility, 2),
+            "option_value": round(option_value, 2),
+        },
+        "criterion_scores": {
+            "financial_value": round(financial_score, 2),
+            "emissions_impact": round(emissions_score, 2),
+            "risk_resilience": round(risk_score, 2),
+            "evidence_confidence": round(model.dataConfidence, 2),
+            "stakeholder_equity": stakeholder["equity_score"],
+            "implementation_feasibility": round(feasibility, 2),
+            "reversibility": round(reversibility, 2),
+            "time_to_value": round(payback_score, 2),
+        },
+        "stakeholder_distribution": stakeholder,
+        "implementation_complexity": complexity,
+    }
+
+
+def _scenario_apply_criteria(evaluation: Dict[str, Any], criteria: List[Dict[str, Any]]) -> Dict[str, Any]:
+    criterion_scores = dict(evaluation.get("criterion_scores", {}))
+    custom_values = evaluation.get("custom_criteria", {})
+    rows: List[Dict[str, Any]] = []
+    total_weight = sum(max(0, _numeric(item.get("weight"), 0) or 0) for item in criteria) or 1
+    weighted = 0.0
+    score_values: List[float] = []
+    for criterion in criteria:
+        cid = str(criterion.get("id", criterion.get("metric", "criterion")))
+        metric = str(criterion.get("metric", cid))
+        score = criterion_scores.get(cid)
+        if score is None:
+            raw = _numeric(evaluation.get("metrics", {}).get(metric), None)
+            if raw is None:
+                raw = _numeric(custom_values.get(cid), _numeric(criterion.get("default"), 50))
+            low = _numeric(criterion.get("min"), 0) or 0
+            high = _numeric(criterion.get("max"), 100) or 100
+            if high == low:
+                score = 50.0
+            else:
+                score = clamp((float(raw) - low) / (high - low) * 100)
+                if str(criterion.get("direction", "higher")).lower() == "lower":
+                    score = 100 - score
+        score = clamp(float(score))
+        weight = max(0, _numeric(criterion.get("weight"), 0) or 0)
+        weighted += score * weight / total_weight
+        score_values.append(score)
+        rows.append({"criterion_id": cid, "label": criterion.get("label", cid), "metric": metric, "weight": round(weight / total_weight * 100, 4), "score": round(score, 2), "weighted_contribution": round(score * weight / total_weight, 2)})
+    result = dict(evaluation)
+    result["criteria"] = rows
+    result["decision_score"] = round(clamp(weighted), 2)
+    result["unweighted_score"] = round(sum(score_values) / len(score_values), 2) if score_values else 0
+    return result
+
+
+def _scenario_metric(evaluation: Dict[str, Any], metric: str) -> Optional[float]:
+    if metric == "decision_score":
+        return _numeric(evaluation.get("decision_score"), None)
+    return _numeric(evaluation.get("metrics", {}).get(metric), None)
+
+
+def _scenario_evaluate(inputs: DecisionInputs, alternative: Dict[str, Any], criteria: List[Dict[str, Any]], extra: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    evaluation = _scenario_raw_evaluation(inputs, alternative, extra)
+    evaluation["custom_criteria"] = alternative.get("criteria_values", alternative.get("criteriaValues", {})) if isinstance(alternative, dict) else {}
+    return _scenario_apply_criteria(evaluation, criteria)
+
+
+def _scenario_rank(evaluations: List[Dict[str, Any]], key: str) -> List[Dict[str, Any]]:
+    ordered = sorted(evaluations, key=lambda item: _numeric(item.get(key), 0) or 0, reverse=True)
+    return [{"rank": idx, "alternative_id": item["alternative_id"], "label": item["label"], "score": item.get(key)} for idx, item in enumerate(ordered, 1)]
+
+
+def _scenario_dominance(evaluations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for left in evaluations:
+        dominated: List[str] = []
+        left_scores = {r["criterion_id"]: r["score"] for r in left.get("criteria", [])}
+        for right in evaluations:
+            if left is right:
+                continue
+            right_scores = {r["criterion_id"]: r["score"] for r in right.get("criteria", [])}
+            shared = set(left_scores) & set(right_scores)
+            if shared and all(left_scores[k] >= right_scores[k] for k in shared) and any(left_scores[k] > right_scores[k] for k in shared):
+                dominated.append(right["alternative_id"])
+        rows.append({"alternative_id": left["alternative_id"], "dominates": dominated, "dominated_count": len(dominated)})
+    return rows
+
+
+def _scenario_one_way(inputs: DecisionInputs, alternative: Dict[str, Any], criteria: List[Dict[str, Any]], ranges: Dict[str, Dict[str, Any]], parameters: List[str], grid_points: int) -> Dict[str, Any]:
+    series: List[Dict[str, Any]] = []
+    for parameter in parameters:
+        if parameter not in ranges:
+            continue
+        spec = ranges[parameter]
+        points = max(3, min(21, int(spec.get("steps", grid_points) or grid_points)))
+        values = _scenario_linspace(float(spec["min"]), float(spec["max"]), points)
+        observations = []
+        for value in values:
+            evaluated = _scenario_evaluate(inputs, alternative, criteria, {parameter: value})
+            observations.append({"parameter_value": value, "decision_score": evaluated["decision_score"], "npv": evaluated["metrics"]["npv"], "annual_avoided_tco2e": evaluated["metrics"]["annual_avoided_tco2e"], "risk_score": evaluated["metrics"]["risk_score"]})
+        scores = [item["decision_score"] for item in observations]
+        series.append({"parameter": parameter, "min": spec["min"], "max": spec["max"], "observations": observations, "score_range": round(max(scores) - min(scores), 2), "most_sensitive": False})
+    if series:
+        biggest = max(series, key=lambda item: item["score_range"])
+        biggest["most_sensitive"] = True
+    return {"parameters": series, "tornado_ranking": sorted([{"parameter": item["parameter"], "score_range": item["score_range"]} for item in series], key=lambda item: item["score_range"], reverse=True)}
+
+
+def _scenario_multi_variable(inputs: DecisionInputs, alternative: Dict[str, Any], criteria: List[Dict[str, Any]], ranges: Dict[str, Dict[str, Any]], parameters: List[str]) -> Dict[str, Any]:
+    selected = [p for p in parameters if p in ranges][:2]
+    if len(selected) < 2:
+        return {"parameters": selected, "grid": [], "note": "At least two ranged parameters are required."}
+    x, y = selected
+    x_values = _scenario_linspace(float(ranges[x]["min"]), float(ranges[x]["max"]), 3)
+    y_values = _scenario_linspace(float(ranges[y]["min"]), float(ranges[y]["max"]), 3)
+    grid = []
+    for xv in x_values:
+        for yv in y_values:
+            evaluated = _scenario_evaluate(inputs, alternative, criteria, {x: xv, y: yv})
+            grid.append({x: xv, y: yv, "decision_score": evaluated["decision_score"], "npv": evaluated["metrics"]["npv"], "risk_score": evaluated["metrics"]["risk_score"]})
+    return {"parameters": selected, "x_values": x_values, "y_values": y_values, "grid": grid, "screening_only": True}
+
+
+def _scenario_threshold(inputs: DecisionInputs, alternative: Dict[str, Any], criteria: List[Dict[str, Any]], ranges: Dict[str, Dict[str, Any]], target: Dict[str, Any], grid_points: int) -> Dict[str, Any]:
+    parameter = str(target.get("parameter", "annualSavings"))
+    metric = str(target.get("metric", "npv"))
+    operator = str(target.get("operator", ">="))
+    target_value = _numeric(target.get("value"), 0) or 0
+    spec = ranges.get(parameter)
+    if not spec:
+        base = _numeric(getattr(inputs, parameter, None), 0) or 0
+        spec = {"min": max(0, base * .25), "max": max(1, base * 2), "steps": grid_points}
+    values = _scenario_linspace(float(spec["min"]), float(spec["max"]), max(5, min(101, grid_points * 5)))
+    observations: List[Dict[str, Any]] = []
+    crossing = None
+    for value in values:
+        evaluated = _scenario_evaluate(inputs, alternative, criteria, {parameter: value})
+        metric_value = _scenario_metric(evaluated, metric)
+        met = False if metric_value is None else (metric_value >= target_value if operator in {">=", ">"} else metric_value <= target_value)
+        row = {"parameter_value": value, "metric_value": metric_value, "target_met": met}
+        observations.append(row)
+        if met and crossing is None:
+            crossing = row
+    return {"parameter": parameter, "metric": metric, "operator": operator, "target_value": target_value, "range": spec, "break_even": crossing, "observations": observations, "found": crossing is not None, "screening_resolution": len(values)}
+
+
+def _scenario_time_horizons(inputs: DecisionInputs, alternative: Dict[str, Any], criteria: List[Dict[str, Any]], horizons: List[int]) -> List[Dict[str, Any]]:
+    output = []
+    for horizon in sorted(set(max(1, min(50, int(h))) for h in horizons)):
+        evaluated = _scenario_evaluate(inputs, alternative, criteria, {"modelYears": horizon})
+        output.append({"years": horizon, "decision_score": evaluated["decision_score"], "npv": evaluated["metrics"]["npv"], "total_avoided_tco2e": evaluated["metrics"]["total_avoided_tco2e"], "payback_years": evaluated["metrics"]["payback_years"]})
+    return output
+
+
+def generate_scenario_studio(req: ScenarioStudioRequest, mode: str = "full") -> Dict[str, Any]:
+    inputs = req.inputs
+    packet = req.packet or {}
+    alternatives = [item for item in req.alternatives if isinstance(item, dict)] or _scenario_default_alternatives(inputs)
+    criteria = [item for item in req.criteria if isinstance(item, dict)] or scenario_studio_criteria()
+    ranges = _scenario_parameter_ranges(inputs, req.parameterRanges)
+    sensitivity_parameters = [p for p in req.sensitivityParameters if p in ranges] or list(ranges)[:4]
+    horizons = req.timeHorizons or sorted(set([1, 3, inputs.modelYears, 10]))
+    evaluations = [_scenario_evaluate(inputs, alt, criteria) for alt in alternatives]
+    weighted_ranking = _scenario_rank(evaluations, "decision_score")
+    unweighted_ranking = _scenario_rank(evaluations, "unweighted_score")
+    recommended_id = weighted_ranking[0]["alternative_id"] if weighted_ranking else ""
+    recommended_alt = next((alt for alt, evaluation in zip(alternatives, evaluations) if evaluation["alternative_id"] == recommended_id), alternatives[0] if alternatives else {})
+    recommended_eval = next((evaluation for evaluation in evaluations if evaluation["alternative_id"] == recommended_id), evaluations[0] if evaluations else {})
+
+    one_way = _scenario_one_way(inputs, recommended_alt, criteria, ranges, sensitivity_parameters, req.gridPoints)
+    multi = _scenario_multi_variable(inputs, recommended_alt, criteria, ranges, sensitivity_parameters) if req.includeMultiVariable else {"parameters": [], "grid": [], "disabled": True}
+    threshold = _scenario_threshold(inputs, recommended_alt, criteria, ranges, req.thresholdTarget, req.gridPoints)
+
+    uncertainty = []
+    for alt, base in zip(alternatives, evaluations):
+        low_overrides = {key: spec["min"] for key, spec in ranges.items()}
+        high_overrides = {key: spec["max"] for key, spec in ranges.items()}
+        low = _scenario_evaluate(inputs, alt, criteria, low_overrides)
+        high = _scenario_evaluate(inputs, alt, criteria, high_overrides)
+        scores = [low["decision_score"], base["decision_score"], high["decision_score"]]
+        uncertainty.append({"alternative_id": base["alternative_id"], "label": base["label"], "screening_low": min(scores), "base": base["decision_score"], "screening_high": max(scores), "spread": round(max(scores)-min(scores), 2), "interpretation": "Combined range endpoints; not a probability interval."})
+
+    time_horizon = _scenario_time_horizons(inputs, recommended_alt, criteria, horizons)
+    scenario_studio = {
+        "schema": SCENARIO_STUDIO_SCHEMA,
+        "studio_version": APP_VERSION,
+        "analysis_mode": mode,
+        "alternative_count": len(evaluations),
+        "criteria": criteria,
+        "parameter_ranges": ranges,
+        "alternatives": evaluations,
+        "weighted_ranking": weighted_ranking,
+        "unweighted_ranking": unweighted_ranking,
+        "recommended_alternative_id": recommended_id,
+        "recommended_alternative": recommended_eval,
+        "dominance_analysis": _scenario_dominance(evaluations),
+        "one_way_sensitivity": one_way,
+        "multi_variable_sensitivity": multi,
+        "threshold_analysis": threshold,
+        "uncertainty_envelopes": uncertainty,
+        "time_horizon_comparison": time_horizon,
+        "stakeholder_distribution": [{"alternative_id": item["alternative_id"], **item["stakeholder_distribution"]} for item in evaluations],
+        "reversibility_option_value": [{"alternative_id": item["alternative_id"], "label": item["label"], "reversibility": item["metrics"]["reversibility"], "option_value": item["metrics"]["option_value"]} for item in evaluations],
+        "chart_data": {
+            "alternative_scores": [{"label": item["label"], "weighted": item["decision_score"], "unweighted": item["unweighted_score"]} for item in evaluations],
+            "sensitivity_series": one_way.get("parameters", []),
+            "time_horizon_series": time_horizon,
+        },
+        "workbench_handoff": {
+            "required_for": ["probabilistic simulation", "optimization", "engineering models", "domain forecasting", "large sensitivity grids"],
+            "recommended_tools": ["economics-forecasting-and-scenario-tool", "graph-studio-parameter-sensitivity", "risk-resilience-impact-matrix", "systems-modeling-tool"],
+        },
+        "notes": req.notes,
+        "warnings": scenario_studio_template()["warnings"],
+    }
+    packet_out = decision_packet_template()
+    packet_out.update(packet)
+    packet_out["scenario_studio"] = scenario_studio
+    packet_out["sensitivity_analysis"] = one_way
+    packet_out["threshold_analysis"] = threshold
+    packet_out["uncertainty_analysis"] = {"envelopes": uncertainty, "multi_variable": multi}
+    packet_out["scenario_comparison"] = generate_scenario_comparison(ScenarioComparisonRequest(inputs=inputs, packet=packet_out, scenarios=[{"label": item["label"], **item["metrics"]} for item in evaluations])).get("scenario_comparison", {})
+    return {"ok": True, "version": APP_VERSION, "schema": SCENARIO_STUDIO_SCHEMA, "scenario_studio": scenario_studio, "decision_packet": packet_out}
+
+
 def workbench_handoff_catalog() -> List[Dict[str, Any]]:
     return [
         {"tool_id": "economics-forecasting-and-scenario-tool", "label": "Economics Forecasting and Scenario Tool", "mode": "advanced_calculators", "use_when": "NPV, ROI, payback, benefit-cost, or scenario assumptions need sensitivity review.", "shortcode": "[sc_workbench_advanced_calculators title=\"Economics Forecasting and Scenario Tool\"]"},
@@ -2351,7 +2779,7 @@ def export_center_template() -> Dict[str, Any]:
         "export_center_version": APP_VERSION,
         "saved_packet_fields": [
             "decision_packet_id", "project_name", "decision_question", "status", "updated_at",
-            "inputs", "results", "decision_packet", "audit", "readiness", "scenario_comparison",
+            "inputs", "results", "decision_packet", "audit", "readiness", "scenario_comparison", "scenario_studio",
             "workbench_handoff", "integrated_brief", "governance"
         ],
         "exports": [
@@ -2360,7 +2788,8 @@ def export_center_template() -> Dict[str, Any]:
             {"id": "integrated_brief_html", "label": "Integrated Brief HTML", "description": "HTML version suitable for browser print or PDF save flow."},
             {"id": "audit_json", "label": "Audit & Provenance JSON", "description": "Module ledger, source ledger, assumptions, calculation trace, claim trace, and change log."},
             {"id": "readiness_json", "label": "Readiness JSON", "description": "Section readiness, review states, unresolved issues, and export gates."},
-            {"id": "scenario_json", "label": "Scenario Comparison JSON", "description": "Scenario matrix, deltas, rankings, sensitivity flags, and recommended option."},
+            {"id": "scenario_json", "label": "Scenario Comparison JSON", "description": "Compatibility scenario matrix, deltas, rankings, and recommended option."},
+            {"id": "scenario_studio_json", "label": "Advanced Scenario Studio JSON", "description": "Alternatives, weighted criteria, sensitivity, thresholds, uncertainty, stakeholder distribution, time horizons, and option value."},
             {"id": "handoff_json", "label": "Workbench Handoff JSON", "description": "Recommended Workbench tools, reasons, priorities, shortcodes, and payload summary."},
             {"id": "governance_json", "label": "Decision Governance JSON", "description": "Decision state, owner, reviewers, conditions, exceptions, conflicts, sign-offs, export gates, and immutable review history."},
         ],
@@ -2385,6 +2814,8 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
     packet_id = packet.get("decision_packet_id") or _safe_packet_id(project_name)
     readiness = req.readiness or generate_brief_readiness(BriefReadinessRequest(inputs=req.inputs, results=results, packet=packet, audit=req.audit or {})).get("readiness", {})
     scenario_comparison = req.scenarioComparison or generate_scenario_comparison(ScenarioComparisonRequest(inputs=req.inputs, results=results, packet=packet)).get("scenario_comparison", {})
+    scenario_studio = req.scenarioStudio or packet.get("scenario_studio") or generate_scenario_studio(ScenarioStudioRequest(inputs=req.inputs, packet=packet)).get("scenario_studio", {})
+    packet["scenario_studio"] = scenario_studio
     workbench_handoff = req.workbenchHandoff or generate_workbench_handoff(WorkbenchHandoffRequest(inputs=req.inputs, results=results, packet=packet, readiness=readiness, scenarioComparison=scenario_comparison)).get("workbench_handoff", {})
     audit = req.audit or generate_audit_provenance(AuditProvenanceRequest(inputs=req.inputs, results=results, packet=packet, reviewStatus=req.status)).get("audit", {})
     integrated = req.integratedBrief or generate_integrated_brief(IntegratedBriefRequest(inputs=req.inputs, results=results, packet=packet, audit=audit)).get("brief", {})
@@ -2406,6 +2837,7 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
         "audit": audit,
         "readiness": readiness,
         "scenario_comparison": scenario_comparison,
+        "scenario_studio": scenario_studio,
         "workbench_handoff": workbench_handoff,
         "integrated_brief": integrated,
         "governance": packet.get("governance_center", governance_template()),
@@ -2423,6 +2855,8 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
     audit = req.audit or generate_audit_provenance(AuditProvenanceRequest(inputs=inputs, results=results, packet=packet)).get("audit", {})
     readiness = req.readiness or generate_brief_readiness(BriefReadinessRequest(inputs=inputs, results=results, packet=packet, audit=audit)).get("readiness", {})
     scenario_comparison = req.scenarioComparison or generate_scenario_comparison(ScenarioComparisonRequest(inputs=inputs, results=results, packet=packet)).get("scenario_comparison", {})
+    scenario_studio = req.scenarioStudio or packet.get("scenario_studio") or generate_scenario_studio(ScenarioStudioRequest(inputs=inputs, packet=packet)).get("scenario_studio", {})
+    packet["scenario_studio"] = scenario_studio
     workbench_handoff = req.workbenchHandoff or generate_workbench_handoff(WorkbenchHandoffRequest(inputs=inputs, results=results, packet=packet, readiness=readiness, scenarioComparison=scenario_comparison)).get("workbench_handoff", {})
     governance = req.governance or packet.get("governance_center") or governance_template()
     packet["governance_center"] = governance
@@ -2454,6 +2888,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
             "audit_json": audit,
             "readiness_json": readiness,
             "scenario_comparison_json": scenario_comparison,
+            "scenario_studio_json": scenario_studio,
             "workbench_handoff_json": workbench_handoff,
             "governance_json": governance,
         },
@@ -2467,7 +2902,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.9.0."""
+    """Professional public-facing product-page structure for Decision Studio v1.10.0."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
@@ -2491,13 +2926,13 @@ def public_landing_template() -> Dict[str, Any]:
             "Decision Packet workspace",
             "Batch and legacy import",
             "Brief readiness and review status",
-            "Scenario comparison and Workbench handoff",
+            "Advanced scenario, sensitivity, threshold, and Workbench handoff",
             "Saved packets and export center",
         ],
         "schemas": {
             "artifact": PLATFORM_ARTIFACT_SCHEMA,
             "evidence": EVIDENCE_RECORD_SCHEMA,
-            "decision_packet": "scds-decision-packet/1.2",
+            "decision_packet": "scds-decision-packet/1.3",
         },
         "boundaries": [
             "Educational and decision-support oriented; not professional advice.",
@@ -2515,15 +2950,15 @@ def public_demo_template() -> Dict[str, Any]:
             "Load the Knowledge Library sample artifact and validate its typed envelope.",
             "Inspect the normalized evidence, citation, provenance, and integrity records.",
             "Import additional Site Intelligence, Workbench, Research Lab, Research Librarian, or Platform Core artifacts.",
-            "Run the scorecard, readiness review, and scenario comparison.",
+            "Run the scorecard, readiness review, advanced scenario analysis, sensitivity ranges, and threshold search.",
             "Generate Workbench handoff recommendations.",
             "Save the Decision Packet locally or export a complete bundle.",
         ],
         "demo_cards": [
             {"title": "Unified Platform Handoffs", "description": "Show how six current Sustainable Catalyst products feed a typed Decision Packet.", "shortcode": "[sc_decision_studio mode=\"workflow\"]"},
             {"title": "Readiness Review", "description": "Check whether the packet is complete enough for a draft brief or export.", "shortcode": "[sc_decision_studio mode=\"readiness\"]"},
-            {"title": "Scenario Comparison", "description": "Rank baseline, conservative, expected, ambitious, and stress-test options.", "shortcode": "[sc_decision_studio mode=\"scenario\"]"},
-            {"title": "Export Center", "description": "Generate JSON, Markdown, HTML, audit, readiness, scenario, and handoff exports.", "shortcode": "[sc_decision_studio mode=\"export\"]"},
+            {"title": "Advanced Scenario Studio", "description": "Compare any number of alternatives, vary assumptions, find thresholds, and inspect stakeholder and time-horizon tradeoffs.", "shortcode": "[sc_decision_studio mode=\"scenario\"]"},
+            {"title": "Export Center", "description": "Generate JSON, Markdown, HTML, audit, readiness, advanced scenario, governance, and handoff exports.", "shortcode": "[sc_decision_studio mode=\"export\"]"},
         ],
         "public_copy": "Use Knowledge Library to source. Research Librarian to route. Site Intelligence to observe. Workbench to calculate. Research Lab to test. Platform Core to connect. Decision Studio to decide.",
     }
@@ -2719,6 +3154,7 @@ def health():
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
         "governance_schema": GOVERNANCE_SCHEMA,
         "review_event_schema": REVIEW_EVENT_SCHEMA,
+        "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -2876,6 +3312,28 @@ def scenario_comparison_endpoint(req: ScenarioComparisonRequest):
 def decision_packet_scenario_comparison_endpoint(req: ScenarioComparisonRequest):
     return generate_scenario_comparison(req)
 
+@app.get("/scenario-studio/template")
+def scenario_studio_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "template": scenario_studio_template()}
+
+@app.post("/scenario-studio/analyze")
+def scenario_studio_analyze_endpoint(req: ScenarioStudioRequest):
+    return generate_scenario_studio(req, "full")
+
+@app.post("/scenario-studio/sensitivity")
+def scenario_studio_sensitivity_endpoint(req: ScenarioStudioRequest):
+    result = generate_scenario_studio(req, "sensitivity")
+    return {"ok": True, "version": APP_VERSION, "schema": SCENARIO_STUDIO_SCHEMA, "sensitivity_analysis": result["scenario_studio"]["one_way_sensitivity"], "multi_variable_sensitivity": result["scenario_studio"]["multi_variable_sensitivity"], "scenario_studio": result["scenario_studio"], "decision_packet": result["decision_packet"]}
+
+@app.post("/scenario-studio/threshold")
+def scenario_studio_threshold_endpoint(req: ScenarioStudioRequest):
+    result = generate_scenario_studio(req, "threshold")
+    return {"ok": True, "version": APP_VERSION, "schema": SCENARIO_STUDIO_SCHEMA, "threshold_analysis": result["scenario_studio"]["threshold_analysis"], "scenario_studio": result["scenario_studio"], "decision_packet": result["decision_packet"]}
+
+@app.post("/decision-packet/scenario-studio")
+def decision_packet_scenario_studio_endpoint(req: ScenarioStudioRequest):
+    return generate_scenario_studio(req, "packet")
+
 @app.get("/workbench/handoffs")
 def workbench_handoffs_endpoint():
     return {"ok": True, "version": APP_VERSION, "catalog": workbench_handoff_catalog()}
@@ -2926,4 +3384,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify"]}

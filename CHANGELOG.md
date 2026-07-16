@@ -1,3 +1,16 @@
+# Sustainable Catalyst Decision Studio Changelog
+
+## v1.10.0 — Advanced Scenario and Sensitivity Studio
+
+- Added `scds-scenario-studio/1.0` and additive Decision Packet schema `scds-decision-packet/1.3`.
+- Added up to 100 custom alternatives, custom criteria, weighted and unweighted rankings, and dominance review.
+- Added one-way sensitivity, tornado ranking, two-variable screening, threshold and break-even analysis.
+- Added deterministic uncertainty envelopes, time-horizon comparison, stakeholder distribution, reversibility, and option value.
+- Added Scenario Studio WordPress controls, REST routes, deterministic PHP parity, persistence, and export bundles.
+- Added explicit Workbench handoffs for probabilistic simulation, optimization, engineering models, and domain forecasting.
+- Preserved v1.9.0 human governance and v1.8.0 typed platform handoffs.
+- Expanded the backend suite to 68 tests.
+
 ## v1.9.0 — Decision Governance and Review Center
 
 - Added `scds-decision-governance/1.0`, `scds-review-event/1.0`, and additive `scds-decision-packet/1.2`.

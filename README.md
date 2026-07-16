@@ -1,10 +1,35 @@
-# Sustainable Catalyst Decision Studio
+# Sustainable Catalyst Decision Studio v1.10.0
 
-## Current release: v1.9.0 — Decision Governance and Review Center
+**Advanced Scenario and Sensitivity Studio**
 
-Decision Studio is the governance and synthesis layer of the Sustainable Catalyst platform. v1.9.0 adds controlled decision states, named ownership, reviewer assignments, approval conditions, exceptions, conflict declarations, human sign-offs, immutable review history, and governance-aware export restrictions while preserving v1.8.0 typed evidence handoffs.
+Decision Studio is the Sustainable Catalyst platform's governed decision orchestration layer. v1.10.0 compares custom alternatives, tests assumptions and thresholds, examines uncertainty and stakeholder distribution, preserves human review gates, and routes deeper probabilistic or domain-specific computation to Workbench.
 
-### New governance routes
+## v1.10.0 highlights
+
+- Up to 100 custom alternatives and 50 criteria
+- Weighted and unweighted multi-criteria rankings
+- One-way sensitivity and tornado ranking
+- Two-variable screening grids
+- Threshold and break-even analysis
+- Uncertainty-envelope and time-horizon comparison
+- Stakeholder distribution, dominance, reversibility, and option value
+- `scds-scenario-studio/1.0` with Decision Packet `scds-decision-packet/1.3`
+- WordPress and FastAPI parity, persistence, and governed exports
+- Preserved typed platform handoffs and Decision Governance Center
+
+## Primary scenario endpoints
+
+- `GET /scenario-studio/template`
+- `POST /scenario-studio/analyze`
+- `POST /scenario-studio/sensitivity`
+- `POST /scenario-studio/threshold`
+- `POST /decision-packet/scenario-studio`
+
+## Preserved v1.9.0 governance layer
+
+The Decision Governance and Review Center remains authoritative for controlled states, decision ownership, reviewer assignments, approval conditions, exceptions, conflicts, human sign-offs, tamper-evident history, and reviewed/public export restrictions. Scenario rankings never approve a decision.
+
+Governance routes remain available:
 
 - `GET /governance/states`
 - `GET /governance/template`
@@ -14,8 +39,6 @@ Decision Studio is the governance and synthesis layer of the Sustainable Catalys
 - `POST /governance/history/verify`
 
 Use `[sc_decision_studio mode="governance"]` for the dedicated WordPress governance workspace.
-
-Sustainable Catalyst Decision Studio is an applied sustainability decision-support layer for Content Catalyst LLC / Sustainable Catalyst. It upgrades the earlier Sustainable Catalyst 1.0 prototype into a modular WordPress + FastAPI-ready platform for project intake, four-pillar scoring, scenarios, risk, reports, validation, exports, Workbench integration, and backend-routed AI decision briefing.
 
 ## v1.8.0 — Unified Evidence and Platform Handoffs
 

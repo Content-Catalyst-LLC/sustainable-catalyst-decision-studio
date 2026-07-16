@@ -1,0 +1,128 @@
+{
+  "schema": "scds-scenario-studio/1.0",
+  "studio_version": "1.10.0",
+  "alternative_limit": 100,
+  "default_alternatives": [
+    "Baseline",
+    "Conservative",
+    "Expected",
+    "Ambitious",
+    "Stress Test"
+  ],
+  "criteria": [
+    {
+      "id": "financial_value",
+      "label": "Financial value",
+      "metric": "npv",
+      "weight": 20,
+      "direction": "higher",
+      "normalization": "financial"
+    },
+    {
+      "id": "emissions_impact",
+      "label": "Emissions impact",
+      "metric": "annual_avoided_tco2e",
+      "weight": 18,
+      "direction": "higher",
+      "normalization": "emissions"
+    },
+    {
+      "id": "risk_resilience",
+      "label": "Risk and resilience",
+      "metric": "risk_score",
+      "weight": 16,
+      "direction": "lower",
+      "normalization": "risk"
+    },
+    {
+      "id": "evidence_confidence",
+      "label": "Evidence confidence",
+      "metric": "confidence",
+      "weight": 10,
+      "direction": "higher",
+      "normalization": "score"
+    },
+    {
+      "id": "stakeholder_equity",
+      "label": "Stakeholder and distributional impact",
+      "metric": "stakeholder_equity",
+      "weight": 10,
+      "direction": "higher",
+      "normalization": "score"
+    },
+    {
+      "id": "implementation_feasibility",
+      "label": "Implementation feasibility",
+      "metric": "implementation_feasibility",
+      "weight": 10,
+      "direction": "higher",
+      "normalization": "score"
+    },
+    {
+      "id": "reversibility",
+      "label": "Reversibility and option value",
+      "metric": "reversibility",
+      "weight": 8,
+      "direction": "higher",
+      "normalization": "score"
+    },
+    {
+      "id": "time_to_value",
+      "label": "Time to value",
+      "metric": "payback_years",
+      "weight": 8,
+      "direction": "lower",
+      "normalization": "payback"
+    }
+  ],
+  "supported_parameters": [
+    "capex",
+    "annualSavings",
+    "discountRate",
+    "modelYears",
+    "baselineEmissions",
+    "reductionRate",
+    "adoptionRate",
+    "exposure",
+    "vulnerability",
+    "resilience",
+    "stakeholderSensitivity",
+    "governanceReadiness",
+    "dataConfidence",
+    "socialBenefit",
+    "carbonPrice",
+    "reversibility",
+    "stakeholderEquity",
+    "implementationComplexity"
+  ],
+  "supported_metrics": [
+    "decision_score",
+    "npv",
+    "roi_percent",
+    "payback_years",
+    "annual_avoided_tco2e",
+    "total_avoided_tco2e",
+    "risk_score",
+    "confidence",
+    "stakeholder_equity",
+    "implementation_feasibility",
+    "reversibility",
+    "option_value"
+  ],
+  "analyses": [
+    "weighted and unweighted ranking",
+    "one-way sensitivity",
+    "two-variable screening grid",
+    "threshold and break-even search",
+    "uncertainty envelopes",
+    "time-horizon comparison",
+    "stakeholder distribution",
+    "dominance and tradeoff analysis",
+    "reversibility and option value"
+  ],
+  "workbench_boundary": "Decision Studio provides deterministic screening and comparison. Route probabilistic simulation, optimization, engineering models, and domain-specific forecasting to Workbench.",
+  "warnings": [
+    "Scenario outputs are conditional decision-support results, not forecasts or guarantees.",
+    "Ranges describe assumptions supplied by the user; they are not probability distributions unless modeled and validated elsewhere."
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "release": "1.10.0",
+  "release_name": "Advanced Scenario and Sensitivity Studio",
+  "release_date": "2026-07-16",
+  "build_fingerprint": "scds-v1.10.0-advanced-scenario-sensitivity",
+  "source_commit": "release-v1.10.0",
+  "schemas": {
+    "decision_packet": "scds-decision-packet/1.3",
+    "platform_artifact": "scds-platform-artifact/1.0",
+    "evidence_record": "scds-evidence-record/1.0",
+    "decision_governance": "scds-decision-governance/1.0",
+    "review_event": "scds-review-event/1.0",
+    "scenario_studio": "scds-scenario-studio/1.0"
+  },
+  "wordpress": {
+    "plugin_version": "1.10.0",
+    "database_version": "1.4.0",
+    "api_namespace": "scds/v1",
+    "scenario_storage": "projects.scenario_studio_json",
+    "governance_table_storage": "projects.governance_json"
+  },
+  "backend": {
+    "version": "1.10.0",
+    "root_dir": "backend",
+    "start_command": "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+  },
+  "platform_products": [
+    "knowledge-library",
+    "research-librarian",
+    "site-intelligence",
+    "workbench",
+    "research-lab",
+    "platform-core"
+  ],
+  "advanced_scenario_studio": {
+    "alternative_limit": 100,
+    "criteria_limit": 50,
+    "sensitivity_parameter_limit": 20,
+    "time_horizon_limit": 20,
+    "grid_point_range": [
+      3,
+      21
+    ],
+    "analyses": [
+      "weighted ranking",
+      "unweighted ranking",
+      "one-way sensitivity",
+      "tornado ranking",
+      "two-variable screening grid",
+      "threshold and break-even search",
+      "uncertainty envelopes",
+      "time-horizon comparison",
+      "stakeholder distribution",
+      "dominance analysis",
+      "reversibility and option value"
+    ],
+    "probabilistic_simulation_boundary": "Workbench",
+    "forecast_claims_allowed": false
+  },
+  "governance": {
+    "preserved": true,
+    "human_approval_required": true,
+    "immutable_review_history": true,
+    "governance_aware_export_restrictions": true,
+    "ai_approval_allowed": false
+  },
+  "limits": {
+    "max_request_bytes": 1048576,
+    "public_rate_limit": 60,
+    "window_seconds": 60,
+    "batch_import_maximum": 100,
+    "scenario_alternative_maximum": 100,
+    "scenario_grid_maximum": 21,
+    "governance_record_maximum": 100,
+    "review_history_maximum": 1000
+  },
+  "compatibility": {
+    "shortcodes_preserved": true,
+    "rest_routes_preserved": true,
+    "packet_schema_breaking_changes": false,
+    "typed_platform_artifacts": true,
+    "legacy_artifact_adapters_preserved": true,
+    "v1_8_handoff_contracts_preserved": true,
+    "v1_9_governance_preserved": true,
+    "advanced_scenario_studio": true
+  },
+  "checks": [
+    "backend tests",
+    "advanced scenario endpoint tests",
+    "custom alternative tests",
+    "weighted and unweighted ranking tests",
+    "one-way sensitivity tests",
+    "two-variable grid tests",
+    "threshold and break-even tests",
+    "stakeholder and option-value tests",
+    "time-horizon tests",
+    "Decision Packet persistence tests",
+    "export bundle tests",
+    "governance regression tests",
+    "backend compile",
+    "JavaScript syntax",
+    "PHP syntax",
+    "JSON validation",
+    "version parity",
+    "plugin package structure"
+  ]
+}

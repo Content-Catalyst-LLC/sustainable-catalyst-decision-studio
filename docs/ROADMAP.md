@@ -2,20 +2,18 @@
 
 ## Current release
 
-### v1.9.0 — Decision Governance and Review Center
+### v1.10.0 — Advanced Scenario and Sensitivity Studio
 
-- Add controlled decision states and transition rules.
-- Add named decision owners and reviewer assignments.
-- Add approval conditions, exception registers, conflict declarations, and human sign-offs.
-- Add append-only SHA-256 review-history chains with tamper verification.
-- Add approval expiration and reassessment dates.
-- Block reviewed and public exports when governance conditions are not satisfied.
-- Preserve v1.8.0 typed platform handoffs and all legacy adapters.
+- Compare up to 100 user-defined alternatives using weighted and unweighted criteria.
+- Define parameter ranges and run one-way sensitivity with tornado ranking.
+- Run two-variable screening grids and threshold or break-even searches.
+- Compare uncertainty envelopes and multiple time horizons without misrepresenting them as probabilistic forecasts.
+- Examine stakeholder distribution, dominance, reversibility, and option value.
+- Persist the studio in Decision Packet schema `scds-decision-packet/1.3` and include it in saved packets and exports.
+- Route probabilistic simulation, optimization, engineering models, and domain forecasting to Workbench.
+- Preserve v1.9.0 governance, v1.8.0 typed platform handoffs, public shortcodes, and legacy adapters.
 
 ## Planned releases
-
-### v1.10.0 — Advanced Scenario and Sensitivity Studio
-Add multi-option modeling, parameter ranges, sensitivity analysis, thresholds, uncertainty, distributional impacts, and deeper Workbench execution handoffs.
 
 ### v1.11.0 — Collaborative Decision Rooms
 Add WordPress-managed private workspaces, comments, revisions, snapshots, change requests, resolution tracking, and locked approved versions.

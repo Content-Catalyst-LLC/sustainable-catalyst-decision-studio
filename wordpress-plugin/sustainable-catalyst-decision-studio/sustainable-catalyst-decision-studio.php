@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Connected decision-governance and review workspace with typed evidence handoffs from Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core; legacy artifact adapters remain supported.
- * Version: 1.9.0
+ * Description: Advanced scenario, sensitivity, and decision-governance workspace with typed evidence handoffs from Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core; legacy artifact adapters remain supported.
+ * Version: 1.10.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.9.0';
-    const BUILD_FINGERPRINT = 'scds-v1.9.0-decision-governance';
-    const SOURCE_COMMIT = 'release-v1.9.0';
+    const VERSION = '1.10.0';
+    const BUILD_FINGERPRINT = 'scds-v1.10.0-advanced-scenario-sensitivity';
+    const SOURCE_COMMIT = 'release-v1.10.0';
     const RELEASE_DATE = '2026-07-16';
-    const DB_VERSION = '1.3.0';
+    const DB_VERSION = '1.4.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -93,6 +93,7 @@ class Sustainable_Catalyst_Decision_Studio {
             audit_json LONGTEXT,
             readiness_json LONGTEXT,
             scenario_comparison_json LONGTEXT,
+            scenario_studio_json LONGTEXT,
             workbench_handoff_json LONGTEXT,
             integrated_brief_json LONGTEXT,
             governance_json LONGTEXT,
@@ -149,6 +150,13 @@ class Sustainable_Catalyst_Decision_Studio {
             ['decision-brief-generator', 'Decision Brief Generator', 'validated'],
             ['brief-readiness-review-status', 'Brief Readiness / Review Status', 'validated'],
             ['scenario-comparison-matrix', 'Scenario Comparison Matrix', 'validated'],
+            ['advanced-scenario-studio', 'Advanced Scenario Studio', 'validated'],
+            ['one-way-sensitivity', 'One-Way Sensitivity Analysis', 'validated'],
+            ['multi-variable-sensitivity', 'Multi-Variable Sensitivity Grid', 'validated'],
+            ['threshold-break-even', 'Threshold and Break-Even Analysis', 'validated'],
+            ['uncertainty-envelopes', 'Uncertainty Envelopes', 'validated'],
+            ['stakeholder-distribution', 'Stakeholder Distribution Analysis', 'validated'],
+            ['time-horizon-option-value', 'Time Horizon and Option Value', 'validated'],
             ['workbench-handoff-router', 'Workbench Handoff Router', 'validated'],
             ['audit-trail-assumptions-log', 'Audit Trail / Assumptions Log', 'validated'],
             ['saved-decision-packets', 'Saved Decision Packets', 'validated'],
@@ -175,7 +183,7 @@ class Sustainable_Catalyst_Decision_Studio {
     public static function default_settings() {
         return [
             'brand_title' => 'Sustainable Catalyst Decision Studio',
-            'brand_subtitle' => 'Connected decision intelligence that brings evidence, analysis, named accountability, reviewers, approval conditions, exceptions, conflicts, sign-offs, and immutable review history into one auditable Decision Packet.',
+            'brand_subtitle' => 'Connected decision intelligence for comparing alternatives, testing assumptions, finding thresholds, reviewing uncertainty, and governing approval in one auditable Decision Packet.',
             'methodology_note' => 'AI in the toolkit, never in control. Outputs are decision-support drafts and educational analyses, not legal, financial, engineering, medical, sustainability assurance, tax, compliance, or investment advice.',
             'backend_url' => '',
             'backend_api_key' => '',
@@ -266,6 +274,11 @@ class Sustainable_Catalyst_Decision_Studio {
             'restReviewStatusUrl' => esc_url_raw(rest_url('scds/v1/review/status')),
             'restScenarioComparisonUrl' => esc_url_raw(rest_url('scds/v1/scenario-comparison')),
             'restDecisionPacketScenarioComparisonUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/scenario-comparison')),
+            'restScenarioStudioTemplateUrl' => esc_url_raw(rest_url('scds/v1/scenario-studio/template')),
+            'restScenarioStudioAnalyzeUrl' => esc_url_raw(rest_url('scds/v1/scenario-studio/analyze')),
+            'restScenarioStudioSensitivityUrl' => esc_url_raw(rest_url('scds/v1/scenario-studio/sensitivity')),
+            'restScenarioStudioThresholdUrl' => esc_url_raw(rest_url('scds/v1/scenario-studio/threshold')),
+            'restDecisionPacketScenarioStudioUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/scenario-studio')),
             'restWorkbenchHandoffCatalogUrl' => esc_url_raw(rest_url('scds/v1/workbench/handoffs')),
             'restWorkbenchHandoffUrl' => esc_url_raw(rest_url('scds/v1/workbench/handoff')),
             'restDecisionPacketWorkbenchHandoffUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/workbench-handoff')),
@@ -357,7 +370,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 ['title'=>'Typed platform artifacts','description'=>'Validate the additive scds-platform-artifact/1.0 envelope across six current Sustainable Catalyst products.'],
                 ['title'=>'Unified evidence registry','description'=>'Retain source identity, methodology, freshness, confidence, citations, evidence notes, and transformation history.'],
                 ['title'=>'Integrity verification','description'=>'Calculate canonical payload hashes and flag supplied hashes that do not match the imported artifact.'],
-                ['title'=>'Decision Packet workspace','description'=>'Use scds-decision-packet/1.2 to hold platform handoffs, evidence, assumptions, scenarios, experiments, calculations, entities, provenance, and audit records.'],
+                ['title'=>'Decision Packet workspace','description'=>'Use scds-decision-packet/1.3 to hold platform handoffs, evidence, assumptions, scenarios, experiments, calculations, entities, provenance, and audit records.'],
                 ['title'=>'Batch and legacy import','description'=>'Import multiple typed artifacts while preserving compatibility with earlier Catalyst module exports.'],
                 ['title'=>'Readiness and scenario review','description'=>'Evaluate evidence completeness, compare alternatives, surface unresolved issues, and route deeper modeling to Workbench.'],
                 ['title'=>'Saved packets and export center','description'=>'Save working packets and export JSON, Markdown, HTML, audit, readiness, scenario, and handoff artifacts.'],
@@ -450,7 +463,7 @@ class Sustainable_Catalyst_Decision_Studio {
                     </article>
                 <?php endforeach; ?>
             </div>
-            <div class="scds-note"><strong>v1.9.0 contract:</strong> <code>scds-platform-artifact/1.0</code> is additive. Legacy Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, and Grit JSON exports remain importable through compatibility adapters.</div>
+            <div class="scds-note"><strong>v1.10.0 contract:</strong> <code>scds-platform-artifact/1.0</code> is additive. Legacy Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, and Grit JSON exports remain importable through compatibility adapters.</div>
             <div class="scds-import-box">
                 <div class="scds-panel-head scds-panel-head-small">
                     <p class="scds-section-kicker">Typed artifact import</p>
@@ -502,7 +515,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Quality gates before export</h3>
                 <p>Review whether the Decision Packet is ready for a draft brief, reviewed export, or further evidence work. The readiness gate checks framing, evidence, scenarios, impact, claims, finance, recovery, audit/provenance, and synthesis.</p>
             </div>
-            <div class="scds-note"><strong>v1.9.0:</strong> readiness scoring now surfaces section status, unresolved issues, required reviews, and export gates. It is a workflow quality screen, not approval or professional signoff.</div>
+            <div class="scds-note"><strong>v1.10.0:</strong> readiness scoring now surfaces section status, unresolved issues, required reviews, and export gates. It is a workflow quality screen, not approval or professional signoff.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-readiness>Check Brief Readiness</button>
                 <button type="button" class="scds-button" data-scds-generate-review-status>Generate Review Status</button>
@@ -577,18 +590,57 @@ class Sustainable_Catalyst_Decision_Studio {
 
     private function render_panel_scenario($mode) { ?>
         <section class="scds-panel" data-scds-panel="scenario">
-            <div class="scds-panel-head"><p class="scds-section-kicker">Scenario comparison</p><h3>Compare options, deltas, tradeoffs, and readiness before the brief</h3><p>Generate a normalized comparison matrix across baseline, conservative, expected, ambitious, stress-test, or imported scenario artifacts.</p></div>
-            <div class="scds-form-grid"><label>Savings uncertainty (%)<input type="number" data-scds-field="savingsVolatility" value="15" min="0" max="100"></label><label>CAPEX uncertainty (%)<input type="number" data-scds-field="capexVolatility" value="18" min="0" max="100"></label><label>Carbon price assumption ($/tCO₂e)<input type="number" data-scds-field="carbonPrice" value="45" min="0" step="1"></label><label>Social benefit score (0–100)<input type="number" data-scds-field="socialBenefit" value="58" min="0" max="100"></label></div>
-            <div class="scds-note"><strong>v1.9.0:</strong> scenario comparison now ranks options, shows deltas versus baseline, adds tradeoff notes, and identifies Workbench handoff candidates for deeper modeling.</div>
-            <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-scenario-compare>Compare Scenarios</button><button type="button" class="scds-button" data-scds-export-scenario-json>Download Scenario JSON</button><button type="button" class="scds-button" data-scds-workbench-handoff>Recommend Workbench Handoffs</button></div>
-            <div class="scds-scenario-comparison" data-scds-scenario-output></div>
+            <div class="scds-panel-head">
+                <p class="scds-section-kicker">Advanced Scenario &amp; Sensitivity Studio</p>
+                <h3>Compare alternatives, vary assumptions, find thresholds, and inspect uncertainty</h3>
+                <p>Model any number of alternatives, apply weighted criteria, run one-way and two-variable sensitivity screens, search for break-even points, compare time horizons, and review stakeholder distribution and reversibility.</p>
+            </div>
+            <div class="scds-note"><strong>v1.10.0:</strong> scenario analysis is now an auditable studio rather than a fixed comparison table. Screening outputs remain conditional on the assumptions entered and should be routed to Workbench for probabilistic simulation, optimization, engineering, or domain forecasting.</div>
+            <div class="scds-scenario-studio-grid">
+                <label>Alternatives JSON
+                    <textarea rows="12" data-scds-scenario-alternatives><?php echo esc_textarea(wp_json_encode([
+                        ['id'=>'conservative','label'=>'Conservative','parameters'=>['capex'=>850000,'annualSavings'=>145000,'reductionRate'=>24,'adoptionRate'=>52],'reversibility'=>78,'stakeholderEquity'=>55,'implementationComplexity'=>'Low'],
+                        ['id'=>'expected','label'=>'Expected','parameters'=>[],'reversibility'=>60,'stakeholderEquity'=>62,'implementationComplexity'=>'Medium'],
+                        ['id'=>'ambitious','label'=>'Ambitious','parameters'=>['capex'=>1120000,'annualSavings'=>235000,'reductionRate'=>44,'adoptionRate'=>82],'reversibility'=>38,'stakeholderEquity'=>74,'implementationComplexity'=>'High']
+                    ], JSON_PRETTY_PRINT)); ?></textarea>
+                </label>
+                <label>Parameter ranges JSON
+                    <textarea rows="12" data-scds-scenario-ranges><?php echo esc_textarea(wp_json_encode([
+                        'capex'=>['min'=>700000,'max'=>1250000,'steps'=>5],
+                        'annualSavings'=>['min'=>100000,'max'=>280000,'steps'=>5],
+                        'adoptionRate'=>['min'=>45,'max'=>90,'steps'=>5]
+                    ], JSON_PRETTY_PRINT)); ?></textarea>
+                </label>
+                <label>Criteria JSON
+                    <textarea rows="12" data-scds-scenario-criteria><?php echo esc_textarea(wp_json_encode($this->scenario_studio_criteria(), JSON_PRETTY_PRINT)); ?></textarea>
+                </label>
+            </div>
+            <div class="scds-form-grid scds-scenario-controls">
+                <label>Sensitivity parameters<input type="text" data-scds-sensitivity-parameters value="capex, annualSavings, adoptionRate"></label>
+                <label>Break-even parameter<select data-scds-threshold-parameter><option value="annualSavings">Annual savings</option><option value="capex">CAPEX</option><option value="adoptionRate">Adoption rate</option><option value="reductionRate">Reduction rate</option><option value="discountRate">Discount rate</option></select></label>
+                <label>Target metric<select data-scds-threshold-metric><option value="npv">NPV</option><option value="decision_score">Decision score</option><option value="annual_avoided_tco2e">Annual avoided emissions</option><option value="risk_score">Risk score</option></select></label>
+                <label>Target value<input type="number" data-scds-threshold-value value="0" step="any"></label>
+                <label>Time horizons<input type="text" data-scds-time-horizons value="1, 3, 5, 10"></label>
+                <label>Grid points<input type="number" data-scds-grid-points value="5" min="3" max="21"></label>
+            </div>
+            <div class="scds-actions">
+                <button type="button" class="scds-button scds-button-primary" data-scds-scenario-studio-run>Run Advanced Scenario Studio</button>
+                <button type="button" class="scds-button" data-scds-scenario-studio-sensitivity>Run Sensitivity</button>
+                <button type="button" class="scds-button" data-scds-scenario-studio-threshold>Find Break-Even</button>
+                <button type="button" class="scds-button" data-scds-scenario-studio-sample>Restore Sample</button>
+                <button type="button" class="scds-button" data-scds-export-scenario-studio-json>Download Studio JSON</button>
+                <button type="button" class="scds-button" data-scds-scenario-compare>Compatibility Matrix</button>
+                <button type="button" class="scds-button" data-scds-workbench-handoff>Recommend Workbench Handoffs</button>
+            </div>
+            <div class="scds-scenario-studio-output" data-scds-scenario-studio-output></div>
+            <details class="scds-compatibility-details"><summary>Compatibility scenario matrix</summary><div class="scds-scenario-comparison" data-scds-scenario-output></div></details>
         </section>
     <?php }
 
     private function render_panel_handoff($mode) { ?>
         <section class="scds-panel" data-scds-panel="handoff">
             <div class="scds-panel-head"><p class="scds-section-kicker">Workbench handoff</p><h3>Send deeper calculations, graphs, and technical checks to Workbench</h3><p>Decision Studio synthesizes the decision. Workbench performs deeper symbolic, graph, engineering, scenario, risk, economics, environmental QA/QC, and domain-specific analysis.</p></div>
-            <div class="scds-note"><strong>v1.9.0:</strong> handoff recommendations include tool IDs, reasons, priorities, shortcodes, and a payload summary that can be used to continue analysis in Workbench.</div>
+            <div class="scds-note"><strong>v1.10.0:</strong> handoff recommendations include tool IDs, reasons, priorities, shortcodes, and a payload summary that can be used to continue analysis in Workbench.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-workbench-handoff>Generate Workbench Handoff Plan</button><button type="button" class="scds-button" data-scds-export-handoff-json>Download Handoff JSON</button><button type="button" class="scds-button" data-scds-scenario-compare>Refresh Scenario Matrix</button></div>
             <div class="scds-workbench-handoff" data-scds-handoff-output></div>
         </section>
@@ -602,7 +654,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Save the packet, reload prior work, and export the full decision bundle</h3>
                 <p>Decision Studio can preserve the current Decision Packet as a browser-saved working record, generate a complete export bundle, and prepare JSON, Markdown, HTML, audit, readiness, scenario, and Workbench handoff exports.</p>
             </div>
-            <div class="scds-note"><strong>v1.9.0:</strong> saved packets are working records for review and continuation. Reviewed and public exports are governed by the current approval gate; internal draft exports remain available for controlled working use.</div>
+            <div class="scds-note"><strong>v1.10.0:</strong> saved packets are working records for review and continuation. Reviewed and public exports are governed by the current approval gate; internal draft exports remain available for controlled working use.</div>
             <div class="scds-form-grid scds-export-controls">
                 <label>Export audience
                     <select data-scds-export-audience>
@@ -640,7 +692,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Professional decision memo from the full Decision Packet</h3>
                 <p>Generate a structured brief that synthesizes framing, evidence, scenarios, impact records, claim review, finance, recovery, four-pillar scores, audit/provenance, and Workbench handoffs.</p>
             </div>
-            <div class="scds-note"><strong>v1.9.0:</strong> the brief generator now includes readiness status, scenario comparison matrix, Workbench handoff details, audit appendix summary, and Markdown/HTML/JSON exports.</div>
+            <div class="scds-note"><strong>v1.10.0:</strong> the brief generator now includes readiness status, scenario comparison matrix, Workbench handoff details, audit appendix summary, and Markdown/HTML/JSON exports.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-integrated-brief>Generate Integrated Brief</button>
                 <button type="button" class="scds-button" data-scds-run>Generate Basic Brief</button>
@@ -665,7 +717,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Decision packet ledger, sources, assumptions, calculations, claims, changes, and review status</h3>
                 <p>Generate a structured audit appendix that shows what was entered, which module artifacts are present, which sources support the decision, which calculations were used, and which assumptions still require review.</p>
             </div>
-            <div class="scds-note"><strong>v1.9.0:</strong> audit works with the readiness gate so unresolved evidence, source, calculation, finance, claim, and review issues can be surfaced before export.</div>
+            <div class="scds-note"><strong>v1.10.0:</strong> audit works with the readiness gate so unresolved evidence, source, calculation, finance, claim, and review issues can be surfaced before export.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-audit-generate>Generate Audit Appendix</button><button type="button" class="scds-button" data-scds-export-audit-json>Download Audit JSON</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div>
             <div class="scds-audit-list" data-scds-audit></div>
             <div class="scds-workbench-links" data-scds-workbench-links></div>
@@ -712,7 +764,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
 
     public function render_admin_integrations() {
-        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.9.0 maps specialized modules into one Decision Packet, compares scenarios, routes deeper analysis to Workbench, and prepares saved packet/export workflows.');
+        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.10.0 maps specialized modules into one Decision Packet, compares scenarios, routes deeper analysis to Workbench, and prepares saved packet/export workflows.');
         echo '<p>Use this map as the integration contract for the next build: module artifact exports should feed the Decision Packet sections listed below.</p>';
         echo '<table class="widefat striped"><thead><tr><th>Step</th><th>Module</th><th>Role</th><th>Feeds Decision Packet</th><th>URL</th></tr></thead><tbody>';
         foreach ($this->module_integrations() as $m) {
@@ -733,7 +785,7 @@ class Sustainable_Catalyst_Decision_Studio {
     }
 
     public function render_admin_templates() { $this->admin_wrap_start('Scenario Templates', 'Bundled scenario structures for sustainability decisions.'); $this->render_csv_table($this->scenario_templates()); $this->admin_wrap_end(); }
-    public function render_admin_scenario_handoff() { $this->admin_wrap_start('Scenario Comparison and Workbench Handoff', 'v1.9.0 quality layer for comparing options, routing deeper analysis to Workbench, and feeding export bundles.'); echo '<p><strong>Endpoints:</strong> /scenario-comparison, /decision-packet/scenario-comparison, /workbench/handoff, /decision-packet/workbench-handoff.</p>'; echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($this->workbench_handoff_catalog(), JSON_PRETTY_PRINT)) . '</pre>'; $this->admin_wrap_end(); }
+    public function render_admin_scenario_handoff() { $this->admin_wrap_start('Scenario Comparison and Workbench Handoff', 'v1.10.0 advanced scenario layer for comparing alternatives, testing sensitivity and thresholds, routing deeper computation to Workbench, and feeding governed export bundles.'); echo '<p><strong>Endpoints:</strong> /scenario-studio/template, /scenario-studio/analyze, /scenario-studio/sensitivity, /scenario-studio/threshold, /decision-packet/scenario-studio, /workbench/handoff, /decision-packet/workbench-handoff.</p>'; echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($this->workbench_handoff_catalog(), JSON_PRETTY_PRINT)) . '</pre>'; $this->admin_wrap_end(); }
     public function render_admin_scorecard() { $this->admin_wrap_start('Scorecard Builder', 'Default indicators and weights for four-pillar decision support.'); $this->render_csv_table($this->scorecard_rows()); $this->admin_wrap_end(); }
     public function render_admin_reports() { $this->admin_wrap_start('Report Templates', 'Decision brief structure used by the public interface and backend.'); echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html($this->report_template_markdown()) . '</pre>'; $this->admin_wrap_end(); }
 
@@ -779,7 +831,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
 
     public function render_admin_public_pages() {
-        $this->admin_wrap_start('Public Landing & Demo', 'Decision Studio v1.9.0 launch-ready public page structure, demo flow, and shortcode guidance.');
+        $this->admin_wrap_start('Public Landing & Demo', 'Decision Studio v1.10.0 launch-ready public page structure, demo flow, and shortcode guidance.');
         $template = $this->public_landing_template();
         echo '<h2>Recommended public shortcodes</h2><textarea readonly style="width:100%;height:120px">[sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]&#10;[sc_decision_studio mode="demo" title="Decision Studio Demo"]&#10;[sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]&#10;[sc_decision_studio mode="export" title="Decision Studio Export Center"]</textarea>';
         echo '<h2>Workflow copy</h2><p><strong>Use Canvas to frame. Use Data to anchor. Use Analytics R to model. Use Global Impact to measure. Use Narrative Risk to review. Use Finance to evaluate. Use Grit to sustain. Use Decision Studio to decide.</strong></p>';
@@ -862,16 +914,17 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Decision Governance and Review Center',
+            'release_name'=>'Advanced Scenario and Sensitivity Studio',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
             'database_version'=>self::DB_VERSION,
-            'decision_packet_schema'=>'scds-decision-packet/1.2',
+            'decision_packet_schema'=>'scds-decision-packet/1.3',
             'platform_artifact_schema'=>'scds-platform-artifact/1.0',
             'evidence_record_schema'=>'scds-evidence-record/1.0',
             'governance_schema'=>'scds-decision-governance/1.0',
             'review_event_schema'=>'scds-review-event/1.0',
+            'scenario_studio_schema'=>'scds-scenario-studio/1.0',
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
                 'backend'=>self::VERSION,
@@ -882,6 +935,10 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'legacy_artifact_adapters_preserved'=>true,
                 'governance_center'=>true,
                 'immutable_review_history'=>true,
+                'advanced_scenario_studio'=>true,
+                'one_way_sensitivity'=>true,
+                'multi_variable_sensitivity'=>true,
+                'threshold_break_even_analysis'=>true,
             ],
         ];
     }
@@ -956,6 +1013,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/scenario-comparison/template', ['methods'=>'GET','callback'=>[$this,'rest_scenario_comparison_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/scenario-comparison', ['methods'=>'POST','callback'=>[$this,'rest_scenario_comparison'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/scenario-comparison', ['methods'=>'POST','callback'=>[$this,'rest_scenario_comparison'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/scenario-studio/template', ['methods'=>'GET','callback'=>[$this,'rest_scenario_studio_template'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/scenario-studio/analyze', ['methods'=>'POST','callback'=>[$this,'rest_scenario_studio_analyze'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/scenario-studio/sensitivity', ['methods'=>'POST','callback'=>[$this,'rest_scenario_studio_sensitivity'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/scenario-studio/threshold', ['methods'=>'POST','callback'=>[$this,'rest_scenario_studio_threshold'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/scenario-studio', ['methods'=>'POST','callback'=>[$this,'rest_scenario_studio_analyze'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/workbench/handoffs', ['methods'=>'GET','callback'=>[$this,'rest_workbench_handoffs'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/workbench/handoff', ['methods'=>'POST','callback'=>[$this,'rest_workbench_handoff'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/workbench-handoff', ['methods'=>'POST','callback'=>[$this,'rest_workbench_handoff'],'permission_callback'=>'__return_true']);
@@ -1079,6 +1141,21 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         return rest_ensure_response($this->generate_scenario_comparison($inputs, $results, $packet, $scenarios));
     }
 
+    public function rest_scenario_studio_template() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'template'=>$this->scenario_studio_template()]); }
+
+    private function rest_scenario_studio_proxy(WP_REST_Request $request, $backend_path, $mode) {
+        $payload = $request->get_json_params(); if(!is_array($payload)) $payload=[];
+        if ($this->settings()['backend_enabled']==='1' && !empty($this->settings()['backend_url'])) {
+            $backend=$this->backend_request($backend_path,$payload);
+            if(!is_wp_error($backend)&&is_array($backend)) return rest_ensure_response($backend);
+        }
+        $inputs=isset($payload['inputs'])&&is_array($payload['inputs'])?$payload['inputs']:[];
+        return rest_ensure_response($this->generate_scenario_studio($inputs,$payload,$mode));
+    }
+    public function rest_scenario_studio_analyze(WP_REST_Request $request) { return $this->rest_scenario_studio_proxy($request,'/scenario-studio/analyze','full'); }
+    public function rest_scenario_studio_sensitivity(WP_REST_Request $request) { return $this->rest_scenario_studio_proxy($request,'/scenario-studio/sensitivity','sensitivity'); }
+    public function rest_scenario_studio_threshold(WP_REST_Request $request) { return $this->rest_scenario_studio_proxy($request,'/scenario-studio/threshold','threshold'); }
+
     public function rest_workbench_handoffs() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'catalog'=>$this->workbench_handoff_catalog()]); }
 
     public function rest_workbench_handoff(WP_REST_Request $request) {
@@ -1108,12 +1185,13 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         $audit = isset($payload['audit']) && is_array($payload['audit']) ? $payload['audit'] : $this->generate_audit_provenance($inputs,$results,['packet'=>$packet])['audit'];
         $readiness = isset($payload['readiness']) && is_array($payload['readiness']) ? $payload['readiness'] : $this->generate_brief_readiness($inputs,$results,$packet,$audit)['readiness'];
         $scenario = isset($payload['scenarioComparison']) && is_array($payload['scenarioComparison']) ? $payload['scenarioComparison'] : $this->generate_scenario_comparison($inputs,$results,$packet,[])['scenario_comparison'];
+        $scenario_studio = isset($payload['scenarioStudio']) && is_array($payload['scenarioStudio']) ? $payload['scenarioStudio'] : ($packet['scenario_studio'] ?? $this->generate_scenario_studio($inputs,['packet'=>$packet],'full')['scenario_studio']); $packet['scenario_studio']=$scenario_studio;
         $handoff = isset($payload['workbenchHandoff']) && is_array($payload['workbenchHandoff']) ? $payload['workbenchHandoff'] : $this->generate_workbench_handoff($inputs,$results,$packet,$scenario,$readiness)['workbench_handoff'];
         $briefData = isset($payload['integratedBrief']) && is_array($payload['integratedBrief']) ? $payload['integratedBrief'] : $this->generate_integrated_brief($inputs,$results,$packet,$audit);
         $brief = isset($briefData['brief']) ? $briefData['brief'] : $briefData;
         $title = sanitize_text_field($payload['title'] ?? ($packet['project']['project_name'] ?? ($inputs['projectName'] ?? 'Decision Packet')));
         $governance=$packet['governance_center'] ?? $this->governance_template(); $requested_status=sanitize_key($payload['status'] ?? 'draft'); $governance_status=sanitize_key($governance['current_state'] ?? $requested_status); $saved_status=($requested_status==='draft'&&$governance_status!=='draft')?$governance_status:$requested_status;
-        $saved = ['packet_version'=>self::VERSION,'decision_packet_id'=>$packet['decision_packet_id'] ?? ('SCDS-' . strtoupper(substr(preg_replace('/[^A-Za-z0-9]/','',$title),0,10)) . '-DRAFT'),'title'=>$title,'project_name'=>$title,'decision_question'=>$packet['project']['decision_question'] ?? ($inputs['decisionQuestion'] ?? ''),'status'=>$saved_status,'inputs'=>$inputs,'results'=>$results,'decision_packet'=>$packet,'audit'=>$audit,'readiness'=>$readiness,'scenario_comparison'=>$scenario,'workbench_handoff'=>$handoff,'integrated_brief'=>$brief,'governance'=>$packet['governance_center'] ?? $this->governance_template(),'notes'=>sanitize_textarea_field($payload['notes'] ?? ''),'warnings'=>['Saved packet is a working record, not approval or professional signoff.']];
+        $saved = ['packet_version'=>self::VERSION,'decision_packet_id'=>$packet['decision_packet_id'] ?? ('SCDS-' . strtoupper(substr(preg_replace('/[^A-Za-z0-9]/','',$title),0,10)) . '-DRAFT'),'title'=>$title,'project_name'=>$title,'decision_question'=>$packet['project']['decision_question'] ?? ($inputs['decisionQuestion'] ?? ''),'status'=>$saved_status,'inputs'=>$inputs,'results'=>$results,'decision_packet'=>$packet,'audit'=>$audit,'readiness'=>$readiness,'scenario_comparison'=>$scenario,'scenario_studio'=>$scenario_studio,'workbench_handoff'=>$handoff,'integrated_brief'=>$brief,'governance'=>$packet['governance_center'] ?? $this->governance_template(),'notes'=>sanitize_textarea_field($payload['notes'] ?? ''),'warnings'=>['Saved packet is a working record, not approval or professional signoff.']];
         return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'saved_packet'=>$saved,'export_center'=>$this->export_center_template()]);
     }
 
@@ -1125,12 +1203,13 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         $audit = isset($payload['audit']) && is_array($payload['audit']) ? $payload['audit'] : $this->generate_audit_provenance($inputs,$results,['packet'=>$packet])['audit'];
         $readiness = isset($payload['readiness']) && is_array($payload['readiness']) ? $payload['readiness'] : $this->generate_brief_readiness($inputs,$results,$packet,$audit)['readiness'];
         $scenario = isset($payload['scenarioComparison']) && is_array($payload['scenarioComparison']) ? $payload['scenarioComparison'] : $this->generate_scenario_comparison($inputs,$results,$packet,[])['scenario_comparison'];
+        $scenario_studio = isset($payload['scenarioStudio']) && is_array($payload['scenarioStudio']) ? $payload['scenarioStudio'] : ($packet['scenario_studio'] ?? $this->generate_scenario_studio($inputs,['packet'=>$packet],'full')['scenario_studio']); $packet['scenario_studio']=$scenario_studio;
         $handoff = isset($payload['workbenchHandoff']) && is_array($payload['workbenchHandoff']) ? $payload['workbenchHandoff'] : $this->generate_workbench_handoff($inputs,$results,$packet,$scenario,$readiness)['workbench_handoff'];
         $briefData = isset($payload['integratedBrief']) && is_array($payload['integratedBrief']) ? $payload['integratedBrief'] : $this->generate_integrated_brief($inputs,$results,$packet,$audit);
         $brief = isset($briefData['brief']) ? $briefData['brief'] : $briefData;
         $governance = isset($payload['governance']) && is_array($payload['governance']) ? $payload['governance'] : ($packet['governance_center'] ?? $this->governance_template()); $packet['governance_center']=$governance;
         $audience = sanitize_key($payload['exportAudience'] ?? 'internal'); $gate = is_array($governance['export_gate'] ?? null) ? $governance['export_gate'] : []; if($audience==='reviewed' && empty($gate['reviewed_export_allowed'])) return new WP_Error('scds_governance_export_blocked','Reviewed export is blocked by the current decision-governance state.',['status'=>409,'export_audience'=>$audience,'governance_export_gate'=>$gate]); if($audience==='public' && empty($gate['public_export_allowed'])) return new WP_Error('scds_governance_export_blocked','Public export is blocked by the current decision-governance state.',['status'=>409,'export_audience'=>$audience,'governance_export_gate'=>$gate]);
-        $bundle = ['bundle_version'=>self::VERSION,'label'=>sanitize_text_field($payload['exportLabel'] ?? 'Decision Studio Export Bundle'),'export_audience'=>$audience,'release_classification'=>($audience==='internal'&&empty($gate['reviewed_export_allowed']))?'internal_draft':$audience,'decision_packet_id'=>$packet['decision_packet_id'] ?? ($audit['decision_packet_id'] ?? 'SCDS-DRAFT'),'project_name'=>$packet['project']['project_name'] ?? ($inputs['projectName'] ?? 'Decision project'),'decision_question'=>$packet['project']['decision_question'] ?? ($inputs['decisionQuestion'] ?? ''),'exports'=>['decision_packet_json'=>$packet,'inputs_json'=>$inputs,'results_json'=>$results,'integrated_brief_json'=>$brief,'integrated_brief_markdown'=>$this->integrated_brief_markdown($brief),'integrated_brief_html'=>$this->integrated_brief_html($brief),'audit_json'=>$audit,'readiness_json'=>$readiness,'scenario_comparison_json'=>$scenario,'workbench_handoff_json'=>$handoff,'governance_json'=>$governance],'export_manifest'=>$this->export_center_template()['exports'],'warnings'=>$this->export_center_template()['warnings'],'governance_export_gate'=>$governance['export_gate'] ?? []];
+        $bundle = ['bundle_version'=>self::VERSION,'label'=>sanitize_text_field($payload['exportLabel'] ?? 'Decision Studio Export Bundle'),'export_audience'=>$audience,'release_classification'=>($audience==='internal'&&empty($gate['reviewed_export_allowed']))?'internal_draft':$audience,'decision_packet_id'=>$packet['decision_packet_id'] ?? ($audit['decision_packet_id'] ?? 'SCDS-DRAFT'),'project_name'=>$packet['project']['project_name'] ?? ($inputs['projectName'] ?? 'Decision project'),'decision_question'=>$packet['project']['decision_question'] ?? ($inputs['decisionQuestion'] ?? ''),'exports'=>['decision_packet_json'=>$packet,'inputs_json'=>$inputs,'results_json'=>$results,'integrated_brief_json'=>$brief,'integrated_brief_markdown'=>$this->integrated_brief_markdown($brief),'integrated_brief_html'=>$this->integrated_brief_html($brief),'audit_json'=>$audit,'readiness_json'=>$readiness,'scenario_comparison_json'=>$scenario,'scenario_studio_json'=>$scenario_studio,'workbench_handoff_json'=>$handoff,'governance_json'=>$governance],'export_manifest'=>$this->export_center_template()['exports'],'warnings'=>$this->export_center_template()['warnings'],'governance_export_gate'=>$governance['export_gate'] ?? []];
         return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'export_bundle'=>$bundle,'export_center'=>$this->export_center_template()]);
     }
 
@@ -1138,17 +1217,17 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         global $wpdb; $payload = $request->get_json_params(); if(!is_array($payload)) $payload=[];
         $saved = $this->rest_packet_save_template($request)->get_data()['saved_packet'];
         $table=$wpdb->prefix.self::PROJECTS_TABLE;
-        $wpdb->insert($table,['project_name'=>$saved['project_name'],'sector'=>$saved['inputs']['sector'] ?? '','location'=>$saved['inputs']['location'] ?? '','decision_question'=>$saved['decision_question'],'status'=>$saved['status'],'inputs_json'=>wp_json_encode($saved['inputs']),'results_json'=>wp_json_encode($saved['results']),'packet_json'=>wp_json_encode($saved['decision_packet']),'audit_json'=>wp_json_encode($saved['audit']),'readiness_json'=>wp_json_encode($saved['readiness']),'scenario_comparison_json'=>wp_json_encode($saved['scenario_comparison']),'workbench_handoff_json'=>wp_json_encode($saved['workbench_handoff']),'integrated_brief_json'=>wp_json_encode($saved['integrated_brief']),'governance_json'=>wp_json_encode($saved['governance'] ?? []),'export_bundle_json'=>'','updated_at'=>current_time('mysql')]);
+        $wpdb->insert($table,['project_name'=>$saved['project_name'],'sector'=>$saved['inputs']['sector'] ?? '','location'=>$saved['inputs']['location'] ?? '','decision_question'=>$saved['decision_question'],'status'=>$saved['status'],'inputs_json'=>wp_json_encode($saved['inputs']),'results_json'=>wp_json_encode($saved['results']),'packet_json'=>wp_json_encode($saved['decision_packet']),'audit_json'=>wp_json_encode($saved['audit']),'readiness_json'=>wp_json_encode($saved['readiness']),'scenario_comparison_json'=>wp_json_encode($saved['scenario_comparison']),'scenario_studio_json'=>wp_json_encode($saved['scenario_studio']??[]),'workbench_handoff_json'=>wp_json_encode($saved['workbench_handoff']),'integrated_brief_json'=>wp_json_encode($saved['integrated_brief']),'governance_json'=>wp_json_encode($saved['governance'] ?? []),'export_bundle_json'=>'','updated_at'=>current_time('mysql')]);
         return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'id'=>$wpdb->insert_id,'saved_packet'=>$saved]);
     }
     public function rest_list_packets() { global $wpdb; $table=$wpdb->prefix.self::PROJECTS_TABLE; $rows=$wpdb->get_results("SELECT id,project_name,sector,location,decision_question,status,created_at,updated_at FROM $table ORDER BY id DESC LIMIT 100", ARRAY_A); return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'packets'=>$rows ?: []]); }
-    public function rest_get_packet(WP_REST_Request $request) { global $wpdb; $id=intval($request['id']); $table=$wpdb->prefix.self::PROJECTS_TABLE; $row=$wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id=%d",$id), ARRAY_A); if(!$row) return new WP_Error('not_found','Packet not found',['status'=>404]); foreach(['inputs_json','results_json','packet_json','audit_json','readiness_json','scenario_comparison_json','workbench_handoff_json','integrated_brief_json','governance_json','export_bundle_json'] as $k){ if(isset($row[$k])) $row[$k]=json_decode($row[$k], true); } return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'packet'=>$row]); }
+    public function rest_get_packet(WP_REST_Request $request) { global $wpdb; $id=intval($request['id']); $table=$wpdb->prefix.self::PROJECTS_TABLE; $row=$wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id=%d",$id), ARRAY_A); if(!$row) return new WP_Error('not_found','Packet not found',['status'=>404]); foreach(['inputs_json','results_json','packet_json','audit_json','readiness_json','scenario_comparison_json','scenario_studio_json','workbench_handoff_json','integrated_brief_json','governance_json','export_bundle_json'] as $k){ if(isset($row[$k])) $row[$k]=json_decode($row[$k], true); } return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'packet'=>$row]); }
     public function rest_delete_packet(WP_REST_Request $request) { global $wpdb; $id=intval($request['id']); $table=$wpdb->prefix.self::PROJECTS_TABLE; $wpdb->delete($table,['id'=>$id],['%d']); return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'deleted_id'=>$id]); }
     public function rest_export_packet_json(WP_REST_Request $request) { $res=$this->rest_get_packet($request); if(is_wp_error($res)) return $res; $data=$res->get_data(); return new WP_REST_Response(wp_json_encode($data, JSON_PRETTY_PRINT), 200, ['Content-Type'=>'application/json; charset=utf-8','Content-Disposition'=>'attachment; filename="decision-studio-packet-'.$request['id'].'-v'.self::VERSION.'.json"']); }
 
-    public function rest_health() { return rest_ensure_response(['ok'=>true,'ready'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio','build_fingerprint'=>self::BUILD_FINGERPRINT,'database_version'=>(string)get_option(self::DB_VERSION_OPTION,'not-recorded'),'installed_version'=>(string)get_option(self::INSTALLED_VERSION_OPTION,'not-recorded'),'limits'=>['max_request_bytes'=>self::MAX_PUBLIC_REQUEST_BYTES,'public_rate_limit'=>self::PUBLIC_RATE_LIMIT],'governance_schema'=>'scds-decision-governance/1.0','review_event_schema'=>'scds-review-event/1.0','release'=>$this->release_manifest()]); }
+    public function rest_health() { return rest_ensure_response(['ok'=>true,'ready'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio','build_fingerprint'=>self::BUILD_FINGERPRINT,'database_version'=>(string)get_option(self::DB_VERSION_OPTION,'not-recorded'),'installed_version'=>(string)get_option(self::INSTALLED_VERSION_OPTION,'not-recorded'),'limits'=>['max_request_bytes'=>self::MAX_PUBLIC_REQUEST_BYTES,'public_rate_limit'=>self::PUBLIC_RATE_LIMIT],'governance_schema'=>'scds-decision-governance/1.0','review_event_schema'=>'scds-review-event/1.0','scenario_studio_schema'=>'scds-scenario-studio/1.0','release'=>$this->release_manifest()]); }
     public function rest_release() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'release'=>$this->release_manifest()]); }
-    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map()]); }
+    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
 
     public function rest_backend_status() {
@@ -1294,6 +1373,71 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         return ['ok'=>true,'version'=>self::VERSION,'scenario_comparison'=>$comparison,'results'=>$results,'decision_packet'=>$packet];
     }
 
+    private function scenario_studio_criteria() {
+        return [
+            ['id'=>'financial_value','label'=>'Financial value','metric'=>'npv','weight'=>20,'direction'=>'higher'],
+            ['id'=>'emissions_impact','label'=>'Emissions impact','metric'=>'annual_avoided_tco2e','weight'=>18,'direction'=>'higher'],
+            ['id'=>'risk_resilience','label'=>'Risk and resilience','metric'=>'risk_score','weight'=>16,'direction'=>'lower'],
+            ['id'=>'evidence_confidence','label'=>'Evidence confidence','metric'=>'confidence','weight'=>10,'direction'=>'higher'],
+            ['id'=>'stakeholder_equity','label'=>'Stakeholder and distributional impact','metric'=>'stakeholder_equity','weight'=>10,'direction'=>'higher'],
+            ['id'=>'implementation_feasibility','label'=>'Implementation feasibility','metric'=>'implementation_feasibility','weight'=>10,'direction'=>'higher'],
+            ['id'=>'reversibility','label'=>'Reversibility and option value','metric'=>'reversibility','weight'=>8,'direction'=>'higher'],
+            ['id'=>'time_to_value','label'=>'Time to value','metric'=>'payback_years','weight'=>8,'direction'=>'lower'],
+        ];
+    }
+    private function scenario_studio_template() { return ['schema'=>'scds-scenario-studio/1.0','studio_version'=>self::VERSION,'alternative_limit'=>100,'criteria'=>$this->scenario_studio_criteria(),'analyses'=>['weighted and unweighted ranking','one-way sensitivity','two-variable screening grid','threshold and break-even search','uncertainty envelopes','time-horizon comparison','stakeholder distribution','dominance and tradeoff analysis','reversibility and option value'],'workbench_boundary'=>'Use Workbench for probabilistic simulation, optimization, engineering models, and domain-specific forecasting.','warnings'=>['Scenario outputs are conditional decision-support results, not forecasts or guarantees.','Ranges are assumption bounds, not probability distributions.']]; }
+    private function scenario_clamp($v){ return max(0,min(100,floatval($v))); }
+    private function scenario_linspace($low,$high,$points){ $points=max(2,intval($points)); $out=[]; for($i=0;$i<$points;$i++)$out[]=round($low+($high-$low)*$i/($points-1),8); return $out; }
+    private function scenario_ranges($inputs,$provided=[]){
+        $capex=floatval($inputs['capex']??950000); $savings=floatval($inputs['annualSavings']??185000); $cv=floatval($inputs['capexVolatility']??18)/100; $sv=floatval($inputs['savingsVolatility']??15)/100;
+        $ranges=['capex'=>['min'=>max(0,$capex*(1-$cv)),'max'=>$capex*(1+$cv),'steps'=>5],'annualSavings'=>['min'=>max(0,$savings*(1-$sv)),'max'=>$savings*(1+$sv),'steps'=>5],'adoptionRate'=>['min'=>max(0,floatval($inputs['adoptionRate']??65)-15),'max'=>min(100,floatval($inputs['adoptionRate']??65)+15),'steps'=>5],'reductionRate'=>['min'=>max(0,floatval($inputs['reductionRate']??32)-12),'max'=>min(100,floatval($inputs['reductionRate']??32)+12),'steps'=>5],'discountRate'=>['min'=>max(0,floatval($inputs['discountRate']??7)-3),'max'=>min(100,floatval($inputs['discountRate']??7)+3),'steps'=>5]];
+        foreach((array)$provided as $key=>$raw){ if(is_array($raw)){ $low=$raw['min']??($raw['low']??($raw[0]??null)); $high=$raw['max']??($raw['high']??($raw[1]??null)); if(is_numeric($low)&&is_numeric($high)){ if($low>$high){$tmp=$low;$low=$high;$high=$tmp;} $ranges[$key]=['min'=>floatval($low),'max'=>floatval($high),'steps'=>max(3,min(21,intval($raw['steps']??5)))]; } } }
+        return $ranges;
+    }
+    private function scenario_default_alternatives($inputs){ return [
+        ['id'=>'baseline','label'=>'Baseline','parameters'=>['reductionRate'=>0,'adoptionRate'=>0,'annualSavings'=>0,'capex'=>0],'reversibility'=>90,'stakeholderEquity'=>45,'implementationComplexity'=>'Low'],
+        ['id'=>'conservative','label'=>'Conservative','parameters'=>['reductionRate'=>floatval($inputs['reductionRate']??32)*.75,'adoptionRate'=>floatval($inputs['adoptionRate']??65)*.8,'annualSavings'=>floatval($inputs['annualSavings']??185000)*.8,'capex'=>floatval($inputs['capex']??950000)*1.1],'reversibility'=>75,'stakeholderEquity'=>55,'implementationComplexity'=>'Low'],
+        ['id'=>'expected','label'=>'Expected','parameters'=>[],'reversibility'=>60,'stakeholderEquity'=>floatval($inputs['socialBenefit']??58),'implementationComplexity'=>$inputs['complexity']??'Medium'],
+        ['id'=>'ambitious','label'=>'Ambitious','parameters'=>['reductionRate'=>min(100,floatval($inputs['reductionRate']??32)*1.3),'adoptionRate'=>min(100,floatval($inputs['adoptionRate']??65)*1.2),'annualSavings'=>floatval($inputs['annualSavings']??185000)*1.12,'capex'=>floatval($inputs['capex']??950000)*1.18],'reversibility'=>40,'stakeholderEquity'=>70,'implementationComplexity'=>'High'],
+        ['id'=>'stress-test','label'=>'Stress Test','parameters'=>['reductionRate'=>floatval($inputs['reductionRate']??32)*.65,'adoptionRate'=>floatval($inputs['adoptionRate']??65)*.65,'annualSavings'=>floatval($inputs['annualSavings']??185000)*.65,'capex'=>floatval($inputs['capex']??950000)*1.25,'exposure'=>70,'vulnerability'=>63,'governanceReadiness'=>53],'reversibility'=>45,'stakeholderEquity'=>48,'implementationComplexity'=>'High']
+    ]; }
+    private function scenario_eval($inputs,$alternative,$criteria,$extra=[]){
+        $params=is_array($alternative['parameters']??null)?$alternative['parameters']:[]; $model=array_merge($inputs,$params,$extra); $results=$this->analyze_inputs($model);
+        $npv=floatval($results['finance']['npv']??0); $capex=max(1,floatval($model['capex']??950000)); $annual=floatval($results['emissions']['annual_avoided_tco2e']??0); $baseline=max(1,floatval($model['baselineEmissions']??1200)); $risk=floatval($results['risk']['risk_score']??50); $confidence=$this->scenario_clamp($model['dataConfidence']??70); $equity=$this->scenario_clamp($alternative['stakeholderEquity']??($model['socialBenefit']??58)); $rev=$this->scenario_clamp($alternative['reversibility']??55); $complexity=strtolower($alternative['implementationComplexity']??($model['complexity']??'medium')); $complexity_score=in_array($complexity,['low','simple'],true)?88:(in_array($complexity,['high','very high'],true)?42:65); $feas=$this->scenario_clamp($complexity_score*.55+floatval($model['governanceReadiness']??68)*.3+$confidence*.15); $payback=$results['finance']['payback_years']??null; $payback_score=$payback===null?50:$this->scenario_clamp(100-(floatval($payback)/max(1,intval($model['modelYears']??5)))*70);
+        $scores=['financial_value'=>$this->scenario_clamp(50+($npv/$capex)*35),'emissions_impact'=>$this->scenario_clamp($annual/$baseline*100),'risk_resilience'=>$this->scenario_clamp(100-$risk),'evidence_confidence'=>$confidence,'stakeholder_equity'=>$equity,'implementation_feasibility'=>$feas,'reversibility'=>$rev,'time_to_value'=>$payback_score];
+        $total=0; foreach($criteria as $c)$total+=max(0,floatval($c['weight']??0)); if($total<=0)$total=1; $rows=[];$weighted=0;$unweighted=0; foreach($criteria as $c){$id=$c['id']??($c['metric']??'criterion');$score=floatval($scores[$id]??50);$w=max(0,floatval($c['weight']??0));$weighted+=$score*$w/$total;$unweighted+=$score;$rows[]=['criterion_id'=>$id,'label'=>$c['label']??$id,'weight'=>round($w/$total*100,4),'score'=>round($score,2),'weighted_contribution'=>round($score*$w/$total,2)];}
+        $option=$this->scenario_clamp($rev*.65+$feas*.2+$confidence*.15);
+        return ['alternative_id'=>sanitize_key($alternative['id']??('alternative-'.wp_rand(1,9999))),'label'=>sanitize_text_field($alternative['label']??($alternative['name']??'Alternative')),'parameters'=>$model,'metrics'=>['npv'=>$npv,'roi_percent'=>$results['finance']['roi_percent']??0,'payback_years'=>$payback,'annual_avoided_tco2e'=>$annual,'total_avoided_tco2e'=>$results['emissions']['total_avoided_tco2e']??0,'risk_score'=>$risk,'confidence'=>$confidence,'stakeholder_equity'=>$equity,'implementation_feasibility'=>round($feas,2),'reversibility'=>$rev,'option_value'=>round($option,2)],'criteria'=>$rows,'decision_score'=>round($weighted,2),'unweighted_score'=>round($unweighted/max(1,count($criteria)),2),'stakeholder_distribution'=>['records'=>$alternative['stakeholder_impacts']??[],'equity_score'=>$equity],'implementation_complexity'=>$alternative['implementationComplexity']??($model['complexity']??'Medium')];
+    }
+    private function scenario_dominance($evaluations){
+        $rows=[];
+        foreach((array)$evaluations as $left){
+            $left_scores=[]; foreach((array)($left['criteria']??[]) as $row){$left_scores[$row['criterion_id']??'']=floatval($row['score']??0);}
+            $dominated=[];
+            foreach((array)$evaluations as $right){
+                if(($left['alternative_id']??'')===($right['alternative_id']??'')) continue;
+                $right_scores=[]; foreach((array)($right['criteria']??[]) as $row){$right_scores[$row['criterion_id']??'']=floatval($row['score']??0);}
+                $shared=array_intersect(array_keys($left_scores),array_keys($right_scores)); if(!$shared) continue;
+                $all=true;$any=false; foreach($shared as $key){if($left_scores[$key]<$right_scores[$key]){$all=false;break;} if($left_scores[$key]>$right_scores[$key])$any=true;}
+                if($all&&$any)$dominated[]=$right['alternative_id']??'';
+            }
+            $rows[]=['alternative_id'=>$left['alternative_id']??'','dominates'=>array_values(array_filter($dominated)),'dominated_count'=>count(array_filter($dominated))];
+        }
+        return $rows;
+    }
+    private function generate_scenario_studio($inputs,$payload=[],$mode='full'){
+        $alternatives=isset($payload['alternatives'])&&is_array($payload['alternatives'])&&$payload['alternatives']?$payload['alternatives']:$this->scenario_default_alternatives($inputs); $alternatives=array_slice($alternatives,0,100); $criteria=isset($payload['criteria'])&&is_array($payload['criteria'])&&$payload['criteria']?$payload['criteria']:$this->scenario_studio_criteria(); $ranges=$this->scenario_ranges($inputs,$payload['parameterRanges']??[]); $params=isset($payload['sensitivityParameters'])&&is_array($payload['sensitivityParameters'])?$payload['sensitivityParameters']:array_slice(array_keys($ranges),0,4); $grid=max(3,min(21,intval($payload['gridPoints']??5)));
+        $evaluations=[];foreach($alternatives as $alt)if(is_array($alt))$evaluations[]=$this->scenario_eval($inputs,$alt,$criteria); $weighted=$evaluations;$unweighted=$evaluations;usort($weighted,function($a,$b){return $b['decision_score']<=>$a['decision_score'];});usort($unweighted,function($a,$b){return $b['unweighted_score']<=>$a['unweighted_score'];});$ranking=[];foreach($weighted as $i=>$e)$ranking[]=['rank'=>$i+1,'alternative_id'=>$e['alternative_id'],'label'=>$e['label'],'score'=>$e['decision_score']];$uranking=[];foreach($unweighted as $i=>$e)$uranking[]=['rank'=>$i+1,'alternative_id'=>$e['alternative_id'],'label'=>$e['label'],'score'=>$e['unweighted_score']];$recommended=$weighted[0]??[];$rid=$recommended['alternative_id']??'';$rindex=0;foreach($evaluations as $i=>$e)if($e['alternative_id']===$rid)$rindex=$i;$ralt=$alternatives[$rindex]??($alternatives[0]??[]);
+        $series=[];foreach($params as $parameter){if(!isset($ranges[$parameter]))continue;$obs=[];foreach($this->scenario_linspace($ranges[$parameter]['min'],$ranges[$parameter]['max'],$ranges[$parameter]['steps']??$grid) as $value){$ev=$this->scenario_eval($inputs,$ralt,$criteria,[$parameter=>$value]);$obs[]=['parameter_value'=>$value,'decision_score'=>$ev['decision_score'],'npv'=>$ev['metrics']['npv'],'annual_avoided_tco2e'=>$ev['metrics']['annual_avoided_tco2e'],'risk_score'=>$ev['metrics']['risk_score']];}$scores=array_column($obs,'decision_score');$series[]=['parameter'=>$parameter,'min'=>$ranges[$parameter]['min'],'max'=>$ranges[$parameter]['max'],'observations'=>$obs,'score_range'=>round(max($scores)-min($scores),2),'most_sensitive'=>false];}if($series){$maxi=0;foreach($series as $i=>$x)if($x['score_range']>$series[$maxi]['score_range'])$maxi=$i;$series[$maxi]['most_sensitive']=true;}
+        $multi=['parameters'=>[],'grid'=>[]];$valid=array_values(array_filter($params,function($p)use($ranges){return isset($ranges[$p]);}));if(count($valid)>=2){$x=$valid[0];$y=$valid[1];$multi['parameters']=[$x,$y];$multi['x_values']=$this->scenario_linspace($ranges[$x]['min'],$ranges[$x]['max'],3);$multi['y_values']=$this->scenario_linspace($ranges[$y]['min'],$ranges[$y]['max'],3);foreach($multi['x_values'] as $xv)foreach($multi['y_values'] as $yv){$ev=$this->scenario_eval($inputs,$ralt,$criteria,[$x=>$xv,$y=>$yv]);$multi['grid'][]=[$x=>$xv,$y=>$yv,'decision_score'=>$ev['decision_score'],'npv'=>$ev['metrics']['npv'],'risk_score'=>$ev['metrics']['risk_score']];}}
+        $target=is_array($payload['thresholdTarget']??null)?$payload['thresholdTarget']:[];$tp=$target['parameter']??'annualSavings';$tm=$target['metric']??'npv';$tv=floatval($target['value']??0);$spec=$ranges[$tp]??['min'=>0,'max'=>max(1,floatval($inputs[$tp]??100)*2)];$tobs=[];$break=null;foreach($this->scenario_linspace($spec['min'],$spec['max'],$grid*5) as $value){$ev=$this->scenario_eval($inputs,$ralt,$criteria,[$tp=>$value]);$mv=$tm==='decision_score'?$ev['decision_score']:floatval($ev['metrics'][$tm]??0);$met=$mv>=$tv;$row=['parameter_value'=>$value,'metric_value'=>$mv,'target_met'=>$met];$tobs[]=$row;if($met&&$break===null)$break=$row;}$threshold=['parameter'=>$tp,'metric'=>$tm,'operator'=>'>=','target_value'=>$tv,'range'=>$spec,'break_even'=>$break,'observations'=>$tobs,'found'=>$break!==null,'screening_resolution'=>count($tobs)];
+        $unc=[];foreach($alternatives as $i=>$alt){if(!is_array($alt))continue;$low=[];$high=[];foreach($ranges as $k=>$sp){$low[$k]=$sp['min'];$high[$k]=$sp['max'];}$le=$this->scenario_eval($inputs,$alt,$criteria,$low);$he=$this->scenario_eval($inputs,$alt,$criteria,$high);$base=$evaluations[$i]['decision_score']??0;$scores=[$le['decision_score'],$base,$he['decision_score']];$unc[]=['alternative_id'=>$evaluations[$i]['alternative_id']??'','label'=>$evaluations[$i]['label']??'','screening_low'=>min($scores),'base'=>$base,'screening_high'=>max($scores),'spread'=>round(max($scores)-min($scores),2),'interpretation'=>'Combined range endpoints; not a probability interval.'];}
+        $horizons=isset($payload['timeHorizons'])&&is_array($payload['timeHorizons'])?$payload['timeHorizons']:[1,3,intval($inputs['modelYears']??5),10];$hrows=[];foreach(array_unique($horizons) as $h){$h=max(1,min(50,intval($h)));$ev=$this->scenario_eval($inputs,$ralt,$criteria,['modelYears'=>$h]);$hrows[]=['years'=>$h,'decision_score'=>$ev['decision_score'],'npv'=>$ev['metrics']['npv'],'total_avoided_tco2e'=>$ev['metrics']['total_avoided_tco2e'],'payback_years'=>$ev['metrics']['payback_years']];}usort($hrows,function($a,$b){return $a['years']<=>$b['years'];});
+        $studio=['schema'=>'scds-scenario-studio/1.0','studio_version'=>self::VERSION,'analysis_mode'=>$mode,'alternative_count'=>count($evaluations),'criteria'=>$criteria,'parameter_ranges'=>$ranges,'alternatives'=>$evaluations,'weighted_ranking'=>$ranking,'unweighted_ranking'=>$uranking,'recommended_alternative_id'=>$rid,'recommended_alternative'=>$recommended,'dominance_analysis'=>$this->scenario_dominance($evaluations),'one_way_sensitivity'=>['parameters'=>$series,'tornado_ranking'=>array_map(function($x){return ['parameter'=>$x['parameter'],'score_range'=>$x['score_range']];},$series)],'multi_variable_sensitivity'=>$multi,'threshold_analysis'=>$threshold,'uncertainty_envelopes'=>$unc,'time_horizon_comparison'=>$hrows,'stakeholder_distribution'=>array_map(function($e){return ['alternative_id'=>$e['alternative_id']]+$e['stakeholder_distribution'];},$evaluations),'reversibility_option_value'=>array_map(function($e){return ['alternative_id'=>$e['alternative_id'],'label'=>$e['label'],'reversibility'=>$e['metrics']['reversibility'],'option_value'=>$e['metrics']['option_value']];},$evaluations),'chart_data'=>['alternative_scores'=>array_map(function($e){return ['label'=>$e['label'],'weighted'=>$e['decision_score'],'unweighted'=>$e['unweighted_score']];},$evaluations),'sensitivity_series'=>$series,'time_horizon_series'=>$hrows],'workbench_handoff'=>['recommended_tools'=>['economics-forecasting-and-scenario-tool','graph-studio-parameter-sensitivity','risk-resilience-impact-matrix','systems-modeling-tool']],'warnings'=>$this->scenario_studio_template()['warnings']];
+        $packet=isset($payload['packet'])&&is_array($payload['packet'])?array_merge($this->decision_packet_template(),$payload['packet']):$this->decision_packet_template();$packet['scenario_studio']=$studio;$packet['sensitivity_analysis']=$studio['one_way_sensitivity'];$packet['threshold_analysis']=$threshold;$packet['uncertainty_analysis']=['envelopes'=>$unc,'multi_variable'=>$multi];
+        $response=['ok'=>true,'version'=>self::VERSION,'schema'=>'scds-scenario-studio/1.0','scenario_studio'=>$studio,'decision_packet'=>$packet];if($mode==='sensitivity'){$response['sensitivity_analysis']=$studio['one_way_sensitivity'];$response['multi_variable_sensitivity']=$multi;}if($mode==='threshold')$response['threshold_analysis']=$threshold;return $response;
+    }
+
     private function workbench_handoff_catalog() {
         return [
             ['tool_id'=>'economics-forecasting-and-scenario-tool','label'=>'Economics Forecasting and Scenario Tool','mode'=>'advanced_calculators','use_when'=>'NPV, ROI, payback, benefit-cost, or scenario assumptions need sensitivity review.','shortcode'=>'[sc_workbench_advanced_calculators title="Economics Forecasting and Scenario Tool"]'],
@@ -1320,9 +1464,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     }
 
     private function csv_response($filename, $rows) { $fh = fopen('php://temp','w+'); if ($rows) { fputcsv($fh, array_keys($rows[0])); foreach($rows as $row) fputcsv($fh, $row); } rewind($fh); $csv = stream_get_contents($fh); fclose($fh); return new WP_REST_Response($csv, 200, ['Content-Type'=>'text/csv; charset=utf-8','Content-Disposition'=>'attachment; filename="'.$filename.'"']); }
-    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.9.0.csv', $this->scenario_templates()); }
-    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.9.0.csv', $this->workbench_tool_map()); }
-    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.9.0.csv', $rows ?: []); }
+    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.10.0.csv', $this->scenario_templates()); }
+    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.10.0.csv', $this->workbench_tool_map()); }
+    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.10.0.csv', $rows ?: []); }
 
 
     private function artifact_adapter_catalog() {
@@ -1493,7 +1637,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function import_artifact_into_packet($artifact, $module_id='', $packet=[]) {
         $normalized = $this->normalize_artifact($artifact, $module_id);
         $updated = $this->apply_packet_patch($packet, $normalized['packet_patch']);
-        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.9.0']];
+        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.10.0']];
     }
 
     private function module_integrations() {
@@ -1561,13 +1705,13 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function decision_packet_template() {
         return [
-            'packet_version'=>'1.9.0','artifact_schema'=>'scds-platform-artifact/1.0','evidence_record_schema'=>'scds-evidence-record/1.0',
+            'packet_version'=>'1.10.0','artifact_schema'=>'scds-platform-artifact/1.0','evidence_record_schema'=>'scds-evidence-record/1.0',
             'governance_schema'=>'scds-decision-governance/1.0',
-            'review_event_schema'=>'scds-review-event/1.0','governance_schema'=>'scds-decision-governance/1.0',
+            'review_event_schema'=>'scds-review-event/1.0','scenario_studio_schema'=>'scds-scenario-studio/1.0','governance_schema'=>'scds-decision-governance/1.0',
             'workflow'=>'Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio',
             'project'=>['project_name'=>'','organization_type'=>'','sector'=>'','location'=>'','time_horizon'=>'','decision_question'=>''],
             'decision_framing'=>[],'evidence_registry'=>[],'citations'=>[],'quotations'=>[],'research_routes'=>[],'evidence_gaps'=>[],'follow_up_questions'=>[],'live_evidence'=>[],'methodologies'=>[],'experimental_evidence'=>[],'datasets'=>[],'technical_artifacts'=>[],'platform_registry'=>[],'entities'=>[],'evidence_ledger'=>[],'provenance_links'=>[],'platform_handoffs'=>[],'integrity_checks'=>[],
-            'framing'=>[],'evidence_records'=>[],'scenario_analysis'=>[],'impact_records'=>[],'claim_reviews'=>[],'finance_analysis'=>[],'execution_recovery'=>[],'synthesis'=>[],'scenario_comparison'=>[],'workbench_handoffs'=>[],'four_pillar_scores'=>[],'assumptions'=>[],'risks'=>[],'sources'=>[],'audit_trail'=>[],'calculation_trace'=>[],'workbench_calculations'=>[],'audit_and_provenance'=>$this->audit_provenance_template(),'governance_center'=>$this->governance_template(),
+            'framing'=>[],'evidence_records'=>[],'scenario_analysis'=>[],'impact_records'=>[],'claim_reviews'=>[],'finance_analysis'=>[],'execution_recovery'=>[],'synthesis'=>[],'scenario_comparison'=>[],'scenario_studio'=>[],'sensitivity_analysis'=>[],'threshold_analysis'=>[],'uncertainty_analysis'=>[],'workbench_handoffs'=>[],'four_pillar_scores'=>[],'assumptions'=>[],'risks'=>[],'sources'=>[],'audit_trail'=>[],'calculation_trace'=>[],'workbench_calculations'=>[],'audit_and_provenance'=>$this->audit_provenance_template(),'governance_center'=>$this->governance_template(),
             'module_slots'=>array_map(function($m){ return ['module_id'=>$m['id'],'name'=>$m['name'],'artifact_key'=>$m['artifact_key'],'packet_section'=>$m['packet_section'],'status'=>'empty']; }, $this->module_integrations()),
         ];
     }
@@ -1575,7 +1719,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function audit_provenance_template() {
         return [
-            'audit_version'=>'1.9.0',
+            'audit_version'=>'1.10.0',
             'decision_packet_id'=>'SCDS-DRAFT',
             'review_status'=>[
                 'status'=>'draft',
@@ -1772,7 +1916,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     }
 
 
-    private function export_center_template() { return ['export_center_version'=>self::VERSION,'saved_packet_fields'=>['decision_packet_id','project_name','decision_question','status','updated_at','inputs','results','decision_packet','audit','readiness','scenario_comparison','workbench_handoff','integrated_brief','governance'],'exports'=>[['id'=>'packet_json','label'=>'Decision Packet JSON','description'=>'Complete normalized packet.'],['id'=>'integrated_brief_markdown','label'=>'Integrated Brief Markdown','description'=>'Reviewable decision memo.'],['id'=>'integrated_brief_html','label'=>'Integrated Brief HTML','description'=>'Browser-printable decision memo.'],['id'=>'audit_json','label'=>'Audit & Provenance JSON','description'=>'Evidence, assumptions, calculations, claims, changes, and review ledger.'],['id'=>'readiness_json','label'=>'Readiness JSON','description'=>'Section readiness, unresolved issues, and export gates.'],['id'=>'scenario_json','label'=>'Scenario Comparison JSON','description'=>'Scenario matrix, rankings, deltas, and sensitivity flags.'],['id'=>'handoff_json','label'=>'Workbench Handoff JSON','description'=>'Workbench tool recommendations and payload summary.'],['id'=>'governance_json','label'=>'Decision Governance JSON','description'=>'Decision state, owner, reviewers, conditions, exceptions, conflicts, sign-offs, export gates, and immutable review history.']],'warnings'=>['Saved Decision Packets are working records, not approvals or professional signoff.','Exports preserve user-entered and imported content; review sensitive information before sharing.']]; }
+    private function export_center_template() { return ['export_center_version'=>self::VERSION,'saved_packet_fields'=>['decision_packet_id','project_name','decision_question','status','updated_at','inputs','results','decision_packet','audit','readiness','scenario_comparison','scenario_studio','workbench_handoff','integrated_brief','governance'],'exports'=>[['id'=>'packet_json','label'=>'Decision Packet JSON','description'=>'Complete normalized packet.'],['id'=>'integrated_brief_markdown','label'=>'Integrated Brief Markdown','description'=>'Reviewable decision memo.'],['id'=>'integrated_brief_html','label'=>'Integrated Brief HTML','description'=>'Browser-printable decision memo.'],['id'=>'audit_json','label'=>'Audit & Provenance JSON','description'=>'Evidence, assumptions, calculations, claims, changes, and review ledger.'],['id'=>'readiness_json','label'=>'Readiness JSON','description'=>'Section readiness, unresolved issues, and export gates.'],['id'=>'scenario_json','label'=>'Scenario Comparison JSON','description'=>'Compatibility scenario matrix and ranking.'],['id'=>'scenario_studio_json','label'=>'Advanced Scenario Studio JSON','description'=>'Alternatives, criteria, sensitivity, thresholds, uncertainty, stakeholders, time horizons, and option value.'],['id'=>'handoff_json','label'=>'Workbench Handoff JSON','description'=>'Workbench tool recommendations and payload summary.'],['id'=>'governance_json','label'=>'Decision Governance JSON','description'=>'Decision state, owner, reviewers, conditions, exceptions, conflicts, sign-offs, export gates, and immutable review history.']],'warnings'=>['Saved Decision Packets are working records, not approvals or professional signoff.','Exports preserve user-entered and imported content; review sensitive information before sharing.']]; }
 
     private function scenario_templates() { return [ ['template_id'=>'baseline','name'=>'Baseline','purpose'=>'Current path with no intervention'], ['template_id'=>'conservative','name'=>'Conservative','purpose'=>'Lower adoption, higher cost, slower benefits'], ['template_id'=>'expected','name'=>'Expected','purpose'=>'Central planning assumption'], ['template_id'=>'ambitious','name'=>'Ambitious','purpose'=>'Higher adoption and faster benefits'], ['template_id'=>'stress','name'=>'Stress Test','purpose'=>'Costs rise, benefits lag, governance weakens'], ['template_id'=>'transition','name'=>'Transition Pathway','purpose'=>'Staged implementation over multiple years'] ]; }
     private function scorecard_rows() { return [ ['pillar'=>'Environmental','default_weight'=>'30','indicators'=>'emissions, energy, land, water, biodiversity, pollution'], ['pillar'=>'Social','default_weight'=>'20','indicators'=>'health, access, equity, labor, community, capability'], ['pillar'=>'Economic','default_weight'=>'30','indicators'=>'NPV, ROI, payback, affordability, productivity, resilience'], ['pillar'=>'Governance','default_weight'=>'20','indicators'=>'accountability, evidence, controls, transparency, capacity, audit trail'] ]; }
