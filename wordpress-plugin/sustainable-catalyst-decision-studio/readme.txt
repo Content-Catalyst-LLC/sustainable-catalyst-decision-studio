@@ -3,10 +3,10 @@ Contributors: Content Catalyst LLC
 Tags: sustainability, decision support, scenario analysis, scorecards, risk
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 1.10.0
+Stable tag: 1.11.0
 License: MIT
 
-Sustainable Catalyst Decision Studio is the platform governance, scenario, and synthesis workspace. v1.10.0 adds advanced alternatives, weighted and unweighted criteria, sensitivity analysis, break-even thresholds, uncertainty screening, stakeholder distribution, time horizons, dominance, reversibility, and Workbench handoffs while preserving human governance and typed platform evidence.
+Sustainable Catalyst Decision Studio is the governed decision, scenario, and collaboration workspace. v1.11.0 adds private WordPress-managed Decision Rooms with role-based participation, comments, change requests, snapshots, version comparison, approved-version locks, tamper-evident activity, and Contact and Engagement handoffs while preserving governance and typed platform evidence.
 
 == Shortcodes ==
 [sc_decision_studio mode="landing"]
@@ -20,11 +20,24 @@ Sustainable Catalyst Decision Studio is the platform governance, scenario, and s
 [sc_decision_studio mode="handoff"]
 [sc_decision_studio mode="readiness"]
 [sc_decision_studio mode="governance"]
+[sc_decision_studio mode="room"]
 [sc_decision_studio mode="export"]
 [sc_decision_studio mode="report"]
 [sc_decision_studio mode="drawer"]
 
 == Changelog ==
+
+= 1.11.0 =
+* Added private, restricted, and institutional Collaborative Decision Rooms.
+* Added owner, facilitator, editor, reviewer, client, and observer permissions.
+* Added linked comments, change requests, resolutions, revisions, snapshots, and version comparison.
+* Added SHA-256 collaboration activity chains and tamper detection.
+* Added private invitation grants that retain only token hashes.
+* Added approved-version locks and reasoned reopening.
+* Added canonical WordPress room, member, and event persistence.
+* Added Contact and Engagement Platform handoffs.
+* Added Decision Packet schema 1.4 and collaboration exports.
+* Preserved scenario analysis, governance, typed handoffs, and legacy adapters.
 
 = 1.10.0 =
 * Added the Advanced Scenario and Sensitivity Studio.

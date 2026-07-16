@@ -106,3 +106,18 @@
 .scds-compatibility-details summary{cursor:pointer;font-weight:800}
 @media(max-width:1100px){.scds-scenario-studio-grid{grid-template-columns:1fr}.scds-scenario-studio-result>.scds-readiness-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.scds-scenario-controls,.scds-scenario-studio-result>.scds-readiness-grid{grid-template-columns:1fr}.scds-scenario-studio-grid textarea{min-height:190px}}
+
+
+/* v1.11.0 Collaborative Decision Rooms */
+.scds-panel[data-scds-panel="room"]{position:relative}
+.scds-panel[data-scds-panel="room"] .scds-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}
+.scds-panel[data-scds-panel="room"] .scds-status{display:inline-flex;align-items:center;min-height:30px;padding:6px 10px;border:1px solid #6f1024;border-radius:999px;background:#fff8f1;color:#6f1024;font-size:12px;font-weight:800;white-space:nowrap}
+.scds-panel[data-scds-panel="room"] textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;line-height:1.5}
+.scds-room-output{margin-top:18px}
+.scds-room-output .scds-readiness-card{border-left:4px solid #6f1024}
+.scds-room-output details{margin-top:14px;border:1px solid var(--scds-line);background:#fff;padding:12px}
+.scds-room-output summary{cursor:pointer;font-weight:800}
+.scds-room-list{margin-top:20px;overflow-x:auto}
+.scds-room-list h4{font-family:Spartan,Montserrat,Arial,sans-serif;margin:0 0 10px}
+.scds-panel[data-scds-panel="room"] .scds-grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:900px){.scds-panel[data-scds-panel="room"] .scds-grid-3{grid-template-columns:1fr}.scds-panel[data-scds-panel="room"] .scds-panel-head{display:block}.scds-panel[data-scds-panel="room"] .scds-status{margin-top:10px}}

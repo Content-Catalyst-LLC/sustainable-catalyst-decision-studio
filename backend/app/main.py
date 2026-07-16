@@ -8,22 +8,25 @@ import json
 import hashlib
 import math
 import os
+import secrets
 import threading
 import time
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
-APP_VERSION = "1.10.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.10.0-advanced-scenario-sensitivity")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.10.0")
+APP_VERSION = "1.11.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.11.0-collaborative-decision-rooms")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.11.0")
 RELEASE_DATE = "2026-07-16"
-DECISION_PACKET_SCHEMA = "scds-decision-packet/1.3"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/1.4"
 PLATFORM_ARTIFACT_SCHEMA = "scds-platform-artifact/1.0"
 EVIDENCE_RECORD_SCHEMA = "scds-evidence-record/1.0"
 GOVERNANCE_SCHEMA = "scds-decision-governance/1.0"
 REVIEW_EVENT_SCHEMA = "scds-review-event/1.0"
 SCENARIO_STUDIO_SCHEMA = "scds-scenario-studio/1.0"
+COLLABORATION_ROOM_SCHEMA = "scds-collaborative-decision-room/1.0"
+COLLABORATION_EVENT_SCHEMA = "scds-collaboration-event/1.0"
 MAX_REQUEST_BYTES = max(65536, int(os.getenv("SCDS_MAX_REQUEST_BYTES", "1048576")))
 PUBLIC_RATE_LIMIT = max(10, int(os.getenv("SCDS_PUBLIC_RATE_LIMIT", "60")))
 RATE_WINDOW_SECONDS = max(10, int(os.getenv("SCDS_RATE_WINDOW_SECONDS", "60")))
@@ -41,6 +44,9 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/decision-packet/save-template", "/export-center/bundle",
     "/decision-packet/export-bundle", "/audit/generate",
     "/governance/evaluate", "/governance/transition", "/decision-packet/governance",
+    "/collaboration/room", "/collaboration/action", "/collaboration/comment",
+    "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share",
+    "/collaboration/contact-handoff", "/decision-packet/collaboration",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -49,7 +55,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Advanced Scenario and Sensitivity Studio",
+        "release_name": "Collaborative Decision Rooms",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -59,6 +65,8 @@ def release_manifest() -> Dict[str, Any]:
         "governance_schema": GOVERNANCE_SCHEMA,
         "review_event_schema": REVIEW_EVENT_SCHEMA,
         "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
+        "collaboration_room_schema": COLLABORATION_ROOM_SCHEMA,
+        "collaboration_event_schema": COLLABORATION_EVENT_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -73,6 +81,10 @@ def release_manifest() -> Dict[str, Any]:
             "one_way_sensitivity": True,
             "multi_variable_sensitivity": True,
             "threshold_break_even_analysis": True,
+            "collaborative_decision_rooms": True,
+            "wordpress_canonical_room_persistence": True,
+            "private_room_sharing": True,
+            "locked_approved_versions": True,
         },
     }
 
@@ -276,6 +288,7 @@ class SavedDecisionPacketRequest(BaseModel):
     scenarioStudio: Optional[Dict[str, Any]] = None
     workbenchHandoff: Optional[Dict[str, Any]] = None
     integratedBrief: Optional[Dict[str, Any]] = None
+    collaboration: Optional[Dict[str, Any]] = None
     title: str = ""
     status: str = "draft"
     notes: str = ""
@@ -292,6 +305,7 @@ class ExportBundleRequest(BaseModel):
     workbenchHandoff: Optional[Dict[str, Any]] = None
     integratedBrief: Optional[Dict[str, Any]] = None
     governance: Optional[Dict[str, Any]] = None
+    collaboration: Optional[Dict[str, Any]] = None
     exportAudience: str = "internal"
     includeRawArtifacts: bool = True
     exportLabel: str = "Decision Studio Export Bundle"
@@ -314,6 +328,18 @@ class GovernanceRequest(BaseModel):
     approvalExpiresAt: str = ""
     reassessmentDueAt: str = ""
     forceTransition: bool = False
+
+
+class CollaborativeRoomRequest(BaseModel):
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    room: Dict[str, Any] = Field(default_factory=dict)
+    action: str = "evaluate"
+    actor: str = ""
+    actorRole: str = "observer"
+    targetType: str = "decision_packet"
+    targetId: str = ""
+    payload: Dict[str, Any] = Field(default_factory=dict)
+    reason: str = ""
 
 
 def clamp(value: float, low: float = 0, high: float = 100) -> float:
@@ -482,13 +508,15 @@ def platform_contract(product_id: Optional[str]) -> Optional[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.10.0",
+        "packet_version": "1.11.0",
         "workflow": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
         "governance_schema": GOVERNANCE_SCHEMA,
         "review_event_schema": REVIEW_EVENT_SCHEMA,
         "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
+        "collaboration_room_schema": COLLABORATION_ROOM_SCHEMA,
+        "collaboration_event_schema": COLLABORATION_EVENT_SCHEMA,
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -528,6 +556,7 @@ def decision_packet_template() -> Dict[str, Any]:
         "audit_trail": [],
         "audit_and_provenance": audit_provenance_template(),
         "governance_center": governance_template(),
+        "collaboration_room": collaborative_room_template(),
         "integrated_decision_brief": {},
         "scenario_comparison": {},
         "scenario_studio": {},
@@ -536,7 +565,7 @@ def decision_packet_template() -> Dict[str, Any]:
         "uncertainty_analysis": {},
         "workbench_handoffs": [],
         "saved_packet": {"saved_at": "", "saved_by": "", "status": "draft", "storage": "browser_or_wordpress"},
-        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json"]},
+        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json"]},
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -554,7 +583,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.10.0",
+        "audit_version": "1.11.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -1606,8 +1635,389 @@ def evaluate_governance(req: GovernanceRequest) -> Dict[str, Any]:
     return {"ok": True, "version": APP_VERSION, "governance": governance, "decision_packet": packet, "state_catalog": catalog}
 
 
+
+def collaboration_role_catalog() -> Dict[str, Any]:
+    return {
+        "schema": COLLABORATION_ROOM_SCHEMA,
+        "roles": [
+            {"id": "owner", "label": "Room owner", "permissions": ["manage_room", "manage_members", "comment", "request_change", "resolve", "snapshot", "apply_revision", "lock", "share"]},
+            {"id": "facilitator", "label": "Facilitator", "permissions": ["manage_members", "comment", "request_change", "resolve", "snapshot", "apply_revision", "lock", "share"]},
+            {"id": "editor", "label": "Editor", "permissions": ["comment", "request_change", "snapshot", "apply_revision"]},
+            {"id": "reviewer", "label": "Reviewer", "permissions": ["comment", "request_change", "resolve", "snapshot"]},
+            {"id": "client", "label": "Private client participant", "permissions": ["comment", "request_change"]},
+            {"id": "observer", "label": "Observer", "permissions": []},
+        ],
+        "visibility": ["private", "restricted", "institutional"],
+    }
+
+
+def _room_permissions(role: str) -> List[str]:
+    normalized = (role or "observer").strip().lower().replace("-", "_")
+    aliases = {"decision_owner": "owner", "review_chair": "facilitator", "independent_reviewer": "reviewer"}
+    normalized = aliases.get(normalized, normalized)
+    for record in collaboration_role_catalog()["roles"]:
+        if record["id"] == normalized:
+            return list(record["permissions"])
+    return []
+
+
+def collaborative_room_template() -> Dict[str, Any]:
+    return {
+        "room_version": APP_VERSION,
+        "schema": COLLABORATION_ROOM_SCHEMA,
+        "event_schema": COLLABORATION_EVENT_SCHEMA,
+        "room_id": "",
+        "title": "Collaborative Decision Room",
+        "visibility": "private",
+        "status": "active",
+        "owner": {},
+        "members": [],
+        "comments": [],
+        "change_requests": [],
+        "snapshots": [],
+        "snapshot_comparisons": [],
+        "activity_timeline": [],
+        "activity_integrity": {"ok": True, "event_count": 0, "problems": [], "head_hash": "GENESIS"},
+        "notifications": [],
+        "share_grants": [],
+        "locked_version": {},
+        "contact_engagement_handoffs": [],
+        "limits": {"members": 200, "comments": 2000, "change_requests": 500, "snapshots": 100, "activity_events": 5000},
+        "canonical_persistence": "wordpress",
+        "warnings": [
+            "Decision Rooms are private collaboration records; WordPress authentication and authorization remain authoritative.",
+            "Comments and approvals are human records. AI cannot approve, sign, certify, or impersonate a reviewer.",
+            "Approved snapshots remain locked until an authorized human explicitly reopens the version with a reason.",
+        ],
+    }
+
+
+def _room_id(prefix: str, value: Any) -> str:
+    digest = hashlib.sha256(json.dumps(value, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
+    return f"{prefix}-{digest}"
+
+
+def _append_room_event(room: Dict[str, Any], event_type: str, actor: str, actor_role: str, target_type: str = "room", target_id: str = "", details: Optional[Dict[str, Any]] = None) -> None:
+    timeline = list(room.get("activity_timeline") or [])
+    previous = timeline[-1].get("event_hash", "GENESIS") if timeline else "GENESIS"
+    event = {
+        "event_schema": COLLABORATION_EVENT_SCHEMA,
+        "sequence": len(timeline) + 1,
+        "recorded_at": _utc_now(),
+        "event_type": event_type,
+        "actor": actor or "unspecified-human-actor",
+        "actor_role": actor_role or "observer",
+        "target_type": target_type,
+        "target_id": target_id,
+        "details": details or {},
+        "previous_hash": previous,
+    }
+    event["event_hash"] = _canonical_hash(event)
+    timeline.append(event)
+    room["activity_timeline"] = timeline[-5000:]
+    room["activity_integrity"] = verify_collaboration_history(room["activity_timeline"])
+
+
+def verify_collaboration_history(history: List[Dict[str, Any]]) -> Dict[str, Any]:
+    previous = "GENESIS"
+    problems: List[Dict[str, Any]] = []
+    for index, raw in enumerate(history or []):
+        item = dict(raw or {})
+        supplied = str(item.pop("event_hash", ""))
+        if str(item.get("previous_hash", "")) != previous:
+            problems.append({"sequence": index + 1, "code": "previous_hash_mismatch"})
+        expected = _canonical_hash(item)
+        if supplied != expected:
+            problems.append({"sequence": index + 1, "code": "event_hash_mismatch"})
+        previous = supplied or expected
+    return {"ok": not problems, "event_count": len(history or []), "problems": problems, "head_hash": previous}
+
+
+def _packet_for_snapshot(packet: Dict[str, Any]) -> Dict[str, Any]:
+    clone = json.loads(json.dumps(packet or {}, default=str))
+    room = clone.get("collaboration_room")
+    if isinstance(room, dict):
+        clone["collaboration_room"] = {
+            "room_id": room.get("room_id", ""),
+            "schema": room.get("schema", COLLABORATION_ROOM_SCHEMA),
+            "locked_version": room.get("locked_version", {}),
+        }
+    return clone
+
+
+def _create_packet_snapshot(packet: Dict[str, Any], actor: str, label: str = "") -> Dict[str, Any]:
+    content = _packet_for_snapshot(packet)
+    content_hash = _canonical_hash(content)
+    return {
+        "snapshot_id": _room_id("snapshot", {"hash": content_hash, "actor": actor, "label": label, "at": _utc_now()}),
+        "created_at": _utc_now(),
+        "created_by": actor or "unspecified-human-actor",
+        "label": label or "Decision Packet snapshot",
+        "packet_version": packet.get("packet_version", APP_VERSION),
+        "governance_state": _dig(packet, "governance_center", "current_state", default="draft"),
+        "content_hash": content_hash,
+        "packet": content,
+        "locked": False,
+    }
+
+
+def _diff_values(before: Any, after: Any, path: str = "") -> List[Dict[str, Any]]:
+    changes: List[Dict[str, Any]] = []
+    if isinstance(before, dict) and isinstance(after, dict):
+        for key in sorted(set(before) | set(after)):
+            child = f"{path}.{key}" if path else str(key)
+            if key not in before:
+                changes.append({"path": child, "change": "added", "before": None, "after": after[key]})
+            elif key not in after:
+                changes.append({"path": child, "change": "removed", "before": before[key], "after": None})
+            else:
+                changes.extend(_diff_values(before[key], after[key], child))
+    elif isinstance(before, list) and isinstance(after, list):
+        if before != after:
+            changes.append({"path": path or "$", "change": "changed", "before": before, "after": after})
+    elif before != after:
+        changes.append({"path": path or "$", "change": "changed", "before": before, "after": after})
+    return changes[:1000]
+
+
+def compare_room_snapshots(before: Dict[str, Any], after: Dict[str, Any]) -> Dict[str, Any]:
+    left = before.get("packet", before) if isinstance(before, dict) else {}
+    right = after.get("packet", after) if isinstance(after, dict) else {}
+    changes = _diff_values(left, right)
+    return {
+        "comparison_id": _room_id("comparison", {"before": before.get("content_hash", ""), "after": after.get("content_hash", "")}),
+        "created_at": _utc_now(),
+        "before_snapshot_id": before.get("snapshot_id", ""),
+        "after_snapshot_id": after.get("snapshot_id", ""),
+        "before_hash": before.get("content_hash", _canonical_hash(left)),
+        "after_hash": after.get("content_hash", _canonical_hash(right)),
+        "change_count": len(changes),
+        "changed_paths": [item["path"] for item in changes],
+        "changes": changes,
+    }
+
+
+def _merge_packet_patch(target: Dict[str, Any], patch: Dict[str, Any]) -> Dict[str, Any]:
+    result = json.loads(json.dumps(target or {}, default=str))
+    for key, value in (patch or {}).items():
+        if isinstance(value, dict) and isinstance(result.get(key), dict):
+            result[key] = _merge_packet_patch(result[key], value)
+        else:
+            result[key] = value
+    return result
+
+
+def _room_notify(room: Dict[str, Any], actor: str, event_type: str, target_id: str, message: str) -> None:
+    notifications = list(room.get("notifications") or [])
+    for member in room.get("members") or []:
+        recipient = member.get("email") or member.get("user_id") or member.get("name")
+        if not recipient or str(recipient) == str(actor):
+            continue
+        notifications.append({
+            "notification_id": _room_id("notification", {"recipient": recipient, "event": event_type, "target": target_id, "at": _utc_now()}),
+            "created_at": _utc_now(),
+            "recipient": recipient,
+            "event_type": event_type,
+            "target_id": target_id,
+            "message": message,
+            "status": "pending",
+        })
+    room["notifications"] = notifications[-2000:]
+
+
+def generate_collaborative_room(req: CollaborativeRoomRequest) -> Dict[str, Any]:
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    room = collaborative_room_template()
+    existing = req.room or packet.get("collaboration_room") or {}
+    if isinstance(existing, dict):
+        room.update(existing)
+    room["schema"] = COLLABORATION_ROOM_SCHEMA
+    room["event_schema"] = COLLABORATION_EVENT_SCHEMA
+    room["room_version"] = APP_VERSION
+    room["room_id"] = room.get("room_id") or _room_id("room", {"title": room.get("title"), "actor": req.actor, "at": _utc_now()})
+    room["visibility"] = room.get("visibility") if room.get("visibility") in {"private", "restricted", "institutional"} else "private"
+    room["members"] = list(room.get("members") or [])[:200]
+    room["comments"] = list(room.get("comments") or [])[:2000]
+    room["change_requests"] = list(room.get("change_requests") or [])[:500]
+    room["snapshots"] = list(room.get("snapshots") or [])[:100]
+    room["snapshot_comparisons"] = list(room.get("snapshot_comparisons") or [])[:100]
+    room["share_grants"] = list(room.get("share_grants") or [])[:500]
+    action = (req.action or "evaluate").strip().lower().replace("-", "_")
+    actor_role = (req.actorRole or "observer").strip().lower().replace("-", "_")
+    permissions = _room_permissions(actor_role)
+    payload = req.payload or {}
+    result_extra: Dict[str, Any] = {}
+
+    if not room.get("owner") and req.actor:
+        room["owner"] = {"name": req.actor, "role": "owner"}
+        if not room["members"]:
+            room["members"].append({"member_id": _room_id("member", req.actor), "name": req.actor, "role": "owner", "status": "active"})
+
+    def require_permission(permission: str) -> Optional[Dict[str, Any]]:
+        if permission not in permissions:
+            return {"ok": False, "version": APP_VERSION, "error": "collaboration_permission_denied", "required_permission": permission, "actor_role": actor_role, "room": room, "decision_packet": packet}
+        return None
+
+    if action == "add_comment":
+        denied = require_permission("comment")
+        if denied: return denied
+        content = str(payload.get("content", "")).strip()
+        if not content:
+            return {"ok": False, "version": APP_VERSION, "error": "comment_content_required", "room": room, "decision_packet": packet}
+        comment = {"comment_id": _room_id("comment", {"room": room["room_id"], "actor": req.actor, "content": content, "at": _utc_now()}), "created_at": _utc_now(), "author": req.actor or "unspecified-human-actor", "author_role": actor_role, "target_type": req.targetType or payload.get("target_type", "decision_packet"), "target_id": req.targetId or payload.get("target_id", ""), "content": content[:20000], "visibility": payload.get("visibility", "room"), "status": "open", "parent_comment_id": payload.get("parent_comment_id", "")}
+        room["comments"].append(comment)
+        _append_room_event(room, "comment_added", req.actor, actor_role, "comment", comment["comment_id"], {"target_type": comment["target_type"], "target_id": comment["target_id"]})
+        _room_notify(room, req.actor, "comment_added", comment["comment_id"], f"New Decision Room comment from {comment['author']}.")
+        result_extra["comment"] = comment
+    elif action == "resolve_comment":
+        denied = require_permission("resolve")
+        if denied: return denied
+        comment_id = str(payload.get("comment_id", "")) or req.targetId
+        found = None
+        for comment in room["comments"]:
+            if comment.get("comment_id") == comment_id:
+                comment["status"] = "resolved"
+                comment["resolved_at"] = _utc_now()
+                comment["resolved_by"] = req.actor
+                comment["resolution"] = str(payload.get("resolution", req.reason))[:10000]
+                found = comment
+                break
+        if not found: return {"ok": False, "version": APP_VERSION, "error": "comment_not_found", "room": room, "decision_packet": packet}
+        _append_room_event(room, "comment_resolved", req.actor, actor_role, "comment", comment_id, {"resolution": found.get("resolution", "")})
+        result_extra["comment"] = found
+    elif action == "create_change_request":
+        denied = require_permission("request_change")
+        if denied: return denied
+        title = str(payload.get("title", "Requested Decision Packet change")).strip()
+        request_record = {"change_request_id": _room_id("change", {"room": room["room_id"], "actor": req.actor, "title": title, "at": _utc_now()}), "created_at": _utc_now(), "requested_by": req.actor or "unspecified-human-actor", "requested_by_role": actor_role, "title": title[:500], "description": str(payload.get("description", ""))[:20000], "target_type": req.targetType or payload.get("target_type", "decision_packet"), "target_id": req.targetId or payload.get("target_id", ""), "status": "open", "priority": payload.get("priority", "normal"), "packet_patch": payload.get("packet_patch", {}) if isinstance(payload.get("packet_patch"), dict) else {}, "resolution": {}}
+        room["change_requests"].append(request_record)
+        _append_room_event(room, "change_request_created", req.actor, actor_role, "change_request", request_record["change_request_id"], {"title": title})
+        _room_notify(room, req.actor, "change_request_created", request_record["change_request_id"], f"New Decision Room change request: {title}.")
+        result_extra["change_request"] = request_record
+    elif action == "resolve_change_request":
+        denied = require_permission("resolve")
+        if denied: return denied
+        change_id = str(payload.get("change_request_id", "")) or req.targetId
+        resolution_status = str(payload.get("status", "accepted")).strip().lower()
+        if resolution_status not in {"accepted", "rejected", "deferred", "implemented"}: resolution_status = "accepted"
+        if resolution_status == "implemented" and room.get("locked_version", {}).get("locked"):
+            return {"ok": False, "version": APP_VERSION, "error": "approved_version_locked", "room": room, "decision_packet": packet}
+        found = None
+        for item in room["change_requests"]:
+            if item.get("change_request_id") == change_id:
+                item["status"] = resolution_status
+                item["resolved_at"] = _utc_now()
+                item["resolved_by"] = req.actor
+                item["resolution"] = {"reason": str(payload.get("resolution", req.reason))[:10000], "status": resolution_status}
+                if resolution_status == "implemented" and isinstance(item.get("packet_patch"), dict):
+                    before = _create_packet_snapshot(packet, req.actor, "Before implemented change request")
+                    packet = _merge_packet_patch(packet, item["packet_patch"])
+                    after = _create_packet_snapshot(packet, req.actor, "After implemented change request")
+                    room["snapshots"].extend([before, after])
+                    comparison = compare_room_snapshots(before, after)
+                    room["snapshot_comparisons"].append(comparison)
+                    result_extra["comparison"] = comparison
+                found = item
+                break
+        if not found: return {"ok": False, "version": APP_VERSION, "error": "change_request_not_found", "room": room, "decision_packet": packet}
+        _append_room_event(room, "change_request_resolved", req.actor, actor_role, "change_request", change_id, {"status": resolution_status})
+        result_extra["change_request"] = found
+    elif action in {"snapshot", "create_snapshot"}:
+        denied = require_permission("snapshot")
+        if denied: return denied
+        current_hash = _canonical_hash(_packet_for_snapshot(packet))
+        locked = room.get("locked_version", {})
+        if locked.get("locked") and locked.get("content_hash") != current_hash:
+            return {"ok": False, "version": APP_VERSION, "error": "approved_version_locked", "room": room, "decision_packet": packet}
+        snapshot = _create_packet_snapshot(packet, req.actor, str(payload.get("label", "Decision Packet snapshot")))
+        room["snapshots"].append(snapshot)
+        _append_room_event(room, "snapshot_created", req.actor, actor_role, "snapshot", snapshot["snapshot_id"], {"content_hash": snapshot["content_hash"]})
+        result_extra["snapshot"] = snapshot
+    elif action == "compare_snapshots":
+        snapshots = room["snapshots"]
+        before = payload.get("before") if isinstance(payload.get("before"), dict) else (snapshots[-2] if len(snapshots) >= 2 else {})
+        after = payload.get("after") if isinstance(payload.get("after"), dict) else (snapshots[-1] if snapshots else {})
+        if not before or not after:
+            return {"ok": False, "version": APP_VERSION, "error": "two_snapshots_required", "room": room, "decision_packet": packet}
+        comparison = compare_room_snapshots(before, after)
+        room["snapshot_comparisons"].append(comparison)
+        _append_room_event(room, "snapshots_compared", req.actor, actor_role, "comparison", comparison["comparison_id"], {"change_count": comparison["change_count"]})
+        result_extra["comparison"] = comparison
+    elif action == "apply_revision":
+        denied = require_permission("apply_revision")
+        if denied: return denied
+        if room.get("locked_version", {}).get("locked"):
+            return {"ok": False, "version": APP_VERSION, "error": "approved_version_locked", "room": room, "decision_packet": packet}
+        patch = payload.get("packet_patch", {}) if isinstance(payload.get("packet_patch"), dict) else {}
+        if not patch: return {"ok": False, "version": APP_VERSION, "error": "packet_patch_required", "room": room, "decision_packet": packet}
+        before = _create_packet_snapshot(packet, req.actor, "Before revision")
+        packet = _merge_packet_patch(packet, patch)
+        after = _create_packet_snapshot(packet, req.actor, "After revision")
+        room["snapshots"].extend([before, after])
+        comparison = compare_room_snapshots(before, after)
+        room["snapshot_comparisons"].append(comparison)
+        _append_room_event(room, "packet_revision_applied", req.actor, actor_role, "comparison", comparison["comparison_id"], {"reason": req.reason, "change_count": comparison["change_count"]})
+        result_extra["comparison"] = comparison
+    elif action == "invite_member":
+        denied = require_permission("manage_members")
+        if denied: return denied
+        if len(room["members"]) >= 200: return {"ok": False, "version": APP_VERSION, "error": "room_member_limit_reached", "room": room, "decision_packet": packet}
+        member = payload.get("member", {}) if isinstance(payload.get("member"), dict) else payload
+        email = str(member.get("email", "")).strip().lower()
+        name = str(member.get("name", email or "Invited participant")).strip()
+        member_role = str(member.get("role", "observer")).strip().lower()
+        token = secrets.token_urlsafe(24)
+        member_record = {"member_id": _room_id("member", {"room": room["room_id"], "email": email, "name": name}), "user_id": member.get("user_id", ""), "email": email, "name": name, "role": member_role, "status": "invited", "invited_at": _utc_now(), "invited_by": req.actor}
+        room["members"].append(member_record)
+        grant = {"grant_id": _room_id("grant", {"room": room["room_id"], "member": member_record["member_id"], "at": _utc_now()}), "member_id": member_record["member_id"], "role": member_role, "status": "active", "expires_at": str(member.get("expires_at", "")), "token_hash": "sha256:" + hashlib.sha256(token.encode("utf-8")).hexdigest(), "token_hint": token[:4] + "…" + token[-4:]}
+        room["share_grants"].append(grant)
+        _append_room_event(room, "member_invited", req.actor, actor_role, "member", member_record["member_id"], {"role": member_role})
+        result_extra["member"] = member_record
+        result_extra["share_grant"] = grant
+        result_extra["share_token_once"] = token
+    elif action == "lock_version":
+        denied = require_permission("lock")
+        if denied: return denied
+        governance_state = _dig(packet, "governance_center", "current_state", default="draft")
+        if governance_state not in {"approved", "implemented"}:
+            return {"ok": False, "version": APP_VERSION, "error": "governance_approval_required", "governance_state": governance_state, "room": room, "decision_packet": packet}
+        snapshot = _create_packet_snapshot(packet, req.actor, str(payload.get("label", "Approved Decision Packet")))
+        snapshot["locked"] = True
+        room["snapshots"].append(snapshot)
+        room["locked_version"] = {"locked": True, "snapshot_id": snapshot["snapshot_id"], "content_hash": snapshot["content_hash"], "locked_at": _utc_now(), "locked_by": req.actor, "governance_state": governance_state}
+        room["status"] = "locked"
+        _append_room_event(room, "approved_version_locked", req.actor, actor_role, "snapshot", snapshot["snapshot_id"], {"content_hash": snapshot["content_hash"], "governance_state": governance_state})
+        result_extra["snapshot"] = snapshot
+    elif action == "reopen_version":
+        denied = require_permission("lock")
+        if denied: return denied
+        if not str(req.reason or payload.get("reason", "")).strip():
+            return {"ok": False, "version": APP_VERSION, "error": "reopen_reason_required", "room": room, "decision_packet": packet}
+        previous_lock = dict(room.get("locked_version") or {})
+        room["locked_version"] = {"locked": False, "reopened_at": _utc_now(), "reopened_by": req.actor, "reason": req.reason or payload.get("reason", ""), "previous_lock": previous_lock}
+        room["status"] = "active"
+        _append_room_event(room, "approved_version_reopened", req.actor, actor_role, "room", room["room_id"], {"reason": req.reason or payload.get("reason", "")})
+    elif action == "contact_handoff":
+        denied = require_permission("share")
+        if denied: return denied
+        handoff = {"schema": "sc-contact-engagement-handoff/1.0", "handoff_id": _room_id("engagement", {"room": room["room_id"], "at": _utc_now()}), "created_at": _utc_now(), "source_product": "decision-studio", "source_version": APP_VERSION, "decision_room_id": room["room_id"], "project_name": _dig(packet, "project", "project_name", default=""), "decision_question": _dig(packet, "project", "decision_question", default=""), "participants": [{"name": m.get("name", ""), "email": m.get("email", ""), "role": m.get("role", "observer")} for m in room.get("members", [])], "collaboration_needs": payload.get("collaboration_needs", []), "private_workspace_required": True, "requested_next_action": payload.get("requested_next_action", "Create or connect a private engagement workspace."), "notes": str(payload.get("notes", ""))[:20000]}
+        room["contact_engagement_handoffs"].append(handoff)
+        _append_room_event(room, "contact_engagement_handoff_created", req.actor, actor_role, "handoff", handoff["handoff_id"], {"requested_next_action": handoff["requested_next_action"]})
+        result_extra["contact_engagement_handoff"] = handoff
+    elif action not in {"evaluate", "create", "save"}:
+        return {"ok": False, "version": APP_VERSION, "error": "unknown_collaboration_action", "action": action, "room": room, "decision_packet": packet}
+
+    room["metrics"] = {"member_count": len(room["members"]), "open_comment_count": sum(1 for item in room["comments"] if item.get("status") == "open"), "open_change_request_count": sum(1 for item in room["change_requests"] if item.get("status") == "open"), "snapshot_count": len(room["snapshots"]), "pending_notification_count": sum(1 for item in room.get("notifications", []) if item.get("status") == "pending")}
+    room["activity_integrity"] = verify_collaboration_history(room.get("activity_timeline", []))
+    packet["packet_version"] = APP_VERSION
+    packet["collaboration_room_schema"] = COLLABORATION_ROOM_SCHEMA
+    packet["collaboration_event_schema"] = COLLABORATION_EVENT_SCHEMA
+    packet["collaboration_room"] = room
+    return {"ok": True, "version": APP_VERSION, "schema": COLLABORATION_ROOM_SCHEMA, "room": room, "decision_packet": packet, "actor_permissions": permissions, **result_extra}
+
 def review_status_catalog() -> Dict[str, Any]:
-    """Review state vocabulary used by v1.10.0 readiness and scenario governance gates."""
+    """Review state vocabulary used by v1.11.0 readiness and scenario governance gates."""
     return {
         "review_version": APP_VERSION,
         "states": [
@@ -2240,6 +2650,8 @@ def scenario_comparison_template() -> Dict[str, Any]:
     return {
         "comparison_version": APP_VERSION,
         "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
+        "collaboration_room_schema": COLLABORATION_ROOM_SCHEMA,
+        "collaboration_event_schema": COLLABORATION_EVENT_SCHEMA,
         "advanced_studio_available": True,
         "default_options": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"],
         "metrics": ["annual_avoided_tco2e", "total_avoided_tco2e", "npv", "payback_years", "risk_score", "confidence", "governance_burden", "implementation_complexity"],
@@ -2780,7 +3192,7 @@ def export_center_template() -> Dict[str, Any]:
         "saved_packet_fields": [
             "decision_packet_id", "project_name", "decision_question", "status", "updated_at",
             "inputs", "results", "decision_packet", "audit", "readiness", "scenario_comparison", "scenario_studio",
-            "workbench_handoff", "integrated_brief", "governance"
+            "workbench_handoff", "integrated_brief", "governance", "collaboration"
         ],
         "exports": [
             {"id": "packet_json", "label": "Decision Packet JSON", "description": "Complete normalized packet with module sections and raw artifact snapshots where included."},
@@ -2792,6 +3204,7 @@ def export_center_template() -> Dict[str, Any]:
             {"id": "scenario_studio_json", "label": "Advanced Scenario Studio JSON", "description": "Alternatives, weighted criteria, sensitivity, thresholds, uncertainty, stakeholder distribution, time horizons, and option value."},
             {"id": "handoff_json", "label": "Workbench Handoff JSON", "description": "Recommended Workbench tools, reasons, priorities, shortcodes, and payload summary."},
             {"id": "governance_json", "label": "Decision Governance JSON", "description": "Decision state, owner, reviewers, conditions, exceptions, conflicts, sign-offs, export gates, and immutable review history."},
+            {"id": "collaboration_json", "label": "Collaborative Decision Room JSON", "description": "Private room members, comments, change requests, snapshots, comparisons, notifications, share grants, locks, and activity history."},
         ],
         "warnings": [
             "Saved Decision Packets are working records, not approvals or professional signoff.",
@@ -2823,7 +3236,9 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
     governance = packet.get("governance_center", governance_template())
     governance_state = governance.get("current_state", req.status) if isinstance(governance, dict) else req.status
     saved_status = governance_state if req.status == "draft" and governance_state != "draft" else req.status
-    packet["saved_packet"] = {"status": saved_status, "storage": "client_or_wordpress", "notes": req.notes}
+    collaboration = req.collaboration or packet.get("collaboration_room") or collaborative_room_template()
+    packet["collaboration_room"] = collaboration
+    packet["saved_packet"] = {"status": saved_status, "storage": "wordpress_canonical_or_client_fallback", "notes": req.notes}
     saved = {
         "packet_version": APP_VERSION,
         "decision_packet_id": packet_id,
@@ -2841,6 +3256,7 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
         "workbench_handoff": workbench_handoff,
         "integrated_brief": integrated,
         "governance": packet.get("governance_center", governance_template()),
+        "collaboration": collaboration,
         "notes": req.notes,
         "warnings": ["Saved packet is a review artifact; it is not approval, certification, assurance, or professional advice."],
     }
@@ -2860,6 +3276,8 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
     workbench_handoff = req.workbenchHandoff or generate_workbench_handoff(WorkbenchHandoffRequest(inputs=inputs, results=results, packet=packet, readiness=readiness, scenarioComparison=scenario_comparison)).get("workbench_handoff", {})
     governance = req.governance or packet.get("governance_center") or governance_template()
     packet["governance_center"] = governance
+    collaboration = req.collaboration or packet.get("collaboration_room") or collaborative_room_template()
+    packet["collaboration_room"] = collaboration
     audience = str(req.exportAudience or "internal").strip().lower()
     gate = governance.get("export_gate", {}) if isinstance(governance, dict) else {}
     if audience == "reviewed" and not gate.get("reviewed_export_allowed", False):
@@ -2891,6 +3309,9 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
             "scenario_studio_json": scenario_studio,
             "workbench_handoff_json": workbench_handoff,
             "governance_json": governance,
+            "collaboration_json": collaboration,
+            "room_activity_json": collaboration.get("activity_timeline", []) if isinstance(collaboration, dict) else [],
+            "snapshot_comparison_json": collaboration.get("snapshot_comparisons", []) if isinstance(collaboration, dict) else [],
         },
         "export_manifest": export_center_template()["exports"],
         "warnings": export_center_template()["warnings"],
@@ -2902,7 +3323,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.10.0."""
+    """Professional public-facing product-page structure for Decision Studio v1.11.0."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
@@ -2932,7 +3353,7 @@ def public_landing_template() -> Dict[str, Any]:
         "schemas": {
             "artifact": PLATFORM_ARTIFACT_SCHEMA,
             "evidence": EVIDENCE_RECORD_SCHEMA,
-            "decision_packet": "scds-decision-packet/1.3",
+            "decision_packet": DECISION_PACKET_SCHEMA,
         },
         "boundaries": [
             "Educational and decision-support oriented; not professional advice.",
@@ -3155,6 +3576,8 @@ def health():
         "governance_schema": GOVERNANCE_SCHEMA,
         "review_event_schema": REVIEW_EVENT_SCHEMA,
         "scenario_studio_schema": SCENARIO_STUDIO_SCHEMA,
+        "collaboration_room_schema": COLLABORATION_ROOM_SCHEMA,
+        "collaboration_event_schema": COLLABORATION_EVENT_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -3292,6 +3715,64 @@ def decision_packet_governance_endpoint(req: GovernanceRequest):
 def governance_history_verify_endpoint(req: GovernanceRequest):
     return {"ok": True, "version": APP_VERSION, "integrity": verify_review_history(req.reviewHistory)}
 
+@app.get("/collaboration/roles")
+def collaboration_roles_endpoint():
+    return {"ok": True, "version": APP_VERSION, **collaboration_role_catalog()}
+
+@app.get("/collaboration/template")
+def collaboration_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "room": collaborative_room_template(), "roles": collaboration_role_catalog(), "decision_packet": decision_packet_template()}
+
+@app.post("/collaboration/room")
+def collaboration_room_endpoint(req: CollaborativeRoomRequest):
+    result = generate_collaborative_room(req)
+    if not result.get("ok", False):
+        return JSONResponse(status_code=403 if result.get("error") == "collaboration_permission_denied" else 409, content=result)
+    return result
+
+@app.post("/collaboration/action")
+def collaboration_action_endpoint(req: CollaborativeRoomRequest):
+    result = generate_collaborative_room(req)
+    if not result.get("ok", False):
+        return JSONResponse(status_code=403 if result.get("error") == "collaboration_permission_denied" else 409, content=result)
+    return result
+
+@app.post("/collaboration/comment")
+def collaboration_comment_endpoint(req: CollaborativeRoomRequest):
+    result = generate_collaborative_room(req.model_copy(update={"action": "add_comment"}))
+    if not result.get("ok", False): return JSONResponse(status_code=403 if result.get("error") == "collaboration_permission_denied" else 409, content=result)
+    return result
+
+@app.post("/collaboration/change-request")
+def collaboration_change_request_endpoint(req: CollaborativeRoomRequest):
+    result = generate_collaborative_room(req.model_copy(update={"action": "create_change_request"}))
+    if not result.get("ok", False): return JSONResponse(status_code=403 if result.get("error") == "collaboration_permission_denied" else 409, content=result)
+    return result
+
+@app.post("/collaboration/snapshot")
+def collaboration_snapshot_endpoint(req: CollaborativeRoomRequest):
+    result = generate_collaborative_room(req.model_copy(update={"action": "snapshot"}))
+    if not result.get("ok", False): return JSONResponse(status_code=403 if result.get("error") == "collaboration_permission_denied" else 409, content=result)
+    return result
+
+@app.post("/collaboration/share")
+def collaboration_share_endpoint(req: CollaborativeRoomRequest):
+    result = generate_collaborative_room(req.model_copy(update={"action": "invite_member"}))
+    if not result.get("ok", False): return JSONResponse(status_code=403 if result.get("error") == "collaboration_permission_denied" else 409, content=result)
+    return result
+
+@app.post("/collaboration/contact-handoff")
+def collaboration_contact_handoff_endpoint(req: CollaborativeRoomRequest):
+    result = generate_collaborative_room(req.model_copy(update={"action": "contact_handoff"}))
+    if not result.get("ok", False): return JSONResponse(status_code=403 if result.get("error") == "collaboration_permission_denied" else 409, content=result)
+    return result
+
+@app.post("/decision-packet/collaboration")
+def decision_packet_collaboration_endpoint(req: CollaborativeRoomRequest):
+    result = generate_collaborative_room(req)
+    if not result.get("ok", False): return JSONResponse(status_code=403 if result.get("error") == "collaboration_permission_denied" else 409, content=result)
+    return result
+
 @app.get("/audit/template")
 def audit_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "audit": audit_provenance_template()}
@@ -3384,4 +3865,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration"]}

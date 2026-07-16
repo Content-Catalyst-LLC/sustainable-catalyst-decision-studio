@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Advanced scenario, sensitivity, and decision-governance workspace with typed evidence handoffs from Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core; legacy artifact adapters remain supported.
- * Version: 1.10.0
+ * Description: Private collaborative decision rooms with role-based review, comments, revisions, snapshots, change requests, approved-version locks, and typed evidence handoffs from Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core; legacy artifact adapters remain supported.
+ * Version: 1.11.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '1.10.0';
-    const BUILD_FINGERPRINT = 'scds-v1.10.0-advanced-scenario-sensitivity';
-    const SOURCE_COMMIT = 'release-v1.10.0';
+    const VERSION = '1.11.0';
+    const BUILD_FINGERPRINT = 'scds-v1.11.0-collaborative-decision-rooms';
+    const SOURCE_COMMIT = 'release-v1.11.0';
     const RELEASE_DATE = '2026-07-16';
-    const DB_VERSION = '1.4.0';
+    const DB_VERSION = '1.5.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -26,6 +26,11 @@ class Sustainable_Catalyst_Decision_Studio {
     const PROJECTS_TABLE = 'scds_projects';
     const REPORTS_TABLE = 'scds_reports';
     const VALIDATION_TABLE = 'scds_validation';
+    const ROOMS_TABLE = 'scds_rooms';
+    const ROOM_MEMBERS_TABLE = 'scds_room_members';
+    const ROOM_EVENTS_TABLE = 'scds_room_events';
+    const COLLABORATION_ROOM_SCHEMA = 'scds-collaborative-decision-room/1.0';
+    const COLLABORATION_EVENT_SCHEMA = 'scds-collaboration-event/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -79,6 +84,9 @@ class Sustainable_Catalyst_Decision_Studio {
         $projects = $wpdb->prefix . self::PROJECTS_TABLE;
         $reports = $wpdb->prefix . self::REPORTS_TABLE;
         $validation = $wpdb->prefix . self::VALIDATION_TABLE;
+        $rooms = $wpdb->prefix . self::ROOMS_TABLE;
+        $room_members = $wpdb->prefix . self::ROOM_MEMBERS_TABLE;
+        $room_events = $wpdb->prefix . self::ROOM_EVENTS_TABLE;
 
         dbDelta("CREATE TABLE $projects (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -97,6 +105,7 @@ class Sustainable_Catalyst_Decision_Studio {
             workbench_handoff_json LONGTEXT,
             integrated_brief_json LONGTEXT,
             governance_json LONGTEXT,
+            collaboration_json LONGTEXT,
             export_bundle_json LONGTEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -127,6 +136,60 @@ class Sustainable_Catalyst_Decision_Studio {
             last_validated DATETIME NULL,
             PRIMARY KEY (id),
             UNIQUE KEY module_id (module_id)
+        ) $charset;");
+
+        dbDelta("CREATE TABLE $rooms (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            room_uuid VARCHAR(80) NOT NULL,
+            project_id BIGINT UNSIGNED DEFAULT 0,
+            title VARCHAR(255) NOT NULL,
+            visibility VARCHAR(40) DEFAULT 'private',
+            status VARCHAR(40) DEFAULT 'active',
+            owner_user_id BIGINT UNSIGNED DEFAULT 0,
+            room_json LONGTEXT,
+            packet_json LONGTEXT,
+            locked_version_hash VARCHAR(100) DEFAULT '',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY room_uuid (room_uuid),
+            KEY owner_user_id (owner_user_id),
+            KEY project_id (project_id),
+            KEY status (status)
+        ) $charset;");
+
+        dbDelta("CREATE TABLE $room_members (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            room_id BIGINT UNSIGNED NOT NULL,
+            user_id BIGINT UNSIGNED DEFAULT 0,
+            email VARCHAR(190) DEFAULT '',
+            display_name VARCHAR(255) DEFAULT '',
+            role VARCHAR(40) DEFAULT 'observer',
+            status VARCHAR(40) DEFAULT 'invited',
+            invited_by BIGINT UNSIGNED DEFAULT 0,
+            invited_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            accepted_at DATETIME NULL,
+            last_seen_at DATETIME NULL,
+            PRIMARY KEY (id),
+            KEY room_id (room_id),
+            KEY user_id (user_id),
+            KEY email (email)
+        ) $charset;");
+
+        dbDelta("CREATE TABLE $room_events (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            room_id BIGINT UNSIGNED NOT NULL,
+            event_type VARCHAR(80) NOT NULL,
+            actor_user_id BIGINT UNSIGNED DEFAULT 0,
+            actor_name VARCHAR(255) DEFAULT '',
+            target_type VARCHAR(80) DEFAULT 'room',
+            target_id VARCHAR(120) DEFAULT '',
+            event_json LONGTEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY room_id (room_id),
+            KEY event_type (event_type),
+            KEY created_at (created_at)
         ) $charset;");
     }
 
@@ -166,6 +229,12 @@ class Sustainable_Catalyst_Decision_Studio {
             ['decision-governance-center', 'Decision Governance and Review Center', 'validated'],
             ['immutable-review-history', 'Immutable Review History', 'validated'],
             ['approval-export-gates', 'Approval and Export Gates', 'validated'],
+            ['collaborative-decision-rooms', 'Collaborative Decision Rooms', 'validated'],
+            ['room-comments-change-requests', 'Room Comments and Change Requests', 'validated'],
+            ['packet-snapshots-comparison', 'Packet Snapshots and Version Comparison', 'validated'],
+            ['private-room-sharing', 'Private Room Sharing', 'validated'],
+            ['approved-version-locks', 'Approved Version Locks', 'validated'],
+            ['contact-engagement-handoff', 'Contact and Engagement Handoff', 'validated'],
         ];
         foreach ($modules as $m) {
             $wpdb->replace($table, [
@@ -183,7 +252,7 @@ class Sustainable_Catalyst_Decision_Studio {
     public static function default_settings() {
         return [
             'brand_title' => 'Sustainable Catalyst Decision Studio',
-            'brand_subtitle' => 'Connected decision intelligence for comparing alternatives, testing assumptions, finding thresholds, reviewing uncertainty, and governing approval in one auditable Decision Packet.',
+            'brand_subtitle' => 'Connected decision intelligence for private collaboration, evidence review, scenario analysis, governed approval, revisions, and locked Decision Packet versions.',
             'methodology_note' => 'AI in the toolkit, never in control. Outputs are decision-support drafts and educational analyses, not legal, financial, engineering, medical, sustainability assurance, tax, compliance, or investment advice.',
             'backend_url' => '',
             'backend_api_key' => '',
@@ -226,7 +295,7 @@ class Sustainable_Catalyst_Decision_Studio {
         ], $atts, 'sc_decision_studio');
 
         $mode = sanitize_key($atts['mode']);
-        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
+        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
             $mode = 'full';
         }
         $display = sanitize_key($atts['display'] ?: $mode);
@@ -238,7 +307,7 @@ class Sustainable_Catalyst_Decision_Studio {
             return $this->render_public_demo_shortcode($atts);
         }
 
-        $start_tab = $mode === 'workflow' ? 'workflow' : ($mode === 'readiness' ? 'readiness' : ($mode === 'governance' ? 'governance' : ($mode === 'project-intake' ? 'intake' : (in_array($mode, ['scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report'], true) ? $mode : 'intake'))));
+        $start_tab = $mode === 'workflow' ? 'workflow' : ($mode === 'readiness' ? 'readiness' : ($mode === 'governance' ? 'governance' : ($mode === 'room' ? 'room' : ($mode === 'project-intake' ? 'intake' : (in_array($mode, ['scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report'], true) ? $mode : 'intake')))));
         $uid = 'scds-' . wp_generate_uuid4();
 
         wp_enqueue_style('scds-decision-studio');
@@ -290,7 +359,14 @@ class Sustainable_Catalyst_Decision_Studio {
             'restDecisionPacketExportBundleUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/export-bundle')),
             'restPublicLandingTemplateUrl' => esc_url_raw(rest_url('scds/v1/public/landing-template')),
             'restPublicDemoTemplateUrl' => esc_url_raw(rest_url('scds/v1/public/demo-template')),
-            'storageKey' => 'scds_saved_decision_packets_v1_9_0',
+            'restCollaborationTemplateUrl' => esc_url_raw(rest_url('scds/v1/collaboration/template')),
+            'restCollaborationActionUrl' => esc_url_raw(rest_url('scds/v1/collaboration/action')),
+            'restDecisionPacketCollaborationUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/collaboration')),
+            'restRoomsUrl' => esc_url_raw(rest_url('scds/v1/rooms')),
+            'restCurrentUserRoomsUrl' => esc_url_raw(rest_url('scds/v1/rooms')),
+            'isLoggedIn' => is_user_logged_in(),
+            'currentUser' => ['id'=>get_current_user_id(),'name'=>is_user_logged_in()?wp_get_current_user()->display_name:'','role'=>current_user_can('manage_options')?'owner':(current_user_can('edit_posts')?'editor':'observer')],
+            'storageKey' => 'scds_saved_decision_packets_v1_11_0',
             'nonce' => wp_create_nonce(self::NONCE_ACTION),
             'backendEnabled' => $settings['backend_enabled'] === '1' && !empty($settings['backend_url']),
             'aiBriefingEnabled' => $settings['ai_briefing_enabled'] === '1',
@@ -318,6 +394,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <button type="button" class="scds-tab" data-scds-tab="workflow">Workflow</button>
                 <button type="button" class="scds-tab" data-scds-tab="readiness">Readiness</button>
                 <button type="button" class="scds-tab" data-scds-tab="governance">Governance</button>
+                <button type="button" class="scds-tab" data-scds-tab="room">Decision Room</button>
                 <button type="button" class="scds-tab" data-scds-tab="scorecard">Scorecard</button>
                 <button type="button" class="scds-tab" data-scds-tab="risk">Risk</button>
                 <button type="button" class="scds-tab" data-scds-tab="scenario">Scenarios</button>
@@ -332,6 +409,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <?php $this->render_panel_workflow($mode); ?>
                 <?php $this->render_panel_readiness($mode); ?>
                 <?php $this->render_panel_governance($mode); ?>
+                <?php $this->render_panel_collaboration($mode); ?>
                 <?php $this->render_panel_scorecard($mode); ?>
                 <?php $this->render_panel_risk($mode); ?>
                 <?php $this->render_panel_scenario($mode); ?>
@@ -370,7 +448,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 ['title'=>'Typed platform artifacts','description'=>'Validate the additive scds-platform-artifact/1.0 envelope across six current Sustainable Catalyst products.'],
                 ['title'=>'Unified evidence registry','description'=>'Retain source identity, methodology, freshness, confidence, citations, evidence notes, and transformation history.'],
                 ['title'=>'Integrity verification','description'=>'Calculate canonical payload hashes and flag supplied hashes that do not match the imported artifact.'],
-                ['title'=>'Decision Packet workspace','description'=>'Use scds-decision-packet/1.3 to hold platform handoffs, evidence, assumptions, scenarios, experiments, calculations, entities, provenance, and audit records.'],
+                ['title'=>'Decision Packet workspace','description'=>'Use scds-decision-packet/1.4 to hold platform handoffs, evidence, assumptions, scenarios, experiments, calculations, entities, provenance, and audit records.'],
                 ['title'=>'Batch and legacy import','description'=>'Import multiple typed artifacts while preserving compatibility with earlier Catalyst module exports.'],
                 ['title'=>'Readiness and scenario review','description'=>'Evaluate evidence completeness, compare alternatives, surface unresolved issues, and route deeper modeling to Workbench.'],
                 ['title'=>'Saved packets and export center','description'=>'Save working packets and export JSON, Markdown, HTML, audit, readiness, scenario, and handoff artifacts.'],
@@ -463,7 +541,7 @@ class Sustainable_Catalyst_Decision_Studio {
                     </article>
                 <?php endforeach; ?>
             </div>
-            <div class="scds-note"><strong>v1.10.0 contract:</strong> <code>scds-platform-artifact/1.0</code> is additive. Legacy Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, and Grit JSON exports remain importable through compatibility adapters.</div>
+            <div class="scds-note"><strong>v1.11.0 contract:</strong> <code>scds-platform-artifact/1.0</code> is additive. Legacy Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, and Grit JSON exports remain importable through compatibility adapters.</div>
             <div class="scds-import-box">
                 <div class="scds-panel-head scds-panel-head-small">
                     <p class="scds-section-kicker">Typed artifact import</p>
@@ -515,7 +593,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Quality gates before export</h3>
                 <p>Review whether the Decision Packet is ready for a draft brief, reviewed export, or further evidence work. The readiness gate checks framing, evidence, scenarios, impact, claims, finance, recovery, audit/provenance, and synthesis.</p>
             </div>
-            <div class="scds-note"><strong>v1.10.0:</strong> readiness scoring now surfaces section status, unresolved issues, required reviews, and export gates. It is a workflow quality screen, not approval or professional signoff.</div>
+            <div class="scds-note"><strong>v1.11.0:</strong> readiness scoring now surfaces section status, unresolved issues, required reviews, and export gates. It is a workflow quality screen, not approval or professional signoff.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-readiness>Check Brief Readiness</button>
                 <button type="button" class="scds-button" data-scds-generate-review-status>Generate Review Status</button>
@@ -557,6 +635,55 @@ class Sustainable_Catalyst_Decision_Studio {
         </section>
     <?php }
 
+    private function render_panel_collaboration($mode) { ?>
+        <section class="scds-panel" data-scds-panel="room">
+            <div class="scds-panel-head"><div><p class="scds-kicker">v1.11.0 collaborative workspace</p><h3>Collaborative Decision Room</h3><p>Private WordPress-managed rooms for participants, comments, change requests, snapshots, version comparison, notifications, and approved-version locks.</p></div><span class="scds-status">Private by default</span></div>
+            <?php if (!is_user_logged_in()) : ?>
+                <div class="scds-note"><strong>Sign-in required.</strong> Decision Rooms are private records and are not available to anonymous visitors.</div>
+            <?php else : ?>
+            <div class="scds-grid scds-grid-3">
+                <label>Room title<input type="text" data-scds-room-title value="Collaborative Decision Room"></label>
+                <label>Visibility<select data-scds-room-visibility><option value="private">Private</option><option value="restricted">Restricted</option><option value="institutional">Institutional</option></select></label>
+                <label>Your room role<select data-scds-room-role><option value="owner">Owner</option><option value="facilitator">Facilitator</option><option value="editor">Editor</option><option value="reviewer">Reviewer</option><option value="client">Client</option><option value="observer">Observer</option></select></label>
+                <label>Comment target type<input type="text" data-scds-room-target-type value="decision_packet"></label>
+                <label>Target ID<input type="text" data-scds-room-target-id value="packet-root"></label>
+                <label>Snapshot label<input type="text" data-scds-room-snapshot-label value="Decision Packet snapshot"></label>
+            </div>
+            <label>Comment<textarea rows="3" data-scds-room-comment placeholder="Attach a review comment to the packet, evidence record, assumption, scenario, or brief section."></textarea></label>
+            <div class="scds-actions">
+                <button type="button" class="scds-button scds-button-primary" data-scds-room-create>Create / evaluate room</button>
+                <button type="button" class="scds-button" data-scds-room-comment-add>Add comment</button>
+                <button type="button" class="scds-button" data-scds-room-snapshot>Create snapshot</button>
+                <button type="button" class="scds-button" data-scds-room-compare>Compare latest snapshots</button>
+                <button type="button" class="scds-button" data-scds-room-save>Save to WordPress</button>
+                <button type="button" class="scds-button" data-scds-room-refresh>Refresh rooms</button>
+                <button type="button" class="scds-button" data-scds-room-download>Download room JSON</button>
+            </div>
+            <details class="scds-details"><summary>Members and change requests</summary>
+                <label>Members JSON<textarea rows="8" data-scds-room-members>[{"name":"Decision owner","email":"","role":"owner","status":"active"}]</textarea></label>
+                <label>Change request title<input type="text" data-scds-room-change-title value="Review requested packet change"></label>
+                <label>Change request description<textarea rows="3" data-scds-room-change-description></textarea></label>
+                <label>Packet patch JSON<textarea rows="6" data-scds-room-patch>{}</textarea></label>
+                <label>Resolution / reopen note<textarea rows="3" data-scds-room-resolution placeholder="Explain the resolution, implementation decision, or reason for reopening an approved version."></textarea></label>
+                <label>Invitation JSON<textarea rows="5" data-scds-room-invite>{"name":"Review participant","email":"","role":"reviewer","expires_at":""}</textarea></label>
+                <div class="scds-actions">
+                    <button type="button" class="scds-button" data-scds-room-change-request>Create change request</button>
+                    <button type="button" class="scds-button" data-scds-room-comment-resolve>Resolve target comment</button>
+                    <button type="button" class="scds-button" data-scds-room-change-resolve>Accept target change</button>
+                    <button type="button" class="scds-button" data-scds-room-change-implement>Implement target change</button>
+                    <button type="button" class="scds-button" data-scds-room-apply-revision>Apply packet patch</button>
+                    <button type="button" class="scds-button" data-scds-room-invite>Invite participant</button>
+                    <button type="button" class="scds-button" data-scds-room-lock>Lock approved version</button>
+                    <button type="button" class="scds-button" data-scds-room-reopen>Reopen locked version</button>
+                    <button type="button" class="scds-button" data-scds-room-contact-handoff>Create Contact &amp; Engagement handoff</button>
+                </div>
+            </details>
+            <div class="scds-output" data-scds-room-output aria-live="polite"></div>
+            <div class="scds-output" data-scds-room-list aria-live="polite"></div>
+            <?php endif; ?>
+        </section>
+    <?php }
+
     private function render_panel_scorecard($mode) { ?>
         <section class="scds-panel" data-scds-panel="scorecard">
             <div class="scds-panel-head"><p class="scds-section-kicker">Four-pillar scorecard</p><h3>Environmental, social, economic, and governance scoring</h3><p>Use transparent weights and indicators to compare viability across the four pillars.</p></div>
@@ -595,7 +722,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Compare alternatives, vary assumptions, find thresholds, and inspect uncertainty</h3>
                 <p>Model any number of alternatives, apply weighted criteria, run one-way and two-variable sensitivity screens, search for break-even points, compare time horizons, and review stakeholder distribution and reversibility.</p>
             </div>
-            <div class="scds-note"><strong>v1.10.0:</strong> scenario analysis is now an auditable studio rather than a fixed comparison table. Screening outputs remain conditional on the assumptions entered and should be routed to Workbench for probabilistic simulation, optimization, engineering, or domain forecasting.</div>
+            <div class="scds-note"><strong>v1.11.0:</strong> scenario analysis is now an auditable studio rather than a fixed comparison table. Screening outputs remain conditional on the assumptions entered and should be routed to Workbench for probabilistic simulation, optimization, engineering, or domain forecasting.</div>
             <div class="scds-scenario-studio-grid">
                 <label>Alternatives JSON
                     <textarea rows="12" data-scds-scenario-alternatives><?php echo esc_textarea(wp_json_encode([
@@ -640,7 +767,7 @@ class Sustainable_Catalyst_Decision_Studio {
     private function render_panel_handoff($mode) { ?>
         <section class="scds-panel" data-scds-panel="handoff">
             <div class="scds-panel-head"><p class="scds-section-kicker">Workbench handoff</p><h3>Send deeper calculations, graphs, and technical checks to Workbench</h3><p>Decision Studio synthesizes the decision. Workbench performs deeper symbolic, graph, engineering, scenario, risk, economics, environmental QA/QC, and domain-specific analysis.</p></div>
-            <div class="scds-note"><strong>v1.10.0:</strong> handoff recommendations include tool IDs, reasons, priorities, shortcodes, and a payload summary that can be used to continue analysis in Workbench.</div>
+            <div class="scds-note"><strong>v1.11.0:</strong> handoff recommendations include tool IDs, reasons, priorities, shortcodes, and a payload summary that can be used to continue analysis in Workbench.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-workbench-handoff>Generate Workbench Handoff Plan</button><button type="button" class="scds-button" data-scds-export-handoff-json>Download Handoff JSON</button><button type="button" class="scds-button" data-scds-scenario-compare>Refresh Scenario Matrix</button></div>
             <div class="scds-workbench-handoff" data-scds-handoff-output></div>
         </section>
@@ -654,7 +781,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Save the packet, reload prior work, and export the full decision bundle</h3>
                 <p>Decision Studio can preserve the current Decision Packet as a browser-saved working record, generate a complete export bundle, and prepare JSON, Markdown, HTML, audit, readiness, scenario, and Workbench handoff exports.</p>
             </div>
-            <div class="scds-note"><strong>v1.10.0:</strong> saved packets are working records for review and continuation. Reviewed and public exports are governed by the current approval gate; internal draft exports remain available for controlled working use.</div>
+            <div class="scds-note"><strong>v1.11.0:</strong> saved packets are working records for review and continuation. Reviewed and public exports are governed by the current approval gate; internal draft exports remain available for controlled working use.</div>
             <div class="scds-form-grid scds-export-controls">
                 <label>Export audience
                     <select data-scds-export-audience>
@@ -692,7 +819,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Professional decision memo from the full Decision Packet</h3>
                 <p>Generate a structured brief that synthesizes framing, evidence, scenarios, impact records, claim review, finance, recovery, four-pillar scores, audit/provenance, and Workbench handoffs.</p>
             </div>
-            <div class="scds-note"><strong>v1.10.0:</strong> the brief generator now includes readiness status, scenario comparison matrix, Workbench handoff details, audit appendix summary, and Markdown/HTML/JSON exports.</div>
+            <div class="scds-note"><strong>v1.11.0:</strong> the brief generator now includes readiness status, scenario comparison matrix, Workbench handoff details, audit appendix summary, and Markdown/HTML/JSON exports.</div>
             <div class="scds-actions">
                 <button type="button" class="scds-button scds-button-primary" data-scds-integrated-brief>Generate Integrated Brief</button>
                 <button type="button" class="scds-button" data-scds-run>Generate Basic Brief</button>
@@ -717,7 +844,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <h3>Decision packet ledger, sources, assumptions, calculations, claims, changes, and review status</h3>
                 <p>Generate a structured audit appendix that shows what was entered, which module artifacts are present, which sources support the decision, which calculations were used, and which assumptions still require review.</p>
             </div>
-            <div class="scds-note"><strong>v1.10.0:</strong> audit works with the readiness gate so unresolved evidence, source, calculation, finance, claim, and review issues can be surfaced before export.</div>
+            <div class="scds-note"><strong>v1.11.0:</strong> audit works with the readiness gate so unresolved evidence, source, calculation, finance, claim, and review issues can be surfaced before export.</div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-audit-generate>Generate Audit Appendix</button><button type="button" class="scds-button" data-scds-export-audit-json>Download Audit JSON</button><button type="button" class="scds-button" data-scds-print>Print / Save PDF</button></div>
             <div class="scds-audit-list" data-scds-audit></div>
             <div class="scds-workbench-links" data-scds-workbench-links></div>
@@ -727,6 +854,7 @@ class Sustainable_Catalyst_Decision_Studio {
     public function register_admin_menu() {
         add_menu_page('SC Decision Studio', 'SC Decision Studio', 'manage_options', 'scds-dashboard', [$this, 'render_admin_dashboard'], 'dashicons-chart-area', 59);
         add_submenu_page('scds-dashboard', 'Projects', 'Projects', 'manage_options', 'scds-projects', [$this, 'render_admin_projects']);
+        add_submenu_page('scds-dashboard', 'Collaborative Decision Rooms', 'Decision Rooms', 'manage_options', 'scds-rooms', [$this, 'render_admin_rooms']);
         add_submenu_page('scds-dashboard', 'Integrated Workflow', 'Integrated Workflow', 'manage_options', 'scds-integrations', [$this, 'render_admin_integrations']);
         add_submenu_page('scds-dashboard', 'Scenario Templates', 'Scenario Templates', 'manage_options', 'scds-templates', [$this, 'render_admin_templates']);
         add_submenu_page('scds-dashboard', 'Scenario & Workbench Handoff', 'Scenario & Handoff', 'manage_options', 'scds-scenario-handoff', [$this, 'render_admin_scenario_handoff']);
@@ -764,7 +892,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
 
     public function render_admin_integrations() {
-        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.10.0 maps specialized modules into one Decision Packet, compares scenarios, routes deeper analysis to Workbench, and prepares saved packet/export workflows.');
+        $this->admin_wrap_start('Integrated Platform Workflow', 'Decision Studio v1.11.0 maps specialized modules into one Decision Packet, compares scenarios, routes deeper analysis to Workbench, and prepares saved packet/export workflows.');
         echo '<p>Use this map as the integration contract for the next build: module artifact exports should feed the Decision Packet sections listed below.</p>';
         echo '<table class="widefat striped"><thead><tr><th>Step</th><th>Module</th><th>Role</th><th>Feeds Decision Packet</th><th>URL</th></tr></thead><tbody>';
         foreach ($this->module_integrations() as $m) {
@@ -784,8 +912,14 @@ class Sustainable_Catalyst_Decision_Studio {
         echo '</tbody></table>'; $this->admin_wrap_end();
     }
 
+    public function render_admin_rooms() {
+        global $wpdb; $table=$wpdb->prefix.self::ROOMS_TABLE; $rows=$wpdb->get_results("SELECT id,room_uuid,title,visibility,status,owner_user_id,created_at,updated_at FROM $table ORDER BY id DESC LIMIT 100",ARRAY_A);
+        $this->admin_wrap_start('Collaborative Decision Rooms','Private WordPress-managed collaboration workspaces. Room JSON remains canonical in WordPress; the FastAPI backend provides contract validation and deterministic room actions.');
+        $this->render_csv_table($rows ?: []); $this->admin_wrap_end();
+    }
+
     public function render_admin_templates() { $this->admin_wrap_start('Scenario Templates', 'Bundled scenario structures for sustainability decisions.'); $this->render_csv_table($this->scenario_templates()); $this->admin_wrap_end(); }
-    public function render_admin_scenario_handoff() { $this->admin_wrap_start('Scenario Comparison and Workbench Handoff', 'v1.10.0 advanced scenario layer for comparing alternatives, testing sensitivity and thresholds, routing deeper computation to Workbench, and feeding governed export bundles.'); echo '<p><strong>Endpoints:</strong> /scenario-studio/template, /scenario-studio/analyze, /scenario-studio/sensitivity, /scenario-studio/threshold, /decision-packet/scenario-studio, /workbench/handoff, /decision-packet/workbench-handoff.</p>'; echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($this->workbench_handoff_catalog(), JSON_PRETTY_PRINT)) . '</pre>'; $this->admin_wrap_end(); }
+    public function render_admin_scenario_handoff() { $this->admin_wrap_start('Scenario Comparison and Workbench Handoff', 'v1.11.0 collaborative decision-room layer for comparing alternatives, testing sensitivity and thresholds, routing deeper computation to Workbench, and feeding governed export bundles.'); echo '<p><strong>Endpoints:</strong> /scenario-studio/template, /scenario-studio/analyze, /scenario-studio/sensitivity, /scenario-studio/threshold, /decision-packet/scenario-studio, /workbench/handoff, /decision-packet/workbench-handoff.</p>'; echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($this->workbench_handoff_catalog(), JSON_PRETTY_PRINT)) . '</pre>'; $this->admin_wrap_end(); }
     public function render_admin_scorecard() { $this->admin_wrap_start('Scorecard Builder', 'Default indicators and weights for four-pillar decision support.'); $this->render_csv_table($this->scorecard_rows()); $this->admin_wrap_end(); }
     public function render_admin_reports() { $this->admin_wrap_start('Report Templates', 'Decision brief structure used by the public interface and backend.'); echo '<pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html($this->report_template_markdown()) . '</pre>'; $this->admin_wrap_end(); }
 
@@ -831,10 +965,10 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
 
     public function render_admin_public_pages() {
-        $this->admin_wrap_start('Public Landing & Demo', 'Decision Studio v1.10.0 launch-ready public page structure, demo flow, and shortcode guidance.');
+        $this->admin_wrap_start('Public Landing & Demo', 'Decision Studio v1.11.0 launch-ready public page structure, demo flow, and shortcode guidance.');
         $template = $this->public_landing_template();
-        echo '<h2>Recommended public shortcodes</h2><textarea readonly style="width:100%;height:120px">[sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]&#10;[sc_decision_studio mode="demo" title="Decision Studio Demo"]&#10;[sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]&#10;[sc_decision_studio mode="export" title="Decision Studio Export Center"]</textarea>';
-        echo '<h2>Workflow copy</h2><p><strong>Use Canvas to frame. Use Data to anchor. Use Analytics R to model. Use Global Impact to measure. Use Narrative Risk to review. Use Finance to evaluate. Use Grit to sustain. Use Decision Studio to decide.</strong></p>';
+        echo '<h2>Recommended shortcodes</h2><textarea readonly style="width:100%;height:145px">[sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]&#10;[sc_decision_studio mode="demo" title="Decision Studio Demo"]&#10;[sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]&#10;[sc_decision_studio mode="room" title="Collaborative Decision Room"]&#10;[sc_decision_studio mode="export" title="Decision Studio Export Center"]</textarea>';
+        echo '<h2>Workflow copy</h2><p><strong>Use Knowledge Library to source. Research Librarian to route. Site Intelligence to observe. Workbench to calculate. Research Lab to test. Platform Core to connect. Decision Studio to compare, collaborate, govern, and decide.</strong></p>';
         echo '<h2>Landing template</h2><pre style="background:#fff;padding:18px;border:1px solid #ccd0d4;white-space:pre-wrap">' . esc_html(wp_json_encode($template, JSON_PRETTY_PRINT)) . '</pre>';
         $this->admin_wrap_end();
     }
@@ -914,17 +1048,19 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Advanced Scenario and Sensitivity Studio',
+            'release_name'=>'Collaborative Decision Rooms',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
             'database_version'=>self::DB_VERSION,
-            'decision_packet_schema'=>'scds-decision-packet/1.3',
+            'decision_packet_schema'=>'scds-decision-packet/1.4',
             'platform_artifact_schema'=>'scds-platform-artifact/1.0',
             'evidence_record_schema'=>'scds-evidence-record/1.0',
             'governance_schema'=>'scds-decision-governance/1.0',
             'review_event_schema'=>'scds-review-event/1.0',
             'scenario_studio_schema'=>'scds-scenario-studio/1.0',
+            'collaboration_room_schema'=>self::COLLABORATION_ROOM_SCHEMA,
+            'collaboration_event_schema'=>self::COLLABORATION_EVENT_SCHEMA,
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
                 'backend'=>self::VERSION,
@@ -939,6 +1075,10 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'one_way_sensitivity'=>true,
                 'multi_variable_sensitivity'=>true,
                 'threshold_break_even_analysis'=>true,
+                'collaborative_decision_rooms'=>true,
+                'wordpress_canonical_room_persistence'=>true,
+                'private_room_sharing'=>true,
+                'locked_approved_versions'=>true,
             ],
         ];
     }
@@ -1003,6 +1143,14 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/governance/transition', ['methods'=>'POST','callback'=>[$this,'rest_governance_evaluate'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
         register_rest_route('scds/v1', '/decision-packet/governance', ['methods'=>'POST','callback'=>[$this,'rest_governance_evaluate'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
         register_rest_route('scds/v1', '/governance/history/verify', ['methods'=>'POST','callback'=>[$this,'rest_governance_history_verify'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
+        register_rest_route('scds/v1', '/collaboration/template', ['methods'=>'GET','callback'=>[$this,'rest_collaboration_template'],'permission_callback'=>function(){ return is_user_logged_in(); }]);
+        register_rest_route('scds/v1', '/collaboration/action', ['methods'=>'POST','callback'=>[$this,'rest_collaboration_action'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
+        register_rest_route('scds/v1', '/decision-packet/collaboration', ['methods'=>'POST','callback'=>[$this,'rest_collaboration_action'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
+        register_rest_route('scds/v1', '/rooms', ['methods'=>'GET','callback'=>[$this,'rest_list_rooms'],'permission_callback'=>function(){ return is_user_logged_in(); }]);
+        register_rest_route('scds/v1', '/rooms', ['methods'=>'POST','callback'=>[$this,'rest_save_room'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
+        register_rest_route('scds/v1', '/rooms/(?P<id>\d+)', ['methods'=>'GET','callback'=>[$this,'rest_get_room'],'permission_callback'=>function(){ return is_user_logged_in(); }]);
+        register_rest_route('scds/v1', '/rooms/(?P<id>\d+)/action', ['methods'=>'POST','callback'=>[$this,'rest_room_action'],'permission_callback'=>function(){ return current_user_can('edit_posts'); }]);
+        register_rest_route('scds/v1', '/rooms/(?P<id>\d+)', ['methods'=>'DELETE','callback'=>[$this,'rest_delete_room'],'permission_callback'=>function(){ return current_user_can('delete_posts'); }]);
         register_rest_route('scds/v1', '/audit/template', ['methods'=>'GET','callback'=>[$this,'rest_audit_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/audit/generate', ['methods'=>'POST','callback'=>[$this,'rest_audit_generate'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/integrated-brief', ['methods'=>'POST','callback'=>[$this,'rest_integrated_brief'],'permission_callback'=>'__return_true']);
@@ -1190,8 +1338,8 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         $briefData = isset($payload['integratedBrief']) && is_array($payload['integratedBrief']) ? $payload['integratedBrief'] : $this->generate_integrated_brief($inputs,$results,$packet,$audit);
         $brief = isset($briefData['brief']) ? $briefData['brief'] : $briefData;
         $title = sanitize_text_field($payload['title'] ?? ($packet['project']['project_name'] ?? ($inputs['projectName'] ?? 'Decision Packet')));
-        $governance=$packet['governance_center'] ?? $this->governance_template(); $requested_status=sanitize_key($payload['status'] ?? 'draft'); $governance_status=sanitize_key($governance['current_state'] ?? $requested_status); $saved_status=($requested_status==='draft'&&$governance_status!=='draft')?$governance_status:$requested_status;
-        $saved = ['packet_version'=>self::VERSION,'decision_packet_id'=>$packet['decision_packet_id'] ?? ('SCDS-' . strtoupper(substr(preg_replace('/[^A-Za-z0-9]/','',$title),0,10)) . '-DRAFT'),'title'=>$title,'project_name'=>$title,'decision_question'=>$packet['project']['decision_question'] ?? ($inputs['decisionQuestion'] ?? ''),'status'=>$saved_status,'inputs'=>$inputs,'results'=>$results,'decision_packet'=>$packet,'audit'=>$audit,'readiness'=>$readiness,'scenario_comparison'=>$scenario,'scenario_studio'=>$scenario_studio,'workbench_handoff'=>$handoff,'integrated_brief'=>$brief,'governance'=>$packet['governance_center'] ?? $this->governance_template(),'notes'=>sanitize_textarea_field($payload['notes'] ?? ''),'warnings'=>['Saved packet is a working record, not approval or professional signoff.']];
+        $collaboration=isset($payload['collaboration'])&&is_array($payload['collaboration'])?$payload['collaboration']:($packet['collaboration_room']??$this->collaboration_room_template()); $packet['collaboration_room']=$collaboration; $governance=$packet['governance_center'] ?? $this->governance_template(); $requested_status=sanitize_key($payload['status'] ?? 'draft'); $governance_status=sanitize_key($governance['current_state'] ?? $requested_status); $saved_status=($requested_status==='draft'&&$governance_status!=='draft')?$governance_status:$requested_status;
+        $saved = ['packet_version'=>self::VERSION,'decision_packet_id'=>$packet['decision_packet_id'] ?? ('SCDS-' . strtoupper(substr(preg_replace('/[^A-Za-z0-9]/','',$title),0,10)) . '-DRAFT'),'title'=>$title,'project_name'=>$title,'decision_question'=>$packet['project']['decision_question'] ?? ($inputs['decisionQuestion'] ?? ''),'status'=>$saved_status,'inputs'=>$inputs,'results'=>$results,'decision_packet'=>$packet,'audit'=>$audit,'readiness'=>$readiness,'scenario_comparison'=>$scenario,'scenario_studio'=>$scenario_studio,'workbench_handoff'=>$handoff,'integrated_brief'=>$brief,'governance'=>$packet['governance_center'] ?? $this->governance_template(),'collaboration'=>$collaboration,'notes'=>sanitize_textarea_field($payload['notes'] ?? ''),'warnings'=>['Saved packet is a working record, not approval or professional signoff.']];
         return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'saved_packet'=>$saved,'export_center'=>$this->export_center_template()]);
     }
 
@@ -1207,9 +1355,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         $handoff = isset($payload['workbenchHandoff']) && is_array($payload['workbenchHandoff']) ? $payload['workbenchHandoff'] : $this->generate_workbench_handoff($inputs,$results,$packet,$scenario,$readiness)['workbench_handoff'];
         $briefData = isset($payload['integratedBrief']) && is_array($payload['integratedBrief']) ? $payload['integratedBrief'] : $this->generate_integrated_brief($inputs,$results,$packet,$audit);
         $brief = isset($briefData['brief']) ? $briefData['brief'] : $briefData;
-        $governance = isset($payload['governance']) && is_array($payload['governance']) ? $payload['governance'] : ($packet['governance_center'] ?? $this->governance_template()); $packet['governance_center']=$governance;
+        $governance = isset($payload['governance']) && is_array($payload['governance']) ? $payload['governance'] : ($packet['governance_center'] ?? $this->governance_template()); $packet['governance_center']=$governance; $collaboration=isset($payload['collaboration'])&&is_array($payload['collaboration'])?$payload['collaboration']:($packet['collaboration_room']??$this->collaboration_room_template()); $packet['collaboration_room']=$collaboration;
         $audience = sanitize_key($payload['exportAudience'] ?? 'internal'); $gate = is_array($governance['export_gate'] ?? null) ? $governance['export_gate'] : []; if($audience==='reviewed' && empty($gate['reviewed_export_allowed'])) return new WP_Error('scds_governance_export_blocked','Reviewed export is blocked by the current decision-governance state.',['status'=>409,'export_audience'=>$audience,'governance_export_gate'=>$gate]); if($audience==='public' && empty($gate['public_export_allowed'])) return new WP_Error('scds_governance_export_blocked','Public export is blocked by the current decision-governance state.',['status'=>409,'export_audience'=>$audience,'governance_export_gate'=>$gate]);
-        $bundle = ['bundle_version'=>self::VERSION,'label'=>sanitize_text_field($payload['exportLabel'] ?? 'Decision Studio Export Bundle'),'export_audience'=>$audience,'release_classification'=>($audience==='internal'&&empty($gate['reviewed_export_allowed']))?'internal_draft':$audience,'decision_packet_id'=>$packet['decision_packet_id'] ?? ($audit['decision_packet_id'] ?? 'SCDS-DRAFT'),'project_name'=>$packet['project']['project_name'] ?? ($inputs['projectName'] ?? 'Decision project'),'decision_question'=>$packet['project']['decision_question'] ?? ($inputs['decisionQuestion'] ?? ''),'exports'=>['decision_packet_json'=>$packet,'inputs_json'=>$inputs,'results_json'=>$results,'integrated_brief_json'=>$brief,'integrated_brief_markdown'=>$this->integrated_brief_markdown($brief),'integrated_brief_html'=>$this->integrated_brief_html($brief),'audit_json'=>$audit,'readiness_json'=>$readiness,'scenario_comparison_json'=>$scenario,'scenario_studio_json'=>$scenario_studio,'workbench_handoff_json'=>$handoff,'governance_json'=>$governance],'export_manifest'=>$this->export_center_template()['exports'],'warnings'=>$this->export_center_template()['warnings'],'governance_export_gate'=>$governance['export_gate'] ?? []];
+        $bundle = ['bundle_version'=>self::VERSION,'label'=>sanitize_text_field($payload['exportLabel'] ?? 'Decision Studio Export Bundle'),'export_audience'=>$audience,'release_classification'=>($audience==='internal'&&empty($gate['reviewed_export_allowed']))?'internal_draft':$audience,'decision_packet_id'=>$packet['decision_packet_id'] ?? ($audit['decision_packet_id'] ?? 'SCDS-DRAFT'),'project_name'=>$packet['project']['project_name'] ?? ($inputs['projectName'] ?? 'Decision project'),'decision_question'=>$packet['project']['decision_question'] ?? ($inputs['decisionQuestion'] ?? ''),'exports'=>['decision_packet_json'=>$packet,'inputs_json'=>$inputs,'results_json'=>$results,'integrated_brief_json'=>$brief,'integrated_brief_markdown'=>$this->integrated_brief_markdown($brief),'integrated_brief_html'=>$this->integrated_brief_html($brief),'audit_json'=>$audit,'readiness_json'=>$readiness,'scenario_comparison_json'=>$scenario,'scenario_studio_json'=>$scenario_studio,'workbench_handoff_json'=>$handoff,'governance_json'=>$governance,'collaboration_json'=>$collaboration,'room_activity_json'=>$collaboration['activity_timeline']??[],'snapshot_comparison_json'=>$collaboration['snapshot_comparisons']??[]],'export_manifest'=>$this->export_center_template()['exports'],'warnings'=>$this->export_center_template()['warnings'],'governance_export_gate'=>$governance['export_gate'] ?? []];
         return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'export_bundle'=>$bundle,'export_center'=>$this->export_center_template()]);
     }
 
@@ -1217,15 +1365,15 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         global $wpdb; $payload = $request->get_json_params(); if(!is_array($payload)) $payload=[];
         $saved = $this->rest_packet_save_template($request)->get_data()['saved_packet'];
         $table=$wpdb->prefix.self::PROJECTS_TABLE;
-        $wpdb->insert($table,['project_name'=>$saved['project_name'],'sector'=>$saved['inputs']['sector'] ?? '','location'=>$saved['inputs']['location'] ?? '','decision_question'=>$saved['decision_question'],'status'=>$saved['status'],'inputs_json'=>wp_json_encode($saved['inputs']),'results_json'=>wp_json_encode($saved['results']),'packet_json'=>wp_json_encode($saved['decision_packet']),'audit_json'=>wp_json_encode($saved['audit']),'readiness_json'=>wp_json_encode($saved['readiness']),'scenario_comparison_json'=>wp_json_encode($saved['scenario_comparison']),'scenario_studio_json'=>wp_json_encode($saved['scenario_studio']??[]),'workbench_handoff_json'=>wp_json_encode($saved['workbench_handoff']),'integrated_brief_json'=>wp_json_encode($saved['integrated_brief']),'governance_json'=>wp_json_encode($saved['governance'] ?? []),'export_bundle_json'=>'','updated_at'=>current_time('mysql')]);
+        $wpdb->insert($table,['project_name'=>$saved['project_name'],'sector'=>$saved['inputs']['sector'] ?? '','location'=>$saved['inputs']['location'] ?? '','decision_question'=>$saved['decision_question'],'status'=>$saved['status'],'inputs_json'=>wp_json_encode($saved['inputs']),'results_json'=>wp_json_encode($saved['results']),'packet_json'=>wp_json_encode($saved['decision_packet']),'audit_json'=>wp_json_encode($saved['audit']),'readiness_json'=>wp_json_encode($saved['readiness']),'scenario_comparison_json'=>wp_json_encode($saved['scenario_comparison']),'scenario_studio_json'=>wp_json_encode($saved['scenario_studio']??[]),'workbench_handoff_json'=>wp_json_encode($saved['workbench_handoff']),'integrated_brief_json'=>wp_json_encode($saved['integrated_brief']),'governance_json'=>wp_json_encode($saved['governance'] ?? []),'collaboration_json'=>wp_json_encode($saved['collaboration'] ?? ($saved['decision_packet']['collaboration_room'] ?? [])),'export_bundle_json'=>'','updated_at'=>current_time('mysql')]);
         return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'id'=>$wpdb->insert_id,'saved_packet'=>$saved]);
     }
     public function rest_list_packets() { global $wpdb; $table=$wpdb->prefix.self::PROJECTS_TABLE; $rows=$wpdb->get_results("SELECT id,project_name,sector,location,decision_question,status,created_at,updated_at FROM $table ORDER BY id DESC LIMIT 100", ARRAY_A); return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'packets'=>$rows ?: []]); }
-    public function rest_get_packet(WP_REST_Request $request) { global $wpdb; $id=intval($request['id']); $table=$wpdb->prefix.self::PROJECTS_TABLE; $row=$wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id=%d",$id), ARRAY_A); if(!$row) return new WP_Error('not_found','Packet not found',['status'=>404]); foreach(['inputs_json','results_json','packet_json','audit_json','readiness_json','scenario_comparison_json','scenario_studio_json','workbench_handoff_json','integrated_brief_json','governance_json','export_bundle_json'] as $k){ if(isset($row[$k])) $row[$k]=json_decode($row[$k], true); } return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'packet'=>$row]); }
+    public function rest_get_packet(WP_REST_Request $request) { global $wpdb; $id=intval($request['id']); $table=$wpdb->prefix.self::PROJECTS_TABLE; $row=$wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id=%d",$id), ARRAY_A); if(!$row) return new WP_Error('not_found','Packet not found',['status'=>404]); foreach(['inputs_json','results_json','packet_json','audit_json','readiness_json','scenario_comparison_json','scenario_studio_json','workbench_handoff_json','integrated_brief_json','governance_json','collaboration_json','export_bundle_json'] as $k){ if(isset($row[$k])) $row[$k]=json_decode($row[$k], true); } return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'packet'=>$row]); }
     public function rest_delete_packet(WP_REST_Request $request) { global $wpdb; $id=intval($request['id']); $table=$wpdb->prefix.self::PROJECTS_TABLE; $wpdb->delete($table,['id'=>$id],['%d']); return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'deleted_id'=>$id]); }
     public function rest_export_packet_json(WP_REST_Request $request) { $res=$this->rest_get_packet($request); if(is_wp_error($res)) return $res; $data=$res->get_data(); return new WP_REST_Response(wp_json_encode($data, JSON_PRETTY_PRINT), 200, ['Content-Type'=>'application/json; charset=utf-8','Content-Disposition'=>'attachment; filename="decision-studio-packet-'.$request['id'].'-v'.self::VERSION.'.json"']); }
 
-    public function rest_health() { return rest_ensure_response(['ok'=>true,'ready'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio','build_fingerprint'=>self::BUILD_FINGERPRINT,'database_version'=>(string)get_option(self::DB_VERSION_OPTION,'not-recorded'),'installed_version'=>(string)get_option(self::INSTALLED_VERSION_OPTION,'not-recorded'),'limits'=>['max_request_bytes'=>self::MAX_PUBLIC_REQUEST_BYTES,'public_rate_limit'=>self::PUBLIC_RATE_LIMIT],'governance_schema'=>'scds-decision-governance/1.0','review_event_schema'=>'scds-review-event/1.0','scenario_studio_schema'=>'scds-scenario-studio/1.0','release'=>$this->release_manifest()]); }
+    public function rest_health() { return rest_ensure_response(['ok'=>true,'ready'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio','build_fingerprint'=>self::BUILD_FINGERPRINT,'database_version'=>(string)get_option(self::DB_VERSION_OPTION,'not-recorded'),'installed_version'=>(string)get_option(self::INSTALLED_VERSION_OPTION,'not-recorded'),'limits'=>['max_request_bytes'=>self::MAX_PUBLIC_REQUEST_BYTES,'public_rate_limit'=>self::PUBLIC_RATE_LIMIT],'governance_schema'=>'scds-decision-governance/1.0','review_event_schema'=>'scds-review-event/1.0','scenario_studio_schema'=>'scds-scenario-studio/1.0','collaboration_room_schema'=>self::COLLABORATION_ROOM_SCHEMA,'collaboration_event_schema'=>self::COLLABORATION_EVENT_SCHEMA,'release'=>$this->release_manifest()]); }
     public function rest_release() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'release'=>$this->release_manifest()]); }
     public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
@@ -1464,9 +1612,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     }
 
     private function csv_response($filename, $rows) { $fh = fopen('php://temp','w+'); if ($rows) { fputcsv($fh, array_keys($rows[0])); foreach($rows as $row) fputcsv($fh, $row); } rewind($fh); $csv = stream_get_contents($fh); fclose($fh); return new WP_REST_Response($csv, 200, ['Content-Type'=>'text/csv; charset=utf-8','Content-Disposition'=>'attachment; filename="'.$filename.'"']); }
-    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.10.0.csv', $this->scenario_templates()); }
-    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.10.0.csv', $this->workbench_tool_map()); }
-    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.10.0.csv', $rows ?: []); }
+    public function rest_export_templates_csv() { return $this->csv_response('scds-scenario-templates-v1.11.0.csv', $this->scenario_templates()); }
+    public function rest_export_tool_map_csv() { return $this->csv_response('scds-workbench-tool-map-v1.11.0.csv', $this->workbench_tool_map()); }
+    public function rest_export_validation_csv() { global $wpdb; $rows=$wpdb->get_results('SELECT module_id,module_name,status,warnings,last_validated FROM '.$wpdb->prefix.self::VALIDATION_TABLE, ARRAY_A); return $this->csv_response('scds-validation-dashboard-v1.11.0.csv', $rows ?: []); }
 
 
     private function artifact_adapter_catalog() {
@@ -1637,7 +1785,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function import_artifact_into_packet($artifact, $module_id='', $packet=[]) {
         $normalized = $this->normalize_artifact($artifact, $module_id);
         $updated = $this->apply_packet_patch($packet, $normalized['packet_patch']);
-        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.10.0']];
+        return ['ok'=>true,'version'=>self::VERSION,'import_result'=>$normalized,'decision_packet'=>$updated,'analysis'=>['ok'=>true,'version'=>self::VERSION,'decision_packet_version'=>'1.11.0']];
     }
 
     private function module_integrations() {
@@ -1703,15 +1851,50 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     public function rest_governance_evaluate(WP_REST_Request $request){ $payload=$request->get_json_params(); if(!is_array($payload))$payload=[]; if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){ $backend=$this->backend_request('/governance/evaluate',$payload); if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend); } return rest_ensure_response($this->evaluate_governance_local($payload)); }
     public function rest_governance_history_verify(WP_REST_Request $request){ $payload=$request->get_json_params(); if(!is_array($payload))$payload=[]; return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'integrity'=>$this->verify_review_history($payload['reviewHistory']??[])]); }
 
+    private function collaboration_role_permissions($role) {
+        $map=['owner'=>['manage_room','manage_members','comment','request_change','resolve','snapshot','apply_revision','lock','share'],'facilitator'=>['manage_members','comment','request_change','resolve','snapshot','apply_revision','lock','share'],'editor'=>['comment','request_change','snapshot','apply_revision'],'reviewer'=>['comment','request_change','resolve','snapshot'],'client'=>['comment','request_change'],'observer'=>[]];
+        $role=sanitize_key($role ?: 'observer'); return $map[$role] ?? [];
+    }
+    private function collaboration_room_template() { return ['room_version'=>self::VERSION,'schema'=>self::COLLABORATION_ROOM_SCHEMA,'event_schema'=>self::COLLABORATION_EVENT_SCHEMA,'room_id'=>'','title'=>'Collaborative Decision Room','visibility'=>'private','status'=>'active','owner'=>[],'members'=>[],'comments'=>[],'change_requests'=>[],'snapshots'=>[],'snapshot_comparisons'=>[],'activity_timeline'=>[],'notifications'=>[],'share_grants'=>[],'locked_version'=>[],'contact_engagement_handoffs'=>[],'canonical_persistence'=>'wordpress','warnings'=>['Private room access is controlled by WordPress authentication and capabilities.','AI cannot approve, sign, certify, or impersonate a human reviewer.','Approved versions remain locked until an authorized human explicitly reopens them with a reason.']]; }
+    private function collaboration_hash($value){ return 'sha256:'.hash('sha256',wp_json_encode($value,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); }
+    private function collaboration_event(&$room,$type,$actor,$role,$target_type='room',$target_id='',$details=[]){ $events=is_array($room['activity_timeline']??null)?$room['activity_timeline']:[]; $previous=$events?($events[count($events)-1]['event_hash']??'GENESIS'):'GENESIS'; $event=['event_schema'=>self::COLLABORATION_EVENT_SCHEMA,'sequence'=>count($events)+1,'recorded_at'=>gmdate('c'),'event_type'=>$type,'actor'=>$actor,'actor_role'=>$role,'target_type'=>$target_type,'target_id'=>$target_id,'details'=>$details,'previous_hash'=>$previous]; $event['event_hash']=$this->collaboration_hash($event); $events[]=$event; $room['activity_timeline']=array_slice($events,-5000); }
+    private function collaboration_notify(&$room,$actor,$event_type,$target_id,$message){ $items=is_array($room['notifications']??null)?$room['notifications']:[]; foreach((array)($room['members']??[]) as $member){$recipient=$member['email']??($member['user_id']??($member['name']??''));if(!$recipient||strval($recipient)===strval($actor))continue;$items[]=['notification_id'=>'notification-'.wp_generate_uuid4(),'created_at'=>gmdate('c'),'recipient'=>$recipient,'event_type'=>$event_type,'target_id'=>$target_id,'message'=>$message,'status'=>'pending'];} $room['notifications']=array_slice($items,-2000); }
+    private function collaboration_snapshot($packet,$actor,$label='Decision Packet snapshot'){ $copy=$packet; if(isset($copy['collaboration_room']))$copy['collaboration_room']=['room_id'=>$copy['collaboration_room']['room_id']??'','schema'=>self::COLLABORATION_ROOM_SCHEMA,'locked_version'=>$copy['collaboration_room']['locked_version']??[]]; $hash=$this->collaboration_hash($copy); return ['snapshot_id'=>'snapshot-'.substr($hash,7,16).'-'.time(),'created_at'=>gmdate('c'),'created_by'=>$actor,'label'=>$label,'packet_version'=>$packet['packet_version']??self::VERSION,'governance_state'=>$packet['governance_center']['current_state']??'draft','content_hash'=>$hash,'packet'=>$copy,'locked'=>false]; }
+    private function collaboration_diff($before,$after,$prefix=''){ $out=[]; if(is_array($before)&&is_array($after)){ foreach(array_unique(array_merge(array_keys($before),array_keys($after))) as $key){ $path=$prefix===''?$key:$prefix.'.'.$key; if(!array_key_exists($key,$before))$out[]=['path'=>$path,'change'=>'added','before'=>null,'after'=>$after[$key]]; elseif(!array_key_exists($key,$after))$out[]=['path'=>$path,'change'=>'removed','before'=>$before[$key],'after'=>null]; else $out=array_merge($out,$this->collaboration_diff($before[$key],$after[$key],$path)); if(count($out)>=1000)break; } } elseif($before!==$after)$out[]=['path'=>$prefix?:'$','change'=>'changed','before'=>$before,'after'=>$after]; return array_slice($out,0,1000); }
+    private function collaboration_merge($target,$patch){ $target=is_array($target)?$target:[]; foreach((array)$patch as $key=>$value){ if(is_array($value)&&isset($target[$key])&&is_array($target[$key]))$target[$key]=$this->collaboration_merge($target[$key],$value);else $target[$key]=$value; } return $target; }
+    private function verify_collaboration_history($events){ $previous='GENESIS';$problems=[];foreach(array_values(is_array($events)?$events:[]) as $i=>$raw){$item=is_array($raw)?$raw:[];$supplied=strval($item['event_hash']??'');unset($item['event_hash']);if(strval($item['previous_hash']??'')!==$previous)$problems[]=['sequence'=>$i+1,'code'=>'previous_hash_mismatch'];$expected=$this->collaboration_hash($item);if($supplied!==$expected)$problems[]=['sequence'=>$i+1,'code'=>'event_hash_mismatch'];$previous=$supplied?:$expected;}return ['ok'=>empty($problems),'event_count'=>count(is_array($events)?$events:[]),'problems'=>$problems,'head_hash'=>$previous]; }
+    private function collaboration_action_local($payload){ $packet=is_array($payload['packet']??null)?array_replace_recursive($this->decision_packet_template(),$payload['packet']):$this->decision_packet_template(); $room=$this->collaboration_room_template(); if(is_array($payload['room']??null))$room=array_replace_recursive($room,$payload['room']); $actor=sanitize_text_field($payload['actor']??wp_get_current_user()->display_name); $role=sanitize_key($payload['actorRole']??'editor'); if(empty($room['owner'])&&$actor){$room['owner']=['name'=>$actor,'role'=>'owner'];if(empty($room['members']))$room['members'][]=['member_id'=>'member-'.wp_generate_uuid4(),'name'=>$actor,'email'=>'','user_id'=>get_current_user_id(),'role'=>'owner','status'=>'active'];} $action=sanitize_key(str_replace('-','_',$payload['action']??'evaluate')); $data=is_array($payload['payload']??null)?$payload['payload']:[]; $room['room_id']=$room['room_id']?:'room-'.wp_generate_uuid4(); $room['visibility']=in_array($room['visibility'],['private','restricted','institutional'],true)?$room['visibility']:'private'; $permissions=$this->collaboration_role_permissions($role); $deny=function($permission)use($permissions,$room,$packet,$role){ return in_array($permission,$permissions,true)?null:new WP_Error('scds_collaboration_permission_denied','The current room role cannot perform this action.',['status'=>403,'required_permission'=>$permission,'actor_role'=>$role,'room'=>$room,'decision_packet'=>$packet]); };
+        $extra=[]; if($action==='add_comment'){ if($e=$deny('comment'))return $e; $content=sanitize_textarea_field($data['content']??''); if(!$content)return new WP_Error('scds_comment_required','Comment content is required.',['status'=>400]); $comment=['comment_id'=>'comment-'.wp_generate_uuid4(),'created_at'=>gmdate('c'),'author'=>$actor,'author_role'=>$role,'target_type'=>sanitize_key($payload['targetType']??'decision_packet'),'target_id'=>sanitize_text_field($payload['targetId']??''),'content'=>$content,'status'=>'open']; $room['comments'][]=$comment; $this->collaboration_event($room,'comment_added',$actor,$role,'comment',$comment['comment_id']);$this->collaboration_notify($room,$actor,'comment_added',$comment['comment_id'],'New Decision Room comment from '.$actor.'.'); $extra['comment']=$comment; }
+        elseif($action==='resolve_comment'){ if($e=$deny('resolve'))return $e;$id=sanitize_text_field($data['comment_id']??($payload['targetId']??''));foreach($room['comments'] as &$item){if(($item['comment_id']??'')===$id){$item['status']='resolved';$item['resolved_at']=gmdate('c');$item['resolved_by']=$actor;$item['resolution']=sanitize_textarea_field($data['resolution']??($payload['reason']??''));$extra['comment']=$item;break;}}unset($item);if(empty($extra['comment']))return new WP_Error('scds_comment_not_found','Comment not found.',['status'=>404]);$this->collaboration_event($room,'comment_resolved',$actor,$role,'comment',$id,['resolution'=>$extra['comment']['resolution']??'']); }
+        elseif($action==='create_change_request'){ if($e=$deny('request_change'))return $e; $cr=['change_request_id'=>'change-'.wp_generate_uuid4(),'created_at'=>gmdate('c'),'requested_by'=>$actor,'requested_by_role'=>$role,'title'=>sanitize_text_field($data['title']??'Requested Decision Packet change'),'description'=>sanitize_textarea_field($data['description']??''),'target_type'=>sanitize_key($payload['targetType']??'decision_packet'),'target_id'=>sanitize_text_field($payload['targetId']??''),'status'=>'open','packet_patch'=>is_array($data['packet_patch']??null)?$data['packet_patch']:[],'resolution'=>[]]; $room['change_requests'][]=$cr; $this->collaboration_event($room,'change_request_created',$actor,$role,'change_request',$cr['change_request_id']);$this->collaboration_notify($room,$actor,'change_request_created',$cr['change_request_id'],'New Decision Room change request: '.$cr['title'].'.'); $extra['change_request']=$cr; }
+        elseif($action==='snapshot'||$action==='create_snapshot'){ if($e=$deny('snapshot'))return $e; $snapshot=$this->collaboration_snapshot($packet,$actor,sanitize_text_field($data['label']??'Decision Packet snapshot')); $room['snapshots'][]=$snapshot; $this->collaboration_event($room,'snapshot_created',$actor,$role,'snapshot',$snapshot['snapshot_id'],['content_hash'=>$snapshot['content_hash']]); $extra['snapshot']=$snapshot; }
+        elseif($action==='compare_snapshots'){ $shots=$room['snapshots']??[]; if(count($shots)<2)return new WP_Error('scds_two_snapshots_required','Two snapshots are required.',['status'=>409]); $before=$shots[count($shots)-2];$after=$shots[count($shots)-1];$changes=$this->collaboration_diff($before['packet']??[],$after['packet']??[]);$comparison=['comparison_id'=>'comparison-'.wp_generate_uuid4(),'created_at'=>gmdate('c'),'before_snapshot_id'=>$before['snapshot_id']??'','after_snapshot_id'=>$after['snapshot_id']??'','before_hash'=>$before['content_hash']??'','after_hash'=>$after['content_hash']??'','change_count'=>count($changes),'changed_paths'=>array_column($changes,'path'),'changes'=>$changes];$room['snapshot_comparisons'][]=$comparison;$this->collaboration_event($room,'snapshots_compared',$actor,$role,'comparison',$comparison['comparison_id'],['change_count'=>count($changes)]);$extra['comparison']=$comparison; }
+        elseif($action==='resolve_change_request'){ if($e=$deny('resolve'))return $e; $id=sanitize_text_field($data['change_request_id']??($payload['targetId']??''));$status=sanitize_key($data['status']??'accepted');if(!in_array($status,['accepted','rejected','deferred','implemented'],true))$status='accepted';foreach($room['change_requests'] as &$item){if(($item['change_request_id']??'')===$id){if($status==='implemented'&&!empty($room['locked_version']['locked']))return new WP_Error('scds_approved_version_locked','Approved version is locked.',['status'=>409]);$item['status']=$status;$item['resolved_at']=gmdate('c');$item['resolved_by']=$actor;$item['resolution']=['status'=>$status,'reason'=>sanitize_textarea_field($data['resolution']??($payload['reason']??''))];if($status==='implemented'&&!empty($item['packet_patch'])){$before=$this->collaboration_snapshot($packet,$actor,'Before implemented change request');$packet=$this->collaboration_merge($packet,$item['packet_patch']);$after=$this->collaboration_snapshot($packet,$actor,'After implemented change request');$room['snapshots'][]=$before;$room['snapshots'][]=$after;$changes=$this->collaboration_diff($before['packet'],$after['packet']);$comparison=['comparison_id'=>'comparison-'.wp_generate_uuid4(),'created_at'=>gmdate('c'),'before_snapshot_id'=>$before['snapshot_id'],'after_snapshot_id'=>$after['snapshot_id'],'before_hash'=>$before['content_hash'],'after_hash'=>$after['content_hash'],'change_count'=>count($changes),'changed_paths'=>array_column($changes,'path'),'changes'=>$changes];$room['snapshot_comparisons'][]=$comparison;$extra['comparison']=$comparison;}$extra['change_request']=$item;break;}}unset($item);if(empty($extra['change_request']))return new WP_Error('scds_change_request_not_found','Change request not found.',['status'=>404]);$this->collaboration_event($room,'change_request_resolved',$actor,$role,'change_request',$id,['status'=>$status]); }
+        elseif($action==='apply_revision'){ if($e=$deny('apply_revision'))return $e;if(!empty($room['locked_version']['locked']))return new WP_Error('scds_approved_version_locked','Approved version is locked.',['status'=>409]);$patch=is_array($data['packet_patch']??null)?$data['packet_patch']:[];if(!$patch)return new WP_Error('scds_packet_patch_required','Packet patch is required.',['status'=>400]);$before=$this->collaboration_snapshot($packet,$actor,'Before revision');$packet=$this->collaboration_merge($packet,$patch);$after=$this->collaboration_snapshot($packet,$actor,'After revision');$room['snapshots'][]=$before;$room['snapshots'][]=$after;$changes=$this->collaboration_diff($before['packet'],$after['packet']);$comparison=['comparison_id'=>'comparison-'.wp_generate_uuid4(),'created_at'=>gmdate('c'),'before_snapshot_id'=>$before['snapshot_id'],'after_snapshot_id'=>$after['snapshot_id'],'before_hash'=>$before['content_hash'],'after_hash'=>$after['content_hash'],'change_count'=>count($changes),'changed_paths'=>array_column($changes,'path'),'changes'=>$changes];$room['snapshot_comparisons'][]=$comparison;$this->collaboration_event($room,'packet_revision_applied',$actor,$role,'comparison',$comparison['comparison_id'],['change_count'=>count($changes)]);$extra['comparison']=$comparison; }
+        elseif($action==='invite_member'){ if($e=$deny('manage_members'))return $e;if(count($room['members']??[])>=200)return new WP_Error('scds_room_member_limit_reached','Decision Room member limit reached.',['status'=>409]);$member=is_array($data['member']??null)?$data['member']:$data;$token=wp_generate_password(32,false,false);$record=['member_id'=>'member-'.wp_generate_uuid4(),'user_id'=>intval($member['user_id']??0),'email'=>sanitize_email($member['email']??''),'name'=>sanitize_text_field($member['name']??'Invited participant'),'role'=>sanitize_key($member['role']??'observer'),'status'=>'invited','invited_at'=>gmdate('c'),'invited_by'=>$actor];$room['members'][]=$record;$grant=['grant_id'=>'grant-'.wp_generate_uuid4(),'member_id'=>$record['member_id'],'role'=>$record['role'],'status'=>'active','expires_at'=>sanitize_text_field($member['expires_at']??''),'token_hash'=>'sha256:'.hash('sha256',$token),'token_hint'=>substr($token,0,4).'…'.substr($token,-4)];$room['share_grants'][]=$grant;$this->collaboration_event($room,'member_invited',$actor,$role,'member',$record['member_id'],['role'=>$record['role']]);$extra['member']=$record;$extra['share_grant']=$grant;$extra['share_token_once']=$token; }
+        elseif($action==='lock_version'){ if($e=$deny('lock'))return $e;$state=sanitize_key($packet['governance_center']['current_state']??'draft');if(!in_array($state,['approved','implemented'],true))return new WP_Error('scds_governance_approval_required','Governance approval is required before locking a version.',['status'=>409,'governance_state'=>$state]);$snapshot=$this->collaboration_snapshot($packet,$actor,sanitize_text_field($data['label']??'Approved Decision Packet'));$snapshot['locked']=true;$room['snapshots'][]=$snapshot;$room['locked_version']=['locked'=>true,'snapshot_id'=>$snapshot['snapshot_id'],'content_hash'=>$snapshot['content_hash'],'locked_at'=>gmdate('c'),'locked_by'=>$actor,'governance_state'=>$state];$room['status']='locked';$this->collaboration_event($room,'approved_version_locked',$actor,$role,'snapshot',$snapshot['snapshot_id'],['content_hash'=>$snapshot['content_hash']]);$extra['snapshot']=$snapshot; }
+        elseif($action==='reopen_version'){ if($e=$deny('lock'))return $e;$reason=sanitize_textarea_field($payload['reason']??($data['reason']??''));if(!$reason)return new WP_Error('scds_reopen_reason_required','A reopen reason is required.',['status'=>400]);$previous=$room['locked_version']??[];$room['locked_version']=['locked'=>false,'reopened_at'=>gmdate('c'),'reopened_by'=>$actor,'reason'=>$reason,'previous_lock'=>$previous];$room['status']='active';$this->collaboration_event($room,'approved_version_reopened',$actor,$role,'room',$room['room_id'],['reason'=>$reason]); }
+        elseif($action==='contact_handoff'){ if($e=$deny('share'))return $e; $handoff=['schema'=>'sc-contact-engagement-handoff/1.0','handoff_id'=>'engagement-'.wp_generate_uuid4(),'created_at'=>gmdate('c'),'source_product'=>'decision-studio','source_version'=>self::VERSION,'decision_room_id'=>$room['room_id'],'project_name'=>$packet['project']['project_name']??'','decision_question'=>$packet['project']['decision_question']??'','participants'=>$room['members']??[],'collaboration_needs'=>$data['collaboration_needs']??[],'private_workspace_required'=>true,'requested_next_action'=>sanitize_text_field($data['requested_next_action']??'Create or connect a private engagement workspace.'),'notes'=>sanitize_textarea_field($data['notes']??'')];$room['contact_engagement_handoffs'][]=$handoff;$this->collaboration_event($room,'contact_engagement_handoff_created',$actor,$role,'handoff',$handoff['handoff_id']);$extra['contact_engagement_handoff']=$handoff; }
+        $room['activity_integrity']=$this->verify_collaboration_history($room['activity_timeline']??[]); $room['metrics']=['member_count'=>count($room['members']??[]),'open_comment_count'=>count(array_filter($room['comments']??[],fn($i)=>($i['status']??'open')==='open')),'open_change_request_count'=>count(array_filter($room['change_requests']??[],fn($i)=>($i['status']??'open')==='open')),'snapshot_count'=>count($room['snapshots']??[]),'pending_notification_count'=>count(array_filter($room['notifications']??[],fn($i)=>($i['status']??'pending')==='pending'))]; $packet['packet_version']=self::VERSION;$packet['collaboration_room_schema']=self::COLLABORATION_ROOM_SCHEMA;$packet['collaboration_event_schema']=self::COLLABORATION_EVENT_SCHEMA;$packet['collaboration_room']=$room; return ['ok'=>true,'version'=>self::VERSION,'schema'=>self::COLLABORATION_ROOM_SCHEMA,'room'=>$room,'decision_packet'=>$packet,'actor_permissions'=>$permissions]+$extra; }
+    public function rest_collaboration_template(){ return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'room'=>$this->collaboration_room_template(),'decision_packet'=>$this->decision_packet_template()]); }
+    public function rest_collaboration_action(WP_REST_Request $request){ $payload=$request->get_json_params();if(!is_array($payload))$payload=[];if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request('/collaboration/action',$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);} $local=$this->collaboration_action_local($payload);return is_wp_error($local)?$local:rest_ensure_response($local); }
+    private function sync_room_relations($room_id,$room){ global $wpdb;$members=$wpdb->prefix.self::ROOM_MEMBERS_TABLE;$events=$wpdb->prefix.self::ROOM_EVENTS_TABLE;$wpdb->delete($members,['room_id'=>intval($room_id)],['%d']);foreach(array_slice(is_array($room['members']??null)?$room['members']:[],0,200) as $member){$uid=intval($member['user_id']??0);if(!$uid&&!empty($member['email'])){$user=get_user_by('email',sanitize_email($member['email']));if($user)$uid=intval($user->ID);}$wpdb->insert($members,['room_id'=>intval($room_id),'user_id'=>$uid,'email'=>sanitize_email($member['email']??''),'display_name'=>sanitize_text_field($member['name']??''),'role'=>sanitize_key($member['role']??'observer'),'status'=>sanitize_key($member['status']??'invited'),'invited_by'=>get_current_user_id(),'invited_at'=>current_time('mysql')]);}$wpdb->delete($events,['room_id'=>intval($room_id)],['%d']);foreach(array_slice(is_array($room['activity_timeline']??null)?$room['activity_timeline']:[],-5000) as $event){$wpdb->insert($events,['room_id'=>intval($room_id),'event_type'=>sanitize_key($event['event_type']??'room_event'),'actor_user_id'=>get_current_user_id(),'actor_name'=>sanitize_text_field($event['actor']??''),'target_type'=>sanitize_key($event['target_type']??'room'),'target_id'=>sanitize_text_field($event['target_id']??''),'event_json'=>wp_json_encode($event),'created_at'=>current_time('mysql')]);} }
+    private function room_row_allowed($row){ if(current_user_can('manage_options'))return true;$uid=get_current_user_id();if(intval($row['owner_user_id']??0)===$uid)return true;global $wpdb;$members=$wpdb->prefix.self::ROOM_MEMBERS_TABLE;return (bool)$wpdb->get_var($wpdb->prepare("SELECT id FROM $members WHERE room_id=%d AND user_id=%d AND status IN ('active','accepted','invited') LIMIT 1",intval($row['id']),$uid)); }
+    public function rest_save_room(WP_REST_Request $request){ global $wpdb;$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$result=$this->collaboration_action_local($payload+['action'=>$payload['action']??'evaluate']);if(is_wp_error($result))return $result;$room=$result['room'];$packet=$result['decision_packet'];$table=$wpdb->prefix.self::ROOMS_TABLE;$uuid=sanitize_text_field($room['room_id']);$existing=$wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE room_uuid=%s",$uuid),ARRAY_A);$data=['room_uuid'=>$uuid,'project_id'=>intval($payload['project_id']??0),'title'=>sanitize_text_field($room['title']??'Collaborative Decision Room'),'visibility'=>sanitize_key($room['visibility']??'private'),'status'=>sanitize_key($room['status']??'active'),'owner_user_id'=>get_current_user_id(),'room_json'=>wp_json_encode($room),'packet_json'=>wp_json_encode($packet),'locked_version_hash'=>sanitize_text_field($room['locked_version']['content_hash']??''),'updated_at'=>current_time('mysql')];if($existing){if(!$this->room_row_allowed($existing))return new WP_Error('scds_room_forbidden','You cannot update this room.',['status'=>403]);$wpdb->update($table,$data,['id'=>intval($existing['id'])]);$id=intval($existing['id']);}else{$wpdb->insert($table,$data);$id=intval($wpdb->insert_id);}$this->sync_room_relations($id,$room);return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'id'=>$id,'room'=>$room,'decision_packet'=>$packet]); }
+    public function rest_list_rooms(){ global $wpdb;$table=$wpdb->prefix.self::ROOMS_TABLE;$uid=get_current_user_id();if(current_user_can('manage_options'))$rows=$wpdb->get_results("SELECT id,room_uuid,title,visibility,status,owner_user_id,created_at,updated_at FROM $table ORDER BY id DESC LIMIT 100",ARRAY_A);else{$members=$wpdb->prefix.self::ROOM_MEMBERS_TABLE;$rows=$wpdb->get_results($wpdb->prepare("SELECT DISTINCT r.id,r.room_uuid,r.title,r.visibility,r.status,r.owner_user_id,r.created_at,r.updated_at FROM $table r LEFT JOIN $members m ON m.room_id=r.id WHERE r.owner_user_id=%d OR m.user_id=%d ORDER BY r.id DESC LIMIT 100",$uid,$uid),ARRAY_A);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'rooms'=>$rows?:[]]); }
+    public function rest_get_room(WP_REST_Request $request){ global $wpdb;$table=$wpdb->prefix.self::ROOMS_TABLE;$row=$wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id=%d",intval($request['id'])),ARRAY_A);if(!$row)return new WP_Error('not_found','Decision Room not found.',['status'=>404]);if(!$this->room_row_allowed($row))return new WP_Error('scds_room_forbidden','You cannot access this room.',['status'=>403]);$row['room_json']=json_decode($row['room_json'],true);$row['packet_json']=json_decode($row['packet_json'],true);return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'room_record'=>$row]); }
+    public function rest_room_action(WP_REST_Request $request){ $loaded=$this->rest_get_room($request);if(is_wp_error($loaded))return $loaded;$record=$loaded->get_data()['room_record'];$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$payload['room']=$record['room_json'];$payload['packet']=$record['packet_json'];$result=$this->collaboration_action_local($payload);if(is_wp_error($result))return $result;global $wpdb;$table=$wpdb->prefix.self::ROOMS_TABLE;$wpdb->update($table,['room_json'=>wp_json_encode($result['room']),'packet_json'=>wp_json_encode($result['decision_packet']),'locked_version_hash'=>sanitize_text_field($result['room']['locked_version']['content_hash']??''),'status'=>sanitize_key($result['room']['status']??'active'),'updated_at'=>current_time('mysql')],['id'=>intval($request['id'])]);$this->sync_room_relations(intval($request['id']),$result['room']);return rest_ensure_response($result+['id'=>intval($request['id'])]); }
+    public function rest_delete_room(WP_REST_Request $request){ global $wpdb;$table=$wpdb->prefix.self::ROOMS_TABLE;$row=$wpdb->get_row($wpdb->prepare("SELECT * FROM $table WHERE id=%d",intval($request['id'])),ARRAY_A);if(!$row||!$this->room_row_allowed($row))return new WP_Error('scds_room_forbidden','You cannot delete this room.',['status'=>403]);$wpdb->delete($table,['id'=>intval($request['id'])]);return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'deleted_id'=>intval($request['id'])]); }
+
     private function decision_packet_template() {
         return [
-            'packet_version'=>'1.10.0','artifact_schema'=>'scds-platform-artifact/1.0','evidence_record_schema'=>'scds-evidence-record/1.0',
+            'packet_version'=>'1.11.0','artifact_schema'=>'scds-platform-artifact/1.0','evidence_record_schema'=>'scds-evidence-record/1.0',
             'governance_schema'=>'scds-decision-governance/1.0',
-            'review_event_schema'=>'scds-review-event/1.0','scenario_studio_schema'=>'scds-scenario-studio/1.0','governance_schema'=>'scds-decision-governance/1.0',
+            'review_event_schema'=>'scds-review-event/1.0','scenario_studio_schema'=>'scds-scenario-studio/1.0','collaboration_room_schema'=>self::COLLABORATION_ROOM_SCHEMA,'collaboration_event_schema'=>self::COLLABORATION_EVENT_SCHEMA,'governance_schema'=>'scds-decision-governance/1.0',
             'workflow'=>'Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio',
             'project'=>['project_name'=>'','organization_type'=>'','sector'=>'','location'=>'','time_horizon'=>'','decision_question'=>''],
             'decision_framing'=>[],'evidence_registry'=>[],'citations'=>[],'quotations'=>[],'research_routes'=>[],'evidence_gaps'=>[],'follow_up_questions'=>[],'live_evidence'=>[],'methodologies'=>[],'experimental_evidence'=>[],'datasets'=>[],'technical_artifacts'=>[],'platform_registry'=>[],'entities'=>[],'evidence_ledger'=>[],'provenance_links'=>[],'platform_handoffs'=>[],'integrity_checks'=>[],
-            'framing'=>[],'evidence_records'=>[],'scenario_analysis'=>[],'impact_records'=>[],'claim_reviews'=>[],'finance_analysis'=>[],'execution_recovery'=>[],'synthesis'=>[],'scenario_comparison'=>[],'scenario_studio'=>[],'sensitivity_analysis'=>[],'threshold_analysis'=>[],'uncertainty_analysis'=>[],'workbench_handoffs'=>[],'four_pillar_scores'=>[],'assumptions'=>[],'risks'=>[],'sources'=>[],'audit_trail'=>[],'calculation_trace'=>[],'workbench_calculations'=>[],'audit_and_provenance'=>$this->audit_provenance_template(),'governance_center'=>$this->governance_template(),
+            'framing'=>[],'evidence_records'=>[],'scenario_analysis'=>[],'impact_records'=>[],'claim_reviews'=>[],'finance_analysis'=>[],'execution_recovery'=>[],'synthesis'=>[],'scenario_comparison'=>[],'scenario_studio'=>[],'sensitivity_analysis'=>[],'threshold_analysis'=>[],'uncertainty_analysis'=>[],'workbench_handoffs'=>[],'four_pillar_scores'=>[],'assumptions'=>[],'risks'=>[],'sources'=>[],'audit_trail'=>[],'calculation_trace'=>[],'workbench_calculations'=>[],'audit_and_provenance'=>$this->audit_provenance_template(),'governance_center'=>$this->governance_template(),'collaboration_room'=>$this->collaboration_room_template(),
             'module_slots'=>array_map(function($m){ return ['module_id'=>$m['id'],'name'=>$m['name'],'artifact_key'=>$m['artifact_key'],'packet_section'=>$m['packet_section'],'status'=>'empty']; }, $this->module_integrations()),
         ];
     }
@@ -1719,7 +1902,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
 
     private function audit_provenance_template() {
         return [
-            'audit_version'=>'1.10.0',
+            'audit_version'=>'1.11.0',
             'decision_packet_id'=>'SCDS-DRAFT',
             'review_status'=>[
                 'status'=>'draft',
@@ -1916,7 +2099,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     }
 
 
-    private function export_center_template() { return ['export_center_version'=>self::VERSION,'saved_packet_fields'=>['decision_packet_id','project_name','decision_question','status','updated_at','inputs','results','decision_packet','audit','readiness','scenario_comparison','scenario_studio','workbench_handoff','integrated_brief','governance'],'exports'=>[['id'=>'packet_json','label'=>'Decision Packet JSON','description'=>'Complete normalized packet.'],['id'=>'integrated_brief_markdown','label'=>'Integrated Brief Markdown','description'=>'Reviewable decision memo.'],['id'=>'integrated_brief_html','label'=>'Integrated Brief HTML','description'=>'Browser-printable decision memo.'],['id'=>'audit_json','label'=>'Audit & Provenance JSON','description'=>'Evidence, assumptions, calculations, claims, changes, and review ledger.'],['id'=>'readiness_json','label'=>'Readiness JSON','description'=>'Section readiness, unresolved issues, and export gates.'],['id'=>'scenario_json','label'=>'Scenario Comparison JSON','description'=>'Compatibility scenario matrix and ranking.'],['id'=>'scenario_studio_json','label'=>'Advanced Scenario Studio JSON','description'=>'Alternatives, criteria, sensitivity, thresholds, uncertainty, stakeholders, time horizons, and option value.'],['id'=>'handoff_json','label'=>'Workbench Handoff JSON','description'=>'Workbench tool recommendations and payload summary.'],['id'=>'governance_json','label'=>'Decision Governance JSON','description'=>'Decision state, owner, reviewers, conditions, exceptions, conflicts, sign-offs, export gates, and immutable review history.']],'warnings'=>['Saved Decision Packets are working records, not approvals or professional signoff.','Exports preserve user-entered and imported content; review sensitive information before sharing.']]; }
+    private function export_center_template() { return ['export_center_version'=>self::VERSION,'saved_packet_fields'=>['decision_packet_id','project_name','decision_question','status','updated_at','inputs','results','decision_packet','audit','readiness','scenario_comparison','scenario_studio','workbench_handoff','integrated_brief','governance','collaboration'],'exports'=>[['id'=>'packet_json','label'=>'Decision Packet JSON','description'=>'Complete normalized packet.'],['id'=>'integrated_brief_markdown','label'=>'Integrated Brief Markdown','description'=>'Reviewable decision memo.'],['id'=>'integrated_brief_html','label'=>'Integrated Brief HTML','description'=>'Browser-printable decision memo.'],['id'=>'audit_json','label'=>'Audit & Provenance JSON','description'=>'Evidence, assumptions, calculations, claims, changes, and review ledger.'],['id'=>'readiness_json','label'=>'Readiness JSON','description'=>'Section readiness, unresolved issues, and export gates.'],['id'=>'scenario_json','label'=>'Scenario Comparison JSON','description'=>'Compatibility scenario matrix and ranking.'],['id'=>'scenario_studio_json','label'=>'Advanced Scenario Studio JSON','description'=>'Alternatives, criteria, sensitivity, thresholds, uncertainty, stakeholders, time horizons, and option value.'],['id'=>'handoff_json','label'=>'Workbench Handoff JSON','description'=>'Workbench tool recommendations and payload summary.'],['id'=>'governance_json','label'=>'Decision Governance JSON','description'=>'Decision state, owner, reviewers, conditions, exceptions, conflicts, sign-offs, export gates, and immutable review history.'],['id'=>'collaboration_json','label'=>'Collaborative Decision Room JSON','description'=>'Members, comments, change requests, snapshots, comparisons, notifications, sharing grants, approved-version locks, and activity history.']],'warnings'=>['Saved Decision Packets are working records, not approvals or professional signoff.','Exports preserve user-entered and imported content; review sensitive information before sharing.']]; }
 
     private function scenario_templates() { return [ ['template_id'=>'baseline','name'=>'Baseline','purpose'=>'Current path with no intervention'], ['template_id'=>'conservative','name'=>'Conservative','purpose'=>'Lower adoption, higher cost, slower benefits'], ['template_id'=>'expected','name'=>'Expected','purpose'=>'Central planning assumption'], ['template_id'=>'ambitious','name'=>'Ambitious','purpose'=>'Higher adoption and faster benefits'], ['template_id'=>'stress','name'=>'Stress Test','purpose'=>'Costs rise, benefits lag, governance weakens'], ['template_id'=>'transition','name'=>'Transition Pathway','purpose'=>'Staged implementation over multiple years'] ]; }
     private function scorecard_rows() { return [ ['pillar'=>'Environmental','default_weight'=>'30','indicators'=>'emissions, energy, land, water, biodiversity, pollution'], ['pillar'=>'Social','default_weight'=>'20','indicators'=>'health, access, equity, labor, community, capability'], ['pillar'=>'Economic','default_weight'=>'30','indicators'=>'NPV, ROI, payback, affordability, productivity, resilience'], ['pillar'=>'Governance','default_weight'=>'20','indicators'=>'accountability, evidence, controls, transparency, capacity, audit trail'] ]; }

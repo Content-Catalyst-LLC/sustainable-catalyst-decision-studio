@@ -1,44 +1,54 @@
-# Sustainable Catalyst Decision Studio v1.10.0
+# Sustainable Catalyst Decision Studio v1.11.0
 
-**Advanced Scenario and Sensitivity Studio**
+**Collaborative Decision Rooms**
 
-Decision Studio is the Sustainable Catalyst platform's governed decision orchestration layer. v1.10.0 compares custom alternatives, tests assumptions and thresholds, examines uncertainty and stakeholder distribution, preserves human review gates, and routes deeper probabilistic or domain-specific computation to Workbench.
+Decision Studio is the Sustainable Catalyst platform's governed decision orchestration layer. v1.11.0 adds private, WordPress-managed collaboration rooms around the Decision Packet so owners, facilitators, editors, reviewers, clients, and observers can work through comments, change requests, revisions, snapshots, version comparisons, approvals, and implementation records without weakening the governance controls introduced in v1.9.0.
 
-## v1.10.0 highlights
+## v1.11.0 highlights
 
-- Up to 100 custom alternatives and 50 criteria
-- Weighted and unweighted multi-criteria rankings
-- One-way sensitivity and tornado ranking
-- Two-variable screening grids
-- Threshold and break-even analysis
-- Uncertainty-envelope and time-horizon comparison
-- Stakeholder distribution, dominance, reversibility, and option value
-- `scds-scenario-studio/1.0` with Decision Packet `scds-decision-packet/1.3`
-- WordPress and FastAPI parity, persistence, and governed exports
-- Preserved typed platform handoffs and Decision Governance Center
+- Private, restricted, and institutional Decision Rooms
+- Role-based permissions for owners, facilitators, editors, reviewers, clients, and observers
+- Section-linked comments and resolution records
+- Change requests with implementation tracking
+- Decision Packet snapshots and structured version comparison
+- Tamper-evident collaboration activity history using SHA-256 hash chaining
+- Private invitations with one-time tokens; only token hashes are retained
+- Approved-version locking and reasoned reopening
+- WordPress as the canonical room and membership store
+- Contact and Engagement Platform handoffs for private advisory workspaces
+- Decision Packet `scds-decision-packet/1.4`
+- Collaboration contracts `scds-collaborative-decision-room/1.0` and `scds-collaboration-event/1.0`
 
-## Primary scenario endpoints
+## Primary collaboration endpoints
 
-- `GET /scenario-studio/template`
-- `POST /scenario-studio/analyze`
-- `POST /scenario-studio/sensitivity`
-- `POST /scenario-studio/threshold`
-- `POST /decision-packet/scenario-studio`
+- `GET /collaboration/roles`
+- `GET /collaboration/template`
+- `POST /collaboration/room`
+- `POST /collaboration/action`
+- `POST /collaboration/comment`
+- `POST /collaboration/change-request`
+- `POST /collaboration/snapshot`
+- `POST /collaboration/share`
+- `POST /collaboration/contact-handoff`
+- `POST /decision-packet/collaboration`
 
-## Preserved v1.9.0 governance layer
+WordPress adds authenticated room routes under `/wp-json/scds/v1/rooms` and a dedicated shortcode mode:
 
-The Decision Governance and Review Center remains authoritative for controlled states, decision ownership, reviewer assignments, approval conditions, exceptions, conflicts, human sign-offs, tamper-evident history, and reviewed/public export restrictions. Scenario rankings never approve a decision.
+```text
+[sc_decision_studio mode="room" title="Collaborative Decision Room"]
+```
 
-Governance routes remain available:
+## Preserved platform layers
 
-- `GET /governance/states`
-- `GET /governance/template`
-- `POST /governance/evaluate`
-- `POST /governance/transition`
-- `POST /decision-packet/governance`
-- `POST /governance/history/verify`
+v1.11.0 is additive. It preserves:
 
-Use `[sc_decision_studio mode="governance"]` for the dedicated WordPress governance workspace.
+- v1.10.0 Advanced Scenario and Sensitivity Studio
+- v1.9.0 Decision Governance and Review Center
+- v1.8.0 typed platform handoffs
+- Saved Decision Packets, export bundles, audit/provenance, readiness gates, and integrated briefs
+- Existing shortcodes, REST routes, and legacy Catalyst adapters
+
+Collaboration never substitutes for approval. Governance state, human sign-offs, export restrictions, and professional-review boundaries remain authoritative.
 
 ## v1.8.0 — Unified Evidence and Platform Handoffs
 

@@ -1,0 +1,46 @@
+Sustainable Catalyst Decision Studio v1.11.0 — Collaborative Decision Rooms
+===============================================================================
+
+LOCAL VALIDATION
+----------------
+cd ~/Downloads/sustainable-catalyst-decision-studio-repo
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python -m pip install --prefer-binary -r backend/requirements.txt
+cd backend
+python -m pytest
+cd ..
+python scripts/test_release.py
+php -l wordpress-plugin/sustainable-catalyst-decision-studio/sustainable-catalyst-decision-studio.php
+node --check wordpress-plugin/sustainable-catalyst-decision-studio/assets/js/scds-decision-studio.js
+
+RENDER
+------
+Root directory: backend
+Build command: pip install -r requirements.txt
+Start command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Health check: /health
+Python: 3.12.11
+
+After deployment verify:
+  /health
+  /release
+  /collaboration/roles
+  /collaboration/template
+
+WORDPRESS
+---------
+Upload sustainable-catalyst-decision-studio-plugin-v1.11.0.zip and replace the
+existing plugin. Activation upgrades the Decision Studio database to 1.5.0 and
+creates the room, member, and event tables.
+
+Recommended private room shortcode:
+  [sc_decision_studio mode="room" title="Collaborative Decision Room"]
+
+Admin checks:
+  SC Decision Studio > Collaborative Decision Rooms
+  SC Decision Studio > Release Diagnostics
+
+Confirm the plugin and backend both report 1.11.0 before enabling backend-routed
+collaboration actions.

@@ -1,0 +1,129 @@
+{
+  "release": "1.11.0",
+  "schema": "scds-collaborative-decision-room/1.0",
+  "event_schema": "scds-collaboration-event/1.0",
+  "decision_packet_schema": "scds-decision-packet/1.4",
+  "canonical_persistence": "wordpress",
+  "visibility": [
+    "private",
+    "restricted",
+    "institutional"
+  ],
+  "roles": [
+    {
+      "id": "owner",
+      "permissions": [
+        "manage_room",
+        "manage_members",
+        "comment",
+        "request_change",
+        "resolve",
+        "snapshot",
+        "apply_revision",
+        "lock",
+        "share"
+      ]
+    },
+    {
+      "id": "facilitator",
+      "permissions": [
+        "manage_members",
+        "comment",
+        "request_change",
+        "resolve",
+        "snapshot",
+        "apply_revision",
+        "lock",
+        "share"
+      ]
+    },
+    {
+      "id": "editor",
+      "permissions": [
+        "comment",
+        "request_change",
+        "snapshot",
+        "apply_revision"
+      ]
+    },
+    {
+      "id": "reviewer",
+      "permissions": [
+        "comment",
+        "request_change",
+        "resolve",
+        "snapshot"
+      ]
+    },
+    {
+      "id": "client",
+      "permissions": [
+        "comment",
+        "request_change"
+      ]
+    },
+    {
+      "id": "observer",
+      "permissions": []
+    }
+  ],
+  "room_sections": [
+    "owner",
+    "members",
+    "comments",
+    "change_requests",
+    "snapshots",
+    "snapshot_comparisons",
+    "activity_timeline",
+    "notifications",
+    "share_grants",
+    "locked_version",
+    "contact_engagement_handoffs"
+  ],
+  "actions": [
+    "create",
+    "evaluate",
+    "add_comment",
+    "resolve_comment",
+    "create_change_request",
+    "resolve_change_request",
+    "implement_change_request",
+    "snapshot",
+    "compare_snapshots",
+    "apply_revision",
+    "invite_member",
+    "lock_version",
+    "reopen_version",
+    "contact_handoff"
+  ],
+  "limits": {
+    "members": 200,
+    "comments": 2000,
+    "change_requests": 500,
+    "snapshots": 100,
+    "activity_events": 5000
+  },
+  "integrity": {
+    "algorithm": "SHA-256",
+    "chain_fields": [
+      "previous_hash",
+      "event_hash"
+    ],
+    "genesis": "GENESIS"
+  },
+  "privacy": {
+    "anonymous_access": false,
+    "authentication_authority": "WordPress",
+    "invitation_token_storage": "SHA-256 hash only",
+    "raw_token_return": "once at creation"
+  },
+  "governance_boundary": {
+    "approval_authority": "human governance records",
+    "lock_states": [
+      "approved",
+      "implemented"
+    ],
+    "ai_approval_allowed": false
+  },
+  "contact_engagement_handoff_schema": "sc-contact-engagement-handoff/1.0"
+}

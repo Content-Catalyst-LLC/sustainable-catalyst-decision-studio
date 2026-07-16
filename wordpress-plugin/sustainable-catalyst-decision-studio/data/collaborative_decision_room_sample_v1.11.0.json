@@ -1,0 +1,89 @@
+{
+  "release": "1.11.0",
+  "request": {
+    "action": "evaluate",
+    "actor": "Tariq Ahmad",
+    "actorRole": "owner",
+    "packet": {
+      "packet_version": "1.11.0",
+      "packet_schema": "scds-decision-packet/1.4",
+      "project": {
+        "project_name": "Community resilience investment",
+        "decision_question": "Which portfolio should move into formal review?"
+      },
+      "governance_center": {
+        "current_state": "review"
+      }
+    },
+    "room": {
+      "room_version": "1.11.0",
+      "schema": "scds-collaborative-decision-room/1.0",
+      "event_schema": "scds-collaboration-event/1.0",
+      "room_id": "room-community-resilience",
+      "title": "Community Resilience Decision Room",
+      "visibility": "private",
+      "status": "active",
+      "owner": {
+        "name": "Tariq Ahmad",
+        "role": "owner"
+      },
+      "members": [
+        {
+          "member_id": "member-owner",
+          "name": "Tariq Ahmad",
+          "role": "owner",
+          "status": "active"
+        },
+        {
+          "member_id": "member-reviewer",
+          "name": "Independent Reviewer",
+          "role": "reviewer",
+          "status": "active"
+        }
+      ],
+      "comments": [
+        {
+          "comment_id": "comment-evidence-1",
+          "target_type": "evidence_record",
+          "target_id": "evidence-12",
+          "content": "Confirm the source date and methodology before approval.",
+          "author": "Independent Reviewer",
+          "author_role": "reviewer",
+          "status": "open"
+        }
+      ],
+      "change_requests": [
+        {
+          "change_request_id": "change-finance-1",
+          "target_type": "finance_analysis",
+          "target_id": "finance-base",
+          "title": "Document discount-rate sensitivity",
+          "description": "Add the 3%, 5%, and 7% sensitivity comparison to the reviewed packet.",
+          "status": "open",
+          "requested_by": "Independent Reviewer"
+        }
+      ],
+      "snapshots": [],
+      "snapshot_comparisons": [],
+      "activity_timeline": [],
+      "activity_integrity": {
+        "ok": true,
+        "event_count": 0,
+        "problems": [],
+        "head_hash": "GENESIS"
+      },
+      "notifications": [],
+      "share_grants": [],
+      "locked_version": {},
+      "contact_engagement_handoffs": [],
+      "canonical_persistence": "wordpress"
+    }
+  },
+  "expected": {
+    "permission_model": "role based",
+    "open_comment_count": 1,
+    "open_change_request_count": 1,
+    "governance_approval_remains_separate": true,
+    "anonymous_access": false
+  }
+}

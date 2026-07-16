@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.10.0'
+    assert r.json()['version'] == '1.11.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '1.10.0'
+    assert data['decision_packet']['packet_version'] == '1.11.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -87,7 +87,7 @@ def test_audit_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.10.0'
+    assert data['audit']['audit_version'] == '1.11.0'
     assert 'module_artifact_ledger' in data['audit']
 
 
@@ -96,7 +96,7 @@ def test_audit_generate_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.10.0'
+    assert data['audit']['audit_version'] == '1.11.0'
     assert data['audit_summary']['assumptions_count'] >= 5
     assert data['audit_summary']['calculation_trace_count'] >= 4
 
@@ -161,7 +161,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.10.0'
+    assert data['version'] == '1.11.0'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -189,7 +189,7 @@ def test_review_status_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.10.0'
+    assert data['version'] == '1.11.0'
     assert len(data['sections']) >= 8
     assert any(s['id'] == 'finance' for s in data['sections'])
 
@@ -200,7 +200,7 @@ def test_brief_readiness_default():
     data = r.json()
     assert data['ok'] is True
     readiness = data['readiness']
-    assert readiness['readiness_version'] == '1.10.0'
+    assert readiness['readiness_version'] == '1.11.0'
     assert 0 <= readiness['readiness_percent'] <= 100
     assert 'sections' in readiness
     assert 'export_gate' in readiness
@@ -232,7 +232,7 @@ def test_scenario_comparison_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.10.0'
+    assert data['version'] == '1.11.0'
     comparison = data['scenario_comparison']
     assert comparison['scenario_count'] >= 4
     assert 'matrix' in comparison
@@ -263,7 +263,7 @@ def test_workbench_handoff_default():
     data = r.json()
     assert data['ok'] is True
     handoff = data['workbench_handoff']
-    assert handoff['handoff_version'] == '1.10.0'
+    assert handoff['handoff_version'] == '1.11.0'
     ids = [h['tool_id'] for h in handoff['recommended_handoffs']]
     assert 'economics-forecasting-and-scenario-tool' in ids
     assert any('sc_workbench' in h['shortcode'] for h in handoff['recommended_handoffs'])
@@ -273,7 +273,7 @@ def test_integrated_brief_includes_scenario_and_handoff():
     r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
     assert r.status_code == 200
     data = r.json()
-    assert data['version'] == '1.10.0'
+    assert data['version'] == '1.11.0'
     assert 'scenario_comparison' in data
     assert 'workbench_handoff' in data
     assert 'scenario_comparison_matrix' in data['brief']
@@ -286,7 +286,7 @@ def test_export_center_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['export_center']['export_center_version'] == '1.10.0'
+    assert data['export_center']['export_center_version'] == '1.11.0'
     assert any(e['id'] == 'packet_json' for e in data['export_center']['exports'])
 
 
@@ -296,7 +296,7 @@ def test_decision_packet_save_template():
     data = r.json()
     assert data['ok'] is True
     saved = data['saved_packet']
-    assert saved['packet_version'] == '1.10.0'
+    assert saved['packet_version'] == '1.11.0'
     assert saved['project_name'] == 'Saved packet test'
     assert 'readiness' in saved
     assert 'integrated_brief' in saved
@@ -308,7 +308,7 @@ def test_export_center_bundle_default():
     data = r.json()
     assert data['ok'] is True
     bundle = data['export_bundle']
-    assert bundle['bundle_version'] == '1.10.0'
+    assert bundle['bundle_version'] == '1.11.0'
     assert 'decision_packet_json' in bundle['exports']
     assert 'integrated_brief_markdown' in bundle['exports']
     assert 'audit_json' in bundle['exports']
@@ -321,8 +321,8 @@ def test_public_landing_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.10.0'
-    assert data['landing']['page_version'] == '1.10.0'
+    assert data['version'] == '1.11.0'
+    assert data['landing']['page_version'] == '1.11.0'
     assert 'Decision Studio' in data['landing']['headline']
     assert len(data['landing']['workflow']) == 7
     assert data['landing']['workflow'][0]['module'] == 'Knowledge Library'
@@ -334,7 +334,7 @@ def test_public_demo_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['demo']['demo_version'] == '1.10.0'
+    assert data['demo']['demo_version'] == '1.11.0'
     assert len(data['demo']['demo_cards']) >= 4
     assert 'Knowledge Library to source' in data['demo']['public_copy']
     assert 'Decision Studio to decide' in data['demo']['public_copy']
@@ -344,9 +344,9 @@ def test_release_manifest_identity():
     response = client.get('/release')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '1.10.0'
-    assert data['release']['build_fingerprint'] == 'scds-v1.10.0-advanced-scenario-sensitivity'
-    assert data['release']['decision_packet_schema'] == 'scds-decision-packet/1.3'
+    assert data['version'] == '1.11.0'
+    assert data['release']['build_fingerprint'] == 'scds-v1.11.0-collaborative-decision-rooms'
+    assert data['release']['decision_packet_schema'] == 'scds-decision-packet/1.4'
     assert data['release']['compatibility']['packet_schema_breaking_changes'] is False
 
 
@@ -358,7 +358,7 @@ def test_health_reports_cold_start_and_limits():
     assert data['cold_start_ready'] is True
     assert data['uptime_seconds'] >= 0
     assert data['limits']['max_request_bytes'] == 1048576
-    assert response.headers['x-scds-version'] == '1.10.0'
+    assert response.headers['x-scds-version'] == '1.11.0'
 
 
 def test_oversized_public_request_is_rejected():
@@ -558,7 +558,7 @@ def test_platform_handoff_template_has_new_packet_sections():
     r = client.get('/decision-packet/platform-handoffs')
     assert r.status_code == 200
     packet = r.json()['decision_packet']
-    assert packet['packet_version'] == '1.10.0'
+    assert packet['packet_version'] == '1.11.0'
     assert packet['artifact_schema'] == 'scds-platform-artifact/1.0'
     for key in ['evidence_registry', 'research_routes', 'live_evidence', 'experimental_evidence', 'platform_registry', 'integrity_checks']:
         assert key in packet
@@ -663,7 +663,7 @@ def test_review_history_detects_tampering():
 
 def test_governance_is_in_decision_packet_and_export_bundle():
     packet = client.get('/decision-packet/template').json()['decision_packet']
-    assert packet['packet_version'] == '1.10.0'
+    assert packet['packet_version'] == '1.11.0'
     assert packet['governance_schema'] == 'scds-decision-governance/1.0'
     assert packet['governance_center']['current_state'] == 'draft'
     governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
@@ -735,7 +735,7 @@ def test_scenario_studio_default_analysis():
     assert response.status_code == 200
     data = response.json()
     studio = data['scenario_studio']
-    assert data['version'] == '1.10.0'
+    assert data['version'] == '1.11.0'
     assert studio['schema'] == 'scds-scenario-studio/1.0'
     assert studio['alternative_count'] == 5
     assert len(studio['weighted_ranking']) == 5
@@ -807,7 +807,7 @@ def test_scenario_studio_time_horizon_comparison():
 def test_scenario_studio_updates_decision_packet():
     response = client.post('/decision-packet/scenario-studio', json=advanced_scenario_payload())
     packet = response.json()['decision_packet']
-    assert packet['packet_version'] == '1.10.0'
+    assert packet['packet_version'] == '1.11.0'
     assert packet['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
     assert packet['scenario_studio']['alternative_count'] == 3
     assert packet['sensitivity_analysis']['parameters']
@@ -830,3 +830,134 @@ def test_health_and_release_publish_scenario_studio_schema():
     assert health['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
     assert release['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
     assert release['compatibility']['advanced_scenario_studio'] is True
+
+
+
+def test_collaboration_template_and_roles():
+    response = client.get('/collaboration/template')
+    assert response.status_code == 200
+    data = response.json()
+    assert data['room']['schema'] == 'scds-collaborative-decision-room/1.0'
+    assert data['room']['canonical_persistence'] == 'wordpress'
+    roles = {item['id']: item['permissions'] for item in data['roles']['roles']}
+    assert 'manage_room' in roles['owner']
+    assert roles['observer'] == []
+
+
+def room_payload(action='create', room=None, packet=None, payload=None, role='owner'):
+    return {
+        'packet': packet or {},
+        'room': room or {},
+        'action': action,
+        'actor': 'Tariq Ahmad',
+        'actorRole': role,
+        'targetType': 'decision_packet',
+        'targetId': 'packet-root',
+        'payload': payload or {},
+        'reason': 'Collaboration regression test',
+    }
+
+
+def test_collaboration_room_comment_and_notifications():
+    created = client.post('/collaboration/room', json=room_payload()).json()
+    room = created['room']
+    room['members'].append({'member_id': 'member-reviewer', 'name': 'Reviewer', 'email': 'reviewer@example.org', 'role': 'reviewer', 'status': 'active'})
+    response = client.post('/collaboration/comment', json=room_payload(room=room, packet=created['decision_packet'], payload={'content': 'Please verify the financial assumptions.'}, role='owner'))
+    assert response.status_code == 200
+    data = response.json()
+    assert data['comment']['target_type'] == 'decision_packet'
+    assert data['room']['metrics']['open_comment_count'] == 1
+    assert data['room']['notifications'][0]['recipient'] == 'reviewer@example.org'
+    assert data['room']['activity_integrity']['ok'] is True
+
+
+def test_collaboration_change_request_resolution_and_revision_diff():
+    created = client.post('/collaboration/room', json=room_payload()).json()
+    request = client.post('/collaboration/change-request', json=room_payload(room=created['room'], packet=created['decision_packet'], payload={'title': 'Update decision question', 'description': 'Clarify the decision frame.', 'packet_patch': {'project': {'decision_question': 'Should the phased option proceed?'}}})).json()
+    change = request['change_request']
+    resolved = client.post('/collaboration/action', json=room_payload(action='resolve_change_request', room=request['room'], packet=request['decision_packet'], payload={'change_request_id': change['change_request_id'], 'status': 'implemented', 'resolution': 'Accepted after review.'}, role='owner'))
+    assert resolved.status_code == 200
+    data = resolved.json()
+    assert data['change_request']['status'] == 'implemented'
+    assert data['decision_packet']['project']['decision_question'] == 'Should the phased option proceed?'
+    assert data['comparison']['change_count'] >= 1
+    assert 'project.decision_question' in data['comparison']['changed_paths']
+
+
+def test_collaboration_snapshots_compare_and_hash_chain_tamper_detection():
+    created = client.post('/collaboration/room', json=room_payload()).json()
+    first = client.post('/collaboration/snapshot', json=room_payload(room=created['room'], packet=created['decision_packet'], payload={'label': 'First'})).json()
+    packet = first['decision_packet']
+    packet['project']['project_name'] = 'Updated project'
+    second = client.post('/collaboration/snapshot', json=room_payload(room=first['room'], packet=packet, payload={'label': 'Second'})).json()
+    compared = client.post('/collaboration/action', json=room_payload(action='compare_snapshots', room=second['room'], packet=second['decision_packet'])).json()
+    assert compared['comparison']['change_count'] >= 1
+    assert 'project.project_name' in compared['comparison']['changed_paths']
+    history = compared['room']['activity_timeline']
+    history[0]['details'] = {'tampered': True}
+    verify = client.post('/collaboration/action', json=room_payload(action='evaluate', room={**compared['room'], 'activity_timeline': history}, packet=compared['decision_packet'])).json()
+    assert verify['room']['activity_integrity']['ok'] is False
+
+
+def test_private_room_share_grant_hashes_token_and_exposes_once():
+    created = client.post('/collaboration/room', json=room_payload()).json()
+    response = client.post('/collaboration/share', json=room_payload(room=created['room'], packet=created['decision_packet'], payload={'member': {'name': 'Client Reviewer', 'email': 'client@example.org', 'role': 'client'}}))
+    assert response.status_code == 200
+    data = response.json()
+    assert data['share_token_once']
+    assert data['share_grant']['token_hash'].startswith('sha256:')
+    assert data['share_token_once'] not in str(data['room'])
+    assert data['room']['visibility'] == 'private'
+
+
+def test_locked_approved_version_blocks_revision_until_reopened():
+    governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
+    created = client.post('/collaboration/room', json=room_payload(packet={'governance_center': governance})).json()
+    locked = client.post('/collaboration/action', json=room_payload(action='lock_version', room=created['room'], packet=created['decision_packet'], payload={'label': 'Approved version'}, role='owner'))
+    assert locked.status_code == 200
+    locked_data = locked.json()
+    assert locked_data['room']['locked_version']['locked'] is True
+    revision = client.post('/collaboration/action', json=room_payload(action='apply_revision', room=locked_data['room'], packet=locked_data['decision_packet'], payload={'packet_patch': {'project': {'project_name': 'Unauthorized change'}}}, role='editor'))
+    assert revision.status_code == 409
+    assert revision.json()['error'] == 'approved_version_locked'
+    reopened = client.post('/collaboration/action', json=room_payload(action='reopen_version', room=locked_data['room'], packet=locked_data['decision_packet'], role='owner') | {'reason': 'Material evidence changed.'})
+    assert reopened.status_code == 200
+    assert reopened.json()['room']['locked_version']['locked'] is False
+
+
+def test_collaboration_contact_and_engagement_handoff():
+    created = client.post('/collaboration/room', json=room_payload()).json()
+    response = client.post('/collaboration/contact-handoff', json=room_payload(room=created['room'], packet=created['decision_packet'], payload={'collaboration_needs': ['private document review', 'client approval'], 'requested_next_action': 'Create a secure engagement workspace.'}))
+    assert response.status_code == 200
+    handoff = response.json()['contact_engagement_handoff']
+    assert handoff['schema'] == 'sc-contact-engagement-handoff/1.0'
+    assert handoff['private_workspace_required'] is True
+    assert handoff['source_version'] == '1.11.0'
+
+
+def test_collaboration_is_saved_and_exported_with_packet_schema_1_4():
+    created = client.post('/collaboration/room', json=room_payload()).json()
+    room = created['room']
+    saved = client.post('/decision-packet/save-template', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['saved_packet']
+    assert saved['decision_packet']['packet_version'] == '1.11.0'
+    assert saved['decision_packet']['collaboration_room_schema'] == 'scds-collaborative-decision-room/1.0'
+    assert saved['collaboration']['room_id'] == room['room_id']
+    bundle = client.post('/export-center/bundle', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['export_bundle']
+    assert bundle['exports']['collaboration_json']['room_id'] == room['room_id']
+    assert any(item['id'] == 'collaboration_json' for item in bundle['export_manifest'])
+
+
+def test_collaboration_permission_denies_observer_comment():
+    created = client.post('/collaboration/room', json=room_payload()).json()
+    response = client.post('/collaboration/comment', json=room_payload(room=created['room'], packet=created['decision_packet'], payload={'content': 'Observer should not write.'}, role='observer'))
+    assert response.status_code == 403
+    assert response.json()['error'] == 'collaboration_permission_denied'
+
+
+def test_health_and_release_publish_collaboration_schemas():
+    health = client.get('/health').json()
+    release = client.get('/release').json()['release']
+    assert health['collaboration_room_schema'] == 'scds-collaborative-decision-room/1.0'
+    assert health['collaboration_event_schema'] == 'scds-collaboration-event/1.0'
+    assert release['collaboration_room_schema'] == 'scds-collaborative-decision-room/1.0'
+    assert release['compatibility']['collaborative_decision_rooms'] is True

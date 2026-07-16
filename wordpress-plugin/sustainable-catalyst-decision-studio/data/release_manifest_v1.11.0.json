@@ -1,0 +1,122 @@
+{
+  "release": "1.11.0",
+  "release_name": "Collaborative Decision Rooms",
+  "release_date": "2026-07-16",
+  "build_fingerprint": "scds-v1.11.0-collaborative-decision-rooms",
+  "source_commit": "release-v1.11.0",
+  "schemas": {
+    "decision_packet": "scds-decision-packet/1.4",
+    "platform_artifact": "scds-platform-artifact/1.0",
+    "evidence_record": "scds-evidence-record/1.0",
+    "decision_governance": "scds-decision-governance/1.0",
+    "review_event": "scds-review-event/1.0",
+    "scenario_studio": "scds-scenario-studio/1.0",
+    "collaboration_room": "scds-collaborative-decision-room/1.0",
+    "collaboration_event": "scds-collaboration-event/1.0",
+    "contact_engagement_handoff": "sc-contact-engagement-handoff/1.0"
+  },
+  "wordpress": {
+    "plugin_version": "1.11.0",
+    "database_version": "1.5.0",
+    "api_namespace": "scds/v1",
+    "canonical_room_storage": "scds_rooms",
+    "membership_storage": "scds_room_members",
+    "event_storage": "scds_room_events",
+    "project_collaboration_storage": "projects.collaboration_json"
+  },
+  "backend": {
+    "version": "1.11.0",
+    "root_dir": "backend",
+    "start_command": "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+  },
+  "platform_products": [
+    "knowledge-library",
+    "research-librarian",
+    "site-intelligence",
+    "workbench",
+    "research-lab",
+    "platform-core"
+  ],
+  "collaborative_decision_rooms": {
+    "visibility": [
+      "private",
+      "restricted",
+      "institutional"
+    ],
+    "roles": [
+      "owner",
+      "facilitator",
+      "editor",
+      "reviewer",
+      "client",
+      "observer"
+    ],
+    "member_limit": 200,
+    "comment_limit": 2000,
+    "change_request_limit": 500,
+    "snapshot_limit": 100,
+    "activity_event_limit": 5000,
+    "canonical_persistence": "WordPress",
+    "activity_integrity": "SHA-256 hash chain",
+    "invitation_token_storage": "SHA-256 hash only",
+    "approved_version_locking": true,
+    "contact_engagement_handoff": true,
+    "anonymous_access": false,
+    "ai_approval_allowed": false
+  },
+  "advanced_scenario_studio": {
+    "preserved": true,
+    "alternative_limit": 100,
+    "criteria_limit": 50,
+    "probabilistic_simulation_boundary": "Workbench",
+    "forecast_claims_allowed": false
+  },
+  "governance": {
+    "preserved": true,
+    "human_approval_required": true,
+    "immutable_review_history": true,
+    "governance_aware_export_restrictions": true,
+    "ai_approval_allowed": false
+  },
+  "limits": {
+    "max_request_bytes": 1048576,
+    "public_rate_limit": 60,
+    "window_seconds": 60,
+    "batch_import_maximum": 100,
+    "room_member_maximum": 200,
+    "room_comment_maximum": 2000,
+    "room_change_request_maximum": 500,
+    "room_snapshot_maximum": 100,
+    "room_activity_event_maximum": 5000
+  },
+  "compatibility": {
+    "shortcodes_preserved": true,
+    "rest_routes_preserved": true,
+    "packet_schema_breaking_changes": false,
+    "typed_platform_artifacts": true,
+    "legacy_artifact_adapters_preserved": true,
+    "v1_8_handoff_contracts_preserved": true,
+    "v1_9_governance_preserved": true,
+    "v1_10_scenario_studio_preserved": true
+  },
+  "checks": [
+    "backend tests",
+    "collaboration role tests",
+    "comment and notification tests",
+    "change request and revision tests",
+    "snapshot comparison tests",
+    "activity tamper tests",
+    "private invitation tests",
+    "approved-version lock tests",
+    "Contact and Engagement handoff tests",
+    "persistence/export tests",
+    "scenario regression tests",
+    "governance regression tests",
+    "backend compile",
+    "JavaScript syntax",
+    "PHP syntax",
+    "JSON validation",
+    "version parity",
+    "plugin package structure"
+  ]
+}

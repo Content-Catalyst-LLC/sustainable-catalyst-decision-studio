@@ -1,3 +1,21 @@
+# Changelog
+
+## 1.11.0 — Collaborative Decision Rooms
+
+- Added private, restricted, and institutional WordPress-managed Decision Rooms.
+- Added owner, facilitator, editor, reviewer, client, and observer roles with explicit permissions.
+- Added comments linked to Decision Packet sections, evidence records, assumptions, scenarios, and brief sections.
+- Added change requests, resolution records, revision application, and implementation tracking.
+- Added Decision Packet snapshots, version comparison, and changed-path reporting.
+- Added SHA-256 chained collaboration events with tamper detection.
+- Added private invitations with one-time tokens and stored token hashes only.
+- Added approved-version locks and explicit reasoned reopening.
+- Added room, membership, and event database tables plus authenticated WordPress REST routes.
+- Added Contact and Engagement Platform handoffs for private advisory collaboration.
+- Added collaboration to saved packets and export bundles.
+- Advanced Decision Packet schema to `scds-decision-packet/1.4` without breaking earlier packet sections.
+- Preserved v1.10.0 scenario analysis, v1.9.0 governance, v1.8.0 platform handoffs, and legacy adapters.
+
 # Sustainable Catalyst Decision Studio Changelog
 
 ## v1.10.0 — Advanced Scenario and Sensitivity Studio
