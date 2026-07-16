@@ -1,0 +1,124 @@
+{
+  "release": "1.9.0",
+  "schema": "scds-decision-governance/1.0",
+  "review_event_schema": "scds-review-event/1.0",
+  "states": [
+    {
+      "id": "draft",
+      "label": "Draft",
+      "allowed_transitions": [
+        "evidence_gathering",
+        "analysis",
+        "deferred",
+        "retired"
+      ]
+    },
+    {
+      "id": "evidence_gathering",
+      "label": "Evidence gathering",
+      "allowed_transitions": [
+        "analysis",
+        "review",
+        "revision_required",
+        "deferred",
+        "retired"
+      ]
+    },
+    {
+      "id": "analysis",
+      "label": "Analysis",
+      "allowed_transitions": [
+        "evidence_gathering",
+        "review",
+        "revision_required",
+        "deferred",
+        "retired"
+      ]
+    },
+    {
+      "id": "review",
+      "label": "Review",
+      "allowed_transitions": [
+        "revision_required",
+        "approved",
+        "rejected",
+        "deferred"
+      ]
+    },
+    {
+      "id": "revision_required",
+      "label": "Revision required",
+      "allowed_transitions": [
+        "evidence_gathering",
+        "analysis",
+        "review",
+        "deferred",
+        "retired"
+      ]
+    },
+    {
+      "id": "approved",
+      "label": "Approved",
+      "allowed_transitions": [
+        "implemented",
+        "revision_required",
+        "retired"
+      ]
+    },
+    {
+      "id": "rejected",
+      "label": "Rejected",
+      "allowed_transitions": [
+        "revision_required",
+        "retired"
+      ]
+    },
+    {
+      "id": "deferred",
+      "label": "Deferred",
+      "allowed_transitions": [
+        "evidence_gathering",
+        "analysis",
+        "review",
+        "retired"
+      ]
+    },
+    {
+      "id": "implemented",
+      "label": "Implemented",
+      "allowed_transitions": [
+        "revision_required",
+        "retired"
+      ]
+    },
+    {
+      "id": "retired",
+      "label": "Retired",
+      "allowed_transitions": []
+    }
+  ],
+  "approval_requirements": [
+    "named accountable decision owner",
+    "completed human reviewer assignment",
+    "satisfied or waived required approval conditions",
+    "resolved material exceptions",
+    "mitigated or recused conflicts of interest",
+    "decision-owner sign-off",
+    "independent governance or review sign-off"
+  ],
+  "export_policy": {
+    "internal": "allowed unless retired",
+    "reviewed": "approved or implemented state with no governance blockers",
+    "public": "reviewed export conditions plus no unresolved confidential exceptions",
+    "professional_reliance": "never automated"
+  },
+  "history": {
+    "append_only": true,
+    "hash_algorithm": "SHA-256",
+    "chain_fields": [
+      "previous_hash",
+      "event_hash"
+    ],
+    "tamper_detection": true
+  }
+}

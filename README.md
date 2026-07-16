@@ -1,4 +1,19 @@
-# Sustainable Catalyst Decision Studio v1.8.0
+# Sustainable Catalyst Decision Studio
+
+## Current release: v1.9.0 — Decision Governance and Review Center
+
+Decision Studio is the governance and synthesis layer of the Sustainable Catalyst platform. v1.9.0 adds controlled decision states, named ownership, reviewer assignments, approval conditions, exceptions, conflict declarations, human sign-offs, immutable review history, and governance-aware export restrictions while preserving v1.8.0 typed evidence handoffs.
+
+### New governance routes
+
+- `GET /governance/states`
+- `GET /governance/template`
+- `POST /governance/evaluate`
+- `POST /governance/transition`
+- `POST /decision-packet/governance`
+- `POST /governance/history/verify`
+
+Use `[sc_decision_studio mode="governance"]` for the dedicated WordPress governance workspace.
 
 Sustainable Catalyst Decision Studio is an applied sustainability decision-support layer for Content Catalyst LLC / Sustainable Catalyst. It upgrades the earlier Sustainable Catalyst 1.0 prototype into a modular WordPress + FastAPI-ready platform for project intake, four-pillar scoring, scenarios, risk, reports, validation, exports, Workbench integration, and backend-routed AI decision briefing.
 

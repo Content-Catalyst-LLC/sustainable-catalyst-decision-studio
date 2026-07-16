@@ -14,13 +14,15 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
-APP_VERSION = "1.8.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.8.0-unified-evidence")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.8.0")
+APP_VERSION = "1.9.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.9.0-decision-governance")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.9.0")
 RELEASE_DATE = "2026-07-16"
-DECISION_PACKET_SCHEMA = "scds-decision-packet/1.1"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/1.2"
 PLATFORM_ARTIFACT_SCHEMA = "scds-platform-artifact/1.0"
 EVIDENCE_RECORD_SCHEMA = "scds-evidence-record/1.0"
+GOVERNANCE_SCHEMA = "scds-decision-governance/1.0"
+REVIEW_EVENT_SCHEMA = "scds-review-event/1.0"
 MAX_REQUEST_BYTES = max(65536, int(os.getenv("SCDS_MAX_REQUEST_BYTES", "1048576")))
 PUBLIC_RATE_LIMIT = max(10, int(os.getenv("SCDS_PUBLIC_RATE_LIMIT", "60")))
 RATE_WINDOW_SECONDS = max(10, int(os.getenv("SCDS_RATE_WINDOW_SECONDS", "60")))
@@ -36,6 +38,7 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/integrations/import", "/integrations/import-batch", "/decision-packet/import",
     "/decision-packet/save-template", "/export-center/bundle",
     "/decision-packet/export-bundle", "/audit/generate",
+    "/governance/evaluate", "/governance/transition", "/decision-packet/governance",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -44,13 +47,15 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Unified Evidence and Platform Handoffs",
+        "release_name": "Decision Governance and Review Center",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
         "decision_packet_schema": DECISION_PACKET_SCHEMA,
         "platform_artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
+        "governance_schema": GOVERNANCE_SCHEMA,
+        "review_event_schema": REVIEW_EVENT_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -59,6 +64,8 @@ def release_manifest() -> Dict[str, Any]:
             "packet_schema_breaking_changes": False,
             "typed_platform_artifacts": True,
             "legacy_artifact_adapters_preserved": True,
+            "governance_center": True,
+            "immutable_review_history": True,
         },
     }
 
@@ -261,8 +268,29 @@ class ExportBundleRequest(BaseModel):
     scenarioComparison: Optional[Dict[str, Any]] = None
     workbenchHandoff: Optional[Dict[str, Any]] = None
     integratedBrief: Optional[Dict[str, Any]] = None
+    governance: Optional[Dict[str, Any]] = None
+    exportAudience: str = "internal"
     includeRawArtifacts: bool = True
     exportLabel: str = "Decision Studio Export Bundle"
+
+
+class GovernanceRequest(BaseModel):
+    packet: Dict[str, Any] = Field(default_factory=dict)
+    currentState: str = "draft"
+    requestedState: Optional[str] = None
+    actor: str = ""
+    actorRole: str = ""
+    reason: str = ""
+    decisionOwner: Dict[str, Any] = Field(default_factory=dict)
+    reviewers: List[Dict[str, Any]] = Field(default_factory=list, max_length=100)
+    approvalConditions: List[Dict[str, Any]] = Field(default_factory=list, max_length=100)
+    exceptions: List[Dict[str, Any]] = Field(default_factory=list, max_length=100)
+    conflictDeclarations: List[Dict[str, Any]] = Field(default_factory=list, max_length=100)
+    signoffs: List[Dict[str, Any]] = Field(default_factory=list, max_length=100)
+    reviewHistory: List[Dict[str, Any]] = Field(default_factory=list, max_length=1000)
+    approvalExpiresAt: str = ""
+    reassessmentDueAt: str = ""
+    forceTransition: bool = False
 
 
 def clamp(value: float, low: float = 0, high: float = 100) -> float:
@@ -431,10 +459,12 @@ def platform_contract(product_id: Optional[str]) -> Optional[Dict[str, Any]]:
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.8.0",
+        "packet_version": "1.9.0",
         "workflow": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
+        "governance_schema": GOVERNANCE_SCHEMA,
+        "review_event_schema": REVIEW_EVENT_SCHEMA,
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -473,11 +503,12 @@ def decision_packet_template() -> Dict[str, Any]:
         "sources": [],
         "audit_trail": [],
         "audit_and_provenance": audit_provenance_template(),
+        "governance_center": governance_template(),
         "integrated_decision_brief": {},
         "scenario_comparison": {},
         "workbench_handoffs": [],
         "saved_packet": {"saved_at": "", "saved_by": "", "status": "draft", "storage": "browser_or_wordpress"},
-        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "handoff_json"]},
+        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "handoff_json", "governance_json"]},
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -495,7 +526,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.8.0",
+        "audit_version": "1.9.0",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -1347,8 +1378,208 @@ def synthesize_decision_packet(packet: Dict[str, Any], inputs: Optional[Decision
 
 
 
+def governance_state_catalog() -> Dict[str, Any]:
+    return {
+        "governance_version": APP_VERSION,
+        "schema": GOVERNANCE_SCHEMA,
+        "states": [
+            {"id": "draft", "label": "Draft", "terminal": False},
+            {"id": "evidence_gathering", "label": "Evidence gathering", "terminal": False},
+            {"id": "analysis", "label": "Analysis", "terminal": False},
+            {"id": "review", "label": "Review", "terminal": False},
+            {"id": "revision_required", "label": "Revision required", "terminal": False},
+            {"id": "approved", "label": "Approved", "terminal": False},
+            {"id": "rejected", "label": "Rejected", "terminal": False},
+            {"id": "deferred", "label": "Deferred", "terminal": False},
+            {"id": "implemented", "label": "Implemented", "terminal": False},
+            {"id": "retired", "label": "Retired", "terminal": True},
+        ],
+        "transitions": {
+            "draft": ["evidence_gathering", "analysis", "deferred", "retired"],
+            "evidence_gathering": ["analysis", "review", "revision_required", "deferred", "retired"],
+            "analysis": ["evidence_gathering", "review", "revision_required", "deferred", "retired"],
+            "review": ["revision_required", "approved", "rejected", "deferred"],
+            "revision_required": ["evidence_gathering", "analysis", "review", "deferred", "retired"],
+            "approved": ["implemented", "revision_required", "retired"],
+            "rejected": ["revision_required", "retired"],
+            "deferred": ["evidence_gathering", "analysis", "review", "retired"],
+            "implemented": ["revision_required", "retired"],
+            "retired": [],
+        },
+    }
+
+
+def governance_template() -> Dict[str, Any]:
+    return {
+        "governance_version": APP_VERSION,
+        "schema": GOVERNANCE_SCHEMA,
+        "current_state": "draft",
+        "decision_owner": {"name": "", "role": "", "organization": "", "accountable": True},
+        "reviewers": [],
+        "approval_conditions": [],
+        "exceptions": [],
+        "conflict_declarations": [],
+        "signoffs": [],
+        "review_history": [],
+        "approval_expires_at": "",
+        "reassessment_due_at": "",
+        "transition_status": {"allowed": True, "requested_state": "draft", "blockers": []},
+        "export_gate": {
+            "internal_draft_allowed": True,
+            "reviewed_export_allowed": False,
+            "public_export_allowed": False,
+            "professional_reliance_allowed": False,
+            "blocking_reasons": ["Decision has not been approved by accountable human reviewers."],
+        },
+        "warnings": [
+            "Decision Studio records governance actions but does not approve decisions autonomously.",
+            "AI may flag gaps or contradictions but cannot provide sign-off, certification, assurance, or regulated professional approval.",
+        ],
+    }
+
+
+def _record_status(item: Dict[str, Any], default: str = "open") -> str:
+    return str(item.get("status", default)).strip().lower().replace(" ", "_")
+
+
+def _governance_blockers(owner: Dict[str, Any], reviewers: List[Dict[str, Any]], conditions: List[Dict[str, Any]], exceptions: List[Dict[str, Any]], conflicts: List[Dict[str, Any]], signoffs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    blockers: List[Dict[str, Any]] = []
+    if not str(owner.get("name", "")).strip():
+        blockers.append({"code": "missing_decision_owner", "severity": "high", "message": "An accountable decision owner is required before approval."})
+    for item in conditions:
+        if bool(item.get("required", True)) and _record_status(item, "pending") not in {"satisfied", "waived"}:
+            blockers.append({"code": "unsatisfied_approval_condition", "severity": str(item.get("severity", "high")), "record_id": item.get("condition_id", ""), "message": item.get("description", "Required approval condition is not satisfied.")})
+    for item in exceptions:
+        if _record_status(item) not in {"closed", "resolved", "accepted"} and str(item.get("severity", "medium")).lower() in {"critical", "high"}:
+            blockers.append({"code": "open_material_exception", "severity": str(item.get("severity", "high")), "record_id": item.get("exception_id", ""), "message": item.get("description", "A material exception remains open.")})
+    for item in conflicts:
+        declared = bool(item.get("declared", True))
+        mitigated = _record_status(item, "open") in {"mitigated", "resolved", "recused"} or bool(str(item.get("mitigation", "")).strip())
+        if declared and not mitigated:
+            blockers.append({"code": "unmitigated_conflict", "severity": "high", "record_id": item.get("conflict_id", ""), "message": item.get("description", "A declared conflict of interest has not been mitigated.")})
+    reviewer_approvals = [r for r in reviewers if _record_status(r, "assigned") in {"approved", "accepted", "complete"}]
+    signoff_roles = {str(s.get("role", "")).strip().lower().replace(" ", "_") for s in signoffs if _record_status(s, "signed") in {"signed", "approved", "accepted"}}
+    if not reviewer_approvals:
+        blockers.append({"code": "missing_reviewer_approval", "severity": "high", "message": "At least one assigned human reviewer must complete review before approval."})
+    if "decision_owner" not in signoff_roles and "accountable_owner" not in signoff_roles:
+        blockers.append({"code": "missing_owner_signoff", "severity": "high", "message": "The accountable decision owner has not signed off."})
+    if not ({"governance_reviewer", "independent_reviewer", "review_chair"} & signoff_roles):
+        blockers.append({"code": "missing_governance_signoff", "severity": "high", "message": "An independent governance or review sign-off is required."})
+    return blockers
+
+
+def _append_review_event(history: List[Dict[str, Any]], event_type: str, actor: str, actor_role: str, from_state: str, to_state: str, reason: str, details: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    ledger = [dict(item) for item in history if isinstance(item, dict)]
+    previous_hash = str(ledger[-1].get("event_hash", "GENESIS")) if ledger else "GENESIS"
+    event = {
+        "event_schema": REVIEW_EVENT_SCHEMA,
+        "sequence": len(ledger) + 1,
+        "recorded_at": _utc_now(),
+        "event_type": event_type,
+        "actor": actor or "unspecified-human-actor",
+        "actor_role": actor_role or "unspecified-role",
+        "from_state": from_state,
+        "to_state": to_state,
+        "reason": reason,
+        "details": details or {},
+        "previous_hash": previous_hash,
+    }
+    event["event_hash"] = f"sha256:{_canonical_hash(event)}"
+    ledger.append(event)
+    return ledger
+
+
+def verify_review_history(history: List[Dict[str, Any]]) -> Dict[str, Any]:
+    previous = "GENESIS"
+    problems: List[Dict[str, Any]] = []
+    for index, raw in enumerate(history):
+        item = dict(raw) if isinstance(raw, dict) else {}
+        supplied_hash = str(item.pop("event_hash", ""))
+        if str(item.get("previous_hash", "")) != previous:
+            problems.append({"sequence": index + 1, "code": "previous_hash_mismatch"})
+        expected = f"sha256:{_canonical_hash(item)}"
+        if supplied_hash != expected:
+            problems.append({"sequence": index + 1, "code": "event_hash_mismatch"})
+        previous = supplied_hash or expected
+    return {"ok": not problems, "event_count": len(history), "problems": problems, "head_hash": previous}
+
+
+def evaluate_governance(req: GovernanceRequest) -> Dict[str, Any]:
+    packet = decision_packet_template()
+    packet.update(req.packet or {})
+    existing = packet.get("governance_center", {}) if isinstance(packet.get("governance_center"), dict) else {}
+    current = str(req.currentState or existing.get("current_state") or "draft").strip().lower().replace(" ", "_")
+    requested = str(req.requestedState or current).strip().lower().replace(" ", "_")
+    catalog = governance_state_catalog()
+    valid_states = {item["id"] for item in catalog["states"]}
+    if current not in valid_states:
+        current = "draft"
+    owner = req.decisionOwner or existing.get("decision_owner") or {}
+    reviewers = req.reviewers or existing.get("reviewers") or []
+    conditions = req.approvalConditions or existing.get("approval_conditions") or []
+    exceptions = req.exceptions or existing.get("exceptions") or []
+    conflicts = req.conflictDeclarations or existing.get("conflict_declarations") or []
+    signoffs = req.signoffs or existing.get("signoffs") or []
+    history = req.reviewHistory or existing.get("review_history") or []
+    transition_blockers: List[Dict[str, Any]] = []
+    if requested not in valid_states:
+        transition_blockers.append({"code": "unknown_state", "severity": "high", "message": f"Unknown requested state: {requested}"})
+    elif requested != current and requested not in catalog["transitions"].get(current, []):
+        transition_blockers.append({"code": "invalid_transition", "severity": "high", "message": f"Transition from {current} to {requested} is not allowed."})
+    approval_blockers = _governance_blockers(owner, reviewers, conditions, exceptions, conflicts, signoffs)
+    if requested in {"approved", "implemented"}:
+        transition_blockers.extend(approval_blockers)
+    allowed = not transition_blockers or req.forceTransition
+    final_state = requested if allowed else current
+    if requested != current:
+        history = _append_review_event(
+            history,
+            "state_transition_forced" if req.forceTransition and transition_blockers else "state_transition",
+            req.actor,
+            req.actorRole,
+            current,
+            final_state,
+            req.reason,
+            {"blockers_at_transition": transition_blockers, "forced": req.forceTransition},
+        )
+    history_integrity = verify_review_history(history)
+    export_blockers = list(approval_blockers)
+    if final_state not in {"approved", "implemented"}:
+        export_blockers.append({"code": "decision_not_approved", "severity": "high", "message": "Reviewed or public export requires an approved or implemented decision state."})
+    if not history_integrity["ok"]:
+        export_blockers.append({"code": "review_history_integrity_failed", "severity": "critical", "message": "The immutable review history hash chain did not verify."})
+    confidential_open = any(bool(item.get("confidential", False)) and _record_status(item) not in {"closed", "resolved"} for item in exceptions)
+    governance = {
+        "governance_version": APP_VERSION,
+        "schema": GOVERNANCE_SCHEMA,
+        "current_state": final_state,
+        "decision_owner": owner,
+        "reviewers": reviewers,
+        "approval_conditions": conditions,
+        "exceptions": exceptions,
+        "conflict_declarations": conflicts,
+        "signoffs": signoffs,
+        "review_history": history,
+        "review_history_integrity": history_integrity,
+        "approval_expires_at": req.approvalExpiresAt or existing.get("approval_expires_at", ""),
+        "reassessment_due_at": req.reassessmentDueAt or existing.get("reassessment_due_at", ""),
+        "transition_status": {"allowed": allowed, "from_state": current, "requested_state": requested, "final_state": final_state, "forced": req.forceTransition, "blockers": transition_blockers},
+        "export_gate": {
+            "internal_draft_allowed": final_state != "retired",
+            "reviewed_export_allowed": final_state in {"approved", "implemented"} and not export_blockers,
+            "public_export_allowed": final_state in {"approved", "implemented"} and not export_blockers and not confidential_open,
+            "professional_reliance_allowed": False,
+            "blocking_reasons": export_blockers,
+        },
+        "warnings": governance_template()["warnings"],
+    }
+    packet["governance_center"] = governance
+    packet["saved_packet"] = {**packet.get("saved_packet", {}), "status": final_state}
+    return {"ok": True, "version": APP_VERSION, "governance": governance, "decision_packet": packet, "state_catalog": catalog}
+
+
 def review_status_catalog() -> Dict[str, Any]:
-    """Review state vocabulary used by v1.8.0 readiness gates."""
+    """Review state vocabulary used by v1.9.0 readiness gates."""
     return {
         "review_version": APP_VERSION,
         "states": [
@@ -2121,7 +2352,7 @@ def export_center_template() -> Dict[str, Any]:
         "saved_packet_fields": [
             "decision_packet_id", "project_name", "decision_question", "status", "updated_at",
             "inputs", "results", "decision_packet", "audit", "readiness", "scenario_comparison",
-            "workbench_handoff", "integrated_brief"
+            "workbench_handoff", "integrated_brief", "governance"
         ],
         "exports": [
             {"id": "packet_json", "label": "Decision Packet JSON", "description": "Complete normalized packet with module sections and raw artifact snapshots where included."},
@@ -2131,6 +2362,7 @@ def export_center_template() -> Dict[str, Any]:
             {"id": "readiness_json", "label": "Readiness JSON", "description": "Section readiness, review states, unresolved issues, and export gates."},
             {"id": "scenario_json", "label": "Scenario Comparison JSON", "description": "Scenario matrix, deltas, rankings, sensitivity flags, and recommended option."},
             {"id": "handoff_json", "label": "Workbench Handoff JSON", "description": "Recommended Workbench tools, reasons, priorities, shortcodes, and payload summary."},
+            {"id": "governance_json", "label": "Decision Governance JSON", "description": "Decision state, owner, reviewers, conditions, exceptions, conflicts, sign-offs, export gates, and immutable review history."},
         ],
         "warnings": [
             "Saved Decision Packets are working records, not approvals or professional signoff.",
@@ -2157,14 +2389,17 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
     audit = req.audit or generate_audit_provenance(AuditProvenanceRequest(inputs=req.inputs, results=results, packet=packet, reviewStatus=req.status)).get("audit", {})
     integrated = req.integratedBrief or generate_integrated_brief(IntegratedBriefRequest(inputs=req.inputs, results=results, packet=packet, audit=audit)).get("brief", {})
     packet["decision_packet_id"] = packet_id
-    packet["saved_packet"] = {"status": req.status, "storage": "client_or_wordpress", "notes": req.notes}
+    governance = packet.get("governance_center", governance_template())
+    governance_state = governance.get("current_state", req.status) if isinstance(governance, dict) else req.status
+    saved_status = governance_state if req.status == "draft" and governance_state != "draft" else req.status
+    packet["saved_packet"] = {"status": saved_status, "storage": "client_or_wordpress", "notes": req.notes}
     saved = {
         "packet_version": APP_VERSION,
         "decision_packet_id": packet_id,
         "title": project_name,
         "project_name": project_name,
         "decision_question": decision_question,
-        "status": req.status,
+        "status": saved_status,
         "inputs": req.inputs.model_dump(),
         "results": results,
         "decision_packet": packet,
@@ -2173,6 +2408,7 @@ def generate_saved_decision_packet(req: SavedDecisionPacketRequest) -> Dict[str,
         "scenario_comparison": scenario_comparison,
         "workbench_handoff": workbench_handoff,
         "integrated_brief": integrated,
+        "governance": packet.get("governance_center", governance_template()),
         "notes": req.notes,
         "warnings": ["Saved packet is a review artifact; it is not approval, certification, assurance, or professional advice."],
     }
@@ -2188,6 +2424,14 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
     readiness = req.readiness or generate_brief_readiness(BriefReadinessRequest(inputs=inputs, results=results, packet=packet, audit=audit)).get("readiness", {})
     scenario_comparison = req.scenarioComparison or generate_scenario_comparison(ScenarioComparisonRequest(inputs=inputs, results=results, packet=packet)).get("scenario_comparison", {})
     workbench_handoff = req.workbenchHandoff or generate_workbench_handoff(WorkbenchHandoffRequest(inputs=inputs, results=results, packet=packet, readiness=readiness, scenarioComparison=scenario_comparison)).get("workbench_handoff", {})
+    governance = req.governance or packet.get("governance_center") or governance_template()
+    packet["governance_center"] = governance
+    audience = str(req.exportAudience or "internal").strip().lower()
+    gate = governance.get("export_gate", {}) if isinstance(governance, dict) else {}
+    if audience == "reviewed" and not gate.get("reviewed_export_allowed", False):
+        return {"ok": False, "version": APP_VERSION, "error": "governance_export_blocked", "export_audience": audience, "governance_export_gate": gate, "message": "Reviewed export is blocked by the current decision-governance state."}
+    if audience == "public" and not gate.get("public_export_allowed", False):
+        return {"ok": False, "version": APP_VERSION, "error": "governance_export_blocked", "export_audience": audience, "governance_export_gate": gate, "message": "Public export is blocked by the current decision-governance state."}
     brief_payload = req.integratedBrief or generate_integrated_brief(IntegratedBriefRequest(inputs=inputs, results=results, packet=packet, audit=audit))
     brief = brief_payload.get("brief", brief_payload) if isinstance(brief_payload, dict) else {}
     markdown = integrated_brief_markdown(brief) if brief else "# Integrated Decision Brief\n\nNo brief generated."
@@ -2195,6 +2439,8 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
     bundle = {
         "bundle_version": APP_VERSION,
         "label": req.exportLabel,
+        "export_audience": audience,
+        "release_classification": "internal_draft" if audience == "internal" and not gate.get("reviewed_export_allowed", False) else audience,
         "decision_packet_id": packet.get("decision_packet_id", audit.get("decision_packet_id", "SCDS-DRAFT")),
         "project_name": packet.get("project", {}).get("project_name") or inputs.projectName,
         "decision_question": packet.get("project", {}).get("decision_question") or inputs.decisionQuestion,
@@ -2209,9 +2455,11 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
             "readiness_json": readiness,
             "scenario_comparison_json": scenario_comparison,
             "workbench_handoff_json": workbench_handoff,
+            "governance_json": governance,
         },
         "export_manifest": export_center_template()["exports"],
         "warnings": export_center_template()["warnings"],
+        "governance_export_gate": governance.get("export_gate", {}),
     }
     if not req.includeRawArtifacts:
         bundle["exports"]["decision_packet_json"].pop("module_artifacts_raw", None)
@@ -2219,7 +2467,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.8.0."""
+    """Professional public-facing product-page structure for Decision Studio v1.9.0."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
@@ -2249,7 +2497,7 @@ def public_landing_template() -> Dict[str, Any]:
         "schemas": {
             "artifact": PLATFORM_ARTIFACT_SCHEMA,
             "evidence": EVIDENCE_RECORD_SCHEMA,
-            "decision_packet": "scds-decision-packet/1.1",
+            "decision_packet": "scds-decision-packet/1.2",
         },
         "boundaries": [
             "Educational and decision-support oriented; not professional advice.",
@@ -2469,6 +2717,8 @@ def health():
         "limits": {"max_request_bytes": MAX_REQUEST_BYTES, "public_rate_limit": PUBLIC_RATE_LIMIT, "rate_window_seconds": RATE_WINDOW_SECONDS},
         "platform_artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
+        "governance_schema": GOVERNANCE_SCHEMA,
+        "review_event_schema": REVIEW_EVENT_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -2582,6 +2832,30 @@ def decision_packet_readiness_endpoint(req: BriefReadinessRequest):
 def review_status_endpoint(req: BriefReadinessRequest):
     return generate_brief_readiness(req)
 
+@app.get("/governance/states")
+def governance_states_endpoint():
+    return {"ok": True, "version": APP_VERSION, **governance_state_catalog()}
+
+@app.get("/governance/template")
+def governance_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "governance": governance_template(), "state_catalog": governance_state_catalog()}
+
+@app.post("/governance/evaluate")
+def governance_evaluate_endpoint(req: GovernanceRequest):
+    return evaluate_governance(req)
+
+@app.post("/governance/transition")
+def governance_transition_endpoint(req: GovernanceRequest):
+    return evaluate_governance(req)
+
+@app.post("/decision-packet/governance")
+def decision_packet_governance_endpoint(req: GovernanceRequest):
+    return evaluate_governance(req)
+
+@app.post("/governance/history/verify")
+def governance_history_verify_endpoint(req: GovernanceRequest):
+    return {"ok": True, "version": APP_VERSION, "integrity": verify_review_history(req.reviewHistory)}
+
 @app.get("/audit/template")
 def audit_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "audit": audit_provenance_template()}
@@ -2628,11 +2902,17 @@ def export_center_template_endpoint():
 
 @app.post("/export-center/bundle")
 def export_center_bundle_endpoint(req: ExportBundleRequest):
-    return generate_export_bundle(req)
+    result = generate_export_bundle(req)
+    if not result.get("ok", False):
+        return JSONResponse(status_code=409, content=result)
+    return result
 
 @app.post("/decision-packet/export-bundle")
 def decision_packet_export_bundle_endpoint(req: ExportBundleRequest):
-    return generate_export_bundle(req)
+    result = generate_export_bundle(req)
+    if not result.get("ok", False):
+        return JSONResponse(status_code=409, content=result)
+    return result
 
 
 @app.get("/public/landing-template")
@@ -2646,4 +2926,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify"]}

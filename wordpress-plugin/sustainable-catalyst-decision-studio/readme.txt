@@ -3,10 +3,10 @@ Contributors: Content Catalyst LLC
 Tags: sustainability, decision support, scenario analysis, scorecards, risk
 Requires at least: 6.0
 Tested up to: 6.6
-Stable tag: 1.8.0
+Stable tag: 1.9.0
 License: MIT
 
-Sustainable Catalyst Decision Studio is the platform governance and synthesis workspace. It imports typed evidence, research routes, live indicators, calculations, experiments, entities, and provenance from current Sustainable Catalyst products while preserving legacy artifact adapters.
+Sustainable Catalyst Decision Studio is the platform governance and synthesis workspace. v1.9.0 adds controlled decision states, named accountability, reviewers, approval conditions, exceptions, conflicts, human sign-offs, immutable review history, and governance-aware export restrictions while preserving typed platform handoffs and legacy adapters.
 
 == Shortcodes ==
 [sc_decision_studio mode="landing"]
@@ -19,11 +19,20 @@ Sustainable Catalyst Decision Studio is the platform governance and synthesis wo
 [sc_decision_studio mode="scenario"]
 [sc_decision_studio mode="handoff"]
 [sc_decision_studio mode="readiness"]
+[sc_decision_studio mode="governance"]
 [sc_decision_studio mode="export"]
 [sc_decision_studio mode="report"]
 [sc_decision_studio mode="drawer"]
 
 == Changelog ==
+
+= 1.9.0 =
+* Added the Decision Governance and Review Center.
+* Added ten controlled decision states and transition validation.
+* Added decision-owner, reviewer, condition, exception, conflict, and sign-off records.
+* Added SHA-256 review-history chains and tamper verification.
+* Added reviewed and public export restrictions based on governance state.
+* Added WordPress governance persistence and preserved all v1.8.0 platform handoffs.
 
 = 1.8.0 =
 * Added typed platform handoffs for Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core.

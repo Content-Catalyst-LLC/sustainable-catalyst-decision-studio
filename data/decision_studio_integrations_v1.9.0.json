@@ -1,0 +1,307 @@
+{
+  "release": "1.9.0",
+  "workflow_label": "Knowledge Library \u2192 Research Librarian \u2192 Site Intelligence \u2192 Workbench \u2192 Research Lab \u2192 Platform Core \u2192 Decision Studio",
+  "artifact_schema": "scds-platform-artifact/1.0",
+  "evidence_schema": "scds-evidence-record/1.0",
+  "decision_packet_schema": "scds-decision-packet/1.2",
+  "workflow": [
+    {
+      "step": 1,
+      "phase": "Source",
+      "product_id": "knowledge-library",
+      "product_name": "Knowledge Library",
+      "packet_section": "evidence_registry"
+    },
+    {
+      "step": 2,
+      "phase": "Route",
+      "product_id": "research-librarian",
+      "product_name": "Research Librarian",
+      "packet_section": "research_routes"
+    },
+    {
+      "step": 3,
+      "phase": "Observe",
+      "product_id": "site-intelligence",
+      "product_name": "Site Intelligence",
+      "packet_section": "live_evidence"
+    },
+    {
+      "step": 4,
+      "phase": "Calculate",
+      "product_id": "workbench",
+      "product_name": "Workbench",
+      "packet_section": "calculation_trace"
+    },
+    {
+      "step": 5,
+      "phase": "Test",
+      "product_id": "research-lab",
+      "product_name": "Research Lab",
+      "packet_section": "experimental_evidence"
+    },
+    {
+      "step": 6,
+      "phase": "Connect",
+      "product_id": "platform-core",
+      "product_name": "Platform Core",
+      "packet_section": "platform_registry"
+    },
+    {
+      "step": 7,
+      "phase": "Decide",
+      "product_id": "decision-studio",
+      "product_name": "Decision Studio",
+      "packet_section": "integrated_decision_brief"
+    }
+  ],
+  "contracts": [
+    {
+      "product_id": "knowledge-library",
+      "product_name": "Knowledge Library",
+      "artifact_types": [
+        "source_record",
+        "quotation_evidence",
+        "citation_bundle",
+        "bibliography",
+        "collection_context"
+      ],
+      "packet_targets": [
+        "evidence_registry",
+        "sources",
+        "citations",
+        "quotations"
+      ],
+      "expected_payload": [
+        "title",
+        "source_type",
+        "citation",
+        "url",
+        "authors",
+        "published_at",
+        "quotes",
+        "evidence_notes"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    },
+    {
+      "product_id": "research-librarian",
+      "product_name": "Research Librarian",
+      "artifact_types": [
+        "research_route",
+        "source_recommendations",
+        "evidence_gap_report",
+        "related_titles"
+      ],
+      "packet_targets": [
+        "research_routes",
+        "sources",
+        "evidence_gaps",
+        "follow_up_questions"
+      ],
+      "expected_payload": [
+        "query",
+        "route",
+        "recommended_sources",
+        "evidence_gaps",
+        "follow_up_questions",
+        "related_titles"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    },
+    {
+      "product_id": "site-intelligence",
+      "product_name": "Site Intelligence",
+      "artifact_types": [
+        "indicator_record",
+        "country_dossier",
+        "live_observation",
+        "methodology_record",
+        "source_health"
+      ],
+      "packet_targets": [
+        "live_evidence",
+        "evidence_registry",
+        "sources",
+        "methodologies"
+      ],
+      "expected_payload": [
+        "indicator",
+        "geography",
+        "period",
+        "value",
+        "unit",
+        "source",
+        "methodology",
+        "freshness",
+        "confidence"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    },
+    {
+      "product_id": "workbench",
+      "product_name": "Workbench",
+      "artifact_types": [
+        "calculation",
+        "model_output",
+        "graph",
+        "code_result",
+        "technical_report"
+      ],
+      "packet_targets": [
+        "calculation_trace",
+        "workbench_calculations",
+        "assumptions",
+        "technical_artifacts"
+      ],
+      "expected_payload": [
+        "title",
+        "formula",
+        "inputs",
+        "results",
+        "assumptions",
+        "validation_checks",
+        "warnings",
+        "report"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    },
+    {
+      "product_id": "research-lab",
+      "product_name": "Research Lab",
+      "artifact_types": [
+        "experiment",
+        "notebook",
+        "dataset",
+        "instrument_run",
+        "validation_result",
+        "scientific_report"
+      ],
+      "packet_targets": [
+        "experimental_evidence",
+        "datasets",
+        "evidence_registry",
+        "calculation_trace"
+      ],
+      "expected_payload": [
+        "title",
+        "hypothesis",
+        "method",
+        "dataset",
+        "results",
+        "validation",
+        "limitations",
+        "instruments"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    },
+    {
+      "product_id": "platform-core",
+      "product_name": "Platform Core",
+      "artifact_types": [
+        "entity_record",
+        "evidence_ledger_record",
+        "provenance_link",
+        "signed_manifest",
+        "relationship_bundle"
+      ],
+      "packet_targets": [
+        "platform_registry",
+        "entities",
+        "evidence_ledger",
+        "provenance_links"
+      ],
+      "expected_payload": [
+        "entity",
+        "identifiers",
+        "evidence_records",
+        "relationships",
+        "provenance",
+        "signatures"
+      ],
+      "required_envelope": [
+        "artifact_schema",
+        "artifact_id",
+        "artifact_type",
+        "source",
+        "provenance",
+        "payload"
+      ]
+    }
+  ],
+  "legacy_adapters": [
+    "catalyst-canvas",
+    "catalyst-data",
+    "catalyst-analytics-r",
+    "global-impact-catalyst",
+    "catalyst-narrative-risk",
+    "catalyst-finance",
+    "catalyst-grit"
+  ],
+  "governance_schema": "scds-decision-governance/1.0",
+  "review_event_schema": "scds-review-event/1.0",
+  "governance_center": {
+    "packet_section": "governance_center",
+    "states": [
+      "draft",
+      "evidence_gathering",
+      "analysis",
+      "review",
+      "revision_required",
+      "approved",
+      "rejected",
+      "deferred",
+      "implemented",
+      "retired"
+    ],
+    "routes": [
+      "GET /governance/states",
+      "GET /governance/template",
+      "POST /governance/evaluate",
+      "POST /governance/transition",
+      "POST /decision-packet/governance",
+      "POST /governance/history/verify"
+    ],
+    "approval_is_human_only": true,
+    "review_history": "append-only SHA-256 hash chain",
+    "export_restrictions": [
+      "reviewed",
+      "public"
+    ]
+  }
+}

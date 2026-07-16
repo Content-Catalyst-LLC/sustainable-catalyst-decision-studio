@@ -1,3 +1,15 @@
+## v1.9.0 — Decision Governance and Review Center
+
+- Added `scds-decision-governance/1.0`, `scds-review-event/1.0`, and additive `scds-decision-packet/1.2`.
+- Added ten controlled decision states and explicit transition rules.
+- Added accountable owner, reviewer assignment, approval condition, exception, conflict-of-interest, and sign-off records.
+- Added append-only SHA-256 review-event chains and tamper verification.
+- Added approval expiration and reassessment dates.
+- Added governance-aware reviewed and public export restrictions with HTTP 409 blocking.
+- Added WordPress Governance tab, REST parity, `governance_json` migration, saved-packet persistence, and export integration.
+- Preserved v1.8.0 typed platform handoffs, existing shortcodes, REST routes, and legacy adapters.
+- Expanded the backend regression suite to 57 tests.
+
 ## v1.8.0 — Unified Evidence and Platform Handoffs
 
 - Added typed handoff contracts for Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, and Platform Core.

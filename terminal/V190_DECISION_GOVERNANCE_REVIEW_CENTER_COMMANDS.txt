@@ -1,0 +1,35 @@
+SUSTAINABLE CATALYST DECISION STUDIO v1.9.0
+DECISION GOVERNANCE AND REVIEW CENTER
+
+LOCAL VALIDATION
+----------------
+cd backend
+python -m pytest
+cd ..
+python scripts/test_release.py
+php -l wordpress-plugin/sustainable-catalyst-decision-studio/sustainable-catalyst-decision-studio.php
+node --check wordpress-plugin/sustainable-catalyst-decision-studio/assets/js/scds-decision-studio.js
+
+BUILD RELEASE
+-------------
+chmod +x scripts/build_release.sh
+./scripts/build_release.sh
+
+GOVERNANCE ROUTES
+-----------------
+curl https://YOUR-BACKEND.example/governance/states
+curl https://YOUR-BACKEND.example/governance/template
+
+Approval and transition calls should include the configured X-SCDS-API-Key when used outside WordPress.
+
+WORDPRESS
+---------
+Upload sustainable-catalyst-decision-studio-plugin-v1.9.0.zip, replace the existing plugin, and open:
+SC Decision Studio > Release Diagnostics
+
+Confirm:
+- WordPress version 1.9.0
+- Backend version 1.9.0
+- Database version 1.3.0
+- Governance schema scds-decision-governance/1.0
+- Review-event schema scds-review-event/1.0
