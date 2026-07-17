@@ -1,0 +1,131 @@
+{
+  "release": "2.0.0",
+  "decision_packet_schema": "scds-decision-packet/2.0",
+  "platform_schema": "scds-connected-decision-platform/2.0",
+  "lifecycle": [
+    {
+      "id": "frame",
+      "label": "Frame",
+      "products": [
+        "Decision Studio"
+      ],
+      "purpose": "Define the decision question, boundaries, owners, and institutional context."
+    },
+    {
+      "id": "research",
+      "label": "Research",
+      "products": [
+        "Research Librarian",
+        "Knowledge Library"
+      ],
+      "purpose": "Route research, identify relevant sources, and expose evidence gaps."
+    },
+    {
+      "id": "evidence",
+      "label": "Gather Evidence",
+      "products": [
+        "Knowledge Library",
+        "Site Intelligence"
+      ],
+      "purpose": "Attach durable sources, citations, live observations, confidence, freshness, and provenance."
+    },
+    {
+      "id": "model",
+      "label": "Model",
+      "products": [
+        "Workbench",
+        "Research Lab"
+      ],
+      "purpose": "Calculate, simulate, test, validate, and document technical assumptions."
+    },
+    {
+      "id": "compare",
+      "label": "Compare",
+      "products": [
+        "Decision Studio",
+        "Workbench"
+      ],
+      "purpose": "Compare alternatives, scenarios, sensitivity, thresholds, stakeholders, and time horizons."
+    },
+    {
+      "id": "challenge",
+      "label": "Challenge Assumptions",
+      "products": [
+        "Decision Studio",
+        "Research Librarian"
+      ],
+      "purpose": "Review assumptions, claims, contradictions, risks, exceptions, and contested evidence."
+    },
+    {
+      "id": "review",
+      "label": "Review",
+      "products": [
+        "Decision Studio"
+      ],
+      "purpose": "Coordinate reviewers, comments, change requests, conditions, conflicts, and sign-offs."
+    },
+    {
+      "id": "approve",
+      "label": "Approve",
+      "products": [
+        "Decision Studio"
+      ],
+      "purpose": "Record a named-human governance decision and lock the reviewed version."
+    },
+    {
+      "id": "publish",
+      "label": "Publish",
+      "products": [
+        "Decision Studio",
+        "Knowledge Library",
+        "Publications",
+        "Channel"
+      ],
+      "purpose": "Create governed internal, institutional, or public decision publications."
+    },
+    {
+      "id": "implement",
+      "label": "Implement",
+      "products": [
+        "Decision Studio",
+        "Contact and Engagement"
+      ],
+      "purpose": "Assign commitments, owners, milestones, and implementation status."
+    },
+    {
+      "id": "monitor",
+      "label": "Monitor",
+      "products": [
+        "Site Intelligence",
+        "Decision Studio"
+      ],
+      "purpose": "Track observations, targets, milestones, risks, and actual-versus-expected results."
+    },
+    {
+      "id": "reassess",
+      "label": "Reassess",
+      "products": [
+        "Decision Studio",
+        "Platform Core"
+      ],
+      "purpose": "Record reassessments, amendments, retirement, lessons, and durable Decision Registry state."
+    }
+  ],
+  "product_roles": {
+    "Research Librarian": "Research routing, evidence gaps, and follow-up questions.",
+    "Knowledge Library": "Durable sources, citations, quotations, collections, and reviewed publication handoffs.",
+    "Site Intelligence": "Live and comparative indicators, monitoring observations, freshness, and methodology.",
+    "Research Lab": "Experiments, notebooks, datasets, validation results, and scientific limitations.",
+    "Workbench": "Calculations, simulations, sensitivity, optimization, graphs, and technical reports.",
+    "Decision Studio": "Alternatives, governance, collaboration, approval, publication, implementation, monitoring, and reassessment.",
+    "Platform Core": "Shared identity, provenance, Evidence Ledger, Decision Registry, events, and exchange manifests."
+  },
+  "routing_boundaries": [
+    "Lifecycle assessment may recommend actions but cannot approve a decision.",
+    "Approval, amendment, suspension, retirement, publication delivery, and professional sign-off require authorized humans.",
+    "Connected product routes are structured handoffs; they do not claim external acceptance or execution."
+  ],
+  "external_delivery": "prepared_not_delivered",
+  "automatic_approval": false,
+  "portfolio_limit": 100
+}

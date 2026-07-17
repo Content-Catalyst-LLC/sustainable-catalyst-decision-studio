@@ -1,0 +1,7 @@
+cd ~/Downloads
+chmod +x install_and_push_sustainable_catalyst_decision_studio_v2_0_1_macos.sh
+./install_and_push_sustainable_catalyst_decision_studio_v2_0_1_macos.sh
+
+# Optional overrides:
+# SCDS_REPOSITORY="$HOME/Downloads/sustainable-catalyst-decision-studio" ./install_and_push_sustainable_catalyst_decision_studio_v2_0_1_macos.sh
+# SCDS_NO_PUSH=1 ./install_and_push_sustainable_catalyst_decision_studio_v2_0_1_macos.sh

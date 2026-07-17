@@ -1,46 +1,42 @@
-# Sustainable Catalyst Decision Studio v1.16.0
+# Sustainable Catalyst Decision Studio v2.0.1
 
-## Accessibility, Offline Use, and Release Hardening
+## Connected Decision Intelligence Platform
 
-Decision Studio is the governance, synthesis, publication, monitoring, accountability, and release-control layer of the Sustainable Catalyst platform. v1.16.0 adds an explicit hardening system for accessibility validation, local offline drafts, recovery snapshots, additive packet migration, large-packet and mobile testing, backup and restore drills, privacy review, and named-human release authorization.
+Decision Studio v2.0.1 restores visible navigation and packet handoffs for Catalyst Canvas, Catalyst Data, Catalyst Analytics R, Global Impact Catalyst, Narrative Risk, Catalyst Finance, and Catalyst Grit while preserving the full connected platform. Decision Studio is the decision orchestration, governance, publication, implementation, monitoring, and accountability layer of the Sustainable Catalyst platform. v2.0.0 connects the full lifecycle:
 
-The release advances the additive Decision Packet to `scds-decision-packet/1.9`. It preserves the v1.15.0 public API and institutional integration layer and all earlier governance, collaboration, scenario, publication, monitoring, evidence, and export capabilities.
+**Frame → Research → Gather Evidence → Model → Compare → Challenge Assumptions → Review → Approve → Publish → Implement → Monitor → Reassess**
 
-## Hardening capabilities
+The release advances the additive Decision Packet to `scds-decision-packet/2.0` while preserving all v1.x governance, collaboration, scenario, publication, monitoring, public API, offline, and release-hardening capabilities.
 
-- Twelve-point accessibility audit covering keyboard operation, focus visibility, landmarks, labels, live status, tables, chart alternatives, reduced motion, contrast, errors, touch targets, and zoom/reflow
-- Explicit requirement for human screen-reader, keyboard-only, forced-colors, contrast, and reflow testing
-- IndexedDB local draft storage with localStorage fallback
-- Fifteen-second autosave and online/offline status announcements
-- Sensitive-field stripping before recovery storage
-- Recovery snapshots with packet and snapshot SHA-256 hashes
-- Additive migration assessment from Decision Packet 1.0–1.8 to 1.9
-- Large-packet and mobile performance gates
-- Backup, restore, and privacy-review gates
-- Human release authorization required; automatic deployment remains disabled
+## Connected platform capabilities
+
+- Twelve-stage lifecycle assessment with completion, blockers, and current-stage detection
+- Cross-product action routing to Research Librarian, Knowledge Library, Site Intelligence, Workbench, Research Lab, Decision Studio, Platform Core, Contact and Engagement, Publications, and Channel
+- Decision intelligence graph connecting evidence, indicators, models, experiments, alternatives, risks, publications, entities, and reassessments
+- Portfolio attention index for up to 100 Decision Packets
+- Prepared connected-exchange manifests with section-level SHA-256 hashes
+- Human-confirmed lifecycle transitions with tamper-evident history
+- Additive WordPress persistence, browser fallback, export support, and offline recovery
+
+## Human-control boundary
+
+Lifecycle assessment can recommend work and route gaps, but it cannot approve, publish, externally deliver, amend, suspend, retire, certify, assure, or professionally sign off a decision. Those actions require authorized humans and any required qualified professional review.
 
 ## Primary endpoints
 
-- `GET /release-hardening/template`
-- `POST /release-hardening/accessibility-audit`
-- `POST /release-hardening/offline-manifest`
-- `POST /release-hardening/recovery-snapshot`
-- `POST /release-hardening/migration-assessment`
-- `POST /release-hardening/readiness`
-- `POST /decision-packet/release-hardening`
+- `GET /connected-platform/template`
+- `POST /connected-platform/assess`
+- `POST /connected-platform/transition`
+- `POST /connected-platform/portfolio`
+- `POST /connected-platform/graph`
+- `POST /connected-platform/exchange`
+- `POST /connected-platform/history/verify`
+- `POST /decision-packet/connected-platform`
 
-WordPress exposes matching routes under `/wp-json/scds/v1` and a dedicated workspace:
+WordPress exposes matching routes under `/wp-json/scds/v1` and the workspace:
 
 ```text
-[sc_decision_studio mode="hardening" title="Accessibility, Offline Use, and Release Hardening"]
+[sc_decision_studio mode="connected" title="Connected Decision Intelligence Platform"]
 ```
 
-## Offline boundary
-
-Offline mode supports viewing the active packet, editing a local draft, creating a recovery snapshot, and exporting JSON. Governance transitions, room membership changes, institutional API operations, publication handoffs, and external delivery require reconnection and explicit authenticated confirmation. Queued writes are never replayed automatically.
-
-## Accessibility boundary
-
-Automated checks cannot establish full WCAG conformance. Assistive-technology testing, contrast review, reflow validation, restore drills, privacy review, security review, and named-human release authorization remain required.
-
-See `docs/V1160_ACCESSIBILITY_OFFLINE_RELEASE_HARDENING.md` and `docs/ROADMAP.md`.
+See `docs/V2000_CONNECTED_DECISION_INTELLIGENCE_PLATFORM.md` and `docs/ROADMAP.md`.

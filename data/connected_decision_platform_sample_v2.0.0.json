@@ -1,0 +1,440 @@
+{
+  "schema": "scds-connected-decision-platform/2.0",
+  "version": "2.0.0",
+  "decision_packet_schema": "scds-decision-packet/2.0",
+  "generated_at": "2026-07-16T16:49:15Z",
+  "confirmed_stage": "approve",
+  "lifecycle_assessment": {
+    "schema": "scds-decision-lifecycle-assessment/1.0",
+    "version": "2.0.0",
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "generated_at": "2026-07-16T16:49:15Z",
+    "decision_packet_id": "SCDS-CONNECTED-001",
+    "decision_question": "Should the institution implement the connected program?",
+    "current_stage": "complete",
+    "lifecycle_completion_percent": 100.0,
+    "completed_stages": 12,
+    "total_stages": 12,
+    "stages": [
+      {
+        "id": "frame",
+        "label": "Frame",
+        "products": [
+          "Decision Studio"
+        ],
+        "purpose": "Define the decision question, boundaries, owners, and institutional context.",
+        "sequence": 1,
+        "status": "complete",
+        "complete": true,
+        "record_count": 1,
+        "missing": []
+      },
+      {
+        "id": "research",
+        "label": "Research",
+        "products": [
+          "Research Librarian",
+          "Knowledge Library"
+        ],
+        "purpose": "Route research, identify relevant sources, and expose evidence gaps.",
+        "sequence": 2,
+        "status": "complete",
+        "complete": true,
+        "record_count": 1,
+        "missing": []
+      },
+      {
+        "id": "evidence",
+        "label": "Gather Evidence",
+        "products": [
+          "Knowledge Library",
+          "Site Intelligence"
+        ],
+        "purpose": "Attach durable sources, citations, live observations, confidence, freshness, and provenance.",
+        "sequence": 3,
+        "status": "complete",
+        "complete": true,
+        "record_count": 1,
+        "missing": []
+      },
+      {
+        "id": "model",
+        "label": "Model",
+        "products": [
+          "Workbench",
+          "Research Lab"
+        ],
+        "purpose": "Calculate, simulate, test, validate, and document technical assumptions.",
+        "sequence": 4,
+        "status": "complete",
+        "complete": true,
+        "record_count": 1,
+        "missing": []
+      },
+      {
+        "id": "compare",
+        "label": "Compare",
+        "products": [
+          "Decision Studio",
+          "Workbench"
+        ],
+        "purpose": "Compare alternatives, scenarios, sensitivity, thresholds, stakeholders, and time horizons.",
+        "sequence": 5,
+        "status": "complete",
+        "complete": true,
+        "record_count": 2,
+        "missing": []
+      },
+      {
+        "id": "challenge",
+        "label": "Challenge Assumptions",
+        "products": [
+          "Decision Studio",
+          "Research Librarian"
+        ],
+        "purpose": "Review assumptions, claims, contradictions, risks, exceptions, and contested evidence.",
+        "sequence": 6,
+        "status": "complete",
+        "complete": true,
+        "record_count": 1,
+        "missing": []
+      },
+      {
+        "id": "review",
+        "label": "Review",
+        "products": [
+          "Decision Studio"
+        ],
+        "purpose": "Coordinate reviewers, comments, change requests, conditions, conflicts, and sign-offs.",
+        "sequence": 7,
+        "status": "complete",
+        "complete": true,
+        "record_count": 2,
+        "missing": []
+      },
+      {
+        "id": "approve",
+        "label": "Approve",
+        "products": [
+          "Decision Studio"
+        ],
+        "purpose": "Record a named-human governance decision and lock the reviewed version.",
+        "sequence": 8,
+        "status": "complete",
+        "complete": true,
+        "record_count": 1,
+        "missing": []
+      },
+      {
+        "id": "publish",
+        "label": "Publish",
+        "products": [
+          "Decision Studio",
+          "Knowledge Library",
+          "Publications",
+          "Channel"
+        ],
+        "purpose": "Create governed internal, institutional, or public decision publications.",
+        "sequence": 9,
+        "status": "complete",
+        "complete": true,
+        "record_count": 1,
+        "missing": []
+      },
+      {
+        "id": "implement",
+        "label": "Implement",
+        "products": [
+          "Decision Studio",
+          "Contact and Engagement"
+        ],
+        "purpose": "Assign commitments, owners, milestones, and implementation status.",
+        "sequence": 10,
+        "status": "complete",
+        "complete": true,
+        "record_count": 2,
+        "missing": []
+      },
+      {
+        "id": "monitor",
+        "label": "Monitor",
+        "products": [
+          "Site Intelligence",
+          "Decision Studio"
+        ],
+        "purpose": "Track observations, targets, milestones, risks, and actual-versus-expected results.",
+        "sequence": 11,
+        "status": "complete",
+        "complete": true,
+        "record_count": 2,
+        "missing": []
+      },
+      {
+        "id": "reassess",
+        "label": "Reassess",
+        "products": [
+          "Decision Studio",
+          "Platform Core"
+        ],
+        "purpose": "Record reassessments, amendments, retirement, lessons, and durable Decision Registry state.",
+        "sequence": 12,
+        "status": "complete",
+        "complete": true,
+        "record_count": 2,
+        "missing": []
+      }
+    ],
+    "blockers": [],
+    "governance_state": "approved",
+    "human_approval_required": true,
+    "automatic_approval_allowed": false,
+    "status": "complete",
+    "content_hash": "sha256:baac8681405e11126e4903658032bfca21929a59b4b625bbc983f429feddf489"
+  },
+  "action_queue": {
+    "schema": "scds-decision-action-queue/1.0",
+    "version": "2.0.0",
+    "generated_at": "2026-07-16T16:49:15Z",
+    "decision_packet_id": "SCDS-CONNECTED-001",
+    "current_stage": "complete",
+    "actions": [],
+    "action_count": 0,
+    "human_controlled_actions": 0,
+    "content_hash": "sha256:b5b7bfd7484511e313a9eee43ee242af23c7f2fe0b1227436d7a76ae6984f2ef"
+  },
+  "intelligence_graph": {
+    "schema": "scds-decision-intelligence-graph/1.0",
+    "version": "2.0.0",
+    "generated_at": "2026-07-16T16:49:15Z",
+    "decision_packet_id": "SCDS-CONNECTED-001",
+    "nodes": [
+      {
+        "id": "decision:SCDS-CONNECTED-001",
+        "type": "decision",
+        "label": "Should the institution implement the connected program?",
+        "source": "Decision Studio"
+      },
+      {
+        "id": "evidence-5dbe985df679",
+        "type": "evidence",
+        "label": "Reviewed evidence base",
+        "source": "Knowledge Library",
+        "content_hash": "sha256:5dbe985df6798182012b61123c74608b0a5ac229909c2597b0b3a048f8750b38"
+      },
+      {
+        "id": "indicator-1276c06f7672",
+        "type": "indicator",
+        "label": "O1",
+        "source": "Site Intelligence",
+        "content_hash": "sha256:1276c06f767205c4585b7999ab1e30a7961eaf1db49a0f2f1fc7ecf0fc0b9f5a"
+      },
+      {
+        "id": "model-84776703cda0",
+        "type": "model",
+        "label": "Validated Workbench model",
+        "source": "Workbench",
+        "content_hash": "sha256:84776703cda0019f48f545eed8068aa9003346a5b00d4a22540383c8a9fa0e78"
+      },
+      {
+        "id": "alternative-cc30a3bb4f0b",
+        "type": "alternative",
+        "label": "Option A",
+        "source": "Decision Studio",
+        "content_hash": "sha256:cc30a3bb4f0b4f03dff893d2a9e5e69ef53ae45d5c18153beff235dd40a45f51"
+      },
+      {
+        "id": "alternative-036077966469",
+        "type": "alternative",
+        "label": "Option B",
+        "source": "Decision Studio",
+        "content_hash": "sha256:036077966469e83add7bf43d4800e0648484045b419dc3b9a840330a2f7e339f"
+      },
+      {
+        "id": "publication-0edca4e3ba49",
+        "type": "publication",
+        "label": "Executive decision memo",
+        "source": "Decision Studio",
+        "content_hash": "sha256:0edca4e3ba493be248ac2444921a688c2b734cd6f202fbd1fd42797c1a29d9be"
+      },
+      {
+        "id": "reassessment-7d0f5ce64230",
+        "type": "reassessment",
+        "label": "RA-1",
+        "source": "Decision Studio",
+        "content_hash": "sha256:7d0f5ce6423011ea0027b41f7a918e81bac8ee631727042737a6bc0b3965f5b8"
+      },
+      {
+        "id": "entity-59ca5e2ead4f",
+        "type": "entity",
+        "label": "Institution",
+        "source": "Platform Core",
+        "content_hash": "sha256:59ca5e2ead4fff1ba76482d5f2ef5fb56e9b904a2ea86973a2242d14f258e28d"
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-69014f36de8b",
+        "from": "evidence-5dbe985df679",
+        "to": "decision:SCDS-CONNECTED-001",
+        "relationship": "supports"
+      },
+      {
+        "id": "edge-067a9a9f240c",
+        "from": "indicator-1276c06f7672",
+        "to": "decision:SCDS-CONNECTED-001",
+        "relationship": "observes"
+      },
+      {
+        "id": "edge-7c7e0e563e22",
+        "from": "model-84776703cda0",
+        "to": "decision:SCDS-CONNECTED-001",
+        "relationship": "models"
+      },
+      {
+        "id": "edge-85dc5b92a204",
+        "from": "alternative-cc30a3bb4f0b",
+        "to": "decision:SCDS-CONNECTED-001",
+        "relationship": "compares"
+      },
+      {
+        "id": "edge-df5e2e1f3cf2",
+        "from": "alternative-036077966469",
+        "to": "decision:SCDS-CONNECTED-001",
+        "relationship": "compares"
+      },
+      {
+        "id": "edge-d6ab148cfc73",
+        "from": "publication-0edca4e3ba49",
+        "to": "decision:SCDS-CONNECTED-001",
+        "relationship": "publishes"
+      },
+      {
+        "id": "edge-64624874c69b",
+        "from": "reassessment-7d0f5ce64230",
+        "to": "decision:SCDS-CONNECTED-001",
+        "relationship": "reassesses"
+      },
+      {
+        "id": "edge-a42aab0022df",
+        "from": "decision:SCDS-CONNECTED-001",
+        "to": "entity-59ca5e2ead4f",
+        "relationship": "concerns"
+      }
+    ],
+    "node_count": 9,
+    "edge_count": 8,
+    "truncated": false,
+    "boundaries": [
+      "Graph relationships are derived from packet structure and require human interpretation.",
+      "No causal claim is created solely by an edge in this graph."
+    ],
+    "content_hash": "sha256:b77514ad6d59d3f921f4ce8e3143dac452e7205c35044aa8fb31b113e7273786"
+  },
+  "portfolio_index": {
+    "schema": "scds-decision-portfolio-index/1.0",
+    "version": "2.0.0",
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "generated_at": "2026-07-16T16:49:15Z",
+    "records": [
+      {
+        "decision_packet_id": "SCDS-CONNECTED-001",
+        "decision_question": "Should the institution implement the connected program?",
+        "project_name": "Connected institutional transition",
+        "current_stage": "complete",
+        "lifecycle_completion_percent": 100.0,
+        "governance_state": "approved",
+        "monitoring_status": "on_track",
+        "implementation_status": "implemented",
+        "high_or_critical_risks": 0,
+        "attention_required": false,
+        "packet_hash": "sha256:34717873834225fb31ad591d125fb5e36703f12b6d8ca46c90277acd308507f4"
+      }
+    ],
+    "record_count": 1,
+    "attention_count": 0,
+    "approved_count": 1,
+    "reassessment_required_count": 0,
+    "truncated": false,
+    "content_hash": "sha256:5a62145b2d2f2ddc1ef2215698b55cdf2cbada3f151cec4e8f53893fd509d010"
+  },
+  "connected_exchange": {
+    "schema": "scds-connected-platform-exchange/1.0",
+    "version": "2.0.0",
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "generated_at": "2026-07-16T16:49:15Z",
+    "decision_packet_id": "SCDS-CONNECTED-001",
+    "lifecycle_assessment_hash": "sha256:baac8681405e11126e4903658032bfca21929a59b4b625bbc983f429feddf489",
+    "intelligence_graph_hash": "sha256:b77514ad6d59d3f921f4ce8e3143dac452e7205c35044aa8fb31b113e7273786",
+    "manifest_records": [
+      {
+        "section": "decision_framing",
+        "content_hash": "sha256:472dc148f95441b94c8b2b2e720c9f1079114d55e9a4b87733589744b5a8692f"
+      },
+      {
+        "section": "evidence_registry",
+        "content_hash": "sha256:03af10454d197eaa291551c0596d689d74cd7717c652e0ccc11d060ea069ae49"
+      },
+      {
+        "section": "scenario_studio",
+        "content_hash": "sha256:4de15f7f352e2cc5f88056d245ca9c49a2d2daa9e5addf46231729ac43ae8c3c"
+      },
+      {
+        "section": "governance_center",
+        "content_hash": "sha256:9ceee54815b9c529ab2b0fad3227099f783bc19f78a6ba1795e3bb41a04f66ca"
+      },
+      {
+        "section": "publication_registry",
+        "content_hash": "sha256:afda8baf9917840e06b2da1e064267b5d695c4edf99c2c7ac10a3b2179d33bd7"
+      },
+      {
+        "section": "outcome_monitoring",
+        "content_hash": "sha256:ded911da29a2ba774371496f24010725bf9932a8733ff5cefe9bbda61cd9f49b"
+      },
+      {
+        "section": "decision_registry_entry",
+        "content_hash": "sha256:246f16420dde843a15830b71abf4323e7c7283c979ce50209590fbbe5021f0c8"
+      }
+    ],
+    "product_routes": {
+      "Research Librarian": "Research routing, evidence gaps, and follow-up questions.",
+      "Knowledge Library": "Durable sources, citations, quotations, collections, and reviewed publication handoffs.",
+      "Site Intelligence": "Live and comparative indicators, monitoring observations, freshness, and methodology.",
+      "Research Lab": "Experiments, notebooks, datasets, validation results, and scientific limitations.",
+      "Workbench": "Calculations, simulations, sensitivity, optimization, graphs, and technical reports.",
+      "Decision Studio": "Alternatives, governance, collaboration, approval, publication, implementation, monitoring, and reassessment.",
+      "Platform Core": "Shared identity, provenance, Evidence Ledger, Decision Registry, events, and exchange manifests."
+    },
+    "exchange_status": "prepared_not_delivered",
+    "external_acceptance_claimed": false,
+    "human_confirmation_required": true,
+    "content_hash": "sha256:0db829effe40569c8b51ec4c01649203ff4e5f61ef883ab6936251ede28b9d23"
+  },
+  "lifecycle_history": [
+    {
+      "schema": "scds-decision-lifecycle-event/1.0",
+      "event_id": "life-f6c0e1d15d15789e1b",
+      "sequence": 1,
+      "event_type": "lifecycle_stage_confirmed",
+      "actor": "Decision Owner",
+      "actor_role": "owner",
+      "from_stage": "frame",
+      "to_stage": "approve",
+      "reason": "Human governance approval recorded.",
+      "created_at": "2026-07-16T16:49:15Z",
+      "previous_hash": "GENESIS",
+      "automatic_transition": false,
+      "event_hash": "sha256:0529f99744f7dd52b1ca6b78953f38c8565892b8d56f7d448f4b547118622422"
+    }
+  ],
+  "lifecycle_history_verification": {
+    "ok": true,
+    "valid": true,
+    "event_count": 1,
+    "last_hash": "sha256:0529f99744f7dd52b1ca6b78953f38c8565892b8d56f7d448f4b547118622422"
+  },
+  "notes": "",
+  "human_approval_required": true,
+  "automatic_approval_allowed": false,
+  "automatic_external_delivery_allowed": false,
+  "content_hash": "sha256:461472ce8c3c95a5414b78457ce8b1b6d722c5d495e33ff75293b22bd89be32f"
+}

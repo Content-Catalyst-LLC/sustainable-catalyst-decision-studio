@@ -153,7 +153,7 @@
 /* v1.14.0 Outcomes, Monitoring, and Reassessment */
 .scds-shell [data-scds-panel="outcomes"] .scds-score-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}.scds-shell [data-scds-panel="outcomes"] .scds-score-grid>div{border:1px solid #d7dce2;border-radius:8px;padding:12px;background:#fff}.scds-shell [data-scds-panel="outcomes"] .scds-score-grid strong{display:block;font-size:1.35rem}.scds-shell [data-scds-panel="outcomes"] .scds-score-grid span{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}@media(max-width:720px){.scds-shell [data-scds-panel="outcomes"] .scds-score-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-/* v1.16.0 accessibility, reflow, and reduced-motion hardening */
+/* v2.0.0 accessibility, reflow, and reduced-motion hardening */
 .scds-shell :focus-visible{outline:3px solid currentColor;outline-offset:3px}
 .scds-shell button,.scds-shell input,.scds-shell select,.scds-shell textarea,.scds-shell a{scroll-margin:1rem}
 .scds-shell button,.scds-shell .scds-button{min-height:44px;min-width:44px}
@@ -163,3 +163,26 @@
 @media (max-width:720px){.scds-shell .scds-form-grid,.scds-shell .scds-score-grid,.scds-shell .scds-public-grid{grid-template-columns:1fr}.scds-shell .scds-tabs{overflow-x:auto;scroll-snap-type:x proximity}.scds-shell .scds-tab{scroll-snap-align:start;white-space:nowrap}.scds-shell .scds-table{display:block;overflow-x:auto}.scds-shell textarea{min-height:9rem}}
 @media (prefers-reduced-motion:reduce){.scds-shell *,.scds-shell *::before,.scds-shell *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 @media (forced-colors:active){.scds-shell .scds-button,.scds-shell .scds-tab,.scds-shell .scds-note,.scds-shell .scds-status-line{border:1px solid ButtonText}.scds-shell .scds-bar i{background:Highlight}}
+
+
+/* v2.0.1 Catalyst Module Navigation and Handoff Repair */
+.scds-module-navigation{margin:20px 0 28px;padding:20px;border:1px solid #bdb3a2;background:linear-gradient(180deg,#fbf8ef,#f3ecdd)}
+.scds-module-navigation-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:24px;align-items:start;margin-bottom:16px}
+.scds-module-navigation-head h4,.scds-connected-services-head h4{font-family:Spartan,Montserrat,Arial,sans-serif;font-size:1.2rem;margin:0}
+.scds-module-navigation-help{margin:0;padding:12px 14px;background:#fff;border-left:4px solid #111;line-height:1.55}
+.scds-catalyst-module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.scds-catalyst-module-card{background:#fff;border:1px solid var(--scds-line);padding:17px;box-shadow:0 3px 12px rgba(0,0,0,.045)}
+.scds-catalyst-module-card h4{font-family:Spartan,Montserrat,Arial,sans-serif;font-size:1.1rem;margin:4px 0 8px;color:#000}
+.scds-catalyst-module-card>p{line-height:1.55;color:#444}
+.scds-module-card-topline{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.scds-module-stage{display:inline-block;background:#111;color:#fff;padding:5px 8px;font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.scds-module-status{font-size:.76rem;font-weight:800;color:#356b43;text-align:right}
+.scds-module-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}
+.scds-module-meta div{min-width:0;background:#f8f4ea;border:1px solid #e6dece;padding:8px}
+.scds-module-meta dt{font-size:.67rem;text-transform:uppercase;letter-spacing:.07em;font-weight:900;color:#666}
+.scds-module-meta dd{margin:4px 0 0;overflow-wrap:anywhere;font-size:.76rem}
+.scds-mini-button-primary{background:#111;color:#fff;border-color:#111}
+.scds-mini-button-primary:hover,.scds-mini-button-primary:focus{background:#fff;color:#111}
+.scds-module-handoff-status{margin-top:14px;padding:12px 14px;border:1px solid #cfc5b4;background:#fff;line-height:1.55}
+.scds-connected-services-head{margin-top:28px;padding-top:24px;border-top:1px solid var(--scds-line)}
+@media(max-width:900px){.scds-module-navigation-head,.scds-catalyst-module-grid{grid-template-columns:1fr}.scds-module-meta{grid-template-columns:1fr}.scds-module-card-topline{align-items:flex-start;flex-direction:column}.scds-module-status{text-align:left}}

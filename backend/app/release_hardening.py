@@ -105,7 +105,7 @@ def hardening_template(app_version: str, packet_schema: str) -> Dict[str, Any]:
             "security_privacy",
         ],
         "supported_migrations": {
-            "from_packet_schemas": [f"scds-decision-packet/1.{minor}" for minor in range(0, 9)],
+            "from_packet_schemas": [f"scds-decision-packet/1.{minor}" for minor in range(0, 10)] + ["scds-decision-packet/2.0"],
             "to_packet_schema": packet_schema,
             "strategy": "additive_defaulting_with_original_packet_preserved_in_recovery_snapshot",
         },
@@ -233,15 +233,26 @@ def recovery_snapshot(packet: Dict[str, Any], label: str, actor: str, app_versio
 def migration_assessment(profile: Dict[str, Any], packet: Dict[str, Any], app_version: str, packet_schema: str) -> Dict[str, Any]:
     source_schema = str(profile.get("from_schema") or packet.get("decision_packet_schema") or "scds-decision-packet/1.8")
     target_schema = str(profile.get("to_schema") or packet_schema)
-    source_match = re.fullmatch(r"scds-decision-packet/1\.(\d+)", source_schema)
-    target_match = re.fullmatch(r"scds-decision-packet/1\.(\d+)", target_schema)
-    supported = bool(source_match and target_match and int(source_match.group(1)) <= int(target_match.group(1)) <= 9)
+    def schema_rank(value: str) -> Optional[int]:
+        match = re.fullmatch(r"scds-decision-packet/(\d+)\.(\d+)", value)
+        if not match:
+            return None
+        major, minor = int(match.group(1)), int(match.group(2))
+        if major == 1 and 0 <= minor <= 9:
+            return minor
+        if major == 2 and minor == 0:
+            return 100
+        return None
+
+    source_rank = schema_rank(source_schema)
+    target_rank = schema_rank(target_schema)
+    supported = source_rank is not None and target_rank is not None and source_rank <= target_rank and target_schema == packet_schema
     blockers: List[str] = []
-    if not source_match:
+    if source_rank is None:
         blockers.append("unrecognized_source_schema")
-    elif target_match and int(source_match.group(1)) > int(target_match.group(1)):
+    elif target_rank is not None and source_rank > target_rank:
         blockers.append("downgrade_not_supported")
-    if not target_match or target_schema != packet_schema:
+    if target_rank is None or target_schema != packet_schema:
         blockers.append("unsupported_target_schema")
     assessment = {
         "schema": MIGRATION_ASSESSMENT_SCHEMA,
@@ -254,7 +265,7 @@ def migration_assessment(profile: Dict[str, Any], packet: Dict[str, Any], app_ve
         "required_actions": [
             "Create recovery snapshot before migration.",
             "Preserve unknown fields under migration_legacy_fields.",
-            "Apply defaults only for missing v1.16.0 sections.",
+            "Apply defaults only for missing v2.0.0 sections.",
             "Re-run governance and export readiness after migration.",
         ],
         "added_sections": [
@@ -264,6 +275,13 @@ def migration_assessment(profile: Dict[str, Any], packet: Dict[str, Any], app_ve
             "recovery_snapshots",
             "migration_assessment",
             "release_readiness",
+            "connected_platform",
+            "lifecycle_assessment",
+            "decision_intelligence_graph",
+            "decision_action_queue",
+            "decision_portfolio_index",
+            "connected_exchange",
+            "lifecycle_history",
         ],
         "blockers": blockers,
         "rollback": "Restore the pre-migration recovery snapshot as a new draft; do not overwrite the source record.",

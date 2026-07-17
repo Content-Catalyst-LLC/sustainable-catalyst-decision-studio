@@ -1,0 +1,36 @@
+{
+  "release": "2.0.1",
+  "title": "Catalyst Module Navigation and Handoff Repair",
+  "release_date": "2026-07-17",
+  "build_fingerprint": "scds-v2.0.1-catalyst-module-navigation-handoff-repair",
+  "source_commit": "release-v2.0.1",
+  "wordpress": {
+    "plugin_version": "2.0.1",
+    "database_version": "2.1.0",
+    "shortcode": "[sc_decision_studio mode=\"full\" title=\"Sustainable Catalyst Decision Studio\"]"
+  },
+  "backend": {
+    "version": "2.0.1",
+    "new_route": "/integrations/module-navigation"
+  },
+  "schemas": {
+    "decision_packet": "scds-decision-packet/2.0",
+    "module_navigation": "scds-catalyst-module-navigation/1.0",
+    "module_handoff": "scds-catalyst-module-handoff/1.0",
+    "typed_artifact": "scds-platform-artifact/1.0"
+  },
+  "capabilities": [
+    "Visible first-class cards for seven Catalyst modules",
+    "Configurable WordPress routes",
+    "Browser-local Decision Packet handoff and return URL",
+    "Direct artifact-import targeting",
+    "Preserved legacy adapters and current platform services",
+    "Accessible responsive navigation status"
+  ],
+  "tests": {
+    "backend_expected": 135,
+    "release_contract": true,
+    "php_syntax": true,
+    "javascript_syntax": true
+  }
+}

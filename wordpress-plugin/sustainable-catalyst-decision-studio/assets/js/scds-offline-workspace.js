@@ -1,8 +1,8 @@
 (function(){"use strict";
-const VERSION='1.16.0';
+const VERSION='2.0.0';
 const DB_NAME='scds-offline-workspace';
 const STORE='drafts';
-const FALLBACK_KEY='scds_offline_draft_v1_16_0';
+const FALLBACK_KEY='scds_offline_draft_v2_0_0';
 const SENSITIVE=/api[_-]?key|secret|password|token|authorization|cookie|private[_-]?key/i;
 const AUTOMATIC_WRITE_REPLAY=false;
 function all(root,selector){return Array.from(root.querySelectorAll(selector))}

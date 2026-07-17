@@ -1,0 +1,81 @@
+{
+  "release": "2.0.1",
+  "workflow_label": "Canvas \u2192 Data \u2192 Analytics R \u2192 Global Impact \u2192 Narrative Risk \u2192 Finance \u2192 Grit \u2192 Decision Studio",
+  "navigation_schema": "scds-catalyst-module-navigation/1.0",
+  "handoff_schema": "scds-catalyst-module-handoff/1.0",
+  "modules": [
+    {
+      "id": "catalyst-canvas",
+      "name": "Catalyst Canvas",
+      "stage": "Frame",
+      "url": "/narrative-strategy/catalyst-canvas/",
+      "artifact_key": "framing",
+      "packet_section": "decision_framing",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "catalyst-data",
+      "name": "Catalyst Data",
+      "stage": "Anchor",
+      "url": "/infrastructure/catalyst-data/",
+      "artifact_key": "evidence_records",
+      "packet_section": "evidence_and_measurement",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "catalyst-analytics-r",
+      "name": "Catalyst Analytics R",
+      "stage": "Model",
+      "url": "/modeling-analytics/catalyst-analytics-r/",
+      "artifact_key": "scenario_analysis",
+      "packet_section": "scenarios",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "global-impact-catalyst",
+      "name": "Global Impact Catalyst",
+      "stage": "Measure",
+      "url": "/modeling-analytics/global-impact-catalyst/",
+      "artifact_key": "impact_records",
+      "packet_section": "impact_measurement",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "catalyst-narrative-risk",
+      "name": "Narrative Risk",
+      "stage": "Review",
+      "url": "/narrative-strategy/narrative-risk/",
+      "artifact_key": "claim_reviews",
+      "packet_section": "claim_and_risk_review",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "catalyst-finance",
+      "name": "Catalyst Finance",
+      "stage": "Evaluate",
+      "url": "/modeling-analytics/catalyst-finance/",
+      "artifact_key": "finance_analysis",
+      "packet_section": "financial_tradeoffs",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "catalyst-grit",
+      "name": "Catalyst Grit",
+      "stage": "Sustain",
+      "url": "/human-systems/catalyst-grit/",
+      "artifact_key": "execution_recovery",
+      "packet_section": "execution_and_recovery",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    }
+  ],
+  "compatibility": {
+    "typed_artifact_schema": "scds-platform-artifact/1.0",
+    "legacy_adapters_preserved": true,
+    "decision_packet_schema": "scds-decision-packet/2.0"
+  },
+  "boundaries": [
+    "Browser-local handoffs are not remote API delivery.",
+    "Destination modules must explicitly import a handoff or exported artifact.",
+    "Human review remains required before approval, publication, or consequential use."
+  ]
+}

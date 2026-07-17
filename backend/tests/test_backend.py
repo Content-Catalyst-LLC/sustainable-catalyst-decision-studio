@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '1.16.0'
+    assert r.json()['version'] == '2.0.1'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '1.16.0'
+    assert data['decision_packet']['packet_version'] == '2.0.1'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -87,7 +87,7 @@ def test_audit_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.16.0'
+    assert data['audit']['audit_version'] == '2.0.1'
     assert 'module_artifact_ledger' in data['audit']
 
 
@@ -96,7 +96,7 @@ def test_audit_generate_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['audit']['audit_version'] == '1.16.0'
+    assert data['audit']['audit_version'] == '2.0.1'
     assert data['audit_summary']['assumptions_count'] >= 5
     assert data['audit_summary']['calculation_trace_count'] >= 4
 
@@ -161,7 +161,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.16.0'
+    assert data['version'] == '2.0.1'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -189,7 +189,7 @@ def test_review_status_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.16.0'
+    assert data['version'] == '2.0.1'
     assert len(data['sections']) >= 8
     assert any(s['id'] == 'finance' for s in data['sections'])
 
@@ -200,7 +200,7 @@ def test_brief_readiness_default():
     data = r.json()
     assert data['ok'] is True
     readiness = data['readiness']
-    assert readiness['readiness_version'] == '1.16.0'
+    assert readiness['readiness_version'] == '2.0.1'
     assert 0 <= readiness['readiness_percent'] <= 100
     assert 'sections' in readiness
     assert 'export_gate' in readiness
@@ -232,7 +232,7 @@ def test_scenario_comparison_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.16.0'
+    assert data['version'] == '2.0.1'
     comparison = data['scenario_comparison']
     assert comparison['scenario_count'] >= 4
     assert 'matrix' in comparison
@@ -263,7 +263,7 @@ def test_workbench_handoff_default():
     data = r.json()
     assert data['ok'] is True
     handoff = data['workbench_handoff']
-    assert handoff['handoff_version'] == '1.16.0'
+    assert handoff['handoff_version'] == '2.0.1'
     ids = [h['tool_id'] for h in handoff['recommended_handoffs']]
     assert 'economics-forecasting-and-scenario-tool' in ids
     assert any('sc_workbench' in h['shortcode'] for h in handoff['recommended_handoffs'])
@@ -273,7 +273,7 @@ def test_integrated_brief_includes_scenario_and_handoff():
     r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
     assert r.status_code == 200
     data = r.json()
-    assert data['version'] == '1.16.0'
+    assert data['version'] == '2.0.1'
     assert 'scenario_comparison' in data
     assert 'workbench_handoff' in data
     assert 'scenario_comparison_matrix' in data['brief']
@@ -286,7 +286,7 @@ def test_export_center_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['export_center']['export_center_version'] == '1.16.0'
+    assert data['export_center']['export_center_version'] == '2.0.1'
     assert any(e['id'] == 'packet_json' for e in data['export_center']['exports'])
 
 
@@ -296,7 +296,7 @@ def test_decision_packet_save_template():
     data = r.json()
     assert data['ok'] is True
     saved = data['saved_packet']
-    assert saved['packet_version'] == '1.16.0'
+    assert saved['packet_version'] == '2.0.1'
     assert saved['project_name'] == 'Saved packet test'
     assert 'readiness' in saved
     assert 'integrated_brief' in saved
@@ -308,7 +308,7 @@ def test_export_center_bundle_default():
     data = r.json()
     assert data['ok'] is True
     bundle = data['export_bundle']
-    assert bundle['bundle_version'] == '1.16.0'
+    assert bundle['bundle_version'] == '2.0.1'
     assert 'decision_packet_json' in bundle['exports']
     assert 'integrated_brief_markdown' in bundle['exports']
     assert 'audit_json' in bundle['exports']
@@ -321,8 +321,8 @@ def test_public_landing_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '1.16.0'
-    assert data['landing']['page_version'] == '1.16.0'
+    assert data['version'] == '2.0.1'
+    assert data['landing']['page_version'] == '2.0.1'
     assert 'Decision Studio' in data['landing']['headline']
     assert len(data['landing']['workflow']) == 7
     assert data['landing']['workflow'][0]['module'] == 'Knowledge Library'
@@ -334,7 +334,7 @@ def test_public_demo_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['demo']['demo_version'] == '1.16.0'
+    assert data['demo']['demo_version'] == '2.0.1'
     assert len(data['demo']['demo_cards']) >= 4
     assert 'Knowledge Library to source' in data['demo']['public_copy']
     assert 'Decision Studio to decide' in data['demo']['public_copy']
@@ -344,9 +344,9 @@ def test_release_manifest_identity():
     response = client.get('/release')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '1.16.0'
-    assert data['release']['build_fingerprint'] == 'scds-v1.16.0-accessibility-offline-release-hardening'
-    assert data['release']['decision_packet_schema'] == 'scds-decision-packet/1.9'
+    assert data['version'] == '2.0.1'
+    assert data['release']['build_fingerprint'] == 'scds-v2.0.1-catalyst-module-navigation-handoff-repair'
+    assert data['release']['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert data['release']['compatibility']['packet_schema_breaking_changes'] is False
 
 
@@ -358,7 +358,7 @@ def test_health_reports_cold_start_and_limits():
     assert data['cold_start_ready'] is True
     assert data['uptime_seconds'] >= 0
     assert data['limits']['max_request_bytes'] == 1048576
-    assert response.headers['x-scds-version'] == '1.16.0'
+    assert response.headers['x-scds-version'] == '2.0.1'
 
 
 def test_oversized_public_request_is_rejected():
@@ -558,7 +558,7 @@ def test_platform_handoff_template_has_new_packet_sections():
     r = client.get('/decision-packet/platform-handoffs')
     assert r.status_code == 200
     packet = r.json()['decision_packet']
-    assert packet['packet_version'] == '1.16.0'
+    assert packet['packet_version'] == '2.0.1'
     assert packet['artifact_schema'] == 'scds-platform-artifact/1.0'
     for key in ['evidence_registry', 'research_routes', 'live_evidence', 'experimental_evidence', 'platform_registry', 'integrity_checks']:
         assert key in packet
@@ -663,7 +663,7 @@ def test_review_history_detects_tampering():
 
 def test_governance_is_in_decision_packet_and_export_bundle():
     packet = client.get('/decision-packet/template').json()['decision_packet']
-    assert packet['packet_version'] == '1.16.0'
+    assert packet['packet_version'] == '2.0.1'
     assert packet['governance_schema'] == 'scds-decision-governance/1.0'
     assert packet['governance_center']['current_state'] == 'draft'
     governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
@@ -735,7 +735,7 @@ def test_scenario_studio_default_analysis():
     assert response.status_code == 200
     data = response.json()
     studio = data['scenario_studio']
-    assert data['version'] == '1.16.0'
+    assert data['version'] == '2.0.1'
     assert studio['schema'] == 'scds-scenario-studio/1.0'
     assert studio['alternative_count'] == 5
     assert len(studio['weighted_ranking']) == 5
@@ -807,7 +807,7 @@ def test_scenario_studio_time_horizon_comparison():
 def test_scenario_studio_updates_decision_packet():
     response = client.post('/decision-packet/scenario-studio', json=advanced_scenario_payload())
     packet = response.json()['decision_packet']
-    assert packet['packet_version'] == '1.16.0'
+    assert packet['packet_version'] == '2.0.1'
     assert packet['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
     assert packet['scenario_studio']['alternative_count'] == 3
     assert packet['sensitivity_analysis']['parameters']
@@ -932,14 +932,14 @@ def test_collaboration_contact_and_engagement_handoff():
     handoff = response.json()['contact_engagement_handoff']
     assert handoff['schema'] == 'sc-contact-engagement-handoff/1.0'
     assert handoff['private_workspace_required'] is True
-    assert handoff['source_version'] == '1.16.0'
+    assert handoff['source_version'] == '2.0.1'
 
 
 def test_collaboration_is_saved_and_exported_with_packet_schema_1_5():
     created = client.post('/collaboration/room', json=room_payload()).json()
     room = created['room']
     saved = client.post('/decision-packet/save-template', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['saved_packet']
-    assert saved['decision_packet']['packet_version'] == '1.16.0'
+    assert saved['decision_packet']['packet_version'] == '2.0.1'
     assert saved['decision_packet']['collaboration_room_schema'] == 'scds-collaborative-decision-room/1.0'
     assert saved['collaboration']['room_id'] == room['room_id']
     bundle = client.post('/export-center/bundle', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['export_bundle']
@@ -1017,7 +1017,7 @@ def test_apply_decision_pack_updates_packet_schema_and_plans():
     data = response.json()
     packet = data['decision_packet']
     assert data['schema'] == 'scds-decision-pack-application/1.0'
-    assert packet['packet_version'] == '1.16.0'
+    assert packet['packet_version'] == '2.0.1'
     assert packet['decision_pack_schema'] == 'scds-institutional-decision-pack/1.0'
     assert packet['institutional_decision_pack']['pack_id'] == 'responsible-ai-governance'
     assert len(packet['criteria_registry']) == 6
@@ -1157,7 +1157,7 @@ def test_approved_governance_allows_public_dossier():
 def test_publication_packet_schema_and_registry_are_additive():
     response = client.post('/publication-studio/generate', json={'inputs': {}, 'packet': publication_packet_with_evidence(), 'audience': 'internal'})
     packet = response.json()['decision_packet']
-    assert packet['decision_packet_schema'] == 'scds-decision-packet/1.9'
+    assert packet['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert packet['publication_studio_schema'] == 'scds-decision-publication/1.0'
     assert packet['publication_registry'][0]['publication_id'].startswith('PUB-')
     assert 'publication_json' in packet['export_center']['available_formats']
@@ -1311,7 +1311,7 @@ def test_outcomes_update_packet_registry_and_exports():
     response = client.post('/decision-packet/outcomes', json=monitoring_payload())
     assert response.status_code == 200
     packet = response.json()['decision_packet']
-    assert packet['decision_packet_schema'] == 'scds-decision-packet/1.9'
+    assert packet['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert packet['outcome_monitoring_schema'] == 'scds-outcome-monitoring/1.0'
     assert packet['decision_registry_entry']['schema'] == 'scds-decision-registry-entry/1.0'
     assert len(packet['outcome_monitoring']['content_hash']) == 71
@@ -1332,7 +1332,7 @@ def test_outcomes_saved_and_exported():
 def approved_integration_packet():
     return {
         'decision_packet_id': 'SCDS-PUBLIC-001',
-        'decision_packet_schema': 'scds-decision-packet/1.9',
+        'decision_packet_schema': 'scds-decision-packet/2.0',
         'project': {'project_name': 'Public infrastructure decision', 'decision_question': 'Should the approved program proceed?'},
         'governance_center': {'current_state': 'approved', 'approved_at': '2026-07-16T12:00:00Z', 'export_gate': {'reviewed_export_allowed': True, 'public_export_allowed': True}},
         'brief_readiness': {'readiness_percent': 88, 'status': 'ready', 'open_issues': []},
@@ -1419,7 +1419,7 @@ def test_signed_export_manifest_and_packet_integration(monkeypatch):
     integrated = client.post('/decision-packet/institutional-integration', json={'packet': packet})
     assert integrated.status_code == 200
     integrated_packet = integrated.json()['decision_packet']
-    assert integrated_packet['decision_packet_schema'] == 'scds-decision-packet/1.9'
+    assert integrated_packet['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert integrated_packet['public_api_schema'] == 'scds-public-api/1.0'
     assert len(integrated_packet['embed_descriptors']) == 2
 
@@ -1453,7 +1453,7 @@ def _complete_hardening_payload():
         "offlineProfile": {"online": True, "queued_write_intents": True, "sensitive_cache_reviewed": True},
         "performanceProfile": {"large_packet_tested": True, "mobile_tested": True, "cold_start_tested": True},
         "backupProfile": {"backup_tested": True, "restore_tested": True, "privacy_reviewed": True},
-        "migrationProfile": {"from_schema": "scds-decision-packet/1.8", "to_schema": "scds-decision-packet/1.9"},
+        "migrationProfile": {"from_schema": "scds-decision-packet/1.8", "to_schema": "scds-decision-packet/2.0"},
         "snapshotLabel": "Pre-release recovery",
         "actor": "Release Manager",
     }
@@ -1461,7 +1461,7 @@ def _complete_hardening_payload():
 
 def test_release_hardening_template():
     data = client.get('/release-hardening/template').json()
-    assert data['version'] == '1.16.0'
+    assert data['version'] == '2.0.1'
     assert data['release_hardening']['schema'] == 'scds-release-readiness/1.0'
     assert 'offline_recovery' in data['release_hardening']['release_gates']
 
@@ -1501,12 +1501,12 @@ def test_migration_assessment_supports_additive_upgrade():
     data = client.post('/release-hardening/migration-assessment', json=_complete_hardening_payload()).json()
     migration = data['migration_assessment']
     assert migration['supported'] is True
-    assert migration['to_schema'] == 'scds-decision-packet/1.9'
+    assert migration['to_schema'] == 'scds-decision-packet/2.0'
 
 
 def test_migration_assessment_blocks_downgrade():
     payload = _complete_hardening_payload()
-    payload['migrationProfile'] = {"from_schema": "scds-decision-packet/1.9", "to_schema": "scds-decision-packet/1.8"}
+    payload['migrationProfile'] = {"from_schema": "scds-decision-packet/2.0", "to_schema": "scds-decision-packet/1.9"}
     data = client.post('/release-hardening/migration-assessment', json=payload).json()
     assert data['migration_assessment']['supported'] is False
 
@@ -1533,8 +1533,160 @@ def test_release_readiness_blocks_missing_restore_and_accessibility():
 def test_decision_packet_release_hardening_is_additive():
     data = client.post('/decision-packet/release-hardening', json=_complete_hardening_payload()).json()
     packet = data['decision_packet']
-    assert packet['decision_packet_schema'] == 'scds-decision-packet/1.9'
+    assert packet['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert packet['release_hardening']['schema'] == 'scds-release-readiness/1.0'
     assert packet['accessibility_audit']['schema'] == 'scds-accessibility-audit/1.0'
     assert packet['offline_workspace']['schema'] == 'scds-offline-workspace/1.0'
     assert len(packet['recovery_snapshots']) == 1
+
+
+
+def _connected_complete_packet():
+    return {
+        "decision_packet_id": "SCDS-CONNECTED-001",
+        "decision_packet_schema": "scds-decision-packet/2.0",
+        "project": {"project_name": "Connected platform", "decision_question": "Should the institution implement the connected program?"},
+        "decision_framing": {"decision_question": "Should the institution implement the connected program?"},
+        "research_routes": [{"route_id": "R1", "question": "What evidence is required?"}],
+        "evidence_registry": [{"evidence_id": "E1", "title": "Reviewed evidence", "confidence": 85}],
+        "technical_artifacts": [{"artifact_id": "M1", "title": "Workbench model"}],
+        "scenario_studio": {"alternatives": [{"id": "A", "label": "Option A"}, {"id": "B", "label": "Option B"}]},
+        "assumptions": [{"id": "AS1", "assumption": "Adoption remains stable"}],
+        "governance_center": {
+            "current_state": "approved",
+            "owner": {"name": "Decision Owner"},
+            "reviewers": [{"name": "Independent Reviewer", "status": "approved"}],
+            "signoffs": [{"name": "Review Chair", "status": "approved"}],
+            "review_history": [{"event_id": "G1"}],
+        },
+        "collaboration_room": {"locked_version": {"content_hash": "sha256:locked"}},
+        "publication_registry": [{"publication_id": "PUB-1", "title": "Decision memo"}],
+        "outcome_monitoring": {
+            "implementation_status": "implemented",
+            "monitoring_status": "on_track",
+            "commitments": [{"id": "C1", "owner": "Implementation Owner"}],
+            "milestones": [{"id": "MS1", "status": "complete"}],
+            "targets": [{"id": "T1", "target": 90}],
+            "observations": [{"id": "O1", "actual": 88}],
+        },
+        "decision_registry_entry": {"registry_id": "DR-1"},
+        "reassessment_history": [{"event_id": "RA-1", "finding": "Continue with monitoring"}],
+        "entities": [{"entity_id": "ORG-1", "name": "Institution"}],
+    }
+
+
+def test_connected_platform_template_and_health_contracts():
+    template = client.get('/connected-platform/template').json()
+    assert template['version'] == '2.0.1'
+    assert template['connected_platform']['schema'] == 'scds-connected-decision-platform/2.0'
+    assert len(template['connected_platform']['lifecycle']) == 12
+    health = client.get('/health').json()
+    assert health['connected_platform_schema'] == 'scds-connected-decision-platform/2.0'
+    assert health['decision_intelligence_graph_schema'] == 'scds-decision-intelligence-graph/1.0'
+
+
+def test_connected_platform_assesses_incomplete_packet_and_routes_actions():
+    response = client.post('/connected-platform/assess', json={'packet': {'decision_framing': {'decision_question': 'Should we proceed?'}}})
+    assert response.status_code == 200
+    data = response.json()
+    assessment = data['lifecycle_assessment']
+    assert assessment['stages'][0]['status'] == 'complete'
+    assert assessment['current_stage'] == 'research'
+    assert data['action_queue']['action_count'] > 0
+    routes = [route for item in data['action_queue']['actions'] for route in item['route_to']]
+    assert 'Research Librarian' in routes
+
+
+def test_connected_platform_complete_lifecycle_and_graph():
+    data = client.post('/connected-platform/assess', json={'packet': _connected_complete_packet()}).json()
+    assessment = data['lifecycle_assessment']
+    assert assessment['lifecycle_completion_percent'] == 100.0
+    assert assessment['status'] == 'complete'
+    graph = data['intelligence_graph']
+    assert graph['schema'] == 'scds-decision-intelligence-graph/1.0'
+    assert graph['node_count'] >= 7
+    assert graph['edge_count'] >= 6
+    assert graph['content_hash'].startswith('sha256:')
+
+
+def test_connected_platform_transition_requires_named_human():
+    denied = client.post('/connected-platform/transition', json={'packet': _connected_complete_packet(), 'requestedStage': 'approve'})
+    assert denied.status_code == 200
+    assert denied.json()['ok'] is False
+    assert denied.json()['error'] == 'human_actor_required'
+    approved = client.post('/connected-platform/transition', json={'packet': _connected_complete_packet(), 'requestedStage': 'approve', 'actor': 'Decision Owner', 'actorRole': 'owner', 'transitionReason': 'Human governance approval recorded.'})
+    assert approved.status_code == 200
+    platform = approved.json()['connected_platform']
+    assert platform['confirmed_stage'] == 'approve'
+    assert platform['lifecycle_history_verification']['valid'] is True
+    assert platform['lifecycle_history'][0]['automatic_transition'] is False
+
+
+def test_connected_platform_transition_blocks_incomplete_stage():
+    response = client.post('/connected-platform/transition', json={'packet': {'decision_framing': {'decision_question': 'Should we proceed?'}}, 'requestedStage': 'approve', 'actor': 'Owner'})
+    assert response.status_code == 200
+    assert response.json()['error'] == 'lifecycle_stage_incomplete'
+
+
+def test_connected_platform_history_tamper_detection():
+    transitioned = client.post('/connected-platform/transition', json={'packet': _connected_complete_packet(), 'requestedStage': 'approve', 'actor': 'Owner', 'actorRole': 'owner'}).json()
+    packet = transitioned['decision_packet']
+    packet['lifecycle_history'][0]['reason'] = 'tampered'
+    verification = client.post('/connected-platform/history/verify', json={'packet': packet}).json()['verification']
+    assert verification['valid'] is False
+    assert verification['reason'] == 'event_hash_mismatch'
+
+
+def test_connected_platform_portfolio_attention_queue():
+    incomplete = {'decision_packet_id': 'SCDS-INCOMPLETE', 'decision_framing': {'decision_question': 'Incomplete decision'}}
+    response = client.post('/connected-platform/portfolio', json={'packet': _connected_complete_packet(), 'packets': [_connected_complete_packet(), incomplete]})
+    portfolio = response.json()['portfolio_index']
+    assert portfolio['record_count'] == 2
+    assert portfolio['attention_count'] >= 1
+    assert portfolio['records'][0]['attention_required'] is True
+
+
+def test_connected_platform_exchange_is_prepared_not_delivered():
+    data = client.post('/connected-platform/exchange', json={'packet': _connected_complete_packet()}).json()
+    exchange = data['connected_exchange']
+    assert exchange['schema'] == 'scds-connected-platform-exchange/1.0'
+    assert exchange['exchange_status'] == 'prepared_not_delivered'
+    assert exchange['external_acceptance_claimed'] is False
+    assert exchange['human_confirmation_required'] is True
+    assert exchange['content_hash'].startswith('sha256:')
+
+
+def test_decision_packet_connected_platform_is_additive():
+    data = client.post('/decision-packet/connected-platform', json={'packet': _connected_complete_packet()}).json()
+    packet = data['decision_packet']
+    assert packet['decision_packet_schema'] == 'scds-decision-packet/2.0'
+    assert packet['connected_platform']['schema'] == 'scds-connected-decision-platform/2.0'
+    assert packet['lifecycle_assessment']['schema'] == 'scds-decision-lifecycle-assessment/1.0'
+    assert 'connected_platform_json' in packet['export_center']['available_formats']
+
+
+def test_release_manifest_declares_v2_connected_platform():
+    release = client.get('/release').json()['release']
+    assert release['release'] == '2.0.1'
+    assert release['release_name'] == 'Connected Decision Intelligence Platform'
+    assert release['decision_packet_schema'] == 'scds-decision-packet/2.0'
+    assert release['connected_platform_schema'] == 'scds-connected-decision-platform/2.0'
+    assert release['compatibility']['end_to_end_lifecycle_orchestration'] is True
+    assert release['compatibility']['automatic_approval_prohibited'] is True
+
+
+
+def test_catalyst_module_navigation_repair():
+    response = client.get('/integrations/module-navigation')
+    assert response.status_code == 200
+    data = response.json()
+    assert data['version'] == '2.0.1'
+    assert data['schema'] == 'scds-catalyst-module-navigation/1.0'
+    assert data['handoff_schema'] == 'scds-catalyst-module-handoff/1.0'
+    assert [item['id'] for item in data['modules']] == [
+        'catalyst-canvas', 'catalyst-data', 'catalyst-analytics-r',
+        'global-impact-catalyst', 'catalyst-narrative-risk',
+        'catalyst-finance', 'catalyst-grit'
+    ]
+    assert all(item['url'].startswith('/') for item in data['modules'])
+    assert all(item['decision_packet_section'] for item in data['modules'])

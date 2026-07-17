@@ -1,4 +1,27 @@
+## v2.0.1 — Catalyst Module Navigation and Handoff Repair
+
+- Promoted Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, and Grit into visible first-class cards inside the Catalyst Modules panel.
+- Added configurable WordPress routes for every specialized module.
+- Added browser-local `scds-catalyst-module-handoff/1.0` Decision Packet handoffs with return URLs and explicit human-action boundaries.
+- Added direct per-module **Import Artifact** actions that target the existing compatibility adapters.
+- Added WordPress and FastAPI module-navigation endpoints, shared contracts, samples, release validation, responsive styling, and status feedback.
+- Preserved current Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, Platform Core, typed-artifact, and Decision Packet workflows.
+
 # Changelog
+
+## v2.0.0 — Connected Decision Intelligence Platform
+
+- Added a twelve-stage end-to-end lifecycle from framing through reassessment.
+- Added lifecycle completion, blocker, and current-stage assessment.
+- Added prioritized cross-product action routing.
+- Added a Decision Intelligence Graph with hashed nodes and derived relationships.
+- Added a portfolio attention index for up to 100 Decision Packets.
+- Added prepared connected-exchange manifests without false external-delivery claims.
+- Added named-human lifecycle transitions and tamper-evident event verification.
+- Added WordPress Connected Platform workspace, REST parity, persistence, browser fallback, and exports.
+- Advanced Decision Packet schema to `scds-decision-packet/2.0` and WordPress database schema to 2.1.0.
+- Preserved all v1.8–v1.16 platform handoffs, governance, scenarios, collaboration, Decision Packs, publication, outcomes, institutional integration, accessibility, offline, and release-hardening capabilities.
+- Expanded the backend suite to 134 tests.
 
 ## v1.16.0 — Accessibility, Offline Use, and Release Hardening
 

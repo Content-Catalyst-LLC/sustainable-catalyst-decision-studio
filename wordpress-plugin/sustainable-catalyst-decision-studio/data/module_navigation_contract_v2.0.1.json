@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/contracts/scds-catalyst-module-navigation-1.0.schema.json",
+  "title": "Decision Studio Catalyst Module Navigation",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "modules",
+    "actions"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-catalyst-module-navigation/1.0"
+    },
+    "version": {
+      "const": "2.0.1"
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "stage",
+          "url",
+          "artifact_key",
+          "packet_section",
+          "contract"
+        ]
+      }
+    },
+    "actions": {
+      "type": "array",
+      "contains": {
+        "const": "send_decision_packet"
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "required": [
+        "schema",
+        "delivery_mode",
+        "return_parameter"
+      ]
+    }
+  }
+}

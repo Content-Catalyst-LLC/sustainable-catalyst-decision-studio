@@ -1,0 +1,25 @@
+Sustainable Catalyst Decision Studio v2.0.0
+Connected Decision Intelligence Platform
+
+DOWNLOADS WORKFLOW
+
+cd ~/Downloads
+chmod +x install_and_push_sustainable_catalyst_decision_studio_v2_0_0_macos.sh
+./install_and_push_sustainable_catalyst_decision_studio_v2_0_0_macos.sh
+
+VALIDATE WITHOUT PUSHING
+
+cd ~/Downloads
+SCDS_SKIP_PUSH=1 ./install_and_push_sustainable_catalyst_decision_studio_v2_0_0_macos.sh
+
+OPTIONAL COMPATIBLE PYTHON OVERRIDE
+
+SCDS_PYTHON="$(brew --prefix python@3.12)/bin/python3.12" ./install_and_push_sustainable_catalyst_decision_studio_v2_0_0_macos.sh
+
+POST-PUSH
+
+1. Deploy the latest main commit in Render using Clear build cache & deploy.
+2. Verify /health and /release both report 2.0.0.
+3. Upload sustainable-catalyst-decision-studio-plugin-v2.0.0.zip to WordPress.
+4. Open SC Decision Studio > Release Diagnostics and confirm version parity.
+5. Open SC Decision Studio > Connected Platform and run a lifecycle assessment.

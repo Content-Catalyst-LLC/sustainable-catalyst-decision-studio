@@ -58,12 +58,27 @@ from app.public_integration import (
     platform_core_gateway,
     sdk_contracts,
 )
+from app.connected_platform import (
+    CONNECTED_PLATFORM_SCHEMA,
+    LIFECYCLE_ASSESSMENT_SCHEMA,
+    DECISION_INTELLIGENCE_GRAPH_SCHEMA,
+    ACTION_QUEUE_SCHEMA,
+    PORTFOLIO_INDEX_SCHEMA,
+    CONNECTED_EXCHANGE_SCHEMA,
+    LIFECYCLE_EVENT_SCHEMA,
+    ConnectedPlatformRequest,
+    connected_platform_template,
+    orchestrate_connected_platform,
+    verify_lifecycle_history,
+)
 
-APP_VERSION = "1.16.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v1.16.0-accessibility-offline-release-hardening")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v1.16.0")
-RELEASE_DATE = "2026-07-16"
-DECISION_PACKET_SCHEMA = "scds-decision-packet/1.9"
+APP_VERSION = "2.0.1"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.0.1-catalyst-module-navigation-handoff-repair")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.0.1")
+RELEASE_DATE = "2026-07-17"
+DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
+MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
+MODULE_HANDOFF_SCHEMA = "scds-catalyst-module-handoff/1.0"
 PLATFORM_ARTIFACT_SCHEMA = "scds-platform-artifact/1.0"
 EVIDENCE_RECORD_SCHEMA = "scds-evidence-record/1.0"
 GOVERNANCE_SCHEMA = "scds-decision-governance/1.0"
@@ -105,6 +120,9 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/release-hardening/accessibility-audit", "/release-hardening/offline-manifest",
     "/release-hardening/recovery-snapshot", "/release-hardening/migration-assessment",
     "/release-hardening/readiness", "/decision-packet/release-hardening",
+    "/connected-platform/assess", "/connected-platform/transition",
+    "/connected-platform/portfolio", "/connected-platform/graph",
+    "/connected-platform/exchange", "/decision-packet/connected-platform",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -113,7 +131,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Accessibility, Offline Use, and Release Hardening",
+        "release_name": "Connected Decision Intelligence Platform",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -144,6 +162,13 @@ def release_manifest() -> Dict[str, Any]:
         "release_readiness_schema": RELEASE_READINESS_SCHEMA,
         "recovery_snapshot_schema": RECOVERY_SNAPSHOT_SCHEMA,
         "migration_assessment_schema": MIGRATION_ASSESSMENT_SCHEMA,
+        "connected_platform_schema": CONNECTED_PLATFORM_SCHEMA,
+        "lifecycle_assessment_schema": LIFECYCLE_ASSESSMENT_SCHEMA,
+        "decision_intelligence_graph_schema": DECISION_INTELLIGENCE_GRAPH_SCHEMA,
+        "action_queue_schema": ACTION_QUEUE_SCHEMA,
+        "portfolio_index_schema": PORTFOLIO_INDEX_SCHEMA,
+        "connected_exchange_schema": CONNECTED_EXCHANGE_SCHEMA,
+        "lifecycle_event_schema": LIFECYCLE_EVENT_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -194,6 +219,14 @@ def release_manifest() -> Dict[str, Any]:
             "additive_migration_assessment": True,
             "backup_restore_release_gates": True,
             "human_release_authorization_required": True,
+            "connected_decision_intelligence_platform": True,
+            "end_to_end_lifecycle_orchestration": True,
+            "cross_product_action_routing": True,
+            "decision_intelligence_graph": True,
+            "decision_portfolio_index": True,
+            "tamper_evident_lifecycle_history": True,
+            "automatic_approval_prohibited": True,
+            "automatic_external_delivery_prohibited": True,
         },
     }
 
@@ -585,6 +618,19 @@ def module_integrations() -> List[Dict[str, Any]]:
     ]
 
 
+
+def catalyst_module_navigation() -> List[Dict[str, Any]]:
+    """First-class Catalyst module routes and packet targets for Decision Studio v2.0.1."""
+    return [
+        {"id":"catalyst-canvas","name":"Catalyst Canvas","stage":"Frame","label":"Problem framing and design","url":"/narrative-strategy/catalyst-canvas/","artifact_key":"framing","decision_packet_section":"decision_framing","contract":"scds-platform-artifact/1.0 + legacy adapter"},
+        {"id":"catalyst-data","name":"Catalyst Data","stage":"Anchor","label":"Evidence and measurement","url":"/infrastructure/catalyst-data/","artifact_key":"evidence_records","decision_packet_section":"evidence_and_measurement","contract":"scds-platform-artifact/1.0 + legacy adapter"},
+        {"id":"catalyst-analytics-r","name":"Catalyst Analytics R","stage":"Model","label":"Scenarios and uncertainty","url":"/modeling-analytics/catalyst-analytics-r/","artifact_key":"scenario_analysis","decision_packet_section":"scenarios","contract":"scds-platform-artifact/1.0 + legacy adapter"},
+        {"id":"global-impact-catalyst","name":"Global Impact Catalyst","stage":"Measure","label":"Impact records","url":"/modeling-analytics/global-impact-catalyst/","artifact_key":"impact_records","decision_packet_section":"impact_measurement","contract":"scds-platform-artifact/1.0 + legacy adapter"},
+        {"id":"catalyst-narrative-risk","name":"Narrative Risk","stage":"Review","label":"Claims and narrative exposure","url":"/narrative-strategy/narrative-risk/","artifact_key":"claim_reviews","decision_packet_section":"claim_and_risk_review","contract":"scds-platform-artifact/1.0 + legacy adapter"},
+        {"id":"catalyst-finance","name":"Catalyst Finance","stage":"Evaluate","label":"Financial tradeoffs","url":"/modeling-analytics/catalyst-finance/","artifact_key":"finance_analysis","decision_packet_section":"financial_tradeoffs","contract":"scds-platform-artifact/1.0 + legacy adapter"},
+        {"id":"catalyst-grit","name":"Catalyst Grit","stage":"Sustain","label":"Execution and recovery","url":"/human-systems/catalyst-grit/","artifact_key":"execution_recovery","decision_packet_section":"execution_and_recovery","contract":"scds-platform-artifact/1.0 + legacy adapter"},
+    ]
+
 def legacy_module_integrations() -> List[Dict[str, Any]]:
     """v1.0-v1.7 workflow retained as an import-compatibility layer."""
     return [
@@ -966,8 +1012,9 @@ def apply_institutional_decision_pack(req: DecisionPackRequest) -> Dict[str, Any
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "1.16.0",
-        "workflow": "Knowledge Library → Research Librarian → Site Intelligence → Workbench → Research Lab → Platform Core → Decision Studio",
+        "packet_version": "2.0.1",
+        "decision_packet_schema": DECISION_PACKET_SCHEMA,
+        "workflow": "Frame → Research → Gather evidence → Model → Compare → Challenge assumptions → Review → Approve → Publish → Implement → Monitor → Reassess",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
         "evidence_record_schema": EVIDENCE_RECORD_SCHEMA,
         "governance_schema": GOVERNANCE_SCHEMA,
@@ -994,6 +1041,13 @@ def decision_packet_template() -> Dict[str, Any]:
         "release_readiness_schema": RELEASE_READINESS_SCHEMA,
         "recovery_snapshot_schema": RECOVERY_SNAPSHOT_SCHEMA,
         "migration_assessment_schema": MIGRATION_ASSESSMENT_SCHEMA,
+        "connected_platform_schema": CONNECTED_PLATFORM_SCHEMA,
+        "lifecycle_assessment_schema": LIFECYCLE_ASSESSMENT_SCHEMA,
+        "decision_intelligence_graph_schema": DECISION_INTELLIGENCE_GRAPH_SCHEMA,
+        "action_queue_schema": ACTION_QUEUE_SCHEMA,
+        "portfolio_index_schema": PORTFOLIO_INDEX_SCHEMA,
+        "connected_exchange_schema": CONNECTED_EXCHANGE_SCHEMA,
+        "lifecycle_event_schema": LIFECYCLE_EVENT_SCHEMA,
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -1051,6 +1105,13 @@ def decision_packet_template() -> Dict[str, Any]:
         "recovery_snapshots": [],
         "migration_assessment": {},
         "release_readiness": {},
+        "connected_platform": {},
+        "lifecycle_assessment": {},
+        "decision_intelligence_graph": {},
+        "decision_action_queue": {},
+        "decision_portfolio_index": {},
+        "connected_exchange": {},
+        "lifecycle_history": [],
         "outcome_monitoring": outcome_monitoring_template(),
         "decision_registry_entry": {},
         "reassessment_history": [],
@@ -1070,7 +1131,7 @@ def decision_packet_template() -> Dict[str, Any]:
         "uncertainty_analysis": {},
         "workbench_handoffs": [],
         "saved_packet": {"saved_at": "", "saved_by": "", "status": "draft", "storage": "browser_or_wordpress"},
-        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json", "publication_json", "publication_markdown", "publication_html", "bibliography_json", "redaction_json", "publication_handoff_json", "outcome_monitoring_json", "decision_registry_json", "reassessment_history_json", "public_dossier_json", "readiness_embed_json", "scenario_embed_json", "institutional_archive_json", "signed_manifest_json", "platform_core_gateway_json", "internal_events_json"]},
+        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json", "publication_json", "publication_markdown", "publication_html", "bibliography_json", "redaction_json", "publication_handoff_json", "outcome_monitoring_json", "decision_registry_json", "reassessment_history_json", "public_dossier_json", "readiness_embed_json", "scenario_embed_json", "institutional_archive_json", "signed_manifest_json", "platform_core_gateway_json", "internal_events_json", "connected_platform_json", "lifecycle_assessment_json", "decision_intelligence_graph_json", "decision_action_queue_json", "decision_portfolio_index_json", "connected_exchange_json"]},
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -1088,7 +1149,7 @@ def decision_packet_template() -> Dict[str, Any]:
 def audit_provenance_template() -> Dict[str, Any]:
     """Return the v1.1.1 audit and provenance schema."""
     return {
-        "audit_version": "1.16.0",
+        "audit_version": "2.0.1",
         "decision_packet_id": "SCDS-DRAFT",
         "created_at": "generated-at-runtime",
         "last_updated_at": "generated-at-runtime",
@@ -3905,7 +3966,7 @@ def generate_export_bundle(req: ExportBundleRequest) -> Dict[str, Any]:
 
 
 def public_landing_template() -> Dict[str, Any]:
-    """Professional public-facing product-page structure for Decision Studio v1.16.0."""
+    """Professional public-facing product-page structure for Decision Studio v2.0.1."""
     return {
         "page_version": APP_VERSION,
         "headline": "Decision Studio",
@@ -4489,6 +4550,13 @@ def health():
         "release_readiness_schema": RELEASE_READINESS_SCHEMA,
         "recovery_snapshot_schema": RECOVERY_SNAPSHOT_SCHEMA,
         "migration_assessment_schema": MIGRATION_ASSESSMENT_SCHEMA,
+        "connected_platform_schema": CONNECTED_PLATFORM_SCHEMA,
+        "lifecycle_assessment_schema": LIFECYCLE_ASSESSMENT_SCHEMA,
+        "decision_intelligence_graph_schema": DECISION_INTELLIGENCE_GRAPH_SCHEMA,
+        "action_queue_schema": ACTION_QUEUE_SCHEMA,
+        "portfolio_index_schema": PORTFOLIO_INDEX_SCHEMA,
+        "connected_exchange_schema": CONNECTED_EXCHANGE_SCHEMA,
+        "lifecycle_event_schema": LIFECYCLE_EVENT_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -4550,13 +4618,18 @@ def _require_institutional_scope(request: Request, scope: str) -> Optional[JSONR
     return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "institutional_scope_required", "required_scope": scope})
 
 
+@app.get("/integrations/module-navigation")
+def integrations_module_navigation_endpoint():
+    return {"ok": True, "version": APP_VERSION, "schema": MODULE_NAVIGATION_SCHEMA, "handoff_schema": MODULE_HANDOFF_SCHEMA, "modules": catalyst_module_navigation(), "actions": ["open_module", "send_decision_packet", "import_artifact", "return_to_decision_studio"]}
+
+
 @app.get("/integrations/adapters")
 def integrations_adapters_endpoint():
     return {"ok": True, "version": APP_VERSION, "adapters": artifact_adapter_catalog()}
 
 @app.get("/integrations/platform")
 def integrations_platform_endpoint():
-    return {"ok": True, "version": APP_VERSION, "schema": PLATFORM_ARTIFACT_SCHEMA, "products": module_integrations(), "contracts": platform_handoff_contracts(), "legacy_modules": legacy_module_integrations()}
+    return {"ok": True, "version": APP_VERSION, "schema": PLATFORM_ARTIFACT_SCHEMA, "products": module_integrations(), "contracts": platform_handoff_contracts(), "legacy_modules": legacy_module_integrations(), "catalyst_modules": catalyst_module_navigation()}
 
 @app.get("/integrations/contracts")
 def integrations_contracts_endpoint():
@@ -4952,6 +5025,53 @@ def decision_packet_release_hardening_endpoint(req: ReleaseHardeningRequest):
     return release_readiness(req.packet, req, APP_VERSION, DECISION_PACKET_SCHEMA, decision_packet_template)
 
 
+@app.get("/connected-platform/template")
+def connected_platform_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "connected_platform": connected_platform_template(APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.post("/connected-platform/assess")
+def connected_platform_assess_endpoint(req: ConnectedPlatformRequest):
+    req.action = "assess"
+    return orchestrate_connected_platform(req, APP_VERSION, DECISION_PACKET_SCHEMA, decision_packet_template)
+
+
+@app.post("/connected-platform/transition")
+def connected_platform_transition_endpoint(req: ConnectedPlatformRequest):
+    req.action = "transition"
+    return orchestrate_connected_platform(req, APP_VERSION, DECISION_PACKET_SCHEMA, decision_packet_template)
+
+
+@app.post("/connected-platform/portfolio")
+def connected_platform_portfolio_endpoint(req: ConnectedPlatformRequest):
+    return orchestrate_connected_platform(req, APP_VERSION, DECISION_PACKET_SCHEMA, decision_packet_template)
+
+
+@app.post("/connected-platform/graph")
+def connected_platform_graph_endpoint(req: ConnectedPlatformRequest):
+    req.includeGraph = True
+    req.includeExchange = False
+    return orchestrate_connected_platform(req, APP_VERSION, DECISION_PACKET_SCHEMA, decision_packet_template)
+
+
+@app.post("/connected-platform/exchange")
+def connected_platform_exchange_endpoint(req: ConnectedPlatformRequest):
+    req.includeGraph = True
+    req.includeExchange = True
+    return orchestrate_connected_platform(req, APP_VERSION, DECISION_PACKET_SCHEMA, decision_packet_template)
+
+
+@app.post("/decision-packet/connected-platform")
+def decision_packet_connected_platform_endpoint(req: ConnectedPlatformRequest):
+    return orchestrate_connected_platform(req, APP_VERSION, DECISION_PACKET_SCHEMA, decision_packet_template)
+
+
+@app.post("/connected-platform/history/verify")
+def connected_platform_history_verify_endpoint(req: ConnectedPlatformRequest):
+    history = req.packet.get("lifecycle_history", []) if isinstance(req.packet, dict) else []
+    return {"ok": True, "version": APP_VERSION, "verification": verify_lifecycle_history(history if isinstance(history, list) else [])}
+
+
 @app.get("/audit/template")
 def audit_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "audit": audit_provenance_template()}
@@ -5044,4 +5164,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform"]}

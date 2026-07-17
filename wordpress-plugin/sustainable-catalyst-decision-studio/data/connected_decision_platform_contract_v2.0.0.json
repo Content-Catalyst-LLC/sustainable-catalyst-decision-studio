@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/contracts/scds-connected-decision-platform-2.0.schema.json",
+  "title": "Sustainable Catalyst Connected Decision Intelligence Platform Contract",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "decision_packet_schema",
+    "lifecycle_assessment",
+    "action_queue",
+    "intelligence_graph",
+    "portfolio_index",
+    "connected_exchange",
+    "lifecycle_history",
+    "human_approval_required",
+    "automatic_approval_allowed",
+    "automatic_external_delivery_allowed"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-connected-decision-platform/2.0"
+    },
+    "version": {
+      "const": "2.0.0"
+    },
+    "decision_packet_schema": {
+      "const": "scds-decision-packet/2.0"
+    },
+    "confirmed_stage": {
+      "type": "string"
+    },
+    "lifecycle_assessment": {
+      "type": "object",
+      "required": [
+        "schema",
+        "stages",
+        "lifecycle_completion_percent",
+        "content_hash"
+      ],
+      "properties": {
+        "schema": {
+          "const": "scds-decision-lifecycle-assessment/1.0"
+        },
+        "stages": {
+          "type": "array",
+          "minItems": 12
+        },
+        "lifecycle_completion_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^sha256:"
+        }
+      }
+    },
+    "action_queue": {
+      "type": "object",
+      "required": [
+        "schema",
+        "actions"
+      ],
+      "properties": {
+        "schema": {
+          "const": "scds-decision-action-queue/1.0"
+        },
+        "actions": {
+          "type": "array"
+        }
+      }
+    },
+    "intelligence_graph": {
+      "type": "object",
+      "required": [
+        "schema",
+        "nodes",
+        "edges",
+        "content_hash"
+      ],
+      "properties": {
+        "schema": {
+          "const": "scds-decision-intelligence-graph/1.0"
+        },
+        "nodes": {
+          "type": "array"
+        },
+        "edges": {
+          "type": "array"
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^sha256:"
+        }
+      }
+    },
+    "portfolio_index": {
+      "type": "object",
+      "required": [
+        "schema",
+        "records"
+      ],
+      "properties": {
+        "schema": {
+          "const": "scds-decision-portfolio-index/1.0"
+        },
+        "records": {
+          "type": "array",
+          "maxItems": 100
+        }
+      }
+    },
+    "connected_exchange": {
+      "type": "object",
+      "required": [
+        "schema",
+        "exchange_status",
+        "external_acceptance_claimed",
+        "human_confirmation_required"
+      ],
+      "properties": {
+        "schema": {
+          "const": "scds-connected-platform-exchange/1.0"
+        },
+        "exchange_status": {
+          "const": "prepared_not_delivered"
+        },
+        "external_acceptance_claimed": {
+          "const": false
+        },
+        "human_confirmation_required": {
+          "const": true
+        }
+      }
+    },
+    "lifecycle_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "schema",
+          "actor",
+          "to_stage",
+          "previous_hash",
+          "event_hash",
+          "automatic_transition"
+        ],
+        "properties": {
+          "schema": {
+            "const": "scds-decision-lifecycle-event/1.0"
+          },
+          "automatic_transition": {
+            "const": false
+          },
+          "event_hash": {
+            "type": "string",
+            "pattern": "^sha256:"
+          }
+        }
+      }
+    },
+    "human_approval_required": {
+      "const": true
+    },
+    "automatic_approval_allowed": {
+      "const": false
+    },
+    "automatic_external_delivery_allowed": {
+      "const": false
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:"
+    }
+  },
+  "additionalProperties": true
+}
