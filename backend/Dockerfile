@@ -11,8 +11,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 
 ENV PORT=8089
-ENV SCDS_BUILD_FINGERPRINT=scds-v2.0.1-catalyst-module-navigation-handoff-repair
-ENV SCDS_SOURCE_COMMIT=release-v2.0.1
+ENV SCDS_BUILD_FINGERPRINT=scds-v2.1.0-unified-decision-object-platform-context-foundation
+ENV SCDS_SOURCE_COMMIT=release-v2.1.0
 ENV SCDS_MAX_REQUEST_BYTES=1048576
 ENV SCDS_PUBLIC_RATE_LIMIT=60
 

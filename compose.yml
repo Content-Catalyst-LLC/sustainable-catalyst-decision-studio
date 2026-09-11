@@ -3,7 +3,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: sustainable-catalyst-decision-studio:2.0.1
+    image: sustainable-catalyst-decision-studio:2.1.0
     container_name: sc-decision-studio
     restart: unless-stopped
     environment:
