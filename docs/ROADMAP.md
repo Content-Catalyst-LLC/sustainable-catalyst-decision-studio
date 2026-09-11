@@ -1,3 +1,7 @@
+### v2.1.0 — Unified Decision Object Model & Platform Context Foundation
+
+Current release. First-class decision objects, reversible Decision Packet projection, platform-context registry, provenance-aware artifact links, and WordPress/backend parity.
+
 ### v2.0.1 — Catalyst Module Navigation and Handoff Repair
 
 Visible module cards, configurable routes, browser-local packet handoffs, direct artifact import, return links, and preserved adapters.

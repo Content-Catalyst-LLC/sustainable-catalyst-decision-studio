@@ -1,0 +1,449 @@
+{
+  "schema": "scds-decision-object/1.0",
+  "version": "2.1.0",
+  "decision_id": "SCDS-V210-SAMPLE",
+  "status": "draft",
+  "created_at": "",
+  "updated_at": "2026-09-11T06:43:15.706180Z",
+  "question": "Which investment pathway best balances reliability, cost, emissions, and implementation risk?",
+  "objective": "Select a reviewable investment pathway",
+  "alternatives": [
+    {
+      "id": "baseline",
+      "label": "Baseline"
+    },
+    {
+      "id": "distributed",
+      "label": "Distributed energy"
+    },
+    {
+      "id": "grid",
+      "label": "Grid modernization"
+    }
+  ],
+  "criteria": [
+    {
+      "id": "reliability",
+      "weight": 30
+    },
+    {
+      "id": "cost",
+      "weight": 25
+    },
+    {
+      "id": "emissions",
+      "weight": 25
+    },
+    {
+      "id": "delivery-risk",
+      "weight": 20
+    }
+  ],
+  "constraints": [
+    "Budget ceiling",
+    "Reliability threshold",
+    "Five-year implementation window"
+  ],
+  "assumptions": [
+    {
+      "id": "a1",
+      "statement": "Demand growth remains within the modeled range"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "e1",
+      "title": "Regional load and generation evidence",
+      "source_product": "knowledge-library"
+    }
+  ],
+  "models": [
+    {
+      "id": "m1",
+      "artifact_type": "simulation",
+      "source_product": "workbench"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "baseline",
+      "label": "Baseline"
+    },
+    {
+      "id": "distributed",
+      "label": "Distributed energy"
+    },
+    {
+      "id": "grid",
+      "label": "Grid modernization"
+    }
+  ],
+  "uncertainties": [
+    {
+      "id": "r1",
+      "risk": "Implementation schedule variance"
+    }
+  ],
+  "stakeholders": [],
+  "tradeoffs": [],
+  "recommendation": {},
+  "confidence": {},
+  "counterarguments": [],
+  "provenance": {
+    "source_packet_schema": "scds-decision-packet/2.0",
+    "source_packet_id": "SCDS-V210-SAMPLE",
+    "source_packet_fingerprint": "0c581789a2a8e797e3e7cc16d62cd50c84d02c629e4485c5034e2452109c4260",
+    "migration_schema": "scds-decision-object-migration/1.0",
+    "records": [
+      {
+        "at": "2026-09-11T00:00:00Z",
+        "action": "sample_packet_created",
+        "by": "release-fixture"
+      }
+    ]
+  },
+  "decision": {},
+  "rationale": [],
+  "outcome_review": {},
+  "platform_context": {
+    "schema": "scds-platform-context/1.0",
+    "version": "2.1.0",
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "generated_at": "2026-09-11T06:43:15.706189Z",
+    "products": [
+      {
+        "id": "knowledge-library",
+        "name": "Knowledge Library",
+        "role": "evidence",
+        "provides": [
+          "sources",
+          "citations",
+          "evidence_records",
+          "source_bundles",
+          "evidence_quality"
+        ],
+        "decision_object_targets": [
+          "evidence",
+          "provenance",
+          "assumptions"
+        ]
+      },
+      {
+        "id": "research-librarian",
+        "name": "Research Librarian",
+        "role": "research_routing",
+        "provides": [
+          "research_routes",
+          "source_discovery",
+          "evidence_gaps",
+          "contradictions",
+          "follow_up_questions"
+        ],
+        "decision_object_targets": [
+          "evidence",
+          "uncertainties",
+          "counterarguments",
+          "provenance"
+        ]
+      },
+      {
+        "id": "site-intelligence",
+        "name": "Site Intelligence",
+        "role": "real_world_context",
+        "provides": [
+          "observations",
+          "geospatial_context",
+          "environmental_signals",
+          "country_context",
+          "monitoring_signals"
+        ],
+        "decision_object_targets": [
+          "context",
+          "evidence",
+          "scenarios",
+          "outcome_review"
+        ]
+      },
+      {
+        "id": "workbench",
+        "name": "Workbench",
+        "role": "computation",
+        "provides": [
+          "calculations",
+          "engineering_models",
+          "simulations",
+          "optimization",
+          "reports"
+        ],
+        "decision_object_targets": [
+          "models",
+          "scenarios",
+          "tradeoffs",
+          "uncertainties",
+          "provenance"
+        ]
+      },
+      {
+        "id": "research-lab",
+        "name": "Research Lab",
+        "role": "analysis",
+        "provides": [
+          "experiments",
+          "statistical_models",
+          "causal_inference",
+          "bayesian_analysis",
+          "sensitivity_analysis"
+        ],
+        "decision_object_targets": [
+          "models",
+          "evidence",
+          "scenarios",
+          "uncertainties",
+          "confidence"
+        ]
+      },
+      {
+        "id": "platform-core",
+        "name": "Platform Core",
+        "role": "infrastructure",
+        "provides": [
+          "durable_objects",
+          "provenance",
+          "storage",
+          "processing_adapters",
+          "cross_product_identity"
+        ],
+        "decision_object_targets": [
+          "identity",
+          "provenance",
+          "platform_context",
+          "links"
+        ]
+      },
+      {
+        "id": "decision-studio",
+        "name": "Decision Studio",
+        "role": "choice",
+        "provides": [
+          "framing",
+          "alternatives",
+          "criteria",
+          "tradeoffs",
+          "recommendation",
+          "governance",
+          "decision_record"
+        ],
+        "decision_object_targets": [
+          "question",
+          "objective",
+          "alternatives",
+          "criteria",
+          "recommendation",
+          "decision",
+          "outcome_review"
+        ]
+      }
+    ],
+    "artifact_links": [
+      {
+        "link_id": "lib-evidence-1",
+        "product_id": "knowledge-library",
+        "product_name": "Knowledge Library",
+        "role": "evidence",
+        "artifact_schema": "scds-evidence-record/1.0",
+        "artifact_type": "source_bundle",
+        "provenance": {},
+        "status": "linked",
+        "payload_fingerprint": "ae72ee52c86646395ef0ca8967bae0cdce7840e3386e774e60c0e2687d9f0134"
+      },
+      {
+        "link_id": "workbench-model-1",
+        "product_id": "workbench",
+        "product_name": "Workbench",
+        "role": "computation",
+        "artifact_schema": "sc-workbench-result/1.0",
+        "artifact_type": "simulation",
+        "provenance": {},
+        "status": "linked",
+        "payload_fingerprint": "a063836bfd0c353012624e6d6da311d4aa12c2ba347fb31445f0177f79fa79c6"
+      },
+      {
+        "link_id": "lab-analysis-1",
+        "product_id": "research-lab",
+        "product_name": "Research Lab",
+        "role": "analysis",
+        "artifact_schema": "sc-lab-result/1.0",
+        "artifact_type": "sensitivity_analysis",
+        "provenance": {},
+        "status": "linked",
+        "payload_fingerprint": "3a4d224c9f2b79f444b809b1df3fbe2b18d6067c118d5eebf7bcdf6ceb600cb2"
+      }
+    ],
+    "context_summary": {
+      "products_available": 7,
+      "products_with_artifacts": 3,
+      "artifact_count": 3,
+      "roles": [
+        "evidence",
+        "research_routing",
+        "real_world_context",
+        "computation",
+        "analysis",
+        "infrastructure",
+        "choice"
+      ],
+      "coverage_percent": 42.9
+    },
+    "boundary": "Platform context describes provenance-aware handoffs. It does not claim that external products accepted, verified, or approved an artifact unless that status is explicitly recorded by the source product."
+  },
+  "links": [
+    {
+      "link_id": "lib-evidence-1",
+      "product_id": "knowledge-library",
+      "product_name": "Knowledge Library",
+      "role": "evidence",
+      "artifact_schema": "scds-evidence-record/1.0",
+      "artifact_type": "source_bundle",
+      "provenance": {},
+      "status": "linked",
+      "payload_fingerprint": "ae72ee52c86646395ef0ca8967bae0cdce7840e3386e774e60c0e2687d9f0134"
+    },
+    {
+      "link_id": "workbench-model-1",
+      "product_id": "workbench",
+      "product_name": "Workbench",
+      "role": "computation",
+      "artifact_schema": "sc-workbench-result/1.0",
+      "artifact_type": "simulation",
+      "provenance": {},
+      "status": "linked",
+      "payload_fingerprint": "a063836bfd0c353012624e6d6da311d4aa12c2ba347fb31445f0177f79fa79c6"
+    },
+    {
+      "link_id": "lab-analysis-1",
+      "product_id": "research-lab",
+      "product_name": "Research Lab",
+      "role": "analysis",
+      "artifact_schema": "sc-lab-result/1.0",
+      "artifact_type": "sensitivity_analysis",
+      "provenance": {},
+      "status": "linked",
+      "payload_fingerprint": "3a4d224c9f2b79f444b809b1df3fbe2b18d6067c118d5eebf7bcdf6ceb600cb2"
+    }
+  ],
+  "compatibility": {
+    "decision_packet_projection": true,
+    "packet_schema_breaking_changes": false,
+    "lossless_source_packet_reference": true
+  },
+  "source_packet": {
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "decision_packet_id": "SCDS-V210-SAMPLE",
+    "status": "draft",
+    "project": {
+      "project_name": "Regional energy transition investment",
+      "decision_question": "Which investment pathway best balances reliability, cost, emissions, and implementation risk?",
+      "sector": "Energy",
+      "location": "United States / Midwest"
+    },
+    "decision_framing": {
+      "objective": "Select a reviewable investment pathway",
+      "constraints": [
+        "Budget ceiling",
+        "Reliability threshold",
+        "Five-year implementation window"
+      ]
+    },
+    "criteria_registry": [
+      {
+        "id": "reliability",
+        "weight": 30
+      },
+      {
+        "id": "cost",
+        "weight": 25
+      },
+      {
+        "id": "emissions",
+        "weight": 25
+      },
+      {
+        "id": "delivery-risk",
+        "weight": 20
+      }
+    ],
+    "assumptions": [
+      {
+        "id": "a1",
+        "statement": "Demand growth remains within the modeled range"
+      }
+    ],
+    "evidence_registry": [
+      {
+        "id": "e1",
+        "title": "Regional load and generation evidence",
+        "source_product": "knowledge-library"
+      }
+    ],
+    "technical_artifacts": [
+      {
+        "id": "m1",
+        "artifact_type": "simulation",
+        "source_product": "workbench"
+      }
+    ],
+    "scenarios": {
+      "records": [
+        {
+          "id": "baseline",
+          "label": "Baseline"
+        },
+        {
+          "id": "distributed",
+          "label": "Distributed energy"
+        },
+        {
+          "id": "grid",
+          "label": "Grid modernization"
+        }
+      ]
+    },
+    "risks": [
+      {
+        "id": "r1",
+        "risk": "Implementation schedule variance"
+      }
+    ],
+    "audit_trail": [
+      {
+        "at": "2026-09-11T00:00:00Z",
+        "action": "sample_packet_created",
+        "by": "release-fixture"
+      }
+    ]
+  },
+  "mapping_summary": {
+    "required_fields": [
+      "question",
+      "alternatives",
+      "criteria",
+      "evidence",
+      "assumptions",
+      "recommendation",
+      "provenance"
+    ],
+    "present": [
+      "question",
+      "alternatives",
+      "criteria",
+      "evidence",
+      "assumptions",
+      "provenance"
+    ],
+    "missing": [
+      "recommendation"
+    ],
+    "completeness_percent": 85.7,
+    "review_ready": false
+  }
+}

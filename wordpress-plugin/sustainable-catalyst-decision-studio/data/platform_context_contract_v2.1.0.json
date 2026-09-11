@@ -1,0 +1,98 @@
+{
+  "schema": "scds-contract/1.0",
+  "title": "Sustainable Catalyst Platform Context",
+  "version": "2.1.0",
+  "object_schema": "scds-platform-context/1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "products",
+    "artifact_links",
+    "context_summary"
+  ],
+  "products": [
+    {
+      "id": "knowledge-library",
+      "name": "Knowledge Library",
+      "role": "evidence",
+      "decision_object_targets": [
+        "evidence",
+        "provenance",
+        "assumptions"
+      ]
+    },
+    {
+      "id": "research-librarian",
+      "name": "Research Librarian",
+      "role": "research_routing",
+      "decision_object_targets": [
+        "evidence",
+        "uncertainties",
+        "counterarguments",
+        "provenance"
+      ]
+    },
+    {
+      "id": "site-intelligence",
+      "name": "Site Intelligence",
+      "role": "real_world_context",
+      "decision_object_targets": [
+        "context",
+        "evidence",
+        "scenarios",
+        "outcome_review"
+      ]
+    },
+    {
+      "id": "workbench",
+      "name": "Workbench",
+      "role": "computation",
+      "decision_object_targets": [
+        "models",
+        "scenarios",
+        "tradeoffs",
+        "uncertainties",
+        "provenance"
+      ]
+    },
+    {
+      "id": "research-lab",
+      "name": "Research Lab",
+      "role": "analysis",
+      "decision_object_targets": [
+        "models",
+        "evidence",
+        "scenarios",
+        "uncertainties",
+        "confidence"
+      ]
+    },
+    {
+      "id": "platform-core",
+      "name": "Platform Core",
+      "role": "infrastructure",
+      "decision_object_targets": [
+        "identity",
+        "provenance",
+        "platform_context",
+        "links"
+      ]
+    },
+    {
+      "id": "decision-studio",
+      "name": "Decision Studio",
+      "role": "choice",
+      "decision_object_targets": [
+        "question",
+        "objective",
+        "alternatives",
+        "criteria",
+        "recommendation",
+        "decision",
+        "outcome_review"
+      ]
+    }
+  ],
+  "boundary": "Context records explicit provenance-aware links and capability roles without claiming external system acceptance."
+}

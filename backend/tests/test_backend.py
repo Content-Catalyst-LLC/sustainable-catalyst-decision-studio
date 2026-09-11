@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '2.0.1'
+    assert r.json()['version'] == '2.1.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '2.0.1'
+    assert data['decision_packet']['packet_version'] == '2.1.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -161,7 +161,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.0.1'
+    assert data['version'] == '2.1.0'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -189,7 +189,7 @@ def test_review_status_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.0.1'
+    assert data['version'] == '2.1.0'
     assert len(data['sections']) >= 8
     assert any(s['id'] == 'finance' for s in data['sections'])
 
@@ -200,7 +200,7 @@ def test_brief_readiness_default():
     data = r.json()
     assert data['ok'] is True
     readiness = data['readiness']
-    assert readiness['readiness_version'] == '2.0.1'
+    assert readiness['readiness_version'] == '2.1.0'
     assert 0 <= readiness['readiness_percent'] <= 100
     assert 'sections' in readiness
     assert 'export_gate' in readiness
@@ -232,7 +232,7 @@ def test_scenario_comparison_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.0.1'
+    assert data['version'] == '2.1.0'
     comparison = data['scenario_comparison']
     assert comparison['scenario_count'] >= 4
     assert 'matrix' in comparison
@@ -263,7 +263,7 @@ def test_workbench_handoff_default():
     data = r.json()
     assert data['ok'] is True
     handoff = data['workbench_handoff']
-    assert handoff['handoff_version'] == '2.0.1'
+    assert handoff['handoff_version'] == '2.1.0'
     ids = [h['tool_id'] for h in handoff['recommended_handoffs']]
     assert 'economics-forecasting-and-scenario-tool' in ids
     assert any('sc_workbench' in h['shortcode'] for h in handoff['recommended_handoffs'])
@@ -273,7 +273,7 @@ def test_integrated_brief_includes_scenario_and_handoff():
     r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
     assert r.status_code == 200
     data = r.json()
-    assert data['version'] == '2.0.1'
+    assert data['version'] == '2.1.0'
     assert 'scenario_comparison' in data
     assert 'workbench_handoff' in data
     assert 'scenario_comparison_matrix' in data['brief']
@@ -286,7 +286,7 @@ def test_export_center_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['export_center']['export_center_version'] == '2.0.1'
+    assert data['export_center']['export_center_version'] == '2.1.0'
     assert any(e['id'] == 'packet_json' for e in data['export_center']['exports'])
 
 
@@ -296,7 +296,7 @@ def test_decision_packet_save_template():
     data = r.json()
     assert data['ok'] is True
     saved = data['saved_packet']
-    assert saved['packet_version'] == '2.0.1'
+    assert saved['packet_version'] == '2.1.0'
     assert saved['project_name'] == 'Saved packet test'
     assert 'readiness' in saved
     assert 'integrated_brief' in saved
@@ -308,7 +308,7 @@ def test_export_center_bundle_default():
     data = r.json()
     assert data['ok'] is True
     bundle = data['export_bundle']
-    assert bundle['bundle_version'] == '2.0.1'
+    assert bundle['bundle_version'] == '2.1.0'
     assert 'decision_packet_json' in bundle['exports']
     assert 'integrated_brief_markdown' in bundle['exports']
     assert 'audit_json' in bundle['exports']
@@ -321,8 +321,8 @@ def test_public_landing_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.0.1'
-    assert data['landing']['page_version'] == '2.0.1'
+    assert data['version'] == '2.1.0'
+    assert data['landing']['page_version'] == '2.1.0'
     assert 'Decision Studio' in data['landing']['headline']
     assert len(data['landing']['workflow']) == 7
     assert data['landing']['workflow'][0]['module'] == 'Knowledge Library'
@@ -334,7 +334,7 @@ def test_public_demo_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['demo']['demo_version'] == '2.0.1'
+    assert data['demo']['demo_version'] == '2.1.0'
     assert len(data['demo']['demo_cards']) >= 4
     assert 'Knowledge Library to source' in data['demo']['public_copy']
     assert 'Decision Studio to decide' in data['demo']['public_copy']
@@ -344,8 +344,8 @@ def test_release_manifest_identity():
     response = client.get('/release')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '2.0.1'
-    assert data['release']['build_fingerprint'] == 'scds-v2.0.1-catalyst-module-navigation-handoff-repair'
+    assert data['version'] == '2.1.0'
+    assert data['release']['build_fingerprint'] == 'scds-v2.1.0-unified-decision-object-platform-context-foundation'
     assert data['release']['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert data['release']['compatibility']['packet_schema_breaking_changes'] is False
 
@@ -358,7 +358,7 @@ def test_health_reports_cold_start_and_limits():
     assert data['cold_start_ready'] is True
     assert data['uptime_seconds'] >= 0
     assert data['limits']['max_request_bytes'] == 1048576
-    assert response.headers['x-scds-version'] == '2.0.1'
+    assert response.headers['x-scds-version'] == '2.1.0'
 
 
 def test_oversized_public_request_is_rejected():
@@ -558,7 +558,7 @@ def test_platform_handoff_template_has_new_packet_sections():
     r = client.get('/decision-packet/platform-handoffs')
     assert r.status_code == 200
     packet = r.json()['decision_packet']
-    assert packet['packet_version'] == '2.0.1'
+    assert packet['packet_version'] == '2.1.0'
     assert packet['artifact_schema'] == 'scds-platform-artifact/1.0'
     for key in ['evidence_registry', 'research_routes', 'live_evidence', 'experimental_evidence', 'platform_registry', 'integrity_checks']:
         assert key in packet
@@ -663,7 +663,7 @@ def test_review_history_detects_tampering():
 
 def test_governance_is_in_decision_packet_and_export_bundle():
     packet = client.get('/decision-packet/template').json()['decision_packet']
-    assert packet['packet_version'] == '2.0.1'
+    assert packet['packet_version'] == '2.1.0'
     assert packet['governance_schema'] == 'scds-decision-governance/1.0'
     assert packet['governance_center']['current_state'] == 'draft'
     governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
@@ -735,7 +735,7 @@ def test_scenario_studio_default_analysis():
     assert response.status_code == 200
     data = response.json()
     studio = data['scenario_studio']
-    assert data['version'] == '2.0.1'
+    assert data['version'] == '2.1.0'
     assert studio['schema'] == 'scds-scenario-studio/1.0'
     assert studio['alternative_count'] == 5
     assert len(studio['weighted_ranking']) == 5
@@ -807,7 +807,7 @@ def test_scenario_studio_time_horizon_comparison():
 def test_scenario_studio_updates_decision_packet():
     response = client.post('/decision-packet/scenario-studio', json=advanced_scenario_payload())
     packet = response.json()['decision_packet']
-    assert packet['packet_version'] == '2.0.1'
+    assert packet['packet_version'] == '2.1.0'
     assert packet['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
     assert packet['scenario_studio']['alternative_count'] == 3
     assert packet['sensitivity_analysis']['parameters']
@@ -932,14 +932,14 @@ def test_collaboration_contact_and_engagement_handoff():
     handoff = response.json()['contact_engagement_handoff']
     assert handoff['schema'] == 'sc-contact-engagement-handoff/1.0'
     assert handoff['private_workspace_required'] is True
-    assert handoff['source_version'] == '2.0.1'
+    assert handoff['source_version'] == '2.1.0'
 
 
 def test_collaboration_is_saved_and_exported_with_packet_schema_1_5():
     created = client.post('/collaboration/room', json=room_payload()).json()
     room = created['room']
     saved = client.post('/decision-packet/save-template', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['saved_packet']
-    assert saved['decision_packet']['packet_version'] == '2.0.1'
+    assert saved['decision_packet']['packet_version'] == '2.1.0'
     assert saved['decision_packet']['collaboration_room_schema'] == 'scds-collaborative-decision-room/1.0'
     assert saved['collaboration']['room_id'] == room['room_id']
     bundle = client.post('/export-center/bundle', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['export_bundle']
@@ -1017,7 +1017,7 @@ def test_apply_decision_pack_updates_packet_schema_and_plans():
     data = response.json()
     packet = data['decision_packet']
     assert data['schema'] == 'scds-decision-pack-application/1.0'
-    assert packet['packet_version'] == '2.0.1'
+    assert packet['packet_version'] == '2.1.0'
     assert packet['decision_pack_schema'] == 'scds-institutional-decision-pack/1.0'
     assert packet['institutional_decision_pack']['pack_id'] == 'responsible-ai-governance'
     assert len(packet['criteria_registry']) == 6
@@ -1461,7 +1461,7 @@ def _complete_hardening_payload():
 
 def test_release_hardening_template():
     data = client.get('/release-hardening/template').json()
-    assert data['version'] == '2.0.1'
+    assert data['version'] == '2.1.0'
     assert data['release_hardening']['schema'] == 'scds-release-readiness/1.0'
     assert 'offline_recovery' in data['release_hardening']['release_gates']
 
@@ -1577,7 +1577,7 @@ def _connected_complete_packet():
 
 def test_connected_platform_template_and_health_contracts():
     template = client.get('/connected-platform/template').json()
-    assert template['version'] == '2.0.1'
+    assert template['version'] == '2.1.0'
     assert template['connected_platform']['schema'] == 'scds-connected-decision-platform/2.0'
     assert len(template['connected_platform']['lifecycle']) == 12
     health = client.get('/health').json()
@@ -1667,8 +1667,8 @@ def test_decision_packet_connected_platform_is_additive():
 
 def test_release_manifest_declares_v2_connected_platform():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.0.1'
-    assert release['release_name'] == 'Connected Decision Intelligence Platform'
+    assert release['release'] == '2.1.0'
+    assert release['release_name'] == 'Unified Decision Object Model & Platform Context Foundation'
     assert release['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert release['connected_platform_schema'] == 'scds-connected-decision-platform/2.0'
     assert release['compatibility']['end_to_end_lifecycle_orchestration'] is True
@@ -1680,7 +1680,7 @@ def test_catalyst_module_navigation_repair():
     response = client.get('/integrations/module-navigation')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '2.0.1'
+    assert data['version'] == '2.1.0'
     assert data['schema'] == 'scds-catalyst-module-navigation/1.0'
     assert data['handoff_schema'] == 'scds-catalyst-module-handoff/1.0'
     assert [item['id'] for item in data['modules']] == [
@@ -1690,3 +1690,111 @@ def test_catalyst_module_navigation_repair():
     ]
     assert all(item['url'].startswith('/') for item in data['modules'])
     assert all(item['decision_packet_section'] for item in data['modules'])
+
+
+# v2.1.0 — Unified Decision Object Model & Platform Context Foundation
+
+def test_decision_object_template_v210():
+    response = client.get('/decision-object/template')
+    assert response.status_code == 200
+    data = response.json()
+    obj = data['decision_object']
+    assert data['version'] == '2.1.0'
+    assert obj['schema'] == 'scds-decision-object/1.0'
+    assert obj['platform_context']['schema'] == 'scds-platform-context/1.0'
+    for key in ['question','objective','alternatives','criteria','constraints','assumptions','evidence','models','scenarios','uncertainties','stakeholders','tradeoffs','recommendation','confidence','counterarguments','provenance','decision','rationale','outcome_review']:
+        assert key in obj
+
+
+def test_platform_context_catalog_v210():
+    response = client.get('/platform-context/template')
+    assert response.status_code == 200
+    context = response.json()['platform_context']
+    ids = [item['id'] for item in context['products']]
+    assert ids == ['knowledge-library','research-librarian','site-intelligence','workbench','research-lab','platform-core','decision-studio']
+    roles = {item['id']: item['role'] for item in context['products']}
+    assert roles['knowledge-library'] == 'evidence'
+    assert roles['workbench'] == 'computation'
+    assert roles['research-lab'] == 'analysis'
+    assert roles['decision-studio'] == 'choice'
+
+
+def test_decision_packet_promotes_to_unified_decision_object_v210():
+    packet = {
+        'decision_packet_schema':'scds-decision-packet/2.0',
+        'decision_packet_id':'SCDS-TEST-210',
+        'status':'draft',
+        'project':{'project_name':'Grid modernization','decision_question':'Which grid modernization option should proceed?'},
+        'decision_framing':{'objective':'Improve reliability while controlling cost','constraints':['budget cap']},
+        'criteria_registry':[{'id':'reliability','weight':40}],
+        'assumptions':[{'id':'a1','statement':'Demand grows 2%'}],
+        'evidence_registry':[{'id':'e1','title':'Load forecast'}],
+        'technical_artifacts':[{'id':'m1','type':'simulation'}],
+        'scenarios':{'records':[{'id':'baseline'},{'id':'upgrade'}]},
+        'risks':[{'id':'r1','risk':'cost overrun'}],
+        'audit_trail':[{'at':'2026-09-11T00:00:00Z','action':'created'}],
+    }
+    response = client.post('/decision-object/from-packet', json={'packet':packet})
+    assert response.status_code == 200
+    obj = response.json()['decision_object']
+    assert obj['decision_id'] == 'SCDS-TEST-210'
+    assert obj['question'] == 'Which grid modernization option should proceed?'
+    assert obj['objective'] == 'Improve reliability while controlling cost'
+    assert len(obj['criteria']) == 1
+    assert len(obj['evidence']) == 1
+    assert len(obj['models']) == 1
+    assert len(obj['alternatives']) == 2
+    assert obj['provenance']['source_packet_fingerprint']
+    assert obj['source_packet']['project']['project_name'] == 'Grid modernization'
+
+
+def test_decision_object_projection_is_reversible_v210():
+    packet = {'decision_packet_id':'SCDS-ROUNDTRIP','project':{'decision_question':'Choose an option'},'criteria_registry':[{'id':'c1'}],'extra_future_field':{'preserve':True}}
+    obj = client.post('/decision-object/from-packet', json={'packet':packet}).json()['decision_object']
+    projected = client.post('/decision-object/to-packet', json={'decisionObject':obj}).json()['decision_packet']
+    assert projected['decision_packet_id'] == 'SCDS-ROUNDTRIP'
+    assert projected['extra_future_field']['preserve'] is True
+    assert projected['decision_object']['schema'] == 'scds-decision-object/1.0'
+    assert projected['decision_packet_schema'] == 'scds-decision-packet/2.0'
+
+
+def test_decision_object_context_links_platform_artifacts_v210():
+    packet = {'decision_packet_id':'SCDS-CONTEXT','project':{'decision_question':'Proceed?'}}
+    artifacts = [
+        {'artifact_id':'lib-1','product_id':'knowledge-library','schema':'scds-evidence-record/1.0','payload':{'title':'Source'}},
+        {'artifact_id':'lab-1','product_id':'research-lab','schema':'sc-lab-result/1.0','payload':{'estimate':1.2}},
+        {'artifact_id':'wb-1','product_id':'workbench','schema':'sc-workbench-result/1.0','payload':{'npv':12}},
+    ]
+    response = client.post('/decision-object/context', json={'packet':packet,'platformArtifacts':artifacts})
+    obj = response.json()['decision_object']
+    assert obj['platform_context']['context_summary']['artifact_count'] == 3
+    assert obj['platform_context']['context_summary']['products_with_artifacts'] == 3
+    assert {x['product_id'] for x in obj['links']} == {'knowledge-library','research-lab','workbench'}
+    assert all(x['payload_fingerprint'] for x in obj['links'])
+
+
+def test_decision_packet_decision_object_alias_v210():
+    response = client.post('/decision-packet/decision-object', json={'packet':{'decision_packet_id':'SCDS-ALIAS','project':{'decision_question':'Alias works?'}}})
+    assert response.status_code == 200
+    data = response.json()
+    assert data['decision_object']['schema'] == 'scds-decision-object/1.0'
+    assert data['decision_packet']['decision_object']['schema'] == 'scds-decision-object/1.0'
+    assert data['decision_packet']['platform_context']['schema'] == 'scds-platform-context/1.0'
+
+
+def test_release_declares_v210_decision_object_foundation():
+    release = client.get('/release').json()['release']
+    assert release['release'] == '2.1.0'
+    assert release['release_name'] == 'Unified Decision Object Model & Platform Context Foundation'
+    assert release['decision_object_schema'] == 'scds-decision-object/1.0'
+    assert release['platform_context_schema'] == 'scds-platform-context/1.0'
+    assert release['compatibility']['decision_packet_projection'] is True
+    assert release['compatibility']['packet_schema_breaking_changes'] is False
+
+
+def test_decision_packet_template_exposes_v210_object_slots():
+    packet = client.get('/decision-packet/template').json()['decision_packet']
+    assert packet['decision_object_schema'] == 'scds-decision-object/1.0'
+    assert packet['platform_context_schema'] == 'scds-platform-context/1.0'
+    assert packet['platform_context']['context_summary']['products_available'] == 7
+    assert 'decision_object_json' in packet['export_center']['available_formats']

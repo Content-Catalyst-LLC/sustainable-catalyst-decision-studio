@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Connected Decision Intelligence Platform for end-to-end decision lifecycle orchestration, cross-product evidence, governance, publication, implementation, monitoring, reassessment, accessibility, offline recovery, and institutional integration.
- * Version: 2.0.1
+ * Description: Unified Decision Object Model and Platform Context Foundation for provenance-aware cross-product decision intelligence, while preserving the connected lifecycle, governance, scenarios, publication, monitoring, and institutional integration.
+ * Version: 2.1.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,10 +12,10 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.0.1';
-    const BUILD_FINGERPRINT = 'scds-v2.0.1-catalyst-module-navigation-handoff-repair';
-    const SOURCE_COMMIT = 'release-v2.0.1';
-    const RELEASE_DATE = '2026-07-17';
+    const VERSION = '2.1.0';
+    const BUILD_FINGERPRINT = 'scds-v2.1.0-unified-decision-object-platform-context-foundation';
+    const SOURCE_COMMIT = 'release-v2.1.0';
+    const RELEASE_DATE = '2026-09-11';
     const DB_VERSION = '2.1.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
@@ -59,6 +59,9 @@ class Sustainable_Catalyst_Decision_Studio {
     const LIFECYCLE_EVENT_SCHEMA = 'scds-decision-lifecycle-event/1.0';
     const MODULE_NAVIGATION_SCHEMA = 'scds-catalyst-module-navigation/1.0';
     const MODULE_HANDOFF_SCHEMA = 'scds-catalyst-module-handoff/1.0';
+    const DECISION_OBJECT_SCHEMA = 'scds-decision-object/1.0';
+    const PLATFORM_CONTEXT_SCHEMA = 'scds-platform-context/1.0';
+    const DECISION_OBJECT_MIGRATION_SCHEMA = 'scds-decision-object-migration/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -341,7 +344,7 @@ class Sustainable_Catalyst_Decision_Studio {
         ], $atts, 'sc_decision_studio');
 
         $mode = sanitize_key($atts['mode']);
-        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'packs', 'publication', 'outcomes', 'integration', 'hardening', 'connected', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
+        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'packs', 'publication', 'outcomes', 'integration', 'hardening', 'connected', 'decision-object', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
             $mode = 'full';
         }
         $display = sanitize_key($atts['display'] ?: $mode);
@@ -354,6 +357,7 @@ class Sustainable_Catalyst_Decision_Studio {
         }
 
         $start_tab = $mode === 'workflow' ? 'workflow' : ($mode === 'readiness' ? 'readiness' : ($mode === 'governance' ? 'governance' : ($mode === 'room' ? 'room' : ($mode === 'packs' ? 'packs' : ($mode === 'publication' ? 'publication' : ($mode === 'outcomes' ? 'outcomes' : ($mode === 'integration' ? 'integration' : ($mode === 'hardening' ? 'hardening' : ($mode === 'connected' ? 'connected' : ($mode === 'project-intake' ? 'intake' : (in_array($mode, ['scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report'], true) ? $mode : 'intake')))))))))));
+        if ($mode === 'decision-object') $start_tab = 'decision-object';
         $uid = 'scds-' . wp_generate_uuid4();
 
         wp_enqueue_style('scds-decision-studio');
@@ -450,10 +454,17 @@ class Sustainable_Catalyst_Decision_Studio {
             'restConnectedPlatformGraphUrl' => esc_url_raw(rest_url('scds/v1/connected-platform/graph')),
             'restConnectedPlatformExchangeUrl' => esc_url_raw(rest_url('scds/v1/connected-platform/exchange')),
             'restDecisionPacketConnectedPlatformUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/connected-platform')),
+            'restDecisionObjectTemplateUrl' => esc_url_raw(rest_url('scds/v1/decision-object/template')),
+            'restPlatformContextTemplateUrl' => esc_url_raw(rest_url('scds/v1/platform-context/template')),
+            'restDecisionObjectFromPacketUrl' => esc_url_raw(rest_url('scds/v1/decision-object/from-packet')),
+            'restDecisionObjectNormalizeUrl' => esc_url_raw(rest_url('scds/v1/decision-object/normalize')),
+            'restDecisionObjectContextUrl' => esc_url_raw(rest_url('scds/v1/decision-object/context')),
+            'restDecisionObjectToPacketUrl' => esc_url_raw(rest_url('scds/v1/decision-object/to-packet')),
+            'restDecisionPacketDecisionObjectUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/decision-object')),
             'restModuleNavigationUrl' => esc_url_raw(rest_url('scds/v1/integrations/module-navigation')),
             'moduleNavigation' => $this->catalyst_module_navigation(),
             'moduleHandoffEnabled' => $settings['module_handoff_enabled'] === '1',
-            'moduleHandoffStoragePrefix' => 'scds_module_handoff_v2_0_1_',
+            'moduleHandoffStoragePrefix' => 'scds_module_handoff_v2_1_0_',
             'decisionStudioReturnUrl' => esc_url_raw(home_url('/platform/decision-studio/')),
             'isLoggedIn' => is_user_logged_in(),
             'currentUser' => ['id'=>get_current_user_id(),'name'=>is_user_logged_in()?wp_get_current_user()->display_name:'','role'=>current_user_can('manage_options')?'owner':(current_user_can('edit_posts')?'editor':'observer')],
@@ -482,6 +493,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
             <nav class="scds-tabs" aria-label="Decision Studio sections">
                 <button type="button" class="scds-tab is-active" data-scds-tab="intake">Intake</button>
+                <button type="button" class="scds-tab" data-scds-tab="decision-object">Decision Object</button>
                 <button type="button" class="scds-tab" data-scds-tab="workflow">Catalyst Modules</button>
                 <button type="button" class="scds-tab" data-scds-tab="readiness">Readiness</button>
                 <button type="button" class="scds-tab" data-scds-tab="governance">Governance</button>
@@ -503,6 +515,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
             <div class="scds-panels">
                 <?php $this->render_panel_intake($mode); ?>
+                <?php $this->render_panel_decision_object($mode); ?>
                 <?php $this->render_panel_workflow($mode); ?>
                 <?php $this->render_panel_readiness($mode); ?>
                 <?php $this->render_panel_governance($mode); ?>
@@ -621,6 +634,61 @@ class Sustainable_Catalyst_Decision_Studio {
         </section>
     <?php }
 
+
+    private function platform_context_template_local_v210() {
+        return [
+            'schema'=>self::PLATFORM_CONTEXT_SCHEMA,
+            'version'=>self::VERSION,
+            'decision_packet_schema'=>'scds-decision-packet/2.0',
+            'generated_at'=>gmdate('c'),
+            'products'=>[
+                ['id'=>'knowledge-library','name'=>'Knowledge Library','role'=>'evidence','targets'=>['evidence','provenance','assumptions']],
+                ['id'=>'research-librarian','name'=>'Research Librarian','role'=>'research_routing','targets'=>['evidence','uncertainties','counterarguments','provenance']],
+                ['id'=>'site-intelligence','name'=>'Site Intelligence','role'=>'real_world_context','targets'=>['context','evidence','scenarios','outcome_review']],
+                ['id'=>'workbench','name'=>'Workbench','role'=>'computation','targets'=>['models','scenarios','tradeoffs','uncertainties','provenance']],
+                ['id'=>'research-lab','name'=>'Research Lab','role'=>'analysis','targets'=>['models','evidence','scenarios','uncertainties','confidence']],
+                ['id'=>'platform-core','name'=>'Platform Core','role'=>'infrastructure','targets'=>['identity','provenance','platform_context','links']],
+                ['id'=>'decision-studio','name'=>'Decision Studio','role'=>'choice','targets'=>['question','objective','alternatives','criteria','recommendation','decision','outcome_review']],
+            ],
+            'artifact_links'=>[],
+            'context_summary'=>['products_available'=>7,'products_with_artifacts'=>0,'artifact_count'=>0],
+            'boundary'=>'Platform context records provenance-aware handoffs and does not imply external acceptance, verification, or approval.',
+        ];
+    }
+    private function decision_object_template_local_v210() {
+        return [
+            'schema'=>self::DECISION_OBJECT_SCHEMA,'version'=>self::VERSION,'decision_id'=>'','status'=>'draft','created_at'=>'','updated_at'=>'',
+            'question'=>'','objective'=>'','alternatives'=>[],'criteria'=>[],'constraints'=>[],'assumptions'=>[],'evidence'=>[],'models'=>[],'scenarios'=>[],
+            'uncertainties'=>[],'stakeholders'=>[],'tradeoffs'=>[],'recommendation'=>[],'confidence'=>[],'counterarguments'=>[],
+            'provenance'=>['source_packet_schema'=>'scds-decision-packet/2.0','source_packet_id'=>'','source_packet_fingerprint'=>'','migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,'records'=>[]],
+            'decision'=>[],'rationale'=>[],'outcome_review'=>[],'platform_context'=>$this->platform_context_template_local_v210(),'links'=>[],
+            'compatibility'=>['decision_packet_projection'=>true,'packet_schema_breaking_changes'=>false,'lossless_source_packet_reference'=>true],
+        ];
+    }
+    private function decision_object_from_packet_local_v210($packet) {
+        if (!is_array($packet)) $packet=[];
+        $o=$this->decision_object_template_local_v210();
+        $project=is_array($packet['project']??null)?$packet['project']:[];$framing=is_array($packet['decision_framing']??null)?$packet['decision_framing']:[];
+        $o['decision_id']=(string)($packet['decision_packet_id']??'');$o['status']=(string)($packet['status']??'draft');$o['updated_at']=gmdate('c');
+        $o['question']=(string)($framing['decision_question']??($project['decision_question']??''));$o['objective']=(string)($framing['objective']??($project['objective']??''));
+        $constraints=$framing['constraints']??[];$o['constraints']=is_array($constraints)?$constraints:($constraints!==''?[$constraints]:[]);
+        $o['criteria']=array_values((array)($packet['criteria_registry']??[]));$o['assumptions']=array_values((array)($packet['assumptions']??[]));
+        $o['evidence']=array_values((array)($packet['evidence_registry']??($packet['sources']??[])));$o['models']=array_values((array)($packet['technical_artifacts']??($packet['workbench_handoffs']??[])));
+        $o['scenarios']=array_values((array)($packet['scenario_studio']['alternatives']??($packet['scenarios']['records']??[])));$o['alternatives']=$o['scenarios'];
+        $o['uncertainties']=array_values((array)($packet['risks']??($packet['evidence_gaps']??[])));$o['counterarguments']=array_values((array)($packet['claim_and_risk_review']['records']??[]));
+        $o['tradeoffs']=!empty($packet['financial_tradeoffs'])?[$packet['financial_tradeoffs']]:[];$o['outcome_review']=is_array($packet['outcome_monitoring']??null)?$packet['outcome_monitoring']:[];
+        $o['provenance']['source_packet_id']=$o['decision_id'];$o['provenance']['source_packet_fingerprint']=hash('sha256',wp_json_encode($packet));$o['provenance']['records']=array_values((array)($packet['provenance_links']??($packet['audit_trail']??[])));
+        $o['source_packet']=$packet;
+        return $o;
+    }
+    private function render_panel_decision_object($mode) { ?>
+        <section class="scds-panel" data-scds-panel="decision-object" aria-labelledby="scds-decision-object-title">
+            <div class="scds-section-heading"><p class="scds-kicker">v2.1.0 · Unified Decision Object Model</p><h3 id="scds-decision-object-title">One decision object across the platform</h3><p>Promote the current Decision Packet into a first-class object that can carry evidence, models, scenarios, uncertainty, provenance, recommendations, governance, and outcomes across Library, Research Librarian, Site Intelligence, Workbench, Research Lab, Platform Core, and Decision Studio.</p></div>
+            <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-decision-object-build>Build Decision Object</button><button type="button" class="scds-button" data-scds-decision-object-template>View Object Template</button><button type="button" class="scds-button" data-scds-platform-context-template>View Platform Context</button><button type="button" class="scds-button" data-scds-decision-object-project>Project Back to Packet</button><button type="button" class="scds-button" data-scds-decision-object-download>Download Object JSON</button></div>
+            <div class="scds-note"><strong>Compatibility boundary:</strong> Decision Packet 2.0 remains supported. v2.1.0 adds an additive, reversible Decision Object representation; it does not silently discard packet fields or claim that linked applications accepted an artifact.</div>
+            <div data-scds-decision-object-output aria-live="polite"></div>
+        </section>
+    <?php }
 
     private function render_panel_workflow($mode) { ?>
         <section class="scds-panel" data-scds-panel="workflow">
@@ -1446,7 +1514,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Connected Decision Intelligence Platform',
+            'release_name'=>'Unified Decision Object Model & Platform Context Foundation',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
@@ -1480,6 +1548,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'portfolio_index_schema'=>self::PORTFOLIO_INDEX_SCHEMA,
             'connected_exchange_schema'=>self::CONNECTED_EXCHANGE_SCHEMA,
             'lifecycle_event_schema'=>self::LIFECYCLE_EVENT_SCHEMA,
+            'decision_object_schema'=>self::DECISION_OBJECT_SCHEMA,
+            'platform_context_schema'=>self::PLATFORM_CONTEXT_SCHEMA,
+            'decision_object_migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,
             'decision_pack_count'=>count($this->decision_pack_catalog()),
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
@@ -1498,6 +1569,10 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'workbench_model_routing'=>true,
                 'regulated_assurance_prohibited'=>true,
                 'ai_approval_allowed'=>false,
+                'unified_decision_object'=>true,
+                'platform_context_foundation'=>true,
+                'decision_packet_projection'=>true,
+                'decision_packet_to_object_migration'=>true,
                 'connected_decision_intelligence_platform'=>true,
                 'end_to_end_lifecycle_orchestration'=>true,
                 'cross_product_action_routing'=>true,
@@ -1585,6 +1660,13 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/integrations/import', ['methods'=>'POST','callback'=>[$this,'rest_import_artifact'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/import', ['methods'=>'POST','callback'=>[$this,'rest_import_artifact'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/template', ['methods'=>'GET','callback'=>[$this,'rest_decision_packet_template'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/template', ['methods'=>'GET','callback'=>[$this,'rest_decision_object_template_v210'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/platform-context/template', ['methods'=>'GET','callback'=>[$this,'rest_platform_context_template_v210'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/from-packet', ['methods'=>'POST','callback'=>[$this,'rest_decision_object_action_v210'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/normalize', ['methods'=>'POST','callback'=>[$this,'rest_decision_object_action_v210'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/context', ['methods'=>'POST','callback'=>[$this,'rest_decision_object_action_v210'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/to-packet', ['methods'=>'POST','callback'=>[$this,'rest_decision_object_action_v210'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/decision-object', ['methods'=>'POST','callback'=>[$this,'rest_decision_object_action_v210'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/states', ['methods'=>'GET','callback'=>[$this,'rest_governance_states'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/template', ['methods'=>'GET','callback'=>[$this,'rest_governance_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/evaluate', ['methods'=>'POST','callback'=>[$this,'rest_governance_evaluate'],'permission_callback'=>'__return_true']);
@@ -1903,6 +1985,20 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     public function rest_delete_packet(WP_REST_Request $request) { global $wpdb; $id=intval($request['id']); $table=$wpdb->prefix.self::PROJECTS_TABLE; $wpdb->delete($table,['id'=>$id],['%d']); return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'deleted_id'=>$id]); }
     public function rest_export_packet_json(WP_REST_Request $request) { $res=$this->rest_get_packet($request); if(is_wp_error($res)) return $res; $data=$res->get_data(); return new WP_REST_Response(wp_json_encode($data, JSON_PRETTY_PRINT), 200, ['Content-Type'=>'application/json; charset=utf-8','Content-Disposition'=>'attachment; filename="decision-studio-packet-'.$request['id'].'-v'.self::VERSION.'.json"']); }
 
+    public function rest_decision_object_template_v210(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_object'=>$this->decision_object_template_local_v210()]);}
+    public function rest_platform_context_template_v210(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'platform_context'=>$this->platform_context_template_local_v210()]);}
+    public function rest_decision_object_action_v210(WP_REST_Request $request){
+        $payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());
+        if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);}
+        $packet=is_array($payload['packet']??null)?$payload['packet']:[];$object=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];
+        if(strpos($route,'to-packet')!==false){if(!$object)$object=$this->decision_object_from_packet_local_v210($packet);$projected=is_array($object['source_packet']??null)?$object['source_packet']:$packet;$projected['packet_version']=self::VERSION;$projected['decision_packet_schema']='scds-decision-packet/2.0';$projected['decision_packet_id']=$object['decision_id']??($projected['decision_packet_id']??'');$projected['decision_object']=$object;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_packet'=>$projected]);}
+        $built=$this->decision_object_from_packet_local_v210($packet);
+        if($object){foreach($object as $k=>$v){if(!in_array($k,['schema','version'],true))$built[$k]=$v;}$built['schema']=self::DECISION_OBJECT_SCHEMA;$built['version']=self::VERSION;$built['updated_at']=gmdate('c');}
+        if(strpos($route,'context')!==false){$artifacts=is_array($payload['platformArtifacts']??null)?$payload['platformArtifacts']:[];$ctx=$this->platform_context_template_local_v210();foreach($artifacts as $i=>$a){if(!is_array($a))continue;$ctx['artifact_links'][]=['link_id'=>(string)($a['artifact_id']??($a['id']??('artifact-'.($i+1)))),'product_id'=>(string)($a['product_id']??($a['source_product']??'unknown')),'artifact_schema'=>(string)($a['schema']??($a['artifact_schema']??'')),'status'=>(string)($a['status']??'linked')];}$ctx['context_summary']['artifact_count']=count($ctx['artifact_links']);$built['platform_context']=$ctx;$built['links']=$ctx['artifact_links'];}
+        if(strpos($route,'decision-packet/decision-object')!==false){$packet['decision_object']=$built;$packet['platform_context']=$built['platform_context']??[];return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_object'=>$built,'decision_packet'=>$packet]);}
+        return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_object'=>$built]);
+    }
+
     public function rest_health() { return rest_ensure_response(['ok'=>true,'ready'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio','build_fingerprint'=>self::BUILD_FINGERPRINT,'database_version'=>(string)get_option(self::DB_VERSION_OPTION,'not-recorded'),'installed_version'=>(string)get_option(self::INSTALLED_VERSION_OPTION,'not-recorded'),'limits'=>['max_request_bytes'=>self::MAX_PUBLIC_REQUEST_BYTES,'public_rate_limit'=>self::PUBLIC_RATE_LIMIT],'governance_schema'=>'scds-decision-governance/1.0','review_event_schema'=>'scds-review-event/1.0','scenario_studio_schema'=>'scds-scenario-studio/1.0','collaboration_room_schema'=>self::COLLABORATION_ROOM_SCHEMA,'collaboration_event_schema'=>self::COLLABORATION_EVENT_SCHEMA,'decision_pack_schema'=>self::DECISION_PACK_SCHEMA,'decision_pack_application_schema'=>self::DECISION_PACK_APPLICATION_SCHEMA,
             'publication_studio_schema'=>self::PUBLICATION_STUDIO_SCHEMA,
             'outcome_monitoring_schema'=>self::OUTCOME_MONITORING_SCHEMA,
@@ -1910,11 +2006,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'decision_registry_schema'=>self::DECISION_REGISTRY_SCHEMA,
             'public_api_schema'=>self::PUBLIC_API_SCHEMA,'embed_descriptor_schema'=>self::EMBED_DESCRIPTOR_SCHEMA,'institutional_archive_schema'=>self::INSTITUTIONAL_ARCHIVE_SCHEMA,'webhook_event_schema'=>self::WEBHOOK_EVENT_SCHEMA,'sdk_contract_schema'=>self::SDK_CONTRACT_SCHEMA,'platform_core_gateway_schema'=>self::PLATFORM_CORE_GATEWAY_SCHEMA,
             'accessibility_audit_schema'=>self::ACCESSIBILITY_AUDIT_SCHEMA,'offline_workspace_schema'=>self::OFFLINE_WORKSPACE_SCHEMA,'release_readiness_schema'=>self::RELEASE_READINESS_SCHEMA,'recovery_snapshot_schema'=>self::RECOVERY_SNAPSHOT_SCHEMA,'migration_assessment_schema'=>self::MIGRATION_ASSESSMENT_SCHEMA,
-            'connected_platform_schema'=>self::CONNECTED_PLATFORM_SCHEMA,'lifecycle_assessment_schema'=>self::LIFECYCLE_ASSESSMENT_SCHEMA,'decision_intelligence_graph_schema'=>self::DECISION_INTELLIGENCE_GRAPH_SCHEMA,'action_queue_schema'=>self::ACTION_QUEUE_SCHEMA,'portfolio_index_schema'=>self::PORTFOLIO_INDEX_SCHEMA,'connected_exchange_schema'=>self::CONNECTED_EXCHANGE_SCHEMA,'lifecycle_event_schema'=>self::LIFECYCLE_EVENT_SCHEMA,
+            'connected_platform_schema'=>self::CONNECTED_PLATFORM_SCHEMA,'lifecycle_assessment_schema'=>self::LIFECYCLE_ASSESSMENT_SCHEMA,'decision_intelligence_graph_schema'=>self::DECISION_INTELLIGENCE_GRAPH_SCHEMA,'action_queue_schema'=>self::ACTION_QUEUE_SCHEMA,'portfolio_index_schema'=>self::PORTFOLIO_INDEX_SCHEMA,'connected_exchange_schema'=>self::CONNECTED_EXCHANGE_SCHEMA,'lifecycle_event_schema'=>self::LIFECYCLE_EVENT_SCHEMA,'decision_object_schema'=>self::DECISION_OBJECT_SCHEMA,'platform_context_schema'=>self::PLATFORM_CONTEXT_SCHEMA,'decision_object_migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,
             'publication_handoff_schema'=>self::PUBLICATION_HANDOFF_SCHEMA,
             'publication_redaction_schema'=>self::PUBLICATION_REDACTION_SCHEMA,'release'=>$this->release_manifest()]); }
     public function rest_release() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'release'=>$this->release_manifest()]); }
-    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template()]); }
+    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
 
     public function rest_backend_status() {

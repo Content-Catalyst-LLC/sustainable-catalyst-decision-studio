@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Dict, Any, List, Optional
+from copy import deepcopy
 import json
 import re
 import hashlib
@@ -72,10 +73,23 @@ from app.connected_platform import (
     verify_lifecycle_history,
 )
 
-APP_VERSION = "2.0.1"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.0.1-catalyst-module-navigation-handoff-repair")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.0.1")
-RELEASE_DATE = "2026-07-17"
+from app.decision_object import (
+    DECISION_OBJECT_SCHEMA,
+    PLATFORM_CONTEXT_SCHEMA,
+    DECISION_OBJECT_MIGRATION_SCHEMA,
+    DecisionObjectRequest,
+    decision_object_template,
+    platform_context_template,
+    decision_object_from_packet,
+    normalize_decision_object,
+    attach_platform_context,
+    decision_object_to_packet,
+)
+
+APP_VERSION = "2.1.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.1.0-unified-decision-object-platform-context-foundation")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.1.0")
+RELEASE_DATE = "2026-09-11"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
 MODULE_HANDOFF_SCHEMA = "scds-catalyst-module-handoff/1.0"
@@ -123,6 +137,8 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/connected-platform/assess", "/connected-platform/transition",
     "/connected-platform/portfolio", "/connected-platform/graph",
     "/connected-platform/exchange", "/decision-packet/connected-platform",
+    "/decision-object/normalize", "/decision-object/from-packet", "/decision-object/context",
+    "/decision-object/to-packet", "/decision-packet/decision-object",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -131,7 +147,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Connected Decision Intelligence Platform",
+        "release_name": "Unified Decision Object Model & Platform Context Foundation",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -169,6 +185,9 @@ def release_manifest() -> Dict[str, Any]:
         "portfolio_index_schema": PORTFOLIO_INDEX_SCHEMA,
         "connected_exchange_schema": CONNECTED_EXCHANGE_SCHEMA,
         "lifecycle_event_schema": LIFECYCLE_EVENT_SCHEMA,
+        "decision_object_schema": DECISION_OBJECT_SCHEMA,
+        "platform_context_schema": PLATFORM_CONTEXT_SCHEMA,
+        "decision_object_migration_schema": DECISION_OBJECT_MIGRATION_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -227,6 +246,10 @@ def release_manifest() -> Dict[str, Any]:
             "tamper_evident_lifecycle_history": True,
             "automatic_approval_prohibited": True,
             "automatic_external_delivery_prohibited": True,
+            "unified_decision_object": True,
+            "platform_context_foundation": True,
+            "decision_packet_projection": True,
+            "decision_packet_to_object_migration": True,
         },
     }
 
@@ -1012,7 +1035,7 @@ def apply_institutional_decision_pack(req: DecisionPackRequest) -> Dict[str, Any
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "2.0.1",
+        "packet_version": "2.1.0",
         "decision_packet_schema": DECISION_PACKET_SCHEMA,
         "workflow": "Frame → Research → Gather evidence → Model → Compare → Challenge assumptions → Review → Approve → Publish → Implement → Monitor → Reassess",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
@@ -1048,6 +1071,11 @@ def decision_packet_template() -> Dict[str, Any]:
         "portfolio_index_schema": PORTFOLIO_INDEX_SCHEMA,
         "connected_exchange_schema": CONNECTED_EXCHANGE_SCHEMA,
         "lifecycle_event_schema": LIFECYCLE_EVENT_SCHEMA,
+        "decision_object_schema": DECISION_OBJECT_SCHEMA,
+        "platform_context_schema": PLATFORM_CONTEXT_SCHEMA,
+        "decision_object_migration_schema": DECISION_OBJECT_MIGRATION_SCHEMA,
+        "decision_object": {},
+        "platform_context": platform_context_template(APP_VERSION, DECISION_PACKET_SCHEMA),
         "project": {
             "project_name": "",
             "organization_type": "",
@@ -1131,7 +1159,7 @@ def decision_packet_template() -> Dict[str, Any]:
         "uncertainty_analysis": {},
         "workbench_handoffs": [],
         "saved_packet": {"saved_at": "", "saved_by": "", "status": "draft", "storage": "browser_or_wordpress"},
-        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json", "publication_json", "publication_markdown", "publication_html", "bibliography_json", "redaction_json", "publication_handoff_json", "outcome_monitoring_json", "decision_registry_json", "reassessment_history_json", "public_dossier_json", "readiness_embed_json", "scenario_embed_json", "institutional_archive_json", "signed_manifest_json", "platform_core_gateway_json", "internal_events_json", "connected_platform_json", "lifecycle_assessment_json", "decision_intelligence_graph_json", "decision_action_queue_json", "decision_portfolio_index_json", "connected_exchange_json"]},
+        "export_center": {"last_exported_at": "", "available_formats": ["json", "markdown", "html", "audit_json", "readiness_json", "scenario_json", "scenario_studio_json", "sensitivity_json", "threshold_json", "handoff_json", "governance_json", "collaboration_json", "room_activity_json", "snapshot_comparison_json", "decision_pack_json", "publication_json", "publication_markdown", "publication_html", "bibliography_json", "redaction_json", "publication_handoff_json", "outcome_monitoring_json", "decision_registry_json", "reassessment_history_json", "public_dossier_json", "readiness_embed_json", "scenario_embed_json", "institutional_archive_json", "signed_manifest_json", "platform_core_gateway_json", "internal_events_json", "connected_platform_json", "lifecycle_assessment_json", "decision_intelligence_graph_json", "decision_action_queue_json", "decision_portfolio_index_json", "connected_exchange_json", "decision_object_json", "platform_context_json"]},
         "module_slots": [
             {
                 "module_id": m["id"],
@@ -5152,6 +5180,48 @@ def decision_packet_export_bundle_endpoint(req: ExportBundleRequest):
         return JSONResponse(status_code=409, content=result)
     return result
 
+
+
+@app.get("/decision-object/template")
+def decision_object_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "decision_object": decision_object_template(APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.get("/platform-context/template")
+def platform_context_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "platform_context": platform_context_template(APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.post("/decision-object/from-packet")
+def decision_object_from_packet_endpoint(req: DecisionObjectRequest):
+    return {"ok": True, "version": APP_VERSION, "decision_object": decision_object_from_packet(req.packet, APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.post("/decision-object/normalize")
+def decision_object_normalize_endpoint(req: DecisionObjectRequest):
+    return {"ok": True, "version": APP_VERSION, "decision_object": normalize_decision_object(req.decisionObject, req.packet, APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.post("/decision-object/context")
+def decision_object_context_endpoint(req: DecisionObjectRequest):
+    obj = req.decisionObject or decision_object_from_packet(req.packet, APP_VERSION, DECISION_PACKET_SCHEMA)
+    return {"ok": True, "version": APP_VERSION, "decision_object": attach_platform_context(obj, req.platformArtifacts, APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.post("/decision-object/to-packet")
+def decision_object_to_packet_endpoint(req: DecisionObjectRequest):
+    return {"ok": True, "version": APP_VERSION, "decision_packet": decision_object_to_packet(req.decisionObject, APP_VERSION, DECISION_PACKET_SCHEMA)}
+
+
+@app.post("/decision-packet/decision-object")
+def decision_packet_decision_object_endpoint(req: DecisionObjectRequest):
+    obj = decision_object_from_packet(req.packet, APP_VERSION, DECISION_PACKET_SCHEMA)
+    if req.platformArtifacts:
+        obj = attach_platform_context(obj, req.platformArtifacts, APP_VERSION, DECISION_PACKET_SCHEMA)
+    packet = deepcopy(req.packet) if req.packet else decision_object_to_packet(obj, APP_VERSION, DECISION_PACKET_SCHEMA)
+    packet["decision_object"] = {key: deepcopy(value) for key, value in obj.items() if key != "source_packet"}
+    packet["platform_context"] = deepcopy(obj.get("platform_context", {}))
+    return {"ok": True, "version": APP_VERSION, "decision_object": obj, "decision_packet": packet}
 
 @app.get("/public/landing-template")
 def public_landing_template_endpoint():

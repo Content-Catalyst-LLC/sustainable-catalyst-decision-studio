@@ -1,0 +1,62 @@
+{
+  "release": "2.1.0",
+  "title": "Unified Decision Object Model & Platform Context Foundation",
+  "release_date": "2026-09-11",
+  "build_fingerprint": "scds-v2.1.0-unified-decision-object-platform-context-foundation",
+  "source_commit": "release-v2.1.0",
+  "wordpress": {
+    "plugin_version": "2.1.0",
+    "database_version": "2.1.0",
+    "shortcode": "[sc_decision_studio mode=\"decision-object\" title=\"Unified Decision Object\"]"
+  },
+  "backend": {
+    "version": "2.1.0",
+    "new_routes": [
+      "/decision-object/template",
+      "/platform-context/template",
+      "/decision-object/from-packet",
+      "/decision-object/normalize",
+      "/decision-object/context",
+      "/decision-object/to-packet",
+      "/decision-packet/decision-object"
+    ]
+  },
+  "schemas": {
+    "decision_packet": "scds-decision-packet/2.0",
+    "decision_object": "scds-decision-object/1.0",
+    "platform_context": "scds-platform-context/1.0",
+    "decision_object_migration": "scds-decision-object-migration/1.0",
+    "typed_artifact": "scds-platform-artifact/1.0"
+  },
+  "capabilities": [
+    "First-class unified Decision Object",
+    "Reversible Decision Packet promotion and projection",
+    "Seven-product platform context registry",
+    "Provenance-aware artifact links with SHA-256 payload fingerprints",
+    "Core object completeness diagnostics",
+    "WordPress Decision Object workspace",
+    "Preserved Connected Platform and v2.0.1 Catalyst module handoffs"
+  ],
+  "platform_roles": {
+    "Knowledge Library": "evidence",
+    "Research Librarian": "research routing",
+    "Site Intelligence": "real-world context",
+    "Workbench": "computation",
+    "Research Lab": "analysis",
+    "Platform Core": "infrastructure",
+    "Decision Studio": "choice"
+  },
+  "compatibility": {
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "packet_schema_breaking_changes": false,
+    "source_packet_preserved": true,
+    "v2_0_1_module_navigation_preserved": true,
+    "v2_0_0_connected_platform_preserved": true
+  },
+  "tests": {
+    "backend_expected": 143,
+    "release_contract": true,
+    "php_syntax": true,
+    "javascript_syntax": true
+  }
+}

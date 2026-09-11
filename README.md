@@ -1,4 +1,22 @@
-# Sustainable Catalyst Decision Studio v2.0.1
+# Sustainable Catalyst Decision Studio v2.1.0
+
+## Unified Decision Object Model & Platform Context Foundation
+
+Decision Studio v2.1.0 makes the **decision** a first-class cross-product object while preserving Decision Packet 2.0 and the complete Connected Decision Intelligence Platform. The new `scds-decision-object/1.0` model carries the decision question, objective, alternatives, criteria, constraints, assumptions, evidence, models, scenarios, uncertainty, stakeholders, tradeoffs, recommendation, confidence, counterarguments, provenance, decision record, rationale, and outcome review.
+
+`scds-platform-context/1.0` gives Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, Platform Core, and Decision Studio explicit roles around that object. Packet promotion is additive and projection is reversible: the source packet and its unknown fields are preserved rather than silently flattened.
+
+### v2.1.0 endpoints
+
+- `GET /decision-object/template`
+- `GET /platform-context/template`
+- `POST /decision-object/from-packet`
+- `POST /decision-object/normalize`
+- `POST /decision-object/context`
+- `POST /decision-object/to-packet`
+- `POST /decision-packet/decision-object`
+
+WordPress route parity lives under `/wp-json/scds/v1`, with `[sc_decision_studio mode="decision-object"]`.
 
 ## Connected Decision Intelligence Platform
 

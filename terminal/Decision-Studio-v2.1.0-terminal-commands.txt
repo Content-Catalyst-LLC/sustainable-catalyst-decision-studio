@@ -1,0 +1,21 @@
+Decision Studio v2.1.0 — Unified Decision Object Model & Platform Context Foundation
+
+MAC INSTALL + VALIDATE + GITHUB PUSH
+
+cd ~/Downloads
+chmod +x install_and_push_sustainable_catalyst_decision_studio_v2_1_0_macos.sh
+./install_and_push_sustainable_catalyst_decision_studio_v2_1_0_macos.sh
+
+Optional explicit repository path:
+SCDS_REPOSITORY="$HOME/Downloads/sustainable-catalyst-decision-studio" \
+  ./install_and_push_sustainable_catalyst_decision_studio_v2_1_0_macos.sh
+
+Validate/install without pushing:
+SCDS_NO_PUSH=1 \
+  ./install_and_push_sustainable_catalyst_decision_studio_v2_1_0_macos.sh
+
+WORDPRESS
+Upload/replace with:
+sustainable-catalyst-decision-studio-plugin-v2.1.0.zip
+
+The installer creates a safety backup, preserves uncommitted work in a Git stash when needed, validates the release, builds the WordPress ZIP, commits v2.1.0, tags v2.1.0, and pushes the active branch/tag unless SCDS_NO_PUSH=1.

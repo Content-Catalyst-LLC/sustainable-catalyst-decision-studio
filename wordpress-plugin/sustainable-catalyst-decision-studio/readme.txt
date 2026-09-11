@@ -4,22 +4,23 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.0.1
+Stable tag: 2.1.0
 License: GPLv2 or later
 
-Connected decision intelligence platform for evidence, modeling, alternatives, governance, publication, implementation, monitoring, reassessment, and institutional exchange.
+Unified decision-object and platform-context foundation for evidence, modeling, alternatives, governance, publication, implementation, monitoring, reassessment, and institutional exchange.
 
 == Description ==
 
-Decision Studio v2.0.1 restores visible Catalyst module navigation and packet handoffs while it connects the full lifecycle: Frame, Research, Gather Evidence, Model, Compare, Challenge Assumptions, Review, Approve, Publish, Implement, Monitor, and Reassess.
+Decision Studio v2.1.0 makes the decision a first-class platform object while preserving Decision Packet 2.0, Connected Platform, and Catalyst module handoffs. The unified object carries question, objective, alternatives, criteria, constraints, assumptions, evidence, models, scenarios, uncertainty, stakeholders, tradeoffs, recommendation, confidence, counterarguments, provenance, decision record, rationale, and outcome review.
 
-It adds lifecycle assessment, cross-product action routing, a Decision Intelligence Graph, portfolio attention indexing, prepared connected-exchange manifests, and named-human tamper-evident lifecycle events. It preserves all earlier platform handoffs, governance, scenarios, collaboration, Decision Packs, publication, outcomes, public APIs, accessibility, offline recovery, and release hardening.
+Platform Context assigns explicit roles to Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, Platform Core, and Decision Studio. Packet promotion and projection are additive and reversible.
 
-Automated lifecycle assessment cannot approve, publish, externally deliver, amend, suspend, retire, certify, assure, or professionally sign off a decision.
+Automated decision support cannot approve, publish, externally deliver, amend, suspend, retire, certify, assure, or professionally sign off a decision.
 
 == Shortcodes ==
 
 [sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]
+[sc_decision_studio mode="decision-object" title="Unified Decision Object"]
 [sc_decision_studio mode="connected" title="Connected Decision Intelligence Platform"]
 [sc_decision_studio mode="hardening" title="Accessibility, Offline Use, and Release Hardening"]
 [sc_decision_studio mode="integration" title="Public API, Embeds, and Institutional Integration"]
@@ -31,6 +32,13 @@ Automated lifecycle assessment cannot approve, publish, externally deliver, amen
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 2.1.0 =
+* Added first-class Unified Decision Object and Platform Context schemas.
+* Added reversible Decision Packet promotion/projection with source-packet preservation.
+* Added provenance-aware platform artifact links and completeness diagnostics.
+* Added Decision Object workspace tab, shortcode mode, and REST parity.
+* Preserved v2.0.1 Catalyst module handoffs and v2.0.0 Connected Platform.
 
 = 2.0.1 =
 * Added visible cards and browser-local packet handoffs for Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, and Grit.

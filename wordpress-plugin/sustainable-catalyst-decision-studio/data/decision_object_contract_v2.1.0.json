@@ -1,0 +1,114 @@
+{
+  "schema": "scds-contract/1.0",
+  "title": "Sustainable Catalyst Unified Decision Object",
+  "version": "2.1.0",
+  "object_schema": "scds-decision-object/1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "decision_id",
+    "status",
+    "question",
+    "objective",
+    "alternatives",
+    "criteria",
+    "constraints",
+    "assumptions",
+    "evidence",
+    "models",
+    "scenarios",
+    "uncertainties",
+    "stakeholders",
+    "tradeoffs",
+    "recommendation",
+    "confidence",
+    "counterarguments",
+    "provenance",
+    "decision",
+    "rationale",
+    "outcome_review",
+    "platform_context"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-decision-object/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "question": {
+      "type": "string"
+    },
+    "objective": {},
+    "alternatives": {
+      "type": "array"
+    },
+    "criteria": {
+      "type": "array"
+    },
+    "constraints": {
+      "type": "array"
+    },
+    "assumptions": {
+      "type": "array"
+    },
+    "evidence": {
+      "type": "array"
+    },
+    "models": {
+      "type": "array"
+    },
+    "scenarios": {
+      "type": "array"
+    },
+    "uncertainties": {
+      "type": "array"
+    },
+    "stakeholders": {
+      "type": "array"
+    },
+    "tradeoffs": {
+      "type": "array"
+    },
+    "recommendation": {},
+    "confidence": {},
+    "counterarguments": {
+      "type": "array"
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "decision": {
+      "type": "object"
+    },
+    "rationale": {
+      "type": "array"
+    },
+    "outcome_review": {
+      "type": "object"
+    },
+    "platform_context": {
+      "type": "object"
+    },
+    "links": {
+      "type": "array"
+    },
+    "compatibility": {
+      "type": "object"
+    }
+  },
+  "compatibility": {
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "packet_breaking_changes": false,
+    "reversible_projection": true,
+    "source_packet_reference_preserved": true
+  },
+  "boundary": "The object structures decision support and provenance. It does not authorize approval, publication, professional sign-off, or external execution."
+}

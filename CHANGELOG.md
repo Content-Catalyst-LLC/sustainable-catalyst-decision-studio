@@ -1,3 +1,13 @@
+## v2.1.0 — Unified Decision Object Model & Platform Context Foundation
+
+- Added `scds-decision-object/1.0` as the first-class cross-product representation of a decision.
+- Added `scds-platform-context/1.0` with explicit roles for Library, Research Librarian, Site Intelligence, Workbench, Research Lab, Platform Core, and Decision Studio.
+- Added reversible Decision Packet promotion/projection with complete source-packet retention and SHA-256 fingerprints.
+- Added object completeness diagnostics and provenance-aware platform artifact links.
+- Added seven FastAPI routes, WordPress REST parity, a Decision Object workspace tab, and `mode="decision-object"`.
+- Preserved Decision Packet 2.0, v2.0.1 Catalyst module handoffs, and v2.0.0 Connected Platform behavior.
+- Expanded the backend regression suite to 143 tests.
+
 ## v2.0.1 — Catalyst Module Navigation and Handoff Repair
 
 - Promoted Canvas, Data, Analytics R, Global Impact, Narrative Risk, Finance, and Grit into visible first-class cards inside the Catalyst Modules panel.
