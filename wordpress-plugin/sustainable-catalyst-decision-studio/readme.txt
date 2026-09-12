@@ -4,14 +4,14 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.4.0
+Stable tag: 2.5.0
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
 
 == Description ==
 
-Decision Studio v2.4.0 adds first-class uncertainty registers, deterministic sensitivity analysis, alternative score envelopes, overlap diagnostics, and bounded process-confidence assessment while preserving v2.3.1 Tradeoff Matrix, v2.2 Evidence & Source Bundles, the v2.1 Unified Decision Object, Decision Packet 2.0, and the v2.3.0 Energy Systems Runtime Consumer.
+Decision Studio v2.5.0 adds first-class scenario sets, cross-scenario tradeoff comparison, conditional score ranges, ordering-change and threshold-breach diagnostics, and explicit stress-test suites while preserving v2.4.0 uncertainty/confidence, v2.3.1 Tradeoff Matrix, v2.2 Evidence & Source Bundles, v2.1 Unified Decision Object, Decision Packet 2.0, and the v2.3.0 Energy Systems Runtime Consumer.
 
 Process confidence summarizes documentation and analysis coverage. It is not a probability that an alternative or recommendation is correct. Sensitivity results do not automatically select a winner or create a recommendation.
 
@@ -33,6 +33,11 @@ Process confidence summarizes documentation and analysis coverage. It is not a p
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 2.5.0 =
+* Added Scenario Comparison & Stress Testing with first-class scenario sets, conditional score ranges, failure-mode diagnostics, and Decision Object/Packet attachment.
+* Preserves Energy Runtime Consumer v2.3.0 and all v2.4 uncertainty/confidence contracts.
+* Scenarios are not forecasts; stress-test passes do not imply approval; no automatic winner or recommendation.
 
 = 2.4.0 =
 * Added Uncertainty Register, Sensitivity Analysis, and Confidence Assessment schemas.

@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Uncertainty, Sensitivity & Confidence for transparent decision robustness analysis, preserving Tradeoff Matrix, Energy Systems Runtime Consumer, Evidence & Source Bundles, and the Unified Decision Object.
- * Version: 2.4.0
+ * Description: Scenario Comparison & Stress Testing for explicit conditional decision analysis, preserving uncertainty, tradeoffs, evidence, Energy Systems Runtime Consumer, and the Unified Decision Object.
+ * Version: 2.5.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.4.0';
-    const BUILD_FINGERPRINT = 'scds-v2.4.0-uncertainty-sensitivity-confidence';
-    const SOURCE_COMMIT = 'release-v2.4.0';
+    const VERSION = '2.5.0';
+    const BUILD_FINGERPRINT = 'scds-v2.5.0-scenario-comparison-stress-testing';
+    const SOURCE_COMMIT = 'release-v2.5.0';
     const RELEASE_DATE = '2026-09-11';
-    const DB_VERSION = '2.4.0';
+    const DB_VERSION = '2.5.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -72,6 +72,9 @@ class Sustainable_Catalyst_Decision_Studio {
     const UNCERTAINTY_REGISTER_SCHEMA = 'scds-uncertainty-register/1.0';
     const SENSITIVITY_ANALYSIS_SCHEMA = 'scds-sensitivity-analysis/1.0';
     const CONFIDENCE_ASSESSMENT_SCHEMA = 'scds-confidence-assessment/1.0';
+    const SCENARIO_SET_SCHEMA = 'scds-scenario-set/1.0';
+    const SCENARIO_COMPARISON_V250_SCHEMA = 'scds-scenario-comparison/1.0';
+    const STRESS_TEST_SUITE_SCHEMA = 'scds-stress-test-suite/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -497,10 +500,15 @@ class Sustainable_Catalyst_Decision_Studio {
             'restConfidenceAssessmentBuildUrl' => esc_url_raw(rest_url('scds/v1/confidence-assessment/build')),
             'restDecisionObjectUncertaintyConfidenceUrl' => esc_url_raw(rest_url('scds/v1/decision-object/uncertainty-confidence')),
             'restDecisionPacketUncertaintyConfidenceUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/uncertainty-confidence')),
+            'restScenarioSetBuildUrl' => esc_url_raw(rest_url('scds/v1/scenario-set/build')),
+            'restScenarioAnalysisCompareUrl' => esc_url_raw(rest_url('scds/v1/scenario-analysis/compare')),
+            'restStressTestSuiteRunUrl' => esc_url_raw(rest_url('scds/v1/stress-test-suite/run')),
+            'restDecisionObjectScenarioStressUrl' => esc_url_raw(rest_url('scds/v1/decision-object/scenario-stress')),
+            'restDecisionPacketScenarioStressUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/scenario-stress')),
             'restModuleNavigationUrl' => esc_url_raw(rest_url('scds/v1/integrations/module-navigation')),
             'moduleNavigation' => $this->catalyst_module_navigation(),
             'moduleHandoffEnabled' => $settings['module_handoff_enabled'] === '1',
-            'moduleHandoffStoragePrefix' => 'scds_module_handoff_v2_4_0_',
+            'moduleHandoffStoragePrefix' => 'scds_module_handoff_v2_5_0_',
             'decisionStudioReturnUrl' => esc_url_raw(home_url('/platform/decision-studio/')),
             'isLoggedIn' => is_user_logged_in(),
             'currentUser' => ['id'=>get_current_user_id(),'name'=>is_user_logged_in()?wp_get_current_user()->display_name:'','role'=>current_user_can('manage_options')?'owner':(current_user_can('edit_posts')?'editor':'observer')],
@@ -791,6 +799,32 @@ class Sustainable_Catalyst_Decision_Studio {
     private function confidence_assessment_build_local_v240($matrix,$register,$sensitivity,$decision_id='') {
         $evals=(array)($matrix['evaluations']??[]);$total=count($evals);$reviewed=0;$evidence=0;foreach($evals as $e){if(!is_array($e))continue;if(in_array((string)($e['review_status']??''),['reviewed','accepted','approved'],true))$reviewed++;if(!empty($e['evidence_refs']))$evidence++;}$dims=['matrix_completeness_percent'=>(float)($matrix['diagnostics']['matrix_coverage_percent']??0),'review_coverage_percent'=>$total?round(($reviewed/$total)*100,1):0.0,'evidence_linkage_percent'=>$total?round(($evidence/$total)*100,1):0.0,'uncertainty_characterization_percent'=>(float)($register['diagnostics']['characterization_coverage_percent']??0),'sensitivity_coverage_percent'=>((int)($sensitivity['diagnostics']['weight_tests']??0)>0)?100.0:0.0];$index=round(array_sum($dims)/count($dims),1);$floor=min($dims);$level=($index>=90&&$floor>=80)?'high_process_confidence':(($index>=70&&$floor>=50)?'moderate_process_confidence':($index>=50?'limited_process_confidence':'insufficient_process_confidence'));$limiting=[];foreach($dims as $k=>$v)if($v<70)$limiting[]=$k;if(!empty($sensitivity['diagnostics']['ordering_reversal_observed']))$limiting[]='ordering_changes_under_tested_perturbations';if(!empty($matrix['diagnostics']['threshold_violations']))$limiting[]='threshold_violations_present';$out=$this->confidence_assessment_template_local_v240();$out['confidence_assessment_id']='confidence-assessment-'.substr(hash('sha256',wp_json_encode([$matrix['matrix_id']??'',$register['uncertainty_register_id']??'',$sensitivity['sensitivity_analysis_id']??'',$dims])),0,16);$out['decision_id']=$decision_id?:($matrix['decision_id']??'');$out['matrix_id']=$matrix['matrix_id']??'';$out['created_at']=gmdate('c');$out['dimensions']=$dims;$out['process_confidence_index']=$index;$out['process_confidence_level']=$level;$out['limiting_factors']=array_values(array_unique($limiting));$out['interpretation']=ucfirst(str_replace('_',' ',$level)).': process confidence index '.$index.'/100. This index summarizes documentation and analysis coverage only; it is not a probability of correctness.';return $out;
     }
+    private function scenario_set_template_local_v250() {
+        return ['schema'=>self::SCENARIO_SET_SCHEMA,'version'=>self::VERSION,'scenario_set_id'=>'','decision_id'=>'','created_at'=>'','updated_at'=>'','scenarios'=>[],'diagnostics'=>['scenario_count'=>0,'baseline_count'=>0,'stress_scenario_count'=>0,'duplicate_ids'=>[],'unknown_criterion_refs'=>[],'unknown_evaluation_refs'=>[],'reviewed_count'=>0],'provenance'=>['created_by'=>'decision-studio','records'=>[]],'boundary'=>'Scenarios are explicit decision conditions, not forecasts or probabilities. Scenario inclusion does not imply likelihood or endorsement.'];
+    }
+    private function scenario_comparison_template_local_v250() {
+        return ['schema'=>self::SCENARIO_COMPARISON_V250_SCHEMA,'version'=>self::VERSION,'scenario_comparison_id'=>'','decision_id'=>'','matrix_id'=>'','created_at'=>'','baseline_scenario_id'=>'','scenario_results'=>[],'alternative_score_ranges'=>[],'diagnostics'=>['scenario_count'=>0,'complete_scenario_count'=>0,'ordering_change_scenario_ids'=>[],'threshold_breach_scenario_ids'=>[],'incomplete_scenario_ids'=>[],'max_score_swing'=>0.0],'boundary'=>'Scenario comparison exposes conditional performance and instability. It does not predict which scenario will occur, choose a winner, or create a recommendation.'];
+    }
+    private function stress_test_suite_template_local_v250() {
+        return ['schema'=>self::STRESS_TEST_SUITE_SCHEMA,'version'=>self::VERSION,'stress_test_suite_id'=>'','decision_id'=>'','created_at'=>'','tests'=>[],'failure_modes'=>[],'diagnostics'=>['test_count'=>0,'passed_count'=>0,'failed_count'=>0,'stress_scenario_count'=>0,'ordering_change_count'=>0,'threshold_breach_count'=>0],'configuration'=>['max_allowed_score_drop'=>15.0,'max_allowed_threshold_violations'=>0,'require_complete_matrix'=>true,'minimum_process_confidence'=>0.0],'boundary'=>'Stress tests identify conditions under which the comparison becomes fragile, incomplete, or constraint-violating. Passing a stress test is not approval, certification, or a recommendation.'];
+    }
+    private function scenario_set_build_local_v250($scenarios,$matrix,$decision_id='') {
+        if(!is_array($scenarios))$scenarios=[];if(!$scenarios)$scenarios=[['scenario_id'=>'baseline','name'=>'Baseline','kind'=>'baseline','review_status'=>'reviewed']];$criterion_ids=[];foreach((array)($matrix['criteria_set']['criteria']??[]) as $c)if(is_array($c)&&!empty($c['criterion_id']))$criterion_ids[(string)$c['criterion_id']]=true;$eval_ids=[];foreach((array)($matrix['evaluations']??[]) as $e)if(is_array($e)&&!empty($e['evaluation_id']))$eval_ids[(string)$e['evaluation_id']]=true;$rows=[];$seen=[];$dupes=[];$uc=[];$ue=[];$base=0;$stress=0;$reviewed=0;
+        foreach($scenarios as $i=>$r){if(!is_array($r))continue;$id=sanitize_key((string)($r['scenario_id']??($r['id']??('scenario-'.($i+1)))));if($id==='')$id='scenario-'.($i+1);if(isset($seen[$id]))$dupes[]=$id;$seen[$id]=true;$kind=strtolower((string)($r['kind']??($i===0?'baseline':'custom')));if(!in_array($kind,['baseline','expected','upside','downside','stress','custom'],true))$kind='custom';if($kind==='baseline')$base++;if($kind==='stress')$stress++;$status=(string)($r['review_status']??'needs_review');if(in_array($status,['reviewed','accepted','approved'],true))$reviewed++;$w=[];foreach((array)($r['weight_overrides']??[]) as $x){if(!is_array($x))continue;$cid=(string)($x['criterion_id']??'');if($cid!==''&&!isset($criterion_ids[$cid]))$uc[]=$cid;$w[]=$x;}$ev=[];foreach((array)($r['evaluation_overrides']??[]) as $x){if(!is_array($x))continue;$eid=(string)($x['evaluation_id']??'');if($eid!==''&&!isset($eval_ids[$eid]))$ue[]=$eid;$ev[]=$x;}$rows[$id]=['scenario_id'=>$id,'name'=>(string)($r['name']??($r['label']??$id)),'description'=>(string)($r['description']??''),'kind'=>$kind,'assumption_changes'=>(array)($r['assumption_changes']??($r['assumptions']??[])),'weight_overrides'=>$w,'evaluation_overrides'=>$ev,'constraints'=>(array)($r['constraints']??[]),'source_refs'=>(array)($r['source_refs']??($r['evidence_refs']??[])),'review_status'=>$status,'unknown_criterion_refs'=>array_values(array_unique($uc)),'unknown_evaluation_refs'=>array_values(array_unique($ue)),'content_fingerprint'=>hash('sha256',wp_json_encode($r)),'raw'=>$r];}
+        $out=$this->scenario_set_template_local_v250();$out['scenario_set_id']='scenario-set-'.substr(hash('sha256',wp_json_encode(array_keys($rows))),0,16);$out['decision_id']=$decision_id;$out['created_at']=gmdate('c');$out['updated_at']=$out['created_at'];$out['scenarios']=array_values($rows);$out['diagnostics']=['scenario_count'=>count($rows),'baseline_count'=>$base,'stress_scenario_count'=>$stress,'duplicate_ids'=>array_values(array_unique($dupes)),'unknown_criterion_refs'=>array_values(array_unique($uc)),'unknown_evaluation_refs'=>array_values(array_unique($ue)),'reviewed_count'=>$reviewed];return $out;
+    }
+    private function scenario_matrix_local_v250($matrix,$scenario) {
+        $criteria=[];foreach((array)($matrix['criteria_set']['criteria']??[]) as $c){if(!is_array($c))continue;$raw=is_array($c['raw']??null)?$c['raw']:$c;foreach((array)($scenario['weight_overrides']??[]) as $o)if(is_array($o)&&((string)($o['criterion_id']??'')===(string)($c['criterion_id']??''))&&isset($o['weight']))$raw['weight']=$o['weight'];$criteria[]=$raw;}$alts=[];foreach((array)($matrix['alternatives_set']['alternatives']??[]) as $a)if(is_array($a))$alts[]=is_array($a['raw']??null)?$a['raw']:$a;$evals=[];foreach((array)($matrix['evaluations']??[]) as $e){if(!is_array($e))continue;$raw=is_array($e['raw']??null)?$e['raw']:$e;foreach((array)($scenario['evaluation_overrides']??[]) as $o)if(is_array($o)&&((string)($o['evaluation_id']??'')===(string)($e['evaluation_id']??''))){if(array_key_exists('value',$o)&&!array_key_exists('score',$o)){unset($raw['score'],$raw['normalized_score']);}foreach(['value','score','review_status','evidence_refs'] as $k)if(array_key_exists($k,$o))$raw[$k]=$o[$k];}$evals[]=$raw;}return $this->tradeoff_matrix_build_local_v230($criteria,$alts,$evals,(string)($matrix['decision_id']??''));
+    }
+    private function scenario_comparison_build_local_v250($matrix,$scenario_set,$decision_id='') {
+        $scenarios=(array)($scenario_set['scenarios']??[]);$baseline=$scenarios[0]??[];foreach($scenarios as $x)if(is_array($x)&&($x['kind']??'')==='baseline'){$baseline=$x;break;}$bm=$this->scenario_matrix_local_v250($matrix,$baseline);$bs=[];foreach((array)($bm['alternative_summaries']??[]) as $x)if(is_array($x)&&isset($x['weighted_score']))$bs[(string)$x['alternative_id']]=$x['weighted_score'];$bo=array_keys($bs);usort($bo,function($a,$b)use($bs){return ($bs[$b]??-INF)<=>($bs[$a]??-INF);});$results=[];$history=[];$oc=[];$tb=[];$inc=[];$max=0.0;
+        foreach($scenarios as $sc){if(!is_array($sc))continue;$m=$this->scenario_matrix_local_v250($matrix,$sc);$scores=[];$deltas=[];foreach((array)($m['alternative_summaries']??[]) as $x){if(!is_array($x)||$x['weighted_score']===null)continue;$aid=(string)$x['alternative_id'];$score=(float)$x['weighted_score'];$scores[$aid]=$score;$history[$aid][]=$score;$delta=isset($bs[$aid])?round($score-(float)$bs[$aid],4):null;if($delta!==null)$max=max($max,abs($delta));$deltas[]=['alternative_id'=>$aid,'score'=>$score,'delta_vs_baseline'=>$delta];}$order=array_keys($scores);usort($order,function($a,$b)use($scores){return ($scores[$b]??-INF)<=>($scores[$a]??-INF);});$changed=$bo&&$order&&$bo!==$order;$sid=(string)($sc['scenario_id']??'');if($changed)$oc[]=$sid;$tc=count((array)($m['diagnostics']['threshold_violations']??[]));if($tc)$tb[]=$sid;$complete=!empty($m['diagnostics']['complete']);if(!$complete)$inc[]=$sid;$results[]=['scenario_id'=>$sid,'name'=>$sc['name']??$sid,'kind'=>$sc['kind']??'custom','matrix_id'=>$m['matrix_id']??'','complete'=>$complete,'matrix_coverage_percent'=>$m['diagnostics']['matrix_coverage_percent']??0,'threshold_violation_count'=>$tc,'ordering_changed_vs_baseline'=>$changed,'alternative_scores'=>$deltas,'boundary'=>'This scenario result is conditional on the scenario inputs and does not indicate scenario likelihood.'];}
+        $ranges=[];foreach($history as $aid=>$vals){$ranges[]=['alternative_id'=>$aid,'name'=>$aid,'min_score'=>min($vals),'max_score'=>max($vals),'span'=>round(max($vals)-min($vals),4)];}$out=$this->scenario_comparison_template_local_v250();$out['scenario_comparison_id']='scenario-comparison-'.substr(hash('sha256',wp_json_encode([$scenario_set['scenario_set_id']??'',$matrix['matrix_id']??'',$results])),0,16);$out['decision_id']=$decision_id;$out['matrix_id']=$matrix['matrix_id']??'';$out['created_at']=gmdate('c');$out['baseline_scenario_id']=$baseline['scenario_id']??'';$out['scenario_results']=$results;$out['alternative_score_ranges']=$ranges;$out['diagnostics']=['scenario_count'=>count($results),'complete_scenario_count'=>count($results)-count($inc),'ordering_change_scenario_ids'=>$oc,'threshold_breach_scenario_ids'=>$tb,'incomplete_scenario_ids'=>$inc,'max_score_swing'=>round($max,4)];return $out;
+    }
+    private function stress_test_suite_build_local_v250($comparison,$scenario_set,$confidence,$config,$decision_id='') {
+        if(!is_array($config))$config=[];$drop=(float)($config['max_allowed_score_drop']??15);$maxthr=(int)($config['max_allowed_threshold_violations']??0);$req=!isset($config['require_complete_matrix'])||!empty($config['require_complete_matrix']);$minc=(float)($config['minimum_process_confidence']??0);$smap=[];foreach((array)($scenario_set['scenarios']??[]) as $s)if(is_array($s))$smap[(string)($s['scenario_id']??'')]=$s;$tests=[];$fails=[];$oc=0;$tb=0;foreach((array)($comparison['scenario_results']??[]) as $r){if(!is_array($r))continue;$sid=(string)($r['scenario_id']??'');if(($smap[$sid]['kind']??'')!=='stress')continue;$d=[];foreach((array)($r['alternative_scores']??[]) as $a)if(is_array($a)&&$a['delta_vs_baseline']!==null)$d[]=(float)$a['delta_vs_baseline'];$worst=$d?min($d):0.0;$thr=(int)($r['threshold_violation_count']??0);$complete=!empty($r['complete']);$changed=!empty($r['ordering_changed_vs_baseline']);if($changed)$oc++;if($thr)$tb++;$pc=(float)($confidence['process_confidence_index']??0);$codes=[];if($worst<(-abs($drop)))$codes[]='score_drop_limit_exceeded';if($thr>$maxthr)$codes[]='threshold_violation_limit_exceeded';if($req&&!$complete)$codes[]='matrix_incomplete';if($pc<$minc)$codes[]='process_confidence_below_floor';foreach($codes as $c)$fails[]=['scenario_id'=>$sid,'failure_code'=>$c];$tests[]=['scenario_id'=>$sid,'name'=>$r['name']??$sid,'passed'=>!$codes,'worst_score_delta'=>round($worst,4),'threshold_violation_count'=>$thr,'matrix_complete'=>$complete,'ordering_changed_vs_baseline'=>$changed,'process_confidence_index'=>$pc,'failure_codes'=>$codes];}$out=$this->stress_test_suite_template_local_v250();$out['stress_test_suite_id']='stress-test-suite-'.substr(hash('sha256',wp_json_encode([$comparison['scenario_comparison_id']??'',$tests,$config])),0,16);$out['decision_id']=$decision_id;$out['created_at']=gmdate('c');$out['tests']=$tests;$out['failure_modes']=$fails;$out['diagnostics']=['test_count'=>count($tests),'passed_count'=>count(array_filter($tests,function($x){return !empty($x['passed']);})),'failed_count'=>count(array_filter($tests,function($x){return empty($x['passed']);})),'stress_scenario_count'=>count($tests),'ordering_change_count'=>$oc,'threshold_breach_count'=>$tb];$out['configuration']=['max_allowed_score_drop'=>$drop,'max_allowed_threshold_violations'=>$maxthr,'require_complete_matrix'=>$req,'minimum_process_confidence'=>$minc];return $out;
+    }
+
     private function render_panel_uncertainty_v240($mode) { ?>
         <section class="scds-panel" data-scds-panel="uncertainty" aria-labelledby="scds-uncertainty-title">
             <div class="scds-section-heading"><p class="scds-kicker">v2.4.0 · Uncertainty, Sensitivity &amp; Confidence</p><h3 id="scds-uncertainty-title">Test how much the comparison moves</h3><p>Register explicit bounds, perturb criterion weights, test evaluation ranges, inspect score envelopes and ordering changes, and assess process confidence from visible coverage dimensions.</p></div>
@@ -1152,6 +1186,11 @@ class Sustainable_Catalyst_Decision_Studio {
 
     private function render_panel_scenario($mode) { ?>
         <section class="scds-panel" data-scds-panel="scenario">
+            <div class="scds-section-heading"><p class="scds-kicker">v2.5.0 · Scenario Comparison &amp; Stress Testing</p><h3>Test whether the decision holds under different conditions</h3><p>Define named baseline, upside, downside, and stress conditions against the same Tradeoff Matrix. Compare score ranges, ordering changes, threshold breaches, and explicit failure modes without treating scenarios as forecasts or automatically selecting a winner.</p></div>
+            <div class="scds-grid scds-grid-2"><label class="scds-field scds-field-wide"><span>Decision scenarios JSON</span><textarea rows="16" data-scds-v250-scenarios>[{"scenario_id":"baseline","name":"Baseline conditions","kind":"baseline","review_status":"reviewed"},{"scenario_id":"cost-pressure","name":"Cost pressure","kind":"downside","evaluation_overrides":[{"evaluation_id":"ev-a-cost","value":80}],"review_status":"reviewed"},{"scenario_id":"combined-stress","name":"Combined stress","kind":"stress","weight_overrides":[{"criterion_id":"cost","weight":80},{"criterion_id":"impact","weight":20}],"evaluation_overrides":[{"evaluation_id":"ev-a-cost","value":95},{"evaluation_id":"ev-a-impact","value":5}],"review_status":"reviewed"}]</textarea></label><label class="scds-field scds-field-wide"><span>Stress-test configuration JSON</span><textarea rows="16" data-scds-v250-stress-config>{"max_allowed_score_drop":10,"max_allowed_threshold_violations":0,"require_complete_matrix":true,"minimum_process_confidence":60}</textarea></label></div>
+            <div class="scds-actions"><button type="button" class="scds-button" data-scds-v250-scenario-set>Build Scenario Set</button><button type="button" class="scds-button scds-button-primary" data-scds-v250-compare>Compare Scenarios</button><button type="button" class="scds-button" data-scds-v250-stress>Run Stress Tests</button><button type="button" class="scds-button" data-scds-v250-attach>Attach to Decision Object</button><button type="button" class="scds-button" data-scds-v250-download>Download Scenario Analysis JSON</button></div>
+            <div class="scds-note"><strong>Scenario boundary:</strong> Scenario labels and stress cases are conditional assumptions, not likelihood estimates. A stress-test pass is not approval, certification, or a recommendation, and an ordering change is surfaced for review rather than resolved automatically.</div><div data-scds-v250-output aria-live="polite"></div>
+            <hr class="scds-divider">
             <div class="scds-panel-head">
                 <p class="scds-section-kicker">Advanced Scenario &amp; Sensitivity Studio</p>
                 <h3>Compare alternatives, vary assumptions, find thresholds, and inspect uncertainty</h3>
@@ -1652,7 +1691,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Uncertainty, Sensitivity & Confidence',
+            'release_name'=>'Scenario Comparison & Stress Testing',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
@@ -1699,6 +1738,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'uncertainty_register_schema'=>self::UNCERTAINTY_REGISTER_SCHEMA,
             'sensitivity_analysis_schema'=>self::SENSITIVITY_ANALYSIS_SCHEMA,
             'confidence_assessment_schema'=>self::CONFIDENCE_ASSESSMENT_SCHEMA,
+            'scenario_set_schema'=>self::SCENARIO_SET_SCHEMA,
+            'scenario_comparison_schema'=>self::SCENARIO_COMPARISON_V250_SCHEMA,
+            'stress_test_suite_schema'=>self::STRESS_TEST_SUITE_SCHEMA,
             'decision_pack_count'=>count($this->decision_pack_catalog()),
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
@@ -1739,6 +1781,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'alternative_score_envelopes'=>true,
                 'bounded_process_confidence'=>true,
                 'confidence_is_probability_of_correctness'=>false,
+                'scenario_sets'=>true,
+                'cross_scenario_tradeoff_comparison'=>true,
+                'stress_test_suites'=>true,
+                'scenario_likelihood_inference'=>false,
+                'stress_test_pass_implies_approval'=>false,
                 'automatic_winner_selection'=>false,
                 'automatic_recommendation'=>false,
                 'connected_decision_intelligence_platform'=>true,
@@ -1858,6 +1905,14 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/confidence-assessment/build', ['methods'=>'POST','callback'=>[$this,'rest_uncertainty_confidence_action_v240'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-object/uncertainty-confidence', ['methods'=>'POST','callback'=>[$this,'rest_uncertainty_confidence_action_v240'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/uncertainty-confidence', ['methods'=>'POST','callback'=>[$this,'rest_uncertainty_confidence_action_v240'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/scenario-set/template', ['methods'=>'GET','callback'=>[$this,'rest_scenario_set_template_v250'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/scenario-set/build', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/scenario-analysis/template', ['methods'=>'GET','callback'=>[$this,'rest_scenario_comparison_template_v250'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/scenario-analysis/compare', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/stress-test-suite/template', ['methods'=>'GET','callback'=>[$this,'rest_stress_test_suite_template_v250'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/stress-test-suite/run', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/scenario-stress', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/scenario-stress', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/states', ['methods'=>'GET','callback'=>[$this,'rest_governance_states'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/template', ['methods'=>'GET','callback'=>[$this,'rest_governance_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/evaluate', ['methods'=>'POST','callback'=>[$this,'rest_governance_evaluate'],'permission_callback'=>'__return_true']);
@@ -2212,11 +2267,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'accessibility_audit_schema'=>self::ACCESSIBILITY_AUDIT_SCHEMA,'offline_workspace_schema'=>self::OFFLINE_WORKSPACE_SCHEMA,'release_readiness_schema'=>self::RELEASE_READINESS_SCHEMA,'recovery_snapshot_schema'=>self::RECOVERY_SNAPSHOT_SCHEMA,'migration_assessment_schema'=>self::MIGRATION_ASSESSMENT_SCHEMA,
             'connected_platform_schema'=>self::CONNECTED_PLATFORM_SCHEMA,'lifecycle_assessment_schema'=>self::LIFECYCLE_ASSESSMENT_SCHEMA,'decision_intelligence_graph_schema'=>self::DECISION_INTELLIGENCE_GRAPH_SCHEMA,'action_queue_schema'=>self::ACTION_QUEUE_SCHEMA,'portfolio_index_schema'=>self::PORTFOLIO_INDEX_SCHEMA,'connected_exchange_schema'=>self::CONNECTED_EXCHANGE_SCHEMA,'lifecycle_event_schema'=>self::LIFECYCLE_EVENT_SCHEMA,'decision_object_schema'=>self::DECISION_OBJECT_SCHEMA,'platform_context_schema'=>self::PLATFORM_CONTEXT_SCHEMA,'decision_object_migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,
             'evidence_bundle_schema'=>self::EVIDENCE_BUNDLE_SCHEMA,'source_bundle_schema'=>self::SOURCE_BUNDLE_SCHEMA,'evidence_coverage_schema'=>self::EVIDENCE_COVERAGE_SCHEMA,
-            'criteria_set_schema'=>self::CRITERIA_SET_SCHEMA,'alternatives_set_schema'=>self::ALTERNATIVES_SET_SCHEMA,'tradeoff_matrix_schema'=>self::TRADEOFF_MATRIX_SCHEMA,'tradeoff_diagnostics_schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,
+            'criteria_set_schema'=>self::CRITERIA_SET_SCHEMA,'alternatives_set_schema'=>self::ALTERNATIVES_SET_SCHEMA,'tradeoff_matrix_schema'=>self::TRADEOFF_MATRIX_SCHEMA,'tradeoff_diagnostics_schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,'uncertainty_register_schema'=>self::UNCERTAINTY_REGISTER_SCHEMA,'sensitivity_analysis_schema'=>self::SENSITIVITY_ANALYSIS_SCHEMA,'confidence_assessment_schema'=>self::CONFIDENCE_ASSESSMENT_SCHEMA,'scenario_set_schema'=>self::SCENARIO_SET_SCHEMA,'scenario_comparison_schema'=>self::SCENARIO_COMPARISON_V250_SCHEMA,'stress_test_suite_schema'=>self::STRESS_TEST_SUITE_SCHEMA,
             'publication_handoff_schema'=>self::PUBLICATION_HANDOFF_SCHEMA,
             'publication_redaction_schema'=>self::PUBLICATION_REDACTION_SCHEMA,'release'=>$this->release_manifest()]); }
     public function rest_release() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'release'=>$this->release_manifest()]); }
-    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220(),'criteria_set'=>$this->criteria_set_template_local_v230(),'alternatives_set'=>$this->alternatives_set_template_local_v230(),'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230(),'uncertainty_register'=>$this->uncertainty_register_template_local_v240(),'sensitivity_analysis'=>$this->sensitivity_analysis_template_local_v240(),'confidence_assessment'=>$this->confidence_assessment_template_local_v240()]); }
+    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220(),'criteria_set'=>$this->criteria_set_template_local_v230(),'alternatives_set'=>$this->alternatives_set_template_local_v230(),'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230(),'uncertainty_register'=>$this->uncertainty_register_template_local_v240(),'sensitivity_analysis'=>$this->sensitivity_analysis_template_local_v240(),'confidence_assessment'=>$this->confidence_assessment_template_local_v240(),'scenario_set'=>$this->scenario_set_template_local_v250(),'scenario_comparison_v250'=>$this->scenario_comparison_template_local_v250(),'stress_test_suite'=>$this->stress_test_suite_template_local_v250()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
 
     public function rest_backend_status() {

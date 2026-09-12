@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-stress-test-suite-1.0.json",
+  "title": "SCDS Stress Test Suite 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "stress_test_suite_id",
+    "tests",
+    "failure_modes",
+    "diagnostics",
+    "configuration",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-stress-test-suite/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "stress_test_suite_id": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "tests": {
+      "type": "array"
+    },
+    "failure_modes": {
+      "type": "array"
+    },
+    "diagnostics": {
+      "type": "object"
+    },
+    "configuration": {
+      "type": "object"
+    },
+    "boundary": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

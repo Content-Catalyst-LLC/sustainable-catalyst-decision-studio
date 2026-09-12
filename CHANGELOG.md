@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.5.0 — Scenario Comparison & Stress Testing
+
+- Added first-class Scenario Set, Scenario Comparison, and Stress Test Suite contracts.
+- Added deterministic scenario application to the v2.3.1 Tradeoff Matrix.
+- Added conditional score ranges, ordering-change diagnostics, threshold-breach visibility, and matrix completeness by scenario.
+- Added explicit stress gates for maximum score drop, threshold violations, matrix completeness, and minimum process confidence.
+- Added Decision Object and Decision Packet scenario/stress projections.
+- Added WordPress scenario/stress controls with FastAPI parity.
+- Preserved v2.4 uncertainty/confidence, v2.3.1 tradeoffs, v2.2 evidence bundles, v2.1 Decision Object, and Energy Runtime Consumer v2.3.0.
+- Automatic winner selection and automatic recommendation remain prohibited.
+
 ## 2.4.0 — Uncertainty, Sensitivity & Confidence
 
 - Added `scds-uncertainty-register/1.0` with explicit targets, bounds, units, source references, rationale, and review state.

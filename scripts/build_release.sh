@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="2.4.0"
+VERSION="2.5.0"
 OUT="${1:-$ROOT/dist}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 PLUGIN_DIR="$ROOT/wordpress-plugin/sustainable-catalyst-decision-studio"
@@ -21,11 +21,22 @@ find "$ROOT" -type f -name '*.pyc' -delete
   cd "$ROOT/wordpress-plugin"
   zip -qr "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" sustainable-catalyst-decision-studio -x '*/__pycache__/*' '*.pyc' '*/.DS_Store'
 )
+REPO_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-repository-v250.XXXXXX")"
+mkdir -p "$REPO_STAGE/sustainable-catalyst-decision-studio"
+rsync -a \
+  --exclude='.git/' \
+  --exclude='__pycache__/' \
+  --exclude='.pytest_cache/' \
+  --exclude='*.pyc' \
+  --exclude='dist/' \
+  --exclude='.DS_Store' \
+  "$ROOT/" "$REPO_STAGE/sustainable-catalyst-decision-studio/"
 (
-  cd "$ROOT/.."
-  zip -qr "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip" "$(basename "$ROOT")" -x '*/.git/*' '*/__pycache__/*' '*.pyc' '*/.pytest_cache/*' '*/dist/*' '*/.DS_Store'
+  cd "$REPO_STAGE"
+  zip -qr "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip" sustainable-catalyst-decision-studio
 )
-BACKEND_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-backend-v240.XXXXXX")"
+rm -rf "$REPO_STAGE"
+BACKEND_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-backend-v250.XXXXXX")"
 trap 'rm -rf "$BACKEND_STAGE"' EXIT
 mkdir -p "$BACKEND_STAGE/sustainable-catalyst-decision-studio-backend-v${VERSION}/backend"
 rsync -a --exclude='__pycache__/' --exclude='.pytest_cache/' --exclude='*.pyc' --exclude='.env' --exclude='.env.*' "$ROOT/backend/" "$BACKEND_STAGE/sustainable-catalyst-decision-studio-backend-v${VERSION}/backend/"

@@ -1,0 +1,48 @@
+{
+  "schema": "scds-stress-test-suite/1.0",
+  "version": "2.5.0",
+  "stress_test_suite_id": "stress-test-suite-a3d187430528dd52",
+  "decision_id": "SCDS-V250-SAMPLE",
+  "created_at": "2026-09-12T04:42:18.950728Z",
+  "tests": [
+    {
+      "scenario_id": "combined-stress",
+      "name": "Combined cost and reliability stress",
+      "passed": false,
+      "worst_score_delta": -17.55,
+      "threshold_violation_count": 3,
+      "matrix_complete": true,
+      "ordering_changed_vs_baseline": true,
+      "process_confidence_index": 100.0,
+      "failure_codes": [
+        "score_drop_limit_exceeded",
+        "threshold_violation_limit_exceeded"
+      ]
+    }
+  ],
+  "failure_modes": [
+    {
+      "scenario_id": "combined-stress",
+      "failure_code": "score_drop_limit_exceeded"
+    },
+    {
+      "scenario_id": "combined-stress",
+      "failure_code": "threshold_violation_limit_exceeded"
+    }
+  ],
+  "diagnostics": {
+    "test_count": 1,
+    "passed_count": 0,
+    "failed_count": 1,
+    "stress_scenario_count": 1,
+    "ordering_change_count": 1,
+    "threshold_breach_count": 1
+  },
+  "configuration": {
+    "max_allowed_score_drop": 10.0,
+    "max_allowed_threshold_violations": 0,
+    "require_complete_matrix": true,
+    "minimum_process_confidence": 60.0
+  },
+  "boundary": "Stress tests identify conditions under which the comparison becomes fragile, incomplete, or constraint-violating. Passing a stress test is not approval, certification, or a recommendation."
+}

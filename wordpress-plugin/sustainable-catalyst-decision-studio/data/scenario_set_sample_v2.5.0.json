@@ -1,0 +1,229 @@
+{
+  "schema": "scds-scenario-set/1.0",
+  "version": "2.5.0",
+  "scenario_set_id": "scenario-set-0f95786d30d763cd",
+  "decision_id": "SCDS-V250-SAMPLE",
+  "created_at": "2026-09-12T04:42:18.947813Z",
+  "updated_at": "2026-09-12T04:42:18.947813Z",
+  "scenarios": [
+    {
+      "scenario_id": "baseline",
+      "name": "Baseline conditions",
+      "description": "Current planning assumptions.",
+      "kind": "baseline",
+      "assumption_changes": [],
+      "weight_overrides": [],
+      "evaluation_overrides": [],
+      "constraints": [],
+      "source_refs": [
+        "src-plan"
+      ],
+      "review_status": "reviewed",
+      "unknown_criterion_refs": [],
+      "unknown_evaluation_refs": [],
+      "provenance": {},
+      "content_fingerprint": "9d842d401eb9b88cae108b567e8e675aec3e5b914afd1d547c2bc350b6879473",
+      "raw": {
+        "scenario_id": "baseline",
+        "name": "Baseline conditions",
+        "kind": "baseline",
+        "description": "Current planning assumptions.",
+        "review_status": "reviewed",
+        "source_refs": [
+          "src-plan"
+        ]
+      }
+    },
+    {
+      "scenario_id": "cost-pressure",
+      "name": "Cost pressure",
+      "description": "Capital and lifecycle cost pressure increases.",
+      "kind": "downside",
+      "assumption_changes": [],
+      "weight_overrides": [],
+      "evaluation_overrides": [
+        {
+          "evaluation_id": "evaluation-5",
+          "value": 65
+        },
+        {
+          "evaluation_id": "evaluation-9",
+          "value": 80
+        }
+      ],
+      "constraints": [],
+      "source_refs": [],
+      "review_status": "reviewed",
+      "unknown_criterion_refs": [],
+      "unknown_evaluation_refs": [],
+      "provenance": {},
+      "content_fingerprint": "2ac89e40f04d37877990e7c369d6e9afa998aa280219fd23387023e4f1491382",
+      "raw": {
+        "scenario_id": "cost-pressure",
+        "name": "Cost pressure",
+        "kind": "downside",
+        "description": "Capital and lifecycle cost pressure increases.",
+        "review_status": "reviewed",
+        "evaluation_overrides": [
+          {
+            "evaluation_id": "evaluation-5",
+            "value": 65
+          },
+          {
+            "evaluation_id": "evaluation-9",
+            "value": 80
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "grid-decarbonization",
+      "name": "Cleaner grid",
+      "description": "Grid emissions improve faster than baseline.",
+      "kind": "upside",
+      "assumption_changes": [],
+      "weight_overrides": [],
+      "evaluation_overrides": [
+        {
+          "evaluation_id": "evaluation-6",
+          "value": 78
+        },
+        {
+          "evaluation_id": "evaluation-10",
+          "value": 95
+        }
+      ],
+      "constraints": [],
+      "source_refs": [],
+      "review_status": "reviewed",
+      "unknown_criterion_refs": [],
+      "unknown_evaluation_refs": [],
+      "provenance": {},
+      "content_fingerprint": "6782e65fe4389ad5ccfb77abc45b59dc635504e75b82d107bc9e80e54e10fb02",
+      "raw": {
+        "scenario_id": "grid-decarbonization",
+        "name": "Cleaner grid",
+        "kind": "upside",
+        "description": "Grid emissions improve faster than baseline.",
+        "review_status": "reviewed",
+        "evaluation_overrides": [
+          {
+            "evaluation_id": "evaluation-6",
+            "value": 78
+          },
+          {
+            "evaluation_id": "evaluation-10",
+            "value": 95
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "combined-stress",
+      "name": "Combined cost and reliability stress",
+      "description": "High cost pressure and reliability concerns occur together.",
+      "kind": "stress",
+      "assumption_changes": [],
+      "weight_overrides": [
+        {
+          "criterion_id": "lifecycle-cost",
+          "weight": 45
+        },
+        {
+          "criterion_id": "reliability",
+          "weight": 35
+        },
+        {
+          "criterion_id": "emissions-reduction",
+          "weight": 15
+        },
+        {
+          "criterion_id": "implementation",
+          "weight": 5
+        }
+      ],
+      "evaluation_overrides": [
+        {
+          "evaluation_id": "evaluation-5",
+          "value": 80
+        },
+        {
+          "evaluation_id": "evaluation-7",
+          "value": 86
+        },
+        {
+          "evaluation_id": "evaluation-9",
+          "value": 95
+        },
+        {
+          "evaluation_id": "evaluation-11",
+          "value": 82
+        }
+      ],
+      "constraints": [],
+      "source_refs": [],
+      "review_status": "reviewed",
+      "unknown_criterion_refs": [],
+      "unknown_evaluation_refs": [],
+      "provenance": {},
+      "content_fingerprint": "a7a5e9c50e6f32f43a3577c1ba7bba127ee1bcfcad9b2a4a2ea3d3435e455e87",
+      "raw": {
+        "scenario_id": "combined-stress",
+        "name": "Combined cost and reliability stress",
+        "kind": "stress",
+        "description": "High cost pressure and reliability concerns occur together.",
+        "review_status": "reviewed",
+        "weight_overrides": [
+          {
+            "criterion_id": "lifecycle-cost",
+            "weight": 45
+          },
+          {
+            "criterion_id": "reliability",
+            "weight": 35
+          },
+          {
+            "criterion_id": "emissions-reduction",
+            "weight": 15
+          },
+          {
+            "criterion_id": "implementation",
+            "weight": 5
+          }
+        ],
+        "evaluation_overrides": [
+          {
+            "evaluation_id": "evaluation-5",
+            "value": 80
+          },
+          {
+            "evaluation_id": "evaluation-7",
+            "value": 86
+          },
+          {
+            "evaluation_id": "evaluation-9",
+            "value": 95
+          },
+          {
+            "evaluation_id": "evaluation-11",
+            "value": 82
+          }
+        ]
+      }
+    }
+  ],
+  "diagnostics": {
+    "scenario_count": 4,
+    "baseline_count": 1,
+    "stress_scenario_count": 1,
+    "duplicate_ids": [],
+    "unknown_criterion_refs": [],
+    "unknown_evaluation_refs": [],
+    "reviewed_count": 4
+  },
+  "provenance": {
+    "created_by": "decision-studio",
+    "records": []
+  },
+  "boundary": "Scenarios are explicit decision conditions, not forecasts or probabilities. Scenario inclusion does not imply likelihood or endorsement."
+}

@@ -1,0 +1,90 @@
+{
+  "release": "2.5.0",
+  "title": "Scenario Comparison & Stress Testing",
+  "release_date": "2026-09-11",
+  "build_fingerprint": "scds-v2.5.0-scenario-comparison-stress-testing",
+  "source_commit": "release-v2.5.0",
+  "wordpress": {
+    "plugin_version": "2.5.0",
+    "database_version": "2.5.0",
+    "shortcode": "[sc_decision_studio mode=\"full\" title=\"Decision Studio\"]"
+  },
+  "backend": {
+    "version": "2.5.0",
+    "new_routes": [
+      "/scenario-set/template",
+      "/scenario-set/build",
+      "/scenario-analysis/template",
+      "/scenario-analysis/compare",
+      "/stress-test-suite/template",
+      "/stress-test-suite/run",
+      "/decision-object/scenario-stress",
+      "/decision-packet/scenario-stress"
+    ]
+  },
+  "schemas": {
+    "decision_packet": "scds-decision-packet/2.0",
+    "decision_object": "scds-decision-object/1.0",
+    "platform_context": "scds-platform-context/1.0",
+    "evidence_bundle": "scds-evidence-bundle/1.0",
+    "source_bundle": "scds-source-bundle/1.0",
+    "evidence_coverage": "scds-evidence-coverage/1.0",
+    "criteria_set": "scds-criteria-set/1.0",
+    "alternatives_set": "scds-alternatives-set/1.0",
+    "tradeoff_matrix": "scds-tradeoff-matrix/1.0",
+    "tradeoff_diagnostics": "scds-tradeoff-diagnostics/1.0",
+    "uncertainty_register": "scds-uncertainty-register/1.0",
+    "sensitivity_analysis": "scds-sensitivity-analysis/1.0",
+    "confidence_assessment": "scds-confidence-assessment/1.0",
+    "scenario_set": "scds-scenario-set/1.0",
+    "scenario_comparison": "scds-scenario-comparison/1.0",
+    "stress_test_suite": "scds-stress-test-suite/1.0"
+  },
+  "capabilities": [
+    "Preserves Decision Studio v2.4.0 Uncertainty, Sensitivity & Confidence",
+    "Preserves Decision Studio v2.3.1 Criteria, Alternatives & Tradeoff Matrix",
+    "Preserves the Decision Studio v2.3.0 Energy Systems Runtime Consumer and target-side handoff contract",
+    "First-class named scenario sets with baseline, expected, upside, downside, stress, and custom kinds",
+    "Deterministic criterion-weight and evaluation overrides applied against the same tradeoff matrix",
+    "Cross-scenario alternative score ranges and maximum score-swing diagnostics",
+    "Ordering-change, threshold-breach, and matrix-completeness diagnostics by scenario",
+    "Explicit stress-test gates for score drop, threshold violations, completeness, and minimum process confidence",
+    "Failure-mode visibility without scenario-likelihood inference, approval, winner selection, or automatic recommendation",
+    "Decision Object and Decision Packet projections for scenario sets, comparisons, and stress-test suites",
+    "WordPress Scenarios workspace extension with FastAPI parity"
+  ],
+  "compatibility": {
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "packet_schema_breaking_changes": false,
+    "v2_2_0_evidence_bundles_preserved": true,
+    "v2_1_0_decision_object_preserved": true,
+    "automatic_truth_verification": false,
+    "automatic_winner_selection": false,
+    "automatic_recommendation": false,
+    "v2_3_0_energy_runtime_consumer_preserved": true,
+    "energy_runtime_consumer_version": "2.3.0",
+    "energy_runtime_handoff_schema": "sc-energy-runtime-handoff/1.0",
+    "energy_runtime_consumer_contract": "sc-energy-runtime-decision-studio-handoff/1.0",
+    "v2_3_1_tradeoff_matrix_preserved": true,
+    "uncertainty_register": true,
+    "deterministic_sensitivity_analysis": true,
+    "criterion_weight_perturbation": true,
+    "evaluation_bound_sensitivity": true,
+    "alternative_score_envelopes": true,
+    "pairwise_overlap_diagnostics": true,
+    "bounded_process_confidence": true,
+    "confidence_is_probability_of_correctness": false,
+    "v2_4_0_uncertainty_confidence_preserved": true,
+    "scenario_sets": true,
+    "cross_scenario_tradeoff_comparison": true,
+    "stress_test_suites": true,
+    "scenario_likelihood_inference": false,
+    "stress_test_pass_implies_approval": false
+  },
+  "tests": {
+    "release_contract": true,
+    "php_syntax": true,
+    "javascript_syntax": true,
+    "energy_runtime_regression": true
+  }
+}

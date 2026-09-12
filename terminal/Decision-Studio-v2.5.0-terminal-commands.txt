@@ -1,0 +1,22 @@
+Decision Studio v2.5.0 — Scenario Comparison & Stress Testing
+
+MAC — APPLY / VALIDATE / GITHUB
+cd ~/Downloads
+rm -rf scds-decision-studio-v2.5.0-tiny-patch
+unzip -q sustainable-catalyst-decision-studio-v2.5.0-tiny-patch.zip
+cd scds-decision-studio-v2.5.0-tiny-patch
+chmod +x apply_and_push_decision_studio_v2_5_0_macos.sh
+./apply_and_push_decision_studio_v2_5_0_macos.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+WORDPRESS
+Upload: ~/Downloads/sustainable-catalyst-decision-studio-plugin-v2.5.0.zip
+
+MAC — DEPLOY CONTABO BACKEND
+cd ~/Downloads
+chmod +x deploy_decision_studio_v2_5_0_from_macos.sh
+./deploy_decision_studio_v2_5_0_from_macos.sh
+
+EXPECTED BACKEND IDENTITY
+version: 2.5.0
+build_fingerprint: scds-v2.5.0-scenario-comparison-stress-testing
+source_commit: release-v2.5.0

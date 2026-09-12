@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-scenario-comparison-1.0.json",
+  "title": "SCDS Scenario Comparison 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "scenario_comparison_id",
+    "scenario_results",
+    "alternative_score_ranges",
+    "diagnostics",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-scenario-comparison/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "scenario_comparison_id": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "matrix_id": {
+      "type": "string"
+    },
+    "scenario_results": {
+      "type": "array"
+    },
+    "alternative_score_ranges": {
+      "type": "array"
+    },
+    "diagnostics": {
+      "type": "object"
+    },
+    "boundary": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

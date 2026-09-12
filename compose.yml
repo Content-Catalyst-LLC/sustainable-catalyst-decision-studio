@@ -3,13 +3,13 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: sustainable-catalyst-decision-studio:2.4.0
+    image: sustainable-catalyst-decision-studio:2.5.0
     container_name: sc-decision-studio
     restart: unless-stopped
     environment:
       PORT: 8089
-      SCDS_BUILD_FINGERPRINT: scds-v2.4.0-uncertainty-sensitivity-confidence
-      SCDS_SOURCE_COMMIT: release-v2.4.0
+      SCDS_BUILD_FINGERPRINT: scds-v2.5.0-scenario-comparison-stress-testing
+      SCDS_SOURCE_COMMIT: release-v2.5.0
       SCDS_MAX_REQUEST_BYTES: 1048576
       SCDS_PUBLIC_RATE_LIMIT: 60
     ports:

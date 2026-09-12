@@ -1,0 +1,162 @@
+{
+  "schema": "scds-scenario-comparison/1.0",
+  "version": "2.5.0",
+  "scenario_comparison_id": "scenario-comparison-e2278b518e295e18",
+  "decision_id": "SCDS-V250-SAMPLE",
+  "matrix_id": "tradeoff-matrix-1661d90d4549f35c",
+  "created_at": "2026-09-12T04:42:18.950602Z",
+  "baseline_scenario_id": "baseline",
+  "scenario_results": [
+    {
+      "scenario_id": "baseline",
+      "name": "Baseline conditions",
+      "kind": "baseline",
+      "matrix_id": "tradeoff-matrix-1661d90d4549f35c",
+      "complete": true,
+      "matrix_coverage_percent": 100.0,
+      "threshold_violation_count": 1,
+      "ordering_changed_vs_baseline": false,
+      "alternative_scores": [
+        {
+          "alternative_id": "baseline",
+          "score": 52.25,
+          "delta_vs_baseline": 0.0
+        },
+        {
+          "alternative_id": "phased-electrification",
+          "score": 70.45,
+          "delta_vs_baseline": 0.0
+        },
+        {
+          "alternative_id": "accelerated-electrification",
+          "score": 65.0,
+          "delta_vs_baseline": 0.0
+        }
+      ],
+      "boundary": "This scenario result is conditional on the scenario inputs and does not indicate scenario likelihood."
+    },
+    {
+      "scenario_id": "cost-pressure",
+      "name": "Cost pressure",
+      "kind": "downside",
+      "matrix_id": "tradeoff-matrix-213f48cac0e6ec75",
+      "complete": true,
+      "matrix_coverage_percent": 100.0,
+      "threshold_violation_count": 1,
+      "ordering_changed_vs_baseline": false,
+      "alternative_scores": [
+        {
+          "alternative_id": "baseline",
+          "score": 52.25,
+          "delta_vs_baseline": 0.0
+        },
+        {
+          "alternative_id": "phased-electrification",
+          "score": 63.45,
+          "delta_vs_baseline": -7.0
+        },
+        {
+          "alternative_id": "accelerated-electrification",
+          "score": 61.5,
+          "delta_vs_baseline": -3.5
+        }
+      ],
+      "boundary": "This scenario result is conditional on the scenario inputs and does not indicate scenario likelihood."
+    },
+    {
+      "scenario_id": "grid-decarbonization",
+      "name": "Cleaner grid",
+      "kind": "upside",
+      "matrix_id": "tradeoff-matrix-10beaa14cdaef6cf",
+      "complete": true,
+      "matrix_coverage_percent": 100.0,
+      "threshold_violation_count": 1,
+      "ordering_changed_vs_baseline": false,
+      "alternative_scores": [
+        {
+          "alternative_id": "baseline",
+          "score": 52.25,
+          "delta_vs_baseline": 0.0
+        },
+        {
+          "alternative_id": "phased-electrification",
+          "score": 74.35,
+          "delta_vs_baseline": 3.9
+        },
+        {
+          "alternative_id": "accelerated-electrification",
+          "score": 66.5,
+          "delta_vs_baseline": 1.5
+        }
+      ],
+      "boundary": "This scenario result is conditional on the scenario inputs and does not indicate scenario likelihood."
+    },
+    {
+      "scenario_id": "combined-stress",
+      "name": "Combined cost and reliability stress",
+      "kind": "stress",
+      "matrix_id": "tradeoff-matrix-5e425c0c9d0c8e5e",
+      "complete": true,
+      "matrix_coverage_percent": 100.0,
+      "threshold_violation_count": 3,
+      "ordering_changed_vs_baseline": true,
+      "alternative_scores": [
+        {
+          "alternative_id": "baseline",
+          "score": 60.1,
+          "delta_vs_baseline": 7.85
+        },
+        {
+          "alternative_id": "phased-electrification",
+          "score": 52.95,
+          "delta_vs_baseline": -17.5
+        },
+        {
+          "alternative_id": "accelerated-electrification",
+          "score": 47.45,
+          "delta_vs_baseline": -17.55
+        }
+      ],
+      "boundary": "This scenario result is conditional on the scenario inputs and does not indicate scenario likelihood."
+    }
+  ],
+  "alternative_score_ranges": [
+    {
+      "alternative_id": "baseline",
+      "name": "Baseline",
+      "min_score": 52.25,
+      "max_score": 60.1,
+      "span": 7.85
+    },
+    {
+      "alternative_id": "phased-electrification",
+      "name": "Phased electrification",
+      "min_score": 52.95,
+      "max_score": 74.35,
+      "span": 21.4
+    },
+    {
+      "alternative_id": "accelerated-electrification",
+      "name": "Accelerated electrification",
+      "min_score": 47.45,
+      "max_score": 66.5,
+      "span": 19.05
+    }
+  ],
+  "diagnostics": {
+    "scenario_count": 4,
+    "complete_scenario_count": 4,
+    "ordering_change_scenario_ids": [
+      "combined-stress"
+    ],
+    "threshold_breach_scenario_ids": [
+      "baseline",
+      "cost-pressure",
+      "grid-decarbonization",
+      "combined-stress"
+    ],
+    "incomplete_scenario_ids": [],
+    "max_score_swing": 17.55
+  },
+  "boundary": "Scenario comparison exposes conditional performance and instability. It does not predict which scenario will occur, choose a winner, or create a recommendation."
+}

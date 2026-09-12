@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-scenario-set-1.0.json",
+  "title": "SCDS Scenario Set 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "scenario_set_id",
+    "scenarios",
+    "diagnostics",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-scenario-set/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "scenario_set_id": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "scenarios": {
+      "type": "array"
+    },
+    "diagnostics": {
+      "type": "object"
+    },
+    "boundary": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}
