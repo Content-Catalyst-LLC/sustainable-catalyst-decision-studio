@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Unified Decision Object Model and Platform Context Foundation for provenance-aware cross-product decision intelligence, while preserving the connected lifecycle, governance, scenarios, publication, monitoring, and institutional integration.
- * Version: 2.2.0
+ * Version: 2.3.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,9 +12,9 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.2.0';
-    const BUILD_FINGERPRINT = 'scds-v2.2.0-evidence-source-bundles';
-    const SOURCE_COMMIT = 'release-v2.2.0';
+    const VERSION = '2.3.0';
+    const BUILD_FINGERPRINT = 'scds-v2.3.0-energy-runtime-consumer';
+    const SOURCE_COMMIT = 'release-v2.3.0';
     const RELEASE_DATE = '2026-09-11';
     const DB_VERSION = '2.2.0';
     const DB_VERSION_OPTION = 'scds_db_version';
