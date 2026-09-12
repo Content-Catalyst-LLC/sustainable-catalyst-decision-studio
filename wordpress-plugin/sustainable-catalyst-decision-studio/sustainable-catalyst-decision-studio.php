@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Unified Decision Object Model and Platform Context Foundation for provenance-aware cross-product decision intelligence, while preserving the connected lifecycle, governance, scenarios, publication, monitoring, and institutional integration.
- * Version: 2.3.0
+ * Description: Criteria, Alternatives & Tradeoff Matrix for provenance-aware decision comparison, preserving Evidence & Source Bundles, the Unified Decision Object, and the connected decision lifecycle.
+ * Version: 2.3.1
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.3.0';
-    const BUILD_FINGERPRINT = 'scds-v2.3.0-energy-runtime-consumer';
-    const SOURCE_COMMIT = 'release-v2.3.0';
+    const VERSION = '2.3.1';
+    const BUILD_FINGERPRINT = 'scds-v2.3.1-criteria-alternatives-tradeoff-matrix';
+    const SOURCE_COMMIT = 'release-v2.3.1';
     const RELEASE_DATE = '2026-09-11';
-    const DB_VERSION = '2.2.0';
+    const DB_VERSION = '2.3.1';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -65,6 +65,10 @@ class Sustainable_Catalyst_Decision_Studio {
     const EVIDENCE_BUNDLE_SCHEMA = 'scds-evidence-bundle/1.0';
     const SOURCE_BUNDLE_SCHEMA = 'scds-source-bundle/1.0';
     const EVIDENCE_COVERAGE_SCHEMA = 'scds-evidence-coverage/1.0';
+    const CRITERIA_SET_SCHEMA = 'scds-criteria-set/1.0';
+    const ALTERNATIVES_SET_SCHEMA = 'scds-alternatives-set/1.0';
+    const TRADEOFF_MATRIX_SCHEMA = 'scds-tradeoff-matrix/1.0';
+    const TRADEOFF_DIAGNOSTICS_SCHEMA = 'scds-tradeoff-diagnostics/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -347,7 +351,7 @@ class Sustainable_Catalyst_Decision_Studio {
         ], $atts, 'sc_decision_studio');
 
         $mode = sanitize_key($atts['mode']);
-        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'packs', 'publication', 'outcomes', 'integration', 'hardening', 'connected', 'decision-object', 'evidence', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
+        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'packs', 'publication', 'outcomes', 'integration', 'hardening', 'connected', 'decision-object', 'evidence', 'tradeoffs', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
             $mode = 'full';
         }
         $display = sanitize_key($atts['display'] ?: $mode);
@@ -362,6 +366,7 @@ class Sustainable_Catalyst_Decision_Studio {
         $start_tab = $mode === 'workflow' ? 'workflow' : ($mode === 'readiness' ? 'readiness' : ($mode === 'governance' ? 'governance' : ($mode === 'room' ? 'room' : ($mode === 'packs' ? 'packs' : ($mode === 'publication' ? 'publication' : ($mode === 'outcomes' ? 'outcomes' : ($mode === 'integration' ? 'integration' : ($mode === 'hardening' ? 'hardening' : ($mode === 'connected' ? 'connected' : ($mode === 'project-intake' ? 'intake' : (in_array($mode, ['scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report'], true) ? $mode : 'intake')))))))))));
         if ($mode === 'decision-object') $start_tab = 'decision-object';
         if ($mode === 'evidence') $start_tab = 'evidence';
+        if ($mode === 'tradeoffs') $start_tab = 'tradeoffs';
         $uid = 'scds-' . wp_generate_uuid4();
 
         wp_enqueue_style('scds-decision-studio');
@@ -472,10 +477,18 @@ class Sustainable_Catalyst_Decision_Studio {
             'restEvidenceBundleMergeUrl' => esc_url_raw(rest_url('scds/v1/evidence-bundle/merge')),
             'restDecisionObjectEvidenceUrl' => esc_url_raw(rest_url('scds/v1/decision-object/evidence')),
             'restDecisionPacketEvidenceBundleUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/evidence-bundle')),
+            'restCriteriaTemplateUrl' => esc_url_raw(rest_url('scds/v1/criteria/template')),
+            'restCriteriaBuildUrl' => esc_url_raw(rest_url('scds/v1/criteria/build')),
+            'restAlternativesTemplateUrl' => esc_url_raw(rest_url('scds/v1/alternatives/template')),
+            'restAlternativesBuildUrl' => esc_url_raw(rest_url('scds/v1/alternatives/build')),
+            'restTradeoffMatrixTemplateUrl' => esc_url_raw(rest_url('scds/v1/tradeoff-matrix/template')),
+            'restTradeoffMatrixBuildUrl' => esc_url_raw(rest_url('scds/v1/tradeoff-matrix/build')),
+            'restDecisionObjectTradeoffsUrl' => esc_url_raw(rest_url('scds/v1/decision-object/tradeoffs')),
+            'restDecisionPacketTradeoffMatrixUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/tradeoff-matrix')),
             'restModuleNavigationUrl' => esc_url_raw(rest_url('scds/v1/integrations/module-navigation')),
             'moduleNavigation' => $this->catalyst_module_navigation(),
             'moduleHandoffEnabled' => $settings['module_handoff_enabled'] === '1',
-            'moduleHandoffStoragePrefix' => 'scds_module_handoff_v2_2_0_',
+            'moduleHandoffStoragePrefix' => 'scds_module_handoff_v2_3_1_',
             'decisionStudioReturnUrl' => esc_url_raw(home_url('/platform/decision-studio/')),
             'isLoggedIn' => is_user_logged_in(),
             'currentUser' => ['id'=>get_current_user_id(),'name'=>is_user_logged_in()?wp_get_current_user()->display_name:'','role'=>current_user_can('manage_options')?'owner':(current_user_can('edit_posts')?'editor':'observer')],
@@ -506,6 +519,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <button type="button" class="scds-tab is-active" data-scds-tab="intake">Intake</button>
                 <button type="button" class="scds-tab" data-scds-tab="decision-object">Decision Object</button>
                 <button type="button" class="scds-tab" data-scds-tab="evidence">Evidence &amp; Sources</button>
+                <button type="button" class="scds-tab" data-scds-tab="tradeoffs">Tradeoff Matrix</button>
                 <button type="button" class="scds-tab" data-scds-tab="workflow">Catalyst Modules</button>
                 <button type="button" class="scds-tab" data-scds-tab="readiness">Readiness</button>
                 <button type="button" class="scds-tab" data-scds-tab="governance">Governance</button>
@@ -529,6 +543,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <?php $this->render_panel_intake($mode); ?>
                 <?php $this->render_panel_decision_object($mode); ?>
                 <?php $this->render_panel_evidence_v220($mode); ?>
+                <?php $this->render_panel_tradeoffs_v230($mode); ?>
                 <?php $this->render_panel_workflow($mode); ?>
                 <?php $this->render_panel_readiness($mode); ?>
                 <?php $this->render_panel_governance($mode); ?>
@@ -672,7 +687,7 @@ class Sustainable_Catalyst_Decision_Studio {
         return [
             'schema'=>self::DECISION_OBJECT_SCHEMA,'version'=>self::VERSION,'decision_id'=>'','status'=>'draft','created_at'=>'','updated_at'=>'',
             'question'=>'','objective'=>'','alternatives'=>[],'criteria'=>[],'constraints'=>[],'assumptions'=>[],'evidence'=>[],'evidence_bundles'=>[],'source_bundles'=>[],'models'=>[],'scenarios'=>[],
-            'uncertainties'=>[],'stakeholders'=>[],'tradeoffs'=>[],'recommendation'=>[],'confidence'=>[],'counterarguments'=>[],
+            'uncertainties'=>[],'stakeholders'=>[],'tradeoffs'=>[],'tradeoff_matrices'=>[],'recommendation'=>[],'confidence'=>[],'counterarguments'=>[],
             'provenance'=>['source_packet_schema'=>'scds-decision-packet/2.0','source_packet_id'=>'','source_packet_fingerprint'=>'','migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,'records'=>[]],
             'decision'=>[],'rationale'=>[],'outcome_review'=>[],'platform_context'=>$this->platform_context_template_local_v210(),'links'=>[],
             'compatibility'=>['decision_packet_projection'=>true,'packet_schema_breaking_changes'=>false,'lossless_source_packet_reference'=>true],
@@ -710,6 +725,41 @@ class Sustainable_Catalyst_Decision_Studio {
         foreach($evidence as $i=>$e){if(!is_array($e))continue;$ids=$e['source_ids']??($e['sources']??[]);if(is_string($ids))$ids=[$ids];$ids=array_values(array_filter(array_map(function($x){return is_array($x)?(string)($x['source_id']??($x['id']??'')):(string)$x;},(array)$ids)));$claim=(string)($e['claim']??($e['statement']??($e['summary']??'')));$stance=(string)($e['stance']??($e['relationship']??'context'));$fp=hash('sha256',wp_json_encode([$claim,$stance,$ids]));$eid=sanitize_text_field((string)($e['evidence_id']??($e['id']??('ev-'.substr($fp,0,12)))));if(isset($seen[$fp])){$dupes[]=['duplicate_evidence_id'=>$eid,'canonical_evidence_id'=>$seen[$fp]];continue;}$seen[$fp]=$eid;$records[]=['evidence_id'=>$eid,'claim'=>$claim,'stance'=>$stance,'source_ids'=>$ids,'citations'=>(array)($e['citations']??[]),'confidence'=>$e['confidence']??[],'quality'=>$e['quality']??($e['evidence_quality']??[]),'freshness'=>$e['freshness']??[],'limitations'=>(array)($e['limitations']??[]),'review_status'=>(string)($e['review_status']??'needs_review'),'provenance'=>(array)($e['provenance']??[]),'unresolved_source_ids'=>array_values(array_filter($ids,function($id)use($known){return !isset($known[$id]);})),'content_fingerprint'=>$fp,'raw'=>$e];}
         $cited=0;$needs=[];$unresolved=[];$stances=[];foreach($records as $r){if(!empty($r['source_ids'])||!empty($r['citations']))$cited++;if(!in_array($r['review_status'],['reviewed','accepted','approved'],true))$needs[]=$r['evidence_id'];if(!empty($r['unresolved_source_ids']))$unresolved[]=$r['evidence_id'];$key=strtolower(trim(preg_replace('/\s+/',' ',$r['claim'])));if($key!=='')$stances[$key][$r['stance']]=true;}$contr=[];foreach($stances as $claim=>$set){if(isset($set['supports'])&&isset($set['challenges']))$contr[]=['claim'=>$claim,'stances'=>array_keys($set)];}$count=count($records);$coverage=['schema'=>self::EVIDENCE_COVERAGE_SCHEMA,'version'=>self::VERSION,'evidence_count'=>$count,'source_count'=>count($source_bundle['sources']??[]),'cited_evidence_count'=>$cited,'uncited_evidence_count'=>$count-$cited,'citation_coverage_percent'=>round(($cited/max(1,$count))*100,1),'unresolved_source_evidence_ids'=>$unresolved,'needs_review_evidence_ids'=>$needs,'contradiction_count'=>count($contr),'contradictions'=>$contr,'review_ready'=>$count>0&&($count-$cited)===0&&!$unresolved&&!$needs];$out=$this->evidence_bundle_template_local_v220();$out['bundle_id']='evidence-bundle-'.substr(hash('sha256',wp_json_encode(array_column($records,'content_fingerprint'))),0,16);$out['decision_id']=$decision_id;$out['title']='Decision evidence bundle';$out['created_at']=gmdate('c');$out['updated_at']=$out['created_at'];$out['source_bundle']=$source_bundle;$out['evidence_records']=$records;$out['deduplication']=['input_count'=>count($evidence),'unique_count'=>$count,'duplicate_count'=>count($dupes),'duplicate_links'=>$dupes];$out['contradictions']=$contr;$out['coverage']=$coverage;return $out;
     }
+    private function criteria_set_template_local_v230() {
+        return ['schema'=>self::CRITERIA_SET_SCHEMA,'version'=>self::VERSION,'criteria_set_id'=>'','title'=>'Decision criteria set','created_at'=>'','updated_at'=>'','criteria'=>[],'weighting'=>['input_weight_total'=>0.0,'normalized'=>false],'provenance'=>['created_by'=>'decision-studio','records'=>[]],'boundary'=>'Criteria and weights make judgment explicit; they do not establish objective importance or authorize a decision.'];
+    }
+    private function alternatives_set_template_local_v230() {
+        return ['schema'=>self::ALTERNATIVES_SET_SCHEMA,'version'=>self::VERSION,'alternatives_set_id'=>'','title'=>'Decision alternatives set','created_at'=>'','updated_at'=>'','alternatives'=>[],'provenance'=>['created_by'=>'decision-studio','records'=>[]],'boundary'=>'Alternatives are candidate choices; inclusion, omission, or ordering does not imply endorsement.'];
+    }
+    private function tradeoff_matrix_template_local_v230() {
+        return ['schema'=>self::TRADEOFF_MATRIX_SCHEMA,'version'=>self::VERSION,'matrix_id'=>'','decision_id'=>'','title'=>'Decision tradeoff matrix','created_at'=>'','updated_at'=>'','criteria_set'=>$this->criteria_set_template_local_v230(),'alternatives_set'=>$this->alternatives_set_template_local_v230(),'evaluations'=>[],'alternative_summaries'=>[],'diagnostics'=>['schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,'version'=>self::VERSION,'criteria_count'=>0,'alternatives_count'=>0,'expected_cell_count'=>0,'evaluated_cell_count'=>0,'matrix_coverage_percent'=>0.0,'missing_evaluations'=>[],'threshold_violations'=>[],'complete'=>false],'provenance'=>['created_by'=>'decision-studio','records'=>[]],'review'=>['status'=>'needs_review','reviewed_by'=>'','reviewed_at'=>''],'boundary'=>'Weighted scores support comparison only. Decision Studio does not automatically select a winner, recommend an alternative, or replace accountable human judgment.'];
+    }
+    private function criteria_set_build_local_v230($criteria) {
+        if(!is_array($criteria))$criteria=[];$records=[];$weight_total=0.0;
+        foreach($criteria as $i=>$row){if(!is_array($row))continue;$name=(string)($row['name']??($row['label']??($row['criterion']??('Criterion '.($i+1)))));$cid=sanitize_key((string)($row['criterion_id']??($row['id']??('criterion-'.sanitize_title($name)))));if($cid==='')$cid='criterion-'.($i+1);$weight=max(0.0,(float)($row['weight']??0));$weight_total+=$weight;$direction=strtolower((string)($row['direction']??($row['preference']??'maximize')));if(!in_array($direction,['maximize','minimize','target','qualitative'],true))$direction='maximize';$records[$cid]=['criterion_id'=>$cid,'name'=>$name,'description'=>(string)($row['description']??''),'category'=>(string)($row['category']??($row['pillar']??'general')),'criterion_type'=>(string)($row['criterion_type']??($row['type']??'benefit')),'weight'=>$weight,'normalized_weight'=>0.0,'direction'=>$direction,'scale'=>is_array($row['scale']??null)?$row['scale']:[],'threshold'=>$row['threshold']??null,'required'=>!empty($row['required']),'evidence_refs'=>array_values((array)($row['evidence_refs']??($row['source_ids']??[]))),'provenance'=>is_array($row['provenance']??null)?$row['provenance']:[],'content_fingerprint'=>hash('sha256',wp_json_encode($row)),'raw'=>$row];}
+        if($weight_total>0){foreach($records as &$row)$row['normalized_weight']=round(((float)$row['weight'])/$weight_total,8);unset($row);} $out=$this->criteria_set_template_local_v230();$out['criteria']=array_values($records);$out['criteria_set_id']='criteria-set-'.substr(hash('sha256',wp_json_encode(array_keys($records))),0,16);$out['created_at']=gmdate('c');$out['updated_at']=$out['created_at'];$out['weighting']=['input_weight_total'=>round($weight_total,6),'normalized'=>$weight_total>0];return $out;
+    }
+    private function alternatives_set_build_local_v230($alternatives) {
+        if(!is_array($alternatives))$alternatives=[];$records=[];foreach($alternatives as $i=>$row){if(!is_array($row))continue;$name=(string)($row['name']??($row['label']??($row['title']??('Alternative '.($i+1)))));$aid=sanitize_key((string)($row['alternative_id']??($row['id']??('alternative-'.sanitize_title($name)))));if($aid==='')$aid='alternative-'.($i+1);$records[$aid]=['alternative_id'=>$aid,'name'=>$name,'description'=>(string)($row['description']??($row['summary']??'')),'status'=>(string)($row['status']??'candidate'),'attributes'=>is_array($row['attributes']??null)?$row['attributes']:[],'constraints'=>array_values((array)($row['constraints']??[])),'evidence_refs'=>array_values((array)($row['evidence_refs']??($row['source_ids']??[]))),'provenance'=>is_array($row['provenance']??null)?$row['provenance']:[],'content_fingerprint'=>hash('sha256',wp_json_encode($row)),'raw'=>$row];}$out=$this->alternatives_set_template_local_v230();$out['alternatives']=array_values($records);$out['alternatives_set_id']='alternatives-set-'.substr(hash('sha256',wp_json_encode(array_keys($records))),0,16);$out['created_at']=gmdate('c');$out['updated_at']=$out['created_at'];return $out;
+    }
+    private function tradeoff_matrix_build_local_v230($criteria,$alternatives,$evaluations,$decision_id='',$criteria_set=[],$alternatives_set=[]) {
+        if(!is_array($criteria_set)||($criteria_set['schema']??'')!==self::CRITERIA_SET_SCHEMA)$criteria_set=$this->criteria_set_build_local_v230($criteria);if(!is_array($alternatives_set)||($alternatives_set['schema']??'')!==self::ALTERNATIVES_SET_SCHEMA)$alternatives_set=$this->alternatives_set_build_local_v230($alternatives);if(!is_array($evaluations))$evaluations=[];$criteria_map=[];foreach(($criteria_set['criteria']??[]) as $c)if(is_array($c))$criteria_map[(string)$c['criterion_id']]=$c;$alt_map=[];foreach(($alternatives_set['alternatives']??[]) as $a)if(is_array($a))$alt_map[(string)$a['alternative_id']]=$a;$cells=[];$present=[];$needs=[];$unscored=[];$thresholds=[];
+        foreach($evaluations as $i=>$row){if(!is_array($row))continue;$cid=(string)($row['criterion_id']??($row['criterion']??''));$aid=(string)($row['alternative_id']??($row['alternative']??''));$score=null;$score_source='missing';if(isset($row['score'])&&is_numeric($row['score'])){$score=max(0,min(100,(float)$row['score']));$score_source='explicit';}elseif(isset($row['normalized_score'])&&is_numeric($row['normalized_score'])){$score=max(0,min(100,(float)$row['normalized_score']));$score_source='explicit';}elseif(isset($row['value'])&&is_numeric($row['value'])&&isset($criteria_map[$cid])){$scale=is_array($criteria_map[$cid]['scale']??null)?$criteria_map[$cid]['scale']:[];if(isset($scale['min'],$scale['max'])&&is_numeric($scale['min'])&&is_numeric($scale['max'])&&(float)$scale['max']>(float)$scale['min']){$v=max((float)$scale['min'],min((float)$scale['max'],(float)$row['value']));$score=(($v-(float)$scale['min'])/((float)$scale['max']-(float)$scale['min']))*100;if(($criteria_map[$cid]['direction']??'maximize')==='minimize')$score=100-$score;$score=round($score,4);$score_source='derived_from_scale';}}
+            $threshold_violation=false;$threshold=$criteria_map[$cid]['threshold']??null;if(is_array($threshold)&&isset($threshold['value'],$row['value'])&&is_numeric($threshold['value'])&&is_numeric($row['value'])){$op=(string)($threshold['operator']??((($criteria_map[$cid]['direction']??'maximize')==='minimize')?'<=':'>='));$v=(float)$row['value'];$t=(float)$threshold['value'];if($op==='>=')$threshold_violation=$v<$t;elseif($op==='>')$threshold_violation=$v<=$t;elseif($op==='<=')$threshold_violation=$v>$t;elseif($op==='<')$threshold_violation=$v>=$t;elseif($op==='==')$threshold_violation=$v!=$t;}
+            $eid=(string)($row['evaluation_id']??($row['id']??('evaluation-'.($i+1))));$cell=['evaluation_id'=>$eid,'alternative_id'=>$aid,'criterion_id'=>$cid,'value'=>$row['value']??null,'unit'=>(string)($row['unit']??''),'score'=>$score,'score_source'=>$score_source,'evidence_refs'=>array_values((array)($row['evidence_refs']??($row['source_ids']??[]))),'confidence'=>is_array($row['confidence']??null)?$row['confidence']:[],'notes'=>(string)($row['notes']??''),'review_status'=>(string)($row['review_status']??'needs_review'),'threshold_violation'=>$threshold_violation,'unknown_criterion'=>!isset($criteria_map[$cid]),'unknown_alternative'=>!isset($alt_map[$aid]),'content_fingerprint'=>hash('sha256',wp_json_encode($row)),'raw'=>$row];$cells[]=$cell;if(!$cell['unknown_criterion']&&!$cell['unknown_alternative'])$present[$aid.'|'.$cid]=true;if($score===null)$unscored[]=$eid;if(!in_array($cell['review_status'],['reviewed','accepted','approved'],true))$needs[]=$eid;if($threshold_violation)$thresholds[]=['evaluation_id'=>$eid,'alternative_id'=>$aid,'criterion_id'=>$cid];}
+        $missing=[];$expected=0;foreach($alt_map as $aid=>$a)foreach($criteria_map as $cid=>$c){$expected++;if(empty($present[$aid.'|'.$cid]))$missing[]=['alternative_id'=>$aid,'criterion_id'=>$cid];}$summaries=[];foreach($alt_map as $aid=>$a){$sum=0.0;$used=0.0;$complete=true;$viol=[];foreach($criteria_map as $cid=>$c){$found=null;foreach($cells as $cell)if($cell['alternative_id']===$aid&&$cell['criterion_id']===$cid){$found=$cell;break;}if(!$found||$found['score']===null){$complete=false;continue;}$w=(float)($c['normalized_weight']??0);$sum+=(float)$found['score']*$w;$used+=$w;if(!empty($found['threshold_violation']))$viol[]=$cid;}$summaries[]=['alternative_id'=>$aid,'name'=>$a['name']??$aid,'weighted_score'=>($complete&&$used>0)?round($sum/$used,4):null,'complete'=>$complete,'threshold_violation_criteria'=>$viol,'score_interpretation'=>'Comparative decision-support score only; not an automatic recommendation.'];}
+        $out=$this->tradeoff_matrix_template_local_v230();$out['matrix_id']='tradeoff-matrix-'.substr(hash('sha256',wp_json_encode([$criteria_set['criteria_set_id']??'', $alternatives_set['alternatives_set_id']??'', array_column($cells,'content_fingerprint')])),0,16);$out['decision_id']=$decision_id;$out['created_at']=gmdate('c');$out['updated_at']=$out['created_at'];$out['criteria_set']=$criteria_set;$out['alternatives_set']=$alternatives_set;$out['evaluations']=$cells;$out['alternative_summaries']=$summaries;$out['diagnostics']=['schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,'version'=>self::VERSION,'criteria_count'=>count($criteria_map),'alternatives_count'=>count($alt_map),'expected_cell_count'=>$expected,'evaluated_cell_count'=>count($present),'matrix_coverage_percent'=>round((count($present)/max(1,$expected))*100,1),'input_weight_total'=>(float)($criteria_set['weighting']['input_weight_total']??0),'weights_normalizable'=>(float)($criteria_set['weighting']['input_weight_total']??0)>0,'missing_evaluations'=>$missing,'unscored_evaluation_ids'=>$unscored,'needs_review_evaluation_ids'=>$needs,'threshold_violations'=>$thresholds,'complete'=>count($criteria_map)>0&&count($alt_map)>0&&!$missing&&!$unscored];return $out;
+    }
+    private function render_panel_tradeoffs_v230($mode) { ?>
+        <section class="scds-panel" data-scds-panel="tradeoffs" aria-labelledby="scds-tradeoffs-title">
+            <div class="scds-section-heading"><p class="scds-kicker">v2.3.1 · Criteria, Alternatives &amp; Tradeoff Matrix</p><h3 id="scds-tradeoffs-title">Compare choices without hiding the judgment</h3><p>Define criteria and weights, name candidate alternatives, enter evidence-linked evaluations, and build a transparent comparison matrix with coverage, threshold, and review diagnostics.</p></div>
+            <div class="scds-grid scds-grid-2"><label class="scds-field scds-field-wide"><span>Criteria JSON</span><textarea rows="12" data-scds-criteria-json>[{"criterion_id":"cost","name":"Lifecycle cost","weight":40,"direction":"minimize","scale":{"min":0,"max":100}},{"criterion_id":"impact","name":"Sustainability impact","weight":60,"direction":"maximize","scale":{"min":0,"max":10}}]</textarea></label><label class="scds-field scds-field-wide"><span>Alternatives JSON</span><textarea rows="12" data-scds-alternatives-json>[{"alternative_id":"baseline","name":"Baseline"},{"alternative_id":"option-a","name":"Option A"}]</textarea></label></div>
+            <label class="scds-field scds-field-wide"><span>Evaluations JSON</span><textarea rows="14" data-scds-evaluations-json>[{"alternative_id":"baseline","criterion_id":"cost","value":70,"review_status":"reviewed"},{"alternative_id":"baseline","criterion_id":"impact","value":4,"review_status":"reviewed"},{"alternative_id":"option-a","criterion_id":"cost","value":45,"review_status":"reviewed"},{"alternative_id":"option-a","criterion_id":"impact","value":8,"review_status":"reviewed"}]</textarea></label>
+            <div class="scds-actions"><button type="button" class="scds-button" data-scds-criteria-build>Build Criteria</button><button type="button" class="scds-button" data-scds-alternatives-build>Build Alternatives</button><button type="button" class="scds-button scds-button-primary" data-scds-tradeoff-build>Build Tradeoff Matrix</button><button type="button" class="scds-button" data-scds-tradeoff-attach>Attach to Decision Object</button><button type="button" class="scds-button" data-scds-tradeoff-download>Download Matrix JSON</button></div>
+            <div class="scds-note"><strong>Comparison boundary:</strong> Weighted scores and thresholds expose tradeoffs. They do not select a winner or create an automatic recommendation. Criteria, weights, evidence, and consequential choices remain subject to accountable human review.</div><div data-scds-tradeoff-output aria-live="polite"></div>
+        </section>
+    <?php }
+
     private function render_panel_evidence_v220($mode) { ?>
         <section class="scds-panel" data-scds-panel="evidence" aria-labelledby="scds-evidence-title">
             <div class="scds-section-heading"><p class="scds-kicker">v2.2.0 · Evidence &amp; Source Bundles</p><h3 id="scds-evidence-title">Trace claims back to sources</h3><p>Build reusable source bundles, map evidence claims to source identities, expose citation gaps and contradictions, and attach the resulting evidence bundle to the active Decision Object.</p></div>
@@ -1552,7 +1602,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Evidence & Source Bundles',
+            'release_name'=>'Criteria, Alternatives & Tradeoff Matrix',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
@@ -1592,6 +1642,10 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'evidence_bundle_schema'=>self::EVIDENCE_BUNDLE_SCHEMA,
             'source_bundle_schema'=>self::SOURCE_BUNDLE_SCHEMA,
             'evidence_coverage_schema'=>self::EVIDENCE_COVERAGE_SCHEMA,
+            'criteria_set_schema'=>self::CRITERIA_SET_SCHEMA,
+            'alternatives_set_schema'=>self::ALTERNATIVES_SET_SCHEMA,
+            'tradeoff_matrix_schema'=>self::TRADEOFF_MATRIX_SCHEMA,
+            'tradeoff_diagnostics_schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,
             'decision_pack_count'=>count($this->decision_pack_catalog()),
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
@@ -1619,6 +1673,14 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'evidence_coverage_diagnostics'=>true,
                 'contradiction_visibility'=>true,
                 'automatic_truth_verification'=>false,
+                'energy_systems_runtime_consumer'=>true,
+                'energy_runtime_consumer_version'=>'2.3.0',
+                'criteria_alternatives_tradeoff_matrix'=>true,
+                'normalized_criteria_weights'=>true,
+                'matrix_coverage_diagnostics'=>true,
+                'threshold_violation_visibility'=>true,
+                'automatic_winner_selection'=>false,
+                'automatic_recommendation'=>false,
                 'connected_decision_intelligence_platform'=>true,
                 'end_to_end_lifecycle_orchestration'=>true,
                 'cross_product_action_routing'=>true,
@@ -1720,6 +1782,14 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/evidence-bundle/merge', ['methods'=>'POST','callback'=>[$this,'rest_evidence_bundle_action_v220'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-object/evidence', ['methods'=>'POST','callback'=>[$this,'rest_evidence_bundle_action_v220'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/evidence-bundle', ['methods'=>'POST','callback'=>[$this,'rest_evidence_bundle_action_v220'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/criteria/template', ['methods'=>'GET','callback'=>[$this,'rest_criteria_template_v230'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/criteria/build', ['methods'=>'POST','callback'=>[$this,'rest_tradeoff_matrix_action_v230'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/alternatives/template', ['methods'=>'GET','callback'=>[$this,'rest_alternatives_template_v230'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/alternatives/build', ['methods'=>'POST','callback'=>[$this,'rest_tradeoff_matrix_action_v230'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/tradeoff-matrix/template', ['methods'=>'GET','callback'=>[$this,'rest_tradeoff_matrix_template_v230'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/tradeoff-matrix/build', ['methods'=>'POST','callback'=>[$this,'rest_tradeoff_matrix_action_v230'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/tradeoffs', ['methods'=>'POST','callback'=>[$this,'rest_tradeoff_matrix_action_v230'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/tradeoff-matrix', ['methods'=>'POST','callback'=>[$this,'rest_tradeoff_matrix_action_v230'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/states', ['methods'=>'GET','callback'=>[$this,'rest_governance_states'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/template', ['methods'=>'GET','callback'=>[$this,'rest_governance_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/evaluate', ['methods'=>'POST','callback'=>[$this,'rest_governance_evaluate'],'permission_callback'=>'__return_true']);
@@ -2052,6 +2122,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_object'=>$built]);
     }
 
+    public function rest_criteria_template_v230(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'criteria_set'=>$this->criteria_set_template_local_v230()]);}
+    public function rest_alternatives_template_v230(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'alternatives_set'=>$this->alternatives_set_template_local_v230()]);}
+    public function rest_tradeoff_matrix_template_v230(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230()]);}
+    public function rest_tradeoff_matrix_action_v230(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);}$criteria=is_array($payload['criteria']??null)?$payload['criteria']:[];$alternatives=is_array($payload['alternatives']??null)?$payload['alternatives']:[];$evaluations=is_array($payload['evaluations']??null)?$payload['evaluations']:[];$criteria_set=is_array($payload['criteriaSet']??null)?$payload['criteriaSet']:[];$alternatives_set=is_array($payload['alternativesSet']??null)?$payload['alternativesSet']:[];$packet=is_array($payload['packet']??null)?$payload['packet']:[];$object=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];if(strpos($route,'criteria/build')!==false)return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'criteria_set'=>$this->criteria_set_build_local_v230($criteria)]);if(strpos($route,'alternatives/build')!==false)return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'alternatives_set'=>$this->alternatives_set_build_local_v230($alternatives)]);$decision_id=(string)($object['decision_id']??($packet['decision_packet_id']??''));$matrix=is_array($payload['tradeoffMatrix']??null)&&(($payload['tradeoffMatrix']['schema']??'')===self::TRADEOFF_MATRIX_SCHEMA)?$payload['tradeoffMatrix']:$this->tradeoff_matrix_build_local_v230($criteria,$alternatives,$evaluations,$decision_id,$criteria_set,$alternatives_set);if(strpos($route,'decision-object/tradeoffs')!==false||strpos($route,'decision-packet/tradeoff-matrix')!==false){if(!$object)$object=$this->decision_object_from_packet_local_v210($packet);$object['criteria']=$matrix['criteria_set']['criteria'];$object['alternatives']=$matrix['alternatives_set']['alternatives'];$object['tradeoffs']=$matrix['evaluations'];$object['tradeoff_matrices']=[$matrix];$object['updated_at']=gmdate('c');$object['provenance']['records'][]=['at'=>gmdate('c'),'action'=>'tradeoff_matrix_attached','matrix_id'=>$matrix['matrix_id'],'schema'=>self::TRADEOFF_MATRIX_SCHEMA];if(strpos($route,'decision-packet/tradeoff-matrix')!==false){$packet['criteria_set']=$matrix['criteria_set'];$packet['alternatives_set']=$matrix['alternatives_set'];$packet['tradeoff_matrix']=$matrix;$packet['criteria_registry']=$matrix['criteria_set']['criteria'];$packet['alternatives']=$matrix['alternatives_set']['alternatives'];$packet['tradeoffs']=$matrix['evaluations'];$packet['decision_object']=$object;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'tradeoff_matrix'=>$matrix,'decision_object'=>$object,'decision_packet'=>$packet]);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'tradeoff_matrix'=>$matrix,'decision_object'=>$object]);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'tradeoff_matrix'=>$matrix]);}
+
     public function rest_source_bundle_template_v220(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'source_bundle'=>$this->source_bundle_template_local_v220()]);}
     public function rest_evidence_bundle_template_v220(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$this->evidence_bundle_template_local_v220()]);}
     public function rest_evidence_bundle_action_v220(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);}$sources=is_array($payload['sources']??null)?$payload['sources']:[];$evidence=is_array($payload['evidence']??null)?$payload['evidence']:[];$packet=is_array($payload['packet']??null)?$payload['packet']:[];$object=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];$source_bundle=is_array($payload['sourceBundle']??null)?$payload['sourceBundle']:[];if(strpos($route,'source-bundle/build')!==false)return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'source_bundle'=>$this->source_bundle_build_local_v220($sources)]);if(strpos($route,'merge')!==false){$bundles=is_array($payload['bundles']??null)?$payload['bundles']:[];$sources=[];$evidence=[];foreach($bundles as $b){if(!is_array($b))continue;foreach(($b['source_bundle']['sources']??[]) as $src)$sources[]=is_array($src['raw']??null)?$src['raw']:$src;foreach(($b['evidence_records']??[]) as $ev)$evidence[]=is_array($ev['raw']??null)?$ev['raw']:$ev;}}$decision_id=(string)($object['decision_id']??($packet['decision_packet_id']??''));$bundle=is_array($payload['evidenceBundle']??null)&&(($payload['evidenceBundle']['schema']??'')===self::EVIDENCE_BUNDLE_SCHEMA)?$payload['evidenceBundle']:$this->evidence_bundle_build_local_v220($evidence,$sources,$decision_id,$source_bundle);if(strpos($route,'decision-object/evidence')!==false||strpos($route,'decision-packet/evidence-bundle')!==false){if(!$object)$object=$this->decision_object_from_packet_local_v210($packet);$object['evidence']=$bundle['evidence_records'];$object['evidence_bundles']=[$bundle];$object['source_bundles']=[$bundle['source_bundle']];$object['updated_at']=gmdate('c');if(strpos($route,'decision-packet/evidence-bundle')!==false){$packet['evidence_bundle']=$bundle;$packet['source_bundle']=$bundle['source_bundle'];$packet['evidence_registry']=$bundle['evidence_records'];$packet['decision_object']=$object;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$bundle,'decision_object'=>$object,'decision_packet'=>$packet]);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$bundle,'decision_object'=>$object]);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$bundle]);}
@@ -2065,10 +2140,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'accessibility_audit_schema'=>self::ACCESSIBILITY_AUDIT_SCHEMA,'offline_workspace_schema'=>self::OFFLINE_WORKSPACE_SCHEMA,'release_readiness_schema'=>self::RELEASE_READINESS_SCHEMA,'recovery_snapshot_schema'=>self::RECOVERY_SNAPSHOT_SCHEMA,'migration_assessment_schema'=>self::MIGRATION_ASSESSMENT_SCHEMA,
             'connected_platform_schema'=>self::CONNECTED_PLATFORM_SCHEMA,'lifecycle_assessment_schema'=>self::LIFECYCLE_ASSESSMENT_SCHEMA,'decision_intelligence_graph_schema'=>self::DECISION_INTELLIGENCE_GRAPH_SCHEMA,'action_queue_schema'=>self::ACTION_QUEUE_SCHEMA,'portfolio_index_schema'=>self::PORTFOLIO_INDEX_SCHEMA,'connected_exchange_schema'=>self::CONNECTED_EXCHANGE_SCHEMA,'lifecycle_event_schema'=>self::LIFECYCLE_EVENT_SCHEMA,'decision_object_schema'=>self::DECISION_OBJECT_SCHEMA,'platform_context_schema'=>self::PLATFORM_CONTEXT_SCHEMA,'decision_object_migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,
             'evidence_bundle_schema'=>self::EVIDENCE_BUNDLE_SCHEMA,'source_bundle_schema'=>self::SOURCE_BUNDLE_SCHEMA,'evidence_coverage_schema'=>self::EVIDENCE_COVERAGE_SCHEMA,
+            'criteria_set_schema'=>self::CRITERIA_SET_SCHEMA,'alternatives_set_schema'=>self::ALTERNATIVES_SET_SCHEMA,'tradeoff_matrix_schema'=>self::TRADEOFF_MATRIX_SCHEMA,'tradeoff_diagnostics_schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,
             'publication_handoff_schema'=>self::PUBLICATION_HANDOFF_SCHEMA,
             'publication_redaction_schema'=>self::PUBLICATION_REDACTION_SCHEMA,'release'=>$this->release_manifest()]); }
     public function rest_release() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'release'=>$this->release_manifest()]); }
-    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220()]); }
+    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220(),'criteria_set'=>$this->criteria_set_template_local_v230(),'alternatives_set'=>$this->alternatives_set_template_local_v230(),'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
 
     public function rest_backend_status() {

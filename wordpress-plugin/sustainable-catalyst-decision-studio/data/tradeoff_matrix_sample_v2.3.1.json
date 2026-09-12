@@ -1,0 +1,636 @@
+{
+  "schema": "scds-tradeoff-matrix/1.0",
+  "version": "2.3.1",
+  "matrix_id": "tradeoff-matrix-1661d90d4549f35c",
+  "decision_id": "SCDS-V230-SAMPLE",
+  "title": "Fleet transition tradeoff matrix",
+  "created_at": "2026-09-12T02:04:08.138401Z",
+  "updated_at": "2026-09-12T02:04:08.138401Z",
+  "criteria_set": {
+    "schema": "scds-criteria-set/1.0",
+    "version": "2.3.1",
+    "criteria_set_id": "criteria-set-94d6850604854896",
+    "title": "Fleet transition criteria",
+    "created_at": "2026-09-12T02:04:08.137702Z",
+    "updated_at": "2026-09-12T02:04:08.137702Z",
+    "criteria": [
+      {
+        "criterion_id": "lifecycle-cost",
+        "name": "Lifecycle cost",
+        "description": "Total lifecycle cost under the stated horizon.",
+        "category": "economic",
+        "criterion_type": "cost",
+        "weight": 35.0,
+        "normalized_weight": 0.35,
+        "direction": "minimize",
+        "scale": {
+          "min": 0,
+          "max": 100
+        },
+        "threshold": {
+          "operator": "<=",
+          "value": 80
+        },
+        "required": false,
+        "evidence_refs": [
+          "ev-cost"
+        ],
+        "provenance": {},
+        "content_fingerprint": "8eaf170fcaa9a8eb0d51b67413558bea2e5e60ca4bc552b3ebf6563681f1ece5",
+        "raw": {
+          "criterion_id": "lifecycle-cost",
+          "name": "Lifecycle cost",
+          "description": "Total lifecycle cost under the stated horizon.",
+          "category": "economic",
+          "criterion_type": "cost",
+          "weight": 35,
+          "direction": "minimize",
+          "scale": {
+            "min": 0,
+            "max": 100
+          },
+          "threshold": {
+            "operator": "<=",
+            "value": 80
+          },
+          "evidence_refs": [
+            "ev-cost"
+          ]
+        }
+      },
+      {
+        "criterion_id": "emissions-reduction",
+        "name": "Emissions reduction",
+        "description": "Expected emissions reduction relative to baseline.",
+        "category": "environmental",
+        "criterion_type": "benefit",
+        "weight": 30.0,
+        "normalized_weight": 0.3,
+        "direction": "maximize",
+        "scale": {
+          "min": 0,
+          "max": 100
+        },
+        "threshold": null,
+        "required": false,
+        "evidence_refs": [
+          "ev-emissions"
+        ],
+        "provenance": {},
+        "content_fingerprint": "ff1104dd6b01b94fd96b7e86e95cbababeb14eb22ecf7cc0b0c2095c122f6b86",
+        "raw": {
+          "criterion_id": "emissions-reduction",
+          "name": "Emissions reduction",
+          "description": "Expected emissions reduction relative to baseline.",
+          "category": "environmental",
+          "criterion_type": "benefit",
+          "weight": 30,
+          "direction": "maximize",
+          "scale": {
+            "min": 0,
+            "max": 100
+          },
+          "evidence_refs": [
+            "ev-emissions"
+          ]
+        }
+      },
+      {
+        "criterion_id": "reliability",
+        "name": "Service reliability",
+        "description": "Ability to maintain required service levels.",
+        "category": "technical",
+        "criterion_type": "benefit",
+        "weight": 25.0,
+        "normalized_weight": 0.25,
+        "direction": "maximize",
+        "scale": {
+          "min": 0,
+          "max": 100
+        },
+        "threshold": {
+          "operator": ">=",
+          "value": 90
+        },
+        "required": false,
+        "evidence_refs": [
+          "ev-reliability"
+        ],
+        "provenance": {},
+        "content_fingerprint": "05fd8920c22159297c8b9d26fdb59246b0a41c8e2d82e9835f6249b6684c7906",
+        "raw": {
+          "criterion_id": "reliability",
+          "name": "Service reliability",
+          "description": "Ability to maintain required service levels.",
+          "category": "technical",
+          "criterion_type": "benefit",
+          "weight": 25,
+          "direction": "maximize",
+          "scale": {
+            "min": 0,
+            "max": 100
+          },
+          "threshold": {
+            "operator": ">=",
+            "value": 90
+          },
+          "evidence_refs": [
+            "ev-reliability"
+          ]
+        }
+      },
+      {
+        "criterion_id": "implementation",
+        "name": "Implementation feasibility",
+        "description": "Implementation readiness, capacity, and delivery risk.",
+        "category": "governance",
+        "criterion_type": "benefit",
+        "weight": 10.0,
+        "normalized_weight": 0.1,
+        "direction": "maximize",
+        "scale": {
+          "min": 0,
+          "max": 100
+        },
+        "threshold": null,
+        "required": false,
+        "evidence_refs": [],
+        "provenance": {},
+        "content_fingerprint": "44761d8ee318349584f7cbb579972dbf7be1ae2c33166711f918ec65b24cfc45",
+        "raw": {
+          "criterion_id": "implementation",
+          "name": "Implementation feasibility",
+          "description": "Implementation readiness, capacity, and delivery risk.",
+          "category": "governance",
+          "criterion_type": "benefit",
+          "weight": 10,
+          "direction": "maximize",
+          "scale": {
+            "min": 0,
+            "max": 100
+          }
+        }
+      }
+    ],
+    "weighting": {
+      "input_weight_total": 100.0,
+      "normalized": true
+    },
+    "provenance": {
+      "created_by": "decision-studio",
+      "records": []
+    },
+    "boundary": "Criteria and weights make judgment explicit. They do not establish objective importance or authorize a decision."
+  },
+  "alternatives_set": {
+    "schema": "scds-alternatives-set/1.0",
+    "version": "2.3.1",
+    "alternatives_set_id": "alternatives-set-cb9cacb327373aee",
+    "title": "Fleet transition alternatives",
+    "created_at": "2026-09-12T02:04:08.137787Z",
+    "updated_at": "2026-09-12T02:04:08.137787Z",
+    "alternatives": [
+      {
+        "alternative_id": "baseline",
+        "name": "Baseline",
+        "description": "Continue current operating model.",
+        "status": "candidate",
+        "attributes": {},
+        "constraints": [],
+        "evidence_refs": [],
+        "provenance": {},
+        "content_fingerprint": "18954aefcb993ee732592231c21592b564394e3fecef792df1d60d579518348f",
+        "raw": {
+          "alternative_id": "baseline",
+          "name": "Baseline",
+          "description": "Continue current operating model.",
+          "status": "candidate"
+        }
+      },
+      {
+        "alternative_id": "phased-electrification",
+        "name": "Phased electrification",
+        "description": "Electrify the highest-fit routes first and phase remaining assets.",
+        "status": "candidate",
+        "attributes": {},
+        "constraints": [],
+        "evidence_refs": [],
+        "provenance": {},
+        "content_fingerprint": "09e738450214494e57c73723619e7f30668fd5b185f15dd88f0dad60836578e6",
+        "raw": {
+          "alternative_id": "phased-electrification",
+          "name": "Phased electrification",
+          "description": "Electrify the highest-fit routes first and phase remaining assets.",
+          "status": "candidate"
+        }
+      },
+      {
+        "alternative_id": "accelerated-electrification",
+        "name": "Accelerated electrification",
+        "description": "Faster deployment with higher upfront capital and infrastructure demand.",
+        "status": "candidate",
+        "attributes": {},
+        "constraints": [],
+        "evidence_refs": [],
+        "provenance": {},
+        "content_fingerprint": "2addc33e0f3f6b240259f48423cc229d33e920700b667a46e09f5ae1de6fd152",
+        "raw": {
+          "alternative_id": "accelerated-electrification",
+          "name": "Accelerated electrification",
+          "description": "Faster deployment with higher upfront capital and infrastructure demand.",
+          "status": "candidate"
+        }
+      }
+    ],
+    "provenance": {
+      "created_by": "decision-studio",
+      "records": []
+    },
+    "boundary": "Alternatives are candidate choices. Inclusion, omission, or ordering does not imply endorsement."
+  },
+  "evaluations": [
+    {
+      "evaluation_id": "evaluation-1",
+      "alternative_id": "baseline",
+      "criterion_id": "lifecycle-cost",
+      "value": 55,
+      "unit": "",
+      "score": 45.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [
+        "ev-cost"
+      ],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "4aff84b7462744dfcb092db0842dff3c60c2391b20b3622986b3146a6f4a1507",
+      "raw": {
+        "alternative_id": "baseline",
+        "criterion_id": "lifecycle-cost",
+        "value": 55,
+        "review_status": "reviewed",
+        "evidence_refs": [
+          "ev-cost"
+        ]
+      }
+    },
+    {
+      "evaluation_id": "evaluation-2",
+      "alternative_id": "baseline",
+      "criterion_id": "emissions-reduction",
+      "value": 10,
+      "unit": "",
+      "score": 10.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [
+        "ev-emissions"
+      ],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "fc5514a78e73fa8507bba0dab4da63d7d2c8f1c99d279eacde8b0d83a28e6c5a",
+      "raw": {
+        "alternative_id": "baseline",
+        "criterion_id": "emissions-reduction",
+        "value": 10,
+        "review_status": "reviewed",
+        "evidence_refs": [
+          "ev-emissions"
+        ]
+      }
+    },
+    {
+      "evaluation_id": "evaluation-3",
+      "alternative_id": "baseline",
+      "criterion_id": "reliability",
+      "value": 96,
+      "unit": "",
+      "score": 96.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [
+        "ev-reliability"
+      ],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "a2ae0e9731008e9c981429af31955234a50cd016655c3d96c04b9a630c68ddcc",
+      "raw": {
+        "alternative_id": "baseline",
+        "criterion_id": "reliability",
+        "value": 96,
+        "review_status": "reviewed",
+        "evidence_refs": [
+          "ev-reliability"
+        ]
+      }
+    },
+    {
+      "evaluation_id": "evaluation-4",
+      "alternative_id": "baseline",
+      "criterion_id": "implementation",
+      "value": 95,
+      "unit": "",
+      "score": 95.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "bc6577cd1514324710a7883f89f337981c2a944e59ba6344d65fd9eef5f771f6",
+      "raw": {
+        "alternative_id": "baseline",
+        "criterion_id": "implementation",
+        "value": 95,
+        "review_status": "reviewed"
+      }
+    },
+    {
+      "evaluation_id": "evaluation-5",
+      "alternative_id": "phased-electrification",
+      "criterion_id": "lifecycle-cost",
+      "value": 45,
+      "unit": "",
+      "score": 55.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [
+        "ev-cost"
+      ],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "cc580a5f17a1bfb21b274ab27d17f3702449e78f17b9702cd85d54dec49cffe6",
+      "raw": {
+        "alternative_id": "phased-electrification",
+        "criterion_id": "lifecycle-cost",
+        "value": 45,
+        "review_status": "reviewed",
+        "evidence_refs": [
+          "ev-cost"
+        ]
+      }
+    },
+    {
+      "evaluation_id": "evaluation-6",
+      "alternative_id": "phased-electrification",
+      "criterion_id": "emissions-reduction",
+      "value": 65,
+      "unit": "",
+      "score": 65.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [
+        "ev-emissions"
+      ],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "040f1a8e32d384e0b89641d7a52bcfae7aa752afcc8c8b2abe72a96817c07dd2",
+      "raw": {
+        "alternative_id": "phased-electrification",
+        "criterion_id": "emissions-reduction",
+        "value": 65,
+        "review_status": "reviewed",
+        "evidence_refs": [
+          "ev-emissions"
+        ]
+      }
+    },
+    {
+      "evaluation_id": "evaluation-7",
+      "alternative_id": "phased-electrification",
+      "criterion_id": "reliability",
+      "value": 94,
+      "unit": "",
+      "score": 94.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [
+        "ev-reliability"
+      ],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "c4b4c1205f37801972a09cb56069d08ec0cb2b315b4764af97a6dcdd3be37a1e",
+      "raw": {
+        "alternative_id": "phased-electrification",
+        "criterion_id": "reliability",
+        "value": 94,
+        "review_status": "reviewed",
+        "evidence_refs": [
+          "ev-reliability"
+        ]
+      }
+    },
+    {
+      "evaluation_id": "evaluation-8",
+      "alternative_id": "phased-electrification",
+      "criterion_id": "implementation",
+      "value": 82,
+      "unit": "",
+      "score": 82.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "070259b9663fedd54572772fc0383aeeb9140b3f3b7ce574483da4e7888173c5",
+      "raw": {
+        "alternative_id": "phased-electrification",
+        "criterion_id": "implementation",
+        "value": 82,
+        "review_status": "reviewed"
+      }
+    },
+    {
+      "evaluation_id": "evaluation-9",
+      "alternative_id": "accelerated-electrification",
+      "criterion_id": "lifecycle-cost",
+      "value": 70,
+      "unit": "",
+      "score": 30.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [
+        "ev-cost"
+      ],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "fa59a4655c36aae12cd3c2ef9a906f63d4490016d500845a7bbe6cec653079a5",
+      "raw": {
+        "alternative_id": "accelerated-electrification",
+        "criterion_id": "lifecycle-cost",
+        "value": 70,
+        "review_status": "reviewed",
+        "evidence_refs": [
+          "ev-cost"
+        ]
+      }
+    },
+    {
+      "evaluation_id": "evaluation-10",
+      "alternative_id": "accelerated-electrification",
+      "criterion_id": "emissions-reduction",
+      "value": 90,
+      "unit": "",
+      "score": 90.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [
+        "ev-emissions"
+      ],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "f8a0bc5c8e06d9ac1b9d01de4b4fcf3dc170e5103af24afd1ccd281ad03d5cda",
+      "raw": {
+        "alternative_id": "accelerated-electrification",
+        "criterion_id": "emissions-reduction",
+        "value": 90,
+        "review_status": "reviewed",
+        "evidence_refs": [
+          "ev-emissions"
+        ]
+      }
+    },
+    {
+      "evaluation_id": "evaluation-11",
+      "alternative_id": "accelerated-electrification",
+      "criterion_id": "reliability",
+      "value": 86,
+      "unit": "",
+      "score": 86.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [
+        "ev-reliability"
+      ],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": true,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "178191579407e69cf92e6b0108d260acc54fe5a7199ee562b0674dc2e520a2a4",
+      "raw": {
+        "alternative_id": "accelerated-electrification",
+        "criterion_id": "reliability",
+        "value": 86,
+        "review_status": "reviewed",
+        "evidence_refs": [
+          "ev-reliability"
+        ]
+      }
+    },
+    {
+      "evaluation_id": "evaluation-12",
+      "alternative_id": "accelerated-electrification",
+      "criterion_id": "implementation",
+      "value": 60,
+      "unit": "",
+      "score": 60.0,
+      "score_source": "derived_from_scale",
+      "evidence_refs": [],
+      "confidence": {},
+      "notes": "",
+      "review_status": "reviewed",
+      "threshold_violation": false,
+      "unknown_criterion": false,
+      "unknown_alternative": false,
+      "content_fingerprint": "fadba390709db69939e34718c6de7474fa90115af982809182103726cf7e21f3",
+      "raw": {
+        "alternative_id": "accelerated-electrification",
+        "criterion_id": "implementation",
+        "value": 60,
+        "review_status": "reviewed"
+      }
+    }
+  ],
+  "alternative_summaries": [
+    {
+      "alternative_id": "baseline",
+      "name": "Baseline",
+      "weighted_score": 52.25,
+      "complete": true,
+      "threshold_violation_criteria": [],
+      "score_interpretation": "Comparative decision-support score only; not an automatic recommendation."
+    },
+    {
+      "alternative_id": "phased-electrification",
+      "name": "Phased electrification",
+      "weighted_score": 70.45,
+      "complete": true,
+      "threshold_violation_criteria": [],
+      "score_interpretation": "Comparative decision-support score only; not an automatic recommendation."
+    },
+    {
+      "alternative_id": "accelerated-electrification",
+      "name": "Accelerated electrification",
+      "weighted_score": 65.0,
+      "complete": true,
+      "threshold_violation_criteria": [
+        "reliability"
+      ],
+      "score_interpretation": "Comparative decision-support score only; not an automatic recommendation."
+    }
+  ],
+  "diagnostics": {
+    "schema": "scds-tradeoff-diagnostics/1.0",
+    "version": "2.3.1",
+    "criteria_count": 4,
+    "alternatives_count": 3,
+    "expected_cell_count": 12,
+    "evaluated_cell_count": 12,
+    "matrix_coverage_percent": 100.0,
+    "input_weight_total": 100.0,
+    "weights_normalizable": true,
+    "missing_evaluations": [],
+    "unknown_criterion_ids": [],
+    "unknown_alternative_ids": [],
+    "unscored_evaluation_ids": [],
+    "needs_review_evaluation_ids": [],
+    "threshold_violations": [
+      {
+        "evaluation_id": "evaluation-11",
+        "alternative_id": "accelerated-electrification",
+        "criterion_id": "reliability"
+      }
+    ],
+    "complete": true
+  },
+  "provenance": {
+    "created_by": "decision-studio",
+    "records": []
+  },
+  "review": {
+    "status": "needs_review",
+    "reviewed_by": "",
+    "reviewed_at": ""
+  },
+  "boundary": "Weighted scores support comparison only. Decision Studio does not automatically select a winner, recommend an alternative, or replace accountable human judgment."
+}

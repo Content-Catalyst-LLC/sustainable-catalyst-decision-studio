@@ -1,0 +1,66 @@
+{
+  "schema": "scds-alternatives-set/1.0",
+  "version": "2.3.1",
+  "alternatives_set_id": "alternatives-set-cb9cacb327373aee",
+  "title": "Fleet transition alternatives",
+  "created_at": "2026-09-12T02:04:08.137787Z",
+  "updated_at": "2026-09-12T02:04:08.137787Z",
+  "alternatives": [
+    {
+      "alternative_id": "baseline",
+      "name": "Baseline",
+      "description": "Continue current operating model.",
+      "status": "candidate",
+      "attributes": {},
+      "constraints": [],
+      "evidence_refs": [],
+      "provenance": {},
+      "content_fingerprint": "18954aefcb993ee732592231c21592b564394e3fecef792df1d60d579518348f",
+      "raw": {
+        "alternative_id": "baseline",
+        "name": "Baseline",
+        "description": "Continue current operating model.",
+        "status": "candidate"
+      }
+    },
+    {
+      "alternative_id": "phased-electrification",
+      "name": "Phased electrification",
+      "description": "Electrify the highest-fit routes first and phase remaining assets.",
+      "status": "candidate",
+      "attributes": {},
+      "constraints": [],
+      "evidence_refs": [],
+      "provenance": {},
+      "content_fingerprint": "09e738450214494e57c73723619e7f30668fd5b185f15dd88f0dad60836578e6",
+      "raw": {
+        "alternative_id": "phased-electrification",
+        "name": "Phased electrification",
+        "description": "Electrify the highest-fit routes first and phase remaining assets.",
+        "status": "candidate"
+      }
+    },
+    {
+      "alternative_id": "accelerated-electrification",
+      "name": "Accelerated electrification",
+      "description": "Faster deployment with higher upfront capital and infrastructure demand.",
+      "status": "candidate",
+      "attributes": {},
+      "constraints": [],
+      "evidence_refs": [],
+      "provenance": {},
+      "content_fingerprint": "2addc33e0f3f6b240259f48423cc229d33e920700b667a46e09f5ae1de6fd152",
+      "raw": {
+        "alternative_id": "accelerated-electrification",
+        "name": "Accelerated electrification",
+        "description": "Faster deployment with higher upfront capital and infrastructure demand.",
+        "status": "candidate"
+      }
+    }
+  ],
+  "provenance": {
+    "created_by": "decision-studio",
+    "records": []
+  },
+  "boundary": "Alternatives are candidate choices. Inclusion, omission, or ordering does not imply endorsement."
+}

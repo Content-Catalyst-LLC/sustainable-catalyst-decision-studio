@@ -1,0 +1,21 @@
+{
+  "schema": "scds-tradeoff-diagnostics/1.0",
+  "version": "2.3.1",
+  "description": "Completeness and review diagnostics for the tradeoff matrix.",
+  "fields": [
+    "criteria_count",
+    "alternatives_count",
+    "expected_cell_count",
+    "evaluated_cell_count",
+    "matrix_coverage_percent",
+    "input_weight_total",
+    "weights_normalizable",
+    "missing_evaluations",
+    "unknown_criterion_ids",
+    "unknown_alternative_ids",
+    "unscored_evaluation_ids",
+    "needs_review_evaluation_ids",
+    "threshold_violations",
+    "complete"
+  ]
+}

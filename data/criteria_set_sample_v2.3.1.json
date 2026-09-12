@@ -1,0 +1,176 @@
+{
+  "schema": "scds-criteria-set/1.0",
+  "version": "2.3.1",
+  "criteria_set_id": "criteria-set-94d6850604854896",
+  "title": "Fleet transition criteria",
+  "created_at": "2026-09-12T02:04:08.137702Z",
+  "updated_at": "2026-09-12T02:04:08.137702Z",
+  "criteria": [
+    {
+      "criterion_id": "lifecycle-cost",
+      "name": "Lifecycle cost",
+      "description": "Total lifecycle cost under the stated horizon.",
+      "category": "economic",
+      "criterion_type": "cost",
+      "weight": 35.0,
+      "normalized_weight": 0.35,
+      "direction": "minimize",
+      "scale": {
+        "min": 0,
+        "max": 100
+      },
+      "threshold": {
+        "operator": "<=",
+        "value": 80
+      },
+      "required": false,
+      "evidence_refs": [
+        "ev-cost"
+      ],
+      "provenance": {},
+      "content_fingerprint": "8eaf170fcaa9a8eb0d51b67413558bea2e5e60ca4bc552b3ebf6563681f1ece5",
+      "raw": {
+        "criterion_id": "lifecycle-cost",
+        "name": "Lifecycle cost",
+        "description": "Total lifecycle cost under the stated horizon.",
+        "category": "economic",
+        "criterion_type": "cost",
+        "weight": 35,
+        "direction": "minimize",
+        "scale": {
+          "min": 0,
+          "max": 100
+        },
+        "threshold": {
+          "operator": "<=",
+          "value": 80
+        },
+        "evidence_refs": [
+          "ev-cost"
+        ]
+      }
+    },
+    {
+      "criterion_id": "emissions-reduction",
+      "name": "Emissions reduction",
+      "description": "Expected emissions reduction relative to baseline.",
+      "category": "environmental",
+      "criterion_type": "benefit",
+      "weight": 30.0,
+      "normalized_weight": 0.3,
+      "direction": "maximize",
+      "scale": {
+        "min": 0,
+        "max": 100
+      },
+      "threshold": null,
+      "required": false,
+      "evidence_refs": [
+        "ev-emissions"
+      ],
+      "provenance": {},
+      "content_fingerprint": "ff1104dd6b01b94fd96b7e86e95cbababeb14eb22ecf7cc0b0c2095c122f6b86",
+      "raw": {
+        "criterion_id": "emissions-reduction",
+        "name": "Emissions reduction",
+        "description": "Expected emissions reduction relative to baseline.",
+        "category": "environmental",
+        "criterion_type": "benefit",
+        "weight": 30,
+        "direction": "maximize",
+        "scale": {
+          "min": 0,
+          "max": 100
+        },
+        "evidence_refs": [
+          "ev-emissions"
+        ]
+      }
+    },
+    {
+      "criterion_id": "reliability",
+      "name": "Service reliability",
+      "description": "Ability to maintain required service levels.",
+      "category": "technical",
+      "criterion_type": "benefit",
+      "weight": 25.0,
+      "normalized_weight": 0.25,
+      "direction": "maximize",
+      "scale": {
+        "min": 0,
+        "max": 100
+      },
+      "threshold": {
+        "operator": ">=",
+        "value": 90
+      },
+      "required": false,
+      "evidence_refs": [
+        "ev-reliability"
+      ],
+      "provenance": {},
+      "content_fingerprint": "05fd8920c22159297c8b9d26fdb59246b0a41c8e2d82e9835f6249b6684c7906",
+      "raw": {
+        "criterion_id": "reliability",
+        "name": "Service reliability",
+        "description": "Ability to maintain required service levels.",
+        "category": "technical",
+        "criterion_type": "benefit",
+        "weight": 25,
+        "direction": "maximize",
+        "scale": {
+          "min": 0,
+          "max": 100
+        },
+        "threshold": {
+          "operator": ">=",
+          "value": 90
+        },
+        "evidence_refs": [
+          "ev-reliability"
+        ]
+      }
+    },
+    {
+      "criterion_id": "implementation",
+      "name": "Implementation feasibility",
+      "description": "Implementation readiness, capacity, and delivery risk.",
+      "category": "governance",
+      "criterion_type": "benefit",
+      "weight": 10.0,
+      "normalized_weight": 0.1,
+      "direction": "maximize",
+      "scale": {
+        "min": 0,
+        "max": 100
+      },
+      "threshold": null,
+      "required": false,
+      "evidence_refs": [],
+      "provenance": {},
+      "content_fingerprint": "44761d8ee318349584f7cbb579972dbf7be1ae2c33166711f918ec65b24cfc45",
+      "raw": {
+        "criterion_id": "implementation",
+        "name": "Implementation feasibility",
+        "description": "Implementation readiness, capacity, and delivery risk.",
+        "category": "governance",
+        "criterion_type": "benefit",
+        "weight": 10,
+        "direction": "maximize",
+        "scale": {
+          "min": 0,
+          "max": 100
+        }
+      }
+    }
+  ],
+  "weighting": {
+    "input_weight_total": 100.0,
+    "normalized": true
+  },
+  "provenance": {
+    "created_by": "decision-studio",
+    "records": []
+  },
+  "boundary": "Criteria and weights make judgment explicit. They do not establish objective importance or authorize a decision."
+}

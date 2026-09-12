@@ -1,0 +1,14 @@
+DECISION STUDIO v2.3.1 — CRITERIA, ALTERNATIVES & TRADEOFF MATRIX
+
+MAC APPLY / VALIDATE / GITHUB
+cd ~/Downloads
+rm -rf scds-decision-studio-v2.3.1-tiny-patch
+unzip -q sustainable-catalyst-decision-studio-v2.3.1-tiny-patch.zip
+cd scds-decision-studio-v2.3.1-tiny-patch
+chmod +x apply_and_push_decision_studio_v2_3_1_macos.sh
+./apply_and_push_decision_studio_v2_3_1_macos.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+CONTABO BACKEND
+cd ~/Downloads
+chmod +x deploy_decision_studio_v2_3_1_from_macos.sh
+./deploy_decision_studio_v2_3_1_from_macos.sh

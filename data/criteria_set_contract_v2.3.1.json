@@ -1,0 +1,38 @@
+{
+  "schema": "scds-criteria-set/1.0",
+  "version": "2.3.1",
+  "description": "First-class criteria with explicit weights, direction, scale, thresholds, evidence references, and provenance.",
+  "required": [
+    "schema",
+    "version",
+    "criteria_set_id",
+    "criteria",
+    "weighting",
+    "provenance",
+    "boundary"
+  ],
+  "criterion_fields": [
+    "criterion_id",
+    "name",
+    "description",
+    "category",
+    "criterion_type",
+    "weight",
+    "normalized_weight",
+    "direction",
+    "scale",
+    "threshold",
+    "required",
+    "evidence_refs",
+    "provenance",
+    "content_fingerprint",
+    "raw"
+  ],
+  "directions": [
+    "maximize",
+    "minimize",
+    "target",
+    "qualitative"
+  ],
+  "boundary": "Weights expose judgment but do not establish objective importance or authorize a decision."
+}

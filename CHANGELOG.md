@@ -1,3 +1,16 @@
+## v2.3.1 — Criteria, Alternatives & Tradeoff Matrix
+
+- Preserved Decision Studio v2.3.0 Energy Systems Runtime Consumer, its target-side handoff contract, endpoints, and regression tests.
+- Added `scds-criteria-set/1.0` with explicit weights, normalized weights, directions, scales, thresholds, evidence references, provenance, and raw-input retention.
+- Added `scds-alternatives-set/1.0` with stable candidate identities, attributes, constraints, evidence references, and provenance.
+- Added `scds-tradeoff-matrix/1.0` and `scds-tradeoff-diagnostics/1.0`.
+- Added direct or scale-derived 0–100 comparison scores without automatic winner selection.
+- Added missing-cell, unscored-cell, review-state, matrix-coverage, and threshold-violation diagnostics.
+- Added weighted alternative summaries explicitly bounded as decision-support outputs.
+- Added Tradeoff Matrix attachment to the Unified Decision Object and additive Decision Packet projection.
+- Added WordPress Tradeoff Matrix workspace, shortcode mode, REST parity, and Contabo runtime identity.
+- Preserved v2.2 Evidence & Source Bundles, v2.1 Unified Decision Object, Decision Packet 2.0, and all connected-platform capabilities.
+
 ## v2.2.0 — Evidence & Source Bundles
 
 - Added first-class source bundles with stable identities, citations, provenance, review state, and SHA-256 content fingerprints.

@@ -98,10 +98,24 @@ from app.evidence_bundle import (
     merge_evidence_bundles,
     attach_evidence_bundle,
 )
+from app.tradeoff_matrix import (
+    CRITERIA_SET_SCHEMA,
+    ALTERNATIVES_SET_SCHEMA,
+    TRADEOFF_MATRIX_SCHEMA,
+    TRADEOFF_DIAGNOSTICS_SCHEMA,
+    TradeoffMatrixRequest,
+    criteria_set_template,
+    alternatives_set_template,
+    tradeoff_matrix_template,
+    build_criteria_set,
+    build_alternatives_set,
+    build_tradeoff_matrix,
+    attach_tradeoff_matrix,
+)
 
-APP_VERSION = "2.3.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.3.0-energy-runtime-consumer")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.3.0")
+APP_VERSION = "2.3.1"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.3.1-criteria-alternatives-tradeoff-matrix")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.3.1")
 RELEASE_DATE = "2026-09-11"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -154,6 +168,8 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/decision-object/to-packet", "/decision-packet/decision-object",
     "/source-bundle/build", "/evidence-bundle/build", "/evidence-bundle/merge",
     "/decision-object/evidence", "/decision-packet/evidence-bundle",
+    "/criteria/build", "/alternatives/build", "/tradeoff-matrix/build",
+    "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -162,7 +178,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Evidence & Source Bundles",
+        "release_name": "Criteria, Alternatives & Tradeoff Matrix",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -206,6 +222,10 @@ def release_manifest() -> Dict[str, Any]:
         "evidence_bundle_schema": EVIDENCE_BUNDLE_SCHEMA,
         "source_bundle_schema": SOURCE_BUNDLE_SCHEMA,
         "evidence_coverage_schema": EVIDENCE_COVERAGE_SCHEMA,
+        "criteria_set_schema": CRITERIA_SET_SCHEMA,
+        "alternatives_set_schema": ALTERNATIVES_SET_SCHEMA,
+        "tradeoff_matrix_schema": TRADEOFF_MATRIX_SCHEMA,
+        "tradeoff_diagnostics_schema": TRADEOFF_DIAGNOSTICS_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -273,6 +293,14 @@ def release_manifest() -> Dict[str, Any]:
             "evidence_coverage_diagnostics": True,
             "contradiction_visibility": True,
             "automatic_truth_verification": False,
+            "energy_systems_runtime_consumer": True,
+            "energy_runtime_consumer_version": "2.3.0",
+            "criteria_alternatives_tradeoff_matrix": True,
+            "normalized_criteria_weights": True,
+            "matrix_coverage_diagnostics": True,
+            "threshold_violation_visibility": True,
+            "automatic_winner_selection": False,
+            "automatic_recommendation": False,
         },
     }
 
@@ -4613,6 +4641,10 @@ def health():
         "evidence_bundle_schema": EVIDENCE_BUNDLE_SCHEMA,
         "source_bundle_schema": SOURCE_BUNDLE_SCHEMA,
         "evidence_coverage_schema": EVIDENCE_COVERAGE_SCHEMA,
+        "criteria_set_schema": CRITERIA_SET_SCHEMA,
+        "alternatives_set_schema": ALTERNATIVES_SET_SCHEMA,
+        "tradeoff_matrix_schema": TRADEOFF_MATRIX_SCHEMA,
+        "tradeoff_diagnostics_schema": TRADEOFF_DIAGNOSTICS_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -5306,6 +5338,66 @@ def decision_packet_evidence_bundle_endpoint(req: EvidenceBundleRequest):
     return {"ok": True, "version": APP_VERSION, "decision_object": obj, "evidence_bundle": bundle, "decision_packet": packet}
 
 
+@app.get("/criteria/template")
+def criteria_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "criteria_set": criteria_set_template(APP_VERSION)}
+
+
+@app.get("/alternatives/template")
+def alternatives_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "alternatives_set": alternatives_set_template(APP_VERSION)}
+
+
+@app.get("/tradeoff-matrix/template")
+def tradeoff_matrix_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "tradeoff_matrix": tradeoff_matrix_template(APP_VERSION)}
+
+
+@app.post("/criteria/build")
+def criteria_build_endpoint(req: TradeoffMatrixRequest):
+    return {"ok": True, "version": APP_VERSION, "criteria_set": build_criteria_set(req.criteria, APP_VERSION)}
+
+
+@app.post("/alternatives/build")
+def alternatives_build_endpoint(req: TradeoffMatrixRequest):
+    return {"ok": True, "version": APP_VERSION, "alternatives_set": build_alternatives_set(req.alternatives, APP_VERSION)}
+
+
+@app.post("/tradeoff-matrix/build")
+def tradeoff_matrix_build_endpoint(req: TradeoffMatrixRequest):
+    decision_id = str((req.decisionObject or {}).get("decision_id") or (req.packet or {}).get("decision_packet_id") or "")
+    matrix = build_tradeoff_matrix(req.criteria, req.alternatives, req.evaluations, APP_VERSION, decision_id=decision_id, criteria_set=req.criteriaSet, alternatives_set=req.alternativesSet)
+    return {"ok": True, "version": APP_VERSION, "tradeoff_matrix": matrix}
+
+
+@app.post("/decision-object/tradeoffs")
+def decision_object_tradeoffs_endpoint(req: TradeoffMatrixRequest):
+    obj = deepcopy(req.decisionObject) if req.decisionObject else decision_object_from_packet(req.packet, APP_VERSION, DECISION_PACKET_SCHEMA)
+    decision_id = str(obj.get("decision_id") or (req.packet or {}).get("decision_packet_id") or "")
+    matrix = deepcopy(req.tradeoffMatrix) if req.tradeoffMatrix.get("schema") == TRADEOFF_MATRIX_SCHEMA else build_tradeoff_matrix(req.criteria, req.alternatives, req.evaluations, APP_VERSION, decision_id=decision_id, criteria_set=req.criteriaSet, alternatives_set=req.alternativesSet)
+    obj = attach_tradeoff_matrix(obj, matrix, APP_VERSION)
+    obj["mapping_summary"] = decision_object_completeness(obj)
+    return {"ok": True, "version": APP_VERSION, "decision_object": obj, "tradeoff_matrix": matrix}
+
+
+@app.post("/decision-packet/tradeoff-matrix")
+def decision_packet_tradeoff_matrix_endpoint(req: TradeoffMatrixRequest):
+    obj = deepcopy(req.decisionObject) if req.decisionObject else decision_object_from_packet(req.packet, APP_VERSION, DECISION_PACKET_SCHEMA)
+    decision_id = str(obj.get("decision_id") or (req.packet or {}).get("decision_packet_id") or "")
+    matrix = deepcopy(req.tradeoffMatrix) if req.tradeoffMatrix.get("schema") == TRADEOFF_MATRIX_SCHEMA else build_tradeoff_matrix(req.criteria, req.alternatives, req.evaluations, APP_VERSION, decision_id=decision_id, criteria_set=req.criteriaSet, alternatives_set=req.alternativesSet)
+    obj = attach_tradeoff_matrix(obj, matrix, APP_VERSION)
+    obj["mapping_summary"] = decision_object_completeness(obj)
+    packet = deepcopy(req.packet) if req.packet else decision_object_to_packet(obj, APP_VERSION, DECISION_PACKET_SCHEMA)
+    packet["criteria_set"] = deepcopy(matrix.get("criteria_set", {}))
+    packet["alternatives_set"] = deepcopy(matrix.get("alternatives_set", {}))
+    packet["tradeoff_matrix"] = deepcopy(matrix)
+    packet["criteria_registry"] = deepcopy(matrix.get("criteria_set", {}).get("criteria", []))
+    packet["alternatives"] = deepcopy(matrix.get("alternatives_set", {}).get("alternatives", []))
+    packet["tradeoffs"] = deepcopy(matrix.get("evaluations", []))
+    packet["decision_object"] = {key: deepcopy(value) for key, value in obj.items() if key != "source_packet"}
+    return {"ok": True, "version": APP_VERSION, "decision_object": obj, "tradeoff_matrix": matrix, "decision_packet": packet}
+
+
 @app.get("/public/landing-template")
 def public_landing_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "landing": public_landing_template()}
@@ -5317,9 +5409,10 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle", "/criteria/template", "/criteria/build", "/alternatives/template", "/alternatives/build", "/tradeoff-matrix/template", "/tradeoff-matrix/build", "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle", "/criteria/template", "/criteria/build", "/alternatives/template", "/alternatives/build", "/tradeoff-matrix/template", "/tradeoff-matrix/build", "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix"]}
 
 
 # Energy Systems Intelligence v1.2.0 target-side runtime consumer.
+# Introduced in Decision Studio v2.3.0 and intentionally preserved in v2.3.1.
 from .energy_runtime_consumer import router as energy_runtime_consumer_router
 app.include_router(energy_runtime_consumer_router)

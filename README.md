@@ -1,6 +1,26 @@
-# Sustainable Catalyst Decision Studio v2.2.0
+# Sustainable Catalyst Decision Studio v2.3.1
 
-## Evidence & Source Bundles
+## Criteria, Alternatives & Tradeoff Matrix
+
+Decision Studio v2.3.1 builds on the v2.2 Evidence & Source Bundle layer with first-class criteria, alternatives, and transparent alternative-by-criterion comparison. `scds-criteria-set/1.0` preserves explicit weights, directions, scales, thresholds, evidence references, and provenance. `scds-alternatives-set/1.0` gives candidate choices stable identities. `scds-tradeoff-matrix/1.0` records evidence-linked evaluations and produces completeness, threshold, review, and matrix-coverage diagnostics through `scds-tradeoff-diagnostics/1.0`.
+
+Weighted scores are comparative aids only. The release does not automatically select a winner or generate a recommendation. Human review remains required for criteria choice, weights, interpretation, and consequential decisions.
+
+### v2.3.1 endpoints
+
+- `GET /criteria/template`
+- `POST /criteria/build`
+- `GET /alternatives/template`
+- `POST /alternatives/build`
+- `GET /tradeoff-matrix/template`
+- `POST /tradeoff-matrix/build`
+- `POST /decision-object/tradeoffs`
+- `POST /decision-packet/tradeoff-matrix`
+
+WordPress route parity lives under `/wp-json/scds/v1`, with `[sc_decision_studio mode="tradeoffs" title="Criteria, Alternatives & Tradeoff Matrix"]`.
+
+## v2.2.0 evidence foundation
+
 
 Decision Studio v2.2.0 builds on the v2.1 Unified Decision Object with first-class source and evidence bundles. `scds-source-bundle/1.0` preserves reusable source identity, citation, provenance, quality, freshness, review status, and SHA-256 fingerprints. `scds-evidence-bundle/1.0` links claims to source IDs and exposes citation coverage, unresolved links, review gaps, and support/challenge contradictions through `scds-evidence-coverage/1.0`.
 

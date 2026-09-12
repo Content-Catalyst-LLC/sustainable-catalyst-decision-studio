@@ -1,0 +1,40 @@
+{
+  "schema": "scds-tradeoff-matrix/1.0",
+  "version": "2.3.1",
+  "description": "Transparent alternative-by-criterion matrix with evidence-linked evaluations, weighted comparison, coverage diagnostics, review state, and threshold visibility.",
+  "required": [
+    "schema",
+    "version",
+    "matrix_id",
+    "criteria_set",
+    "alternatives_set",
+    "evaluations",
+    "alternative_summaries",
+    "diagnostics",
+    "provenance",
+    "review",
+    "boundary"
+  ],
+  "evaluation_fields": [
+    "evaluation_id",
+    "alternative_id",
+    "criterion_id",
+    "value",
+    "unit",
+    "score",
+    "score_source",
+    "evidence_refs",
+    "confidence",
+    "notes",
+    "review_status",
+    "threshold_violation",
+    "unknown_criterion",
+    "unknown_alternative",
+    "content_fingerprint",
+    "raw"
+  ],
+  "diagnostics_schema": "scds-tradeoff-diagnostics/1.0",
+  "automatic_winner_selection": false,
+  "automatic_recommendation": false,
+  "boundary": "Weighted scores support comparison only and do not replace accountable human judgment."
+}

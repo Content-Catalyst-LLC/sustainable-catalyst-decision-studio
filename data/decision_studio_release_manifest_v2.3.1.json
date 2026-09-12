@@ -1,0 +1,69 @@
+{
+  "release": "2.3.1",
+  "title": "Criteria, Alternatives & Tradeoff Matrix",
+  "release_date": "2026-09-11",
+  "build_fingerprint": "scds-v2.3.1-criteria-alternatives-tradeoff-matrix",
+  "source_commit": "release-v2.3.1",
+  "wordpress": {
+    "plugin_version": "2.3.1",
+    "database_version": "2.3.1",
+    "shortcode": "[sc_decision_studio mode=\"tradeoffs\" title=\"Criteria, Alternatives & Tradeoff Matrix\"]"
+  },
+  "backend": {
+    "version": "2.3.1",
+    "new_routes": [
+      "/criteria/template",
+      "/criteria/build",
+      "/alternatives/template",
+      "/alternatives/build",
+      "/tradeoff-matrix/template",
+      "/tradeoff-matrix/build",
+      "/decision-object/tradeoffs",
+      "/decision-packet/tradeoff-matrix"
+    ]
+  },
+  "schemas": {
+    "decision_packet": "scds-decision-packet/2.0",
+    "decision_object": "scds-decision-object/1.0",
+    "platform_context": "scds-platform-context/1.0",
+    "evidence_bundle": "scds-evidence-bundle/1.0",
+    "source_bundle": "scds-source-bundle/1.0",
+    "evidence_coverage": "scds-evidence-coverage/1.0",
+    "criteria_set": "scds-criteria-set/1.0",
+    "alternatives_set": "scds-alternatives-set/1.0",
+    "tradeoff_matrix": "scds-tradeoff-matrix/1.0",
+    "tradeoff_diagnostics": "scds-tradeoff-diagnostics/1.0"
+  },
+  "capabilities": [
+    "Preserves the Decision Studio v2.3.0 Energy Systems Runtime Consumer and target-side handoff contract",
+    "First-class criteria with normalized weights while preserving input weights",
+    "First-class candidate alternatives with stable identities",
+    "Alternative-by-criterion evaluation matrix",
+    "Direct scores or scale-derived 0–100 comparison scores",
+    "Evidence references and review state on matrix cells",
+    "Missing-cell, unscored-cell, and matrix-coverage diagnostics",
+    "Threshold violation visibility without automatic elimination",
+    "Weighted alternative summaries explicitly bounded as decision support",
+    "Tradeoff Matrix attachment to the Unified Decision Object",
+    "Decision Packet tradeoff-matrix projection",
+    "WordPress Tradeoff Matrix workspace with FastAPI parity"
+  ],
+  "compatibility": {
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "packet_schema_breaking_changes": false,
+    "v2_2_0_evidence_bundles_preserved": true,
+    "v2_1_0_decision_object_preserved": true,
+    "automatic_truth_verification": false,
+    "automatic_winner_selection": false,
+    "automatic_recommendation": false,
+    "v2_3_0_energy_runtime_consumer_preserved": true,
+    "energy_runtime_consumer_version": "2.3.0",
+    "energy_runtime_handoff_schema": "sc-energy-runtime-handoff/1.0",
+    "energy_runtime_consumer_contract": "sc-energy-runtime-decision-studio-handoff/1.0"
+  },
+  "tests": {
+    "release_contract": true,
+    "php_syntax": true,
+    "javascript_syntax": true
+  }
+}

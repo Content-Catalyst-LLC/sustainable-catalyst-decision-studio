@@ -1,0 +1,26 @@
+{
+  "schema": "scds-alternatives-set/1.0",
+  "version": "2.3.1",
+  "description": "First-class candidate alternatives with stable IDs, attributes, constraints, evidence references, and provenance.",
+  "required": [
+    "schema",
+    "version",
+    "alternatives_set_id",
+    "alternatives",
+    "provenance",
+    "boundary"
+  ],
+  "alternative_fields": [
+    "alternative_id",
+    "name",
+    "description",
+    "status",
+    "attributes",
+    "constraints",
+    "evidence_refs",
+    "provenance",
+    "content_fingerprint",
+    "raw"
+  ],
+  "boundary": "Candidate inclusion, omission, and ordering do not imply endorsement."
+}

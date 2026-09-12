@@ -2,23 +2,24 @@
 
 ## Current release
 
-### v2.2.0 — Evidence & Source Bundles
+### v2.3.1 — Criteria, Alternatives & Tradeoff Matrix
 
-- Make sources durable, reusable objects with provenance, citation, quality, freshness, and review metadata.
-- Bind evidence claims to source identities rather than disconnected citation text.
-- Surface evidence coverage, unresolved source relationships, review gaps, and contradictions.
-- Preserve deterministic SHA-256 fingerprints and raw payloads for reproducibility.
-- Attach evidence bundles directly to the Unified Decision Object and Decision Packet 2.0.
-- Keep truth verification and approval as explicit human/expert review responsibilities.
+- First-class criteria registry with weights, direction, scales, thresholds, evidence links, and provenance.
+- First-class alternatives registry with stable IDs, attributes, constraints, evidence links, and provenance.
+- Transparent alternative-by-criterion evaluation matrix.
+- Missing-cell, score, review, coverage, and threshold diagnostics.
+- Weighted comparative summaries with explicit no-auto-recommendation boundary.
+- Unified Decision Object and Decision Packet projection.
 
 ## Next build
 
-### v2.3.0 — Criteria, Alternatives & Tradeoff Matrix
+### v2.4.0 — Uncertainty, Sensitivity & Confidence
 
-- First-class criteria registry with weights, units, direction, thresholds, source/evidence links, and review state.
-- Alternative registry with structured attributes, constraints, scenario links, and evidence coverage.
-- Transparent tradeoff matrix with dominance, incomparability, and sensitivity-ready outputs.
-- No automatic approval or false single-score certainty.
+- Uncertainty objects connected to criteria, evaluations, scenarios, and evidence.
+- Weight and score sensitivity without hiding assumptions.
+- Confidence ranges and robustness diagnostics for comparative results.
+- Threshold and break-point analysis for recommendation stability.
+- No automatic approval or false certainty.
 
 ## Architectural boundaries
 
@@ -28,6 +29,6 @@
 - Workbench performs calculations, simulations, optimization, and technical analysis.
 - Research Lab supplies experimental and scientific artifacts.
 - Platform Core supplies shared identity, provenance, Evidence Ledger, Decision Registry, events, and exchange contracts.
-- Decision Studio orchestrates alternatives, governance, approval, publication, implementation, monitoring, reassessment, and accountability.
+- Decision Studio orchestrates criteria, alternatives, tradeoffs, governance, approval, publication, implementation, monitoring, reassessment, and accountability.
 - Connected routes are structured handoffs and do not claim external acceptance or execution.
 - Automated assessment never replaces human approval, professional judgment, required assurance, security review, or accessibility testing.

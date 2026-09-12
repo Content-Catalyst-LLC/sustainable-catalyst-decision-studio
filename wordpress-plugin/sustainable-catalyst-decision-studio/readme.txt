@@ -4,20 +4,21 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 License: GPLv2 or later
 
-Evidence and source bundle layer for the Unified Decision Object, with citation coverage, provenance, deterministic deduplication, review state, and contradiction visibility.
+Criteria, alternatives, and transparent tradeoff-matrix layer for the Unified Decision Object, with evidence-linked evaluations, matrix diagnostics, thresholds, and human-review boundaries.
 
 == Description ==
 
-Decision Studio v2.2.0 adds first-class Source Bundles and Evidence Bundles while preserving the v2.1 Unified Decision Object, Platform Context, Decision Packet 2.0, and the full connected platform. Evidence claims link to reusable source identities, retain raw provenance, and expose citation coverage, unresolved sources, review gaps, and support/challenge contradictions.
+Decision Studio v2.3.1 adds first-class criteria, alternatives, and tradeoff matrices while preserving v2.2 Evidence & Source Bundles, the v2.1 Unified Decision Object, Platform Context, Decision Packet 2.0, and the full connected platform. Criteria weights, score derivation, missing matrix cells, evidence references, review state, and threshold violations remain inspectable.
 
 Automated decision support cannot determine truth, certify evidence sufficiency, approve, publish, externally deliver, amend, suspend, retire, assure, or professionally sign off a decision.
 
 == Shortcodes ==
 
 [sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]
+[sc_decision_studio mode="tradeoffs" title="Criteria, Alternatives & Tradeoff Matrix"]
 [sc_decision_studio mode="evidence" title="Evidence & Source Bundles"]
 [sc_decision_studio mode="decision-object" title="Unified Decision Object"]
 [sc_decision_studio mode="connected" title="Connected Decision Intelligence Platform"]
@@ -31,6 +32,14 @@ Automated decision support cannot determine truth, certify evidence sufficiency,
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 2.3.1 =
+* Added Criteria Set, Alternatives Set, Tradeoff Matrix, and Tradeoff Diagnostics schemas.
+* Added normalized criteria weights while preserving input weights.
+* Added direct and scale-derived scores, matrix coverage, review, missing-cell, and threshold diagnostics.
+* Added weighted comparison summaries without automatic winner selection or recommendation.
+* Added Tradeoff Matrix workspace, Decision Object attachment, Decision Packet projection, and REST parity.
+* Preserved v2.2 Evidence & Source Bundles and all prior connected-platform capabilities.
 
 = 2.2.0 =
 * Added Source Bundle, Evidence Bundle, and Evidence Coverage schemas.
