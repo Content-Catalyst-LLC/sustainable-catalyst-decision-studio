@@ -1,6 +1,28 @@
-# Sustainable Catalyst Decision Studio v2.3.1
+# Sustainable Catalyst Decision Studio v2.4.0
 
-## Criteria, Alternatives & Tradeoff Matrix
+## Uncertainty, Sensitivity & Confidence
+
+Decision Studio v2.4.0 builds directly on the v2.3.1 Criteria, Alternatives & Tradeoff Matrix layer. It adds three first-class analytical contracts: `scds-uncertainty-register/1.0`, `scds-sensitivity-analysis/1.0`, and `scds-confidence-assessment/1.0`.
+
+The release makes uncertainty explicit, runs deterministic one-at-a-time perturbation tests over criterion weights and bounded evaluation inputs, exposes alternative score envelopes and ordering changes, and summarizes process confidence across matrix completeness, review coverage, evidence linkage, uncertainty characterization, and sensitivity coverage.
+
+**Process confidence is not a probability of correctness.** Sensitivity results are not forecasts and do not select a winner or create a recommendation. Accountable human review remains required.
+
+### v2.4.0 endpoints
+
+- `GET /uncertainty-register/template`
+- `POST /uncertainty-register/build`
+- `GET /sensitivity-analysis/template`
+- `POST /sensitivity-analysis/run`
+- `GET /confidence-assessment/template`
+- `POST /confidence-assessment/build`
+- `POST /decision-object/uncertainty-confidence`
+- `POST /decision-packet/uncertainty-confidence`
+
+WordPress route parity lives under `/wp-json/scds/v1`. The full workspace includes an **Uncertainty & Confidence** tab and supports `[sc_decision_studio mode="uncertainty" title="Uncertainty, Sensitivity & Confidence"]`.
+
+## v2.3.1 tradeoff foundation
+
 
 Decision Studio v2.3.1 builds on the v2.2 Evidence & Source Bundle layer with first-class criteria, alternatives, and transparent alternative-by-criterion comparison. `scds-criteria-set/1.0` preserves explicit weights, directions, scales, thresholds, evidence references, and provenance. `scds-alternatives-set/1.0` gives candidate choices stable identities. `scds-tradeoff-matrix/1.0` records evidence-linked evaluations and produces completeness, threshold, review, and matrix-coverage diagnostics through `scds-tradeoff-diagnostics/1.0`.
 

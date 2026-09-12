@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-confidence-assessment-1.0.json",
+  "title": "SCDS Confidence Assessment 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "confidence_assessment_id",
+    "dimensions",
+    "process_confidence_index",
+    "process_confidence_level",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-confidence-assessment/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "confidence_assessment_id": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "matrix_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "dimensions": {
+      "type": "object",
+      "required": [
+        "matrix_completeness_percent",
+        "review_coverage_percent",
+        "evidence_linkage_percent",
+        "uncertainty_characterization_percent",
+        "sensitivity_coverage_percent"
+      ]
+    },
+    "process_confidence_index": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "process_confidence_level": {
+      "type": "string"
+    },
+    "limiting_factors": {
+      "type": "array"
+    },
+    "interpretation": {
+      "type": "string"
+    },
+    "boundary": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

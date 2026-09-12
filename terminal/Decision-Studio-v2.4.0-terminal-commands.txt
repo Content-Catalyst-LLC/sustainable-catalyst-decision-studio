@@ -1,0 +1,17 @@
+Decision Studio v2.4.0 — Uncertainty, Sensitivity & Confidence
+
+MAC — APPLY / VALIDATE / GITHUB
+cd ~/Downloads
+rm -rf scds-decision-studio-v2.4.0-tiny-patch
+unzip -q sustainable-catalyst-decision-studio-v2.4.0-tiny-patch.zip
+cd scds-decision-studio-v2.4.0-tiny-patch
+chmod +x apply_and_push_decision_studio_v2_4_0_macos.sh
+./apply_and_push_decision_studio_v2_4_0_macos.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+WORDPRESS
+Upload ~/Downloads/sustainable-catalyst-decision-studio-plugin-v2.4.0.zip
+
+MAC — CONTABO DEPLOY
+cd ~/Downloads
+chmod +x deploy_decision_studio_v2_4_0_from_macos.sh
+./deploy_decision_studio_v2_4_0_from_macos.sh

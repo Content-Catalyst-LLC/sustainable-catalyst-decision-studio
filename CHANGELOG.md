@@ -1,3 +1,16 @@
+# Changelog
+
+## 2.4.0 — Uncertainty, Sensitivity & Confidence
+
+- Added `scds-uncertainty-register/1.0` with explicit targets, bounds, units, source references, rationale, and review state.
+- Added deterministic criterion-weight perturbation and bounded evaluation sensitivity analysis.
+- Added alternative score envelopes, pairwise overlap diagnostics, and ordering-change visibility.
+- Added `scds-confidence-assessment/1.0` with transparent process-confidence dimensions and limiting factors.
+- Added Decision Object and Decision Packet attachment/projection for uncertainty, sensitivity, and confidence artifacts.
+- Added WordPress **Uncertainty & Confidence** workspace and REST parity.
+- Preserved v2.3.1 Tradeoff Matrix, v2.2 Evidence & Source Bundles, v2.1 Unified Decision Object, and the v2.3.0 Energy Systems Runtime Consumer.
+- Preserved human-control boundaries: no automatic winner selection, recommendation, approval, or probability-of-correctness claim.
+
 ## v2.3.1 — Criteria, Alternatives & Tradeoff Matrix
 
 - Preserved Decision Studio v2.3.0 Energy Systems Runtime Consumer, its target-side handoff contract, endpoints, and regression tests.

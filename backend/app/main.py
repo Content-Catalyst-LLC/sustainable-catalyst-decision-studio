@@ -112,10 +112,23 @@ from app.tradeoff_matrix import (
     build_tradeoff_matrix,
     attach_tradeoff_matrix,
 )
+from app.uncertainty_confidence import (
+    UNCERTAINTY_REGISTER_SCHEMA,
+    SENSITIVITY_ANALYSIS_SCHEMA,
+    CONFIDENCE_ASSESSMENT_SCHEMA,
+    UncertaintyConfidenceRequest,
+    uncertainty_register_template,
+    sensitivity_analysis_template,
+    confidence_assessment_template,
+    build_uncertainty_register,
+    run_sensitivity_analysis,
+    assess_confidence,
+    attach_uncertainty_confidence,
+)
 
-APP_VERSION = "2.3.1"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.3.1-criteria-alternatives-tradeoff-matrix")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.3.1")
+APP_VERSION = "2.4.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.4.0-uncertainty-sensitivity-confidence")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.4.0")
 RELEASE_DATE = "2026-09-11"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -170,6 +183,8 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/decision-object/evidence", "/decision-packet/evidence-bundle",
     "/criteria/build", "/alternatives/build", "/tradeoff-matrix/build",
     "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix",
+    "/uncertainty-register/build", "/sensitivity-analysis/run", "/confidence-assessment/build",
+    "/decision-object/uncertainty-confidence", "/decision-packet/uncertainty-confidence",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -178,7 +193,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Criteria, Alternatives & Tradeoff Matrix",
+        "release_name": "Uncertainty, Sensitivity & Confidence",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -226,6 +241,9 @@ def release_manifest() -> Dict[str, Any]:
         "alternatives_set_schema": ALTERNATIVES_SET_SCHEMA,
         "tradeoff_matrix_schema": TRADEOFF_MATRIX_SCHEMA,
         "tradeoff_diagnostics_schema": TRADEOFF_DIAGNOSTICS_SCHEMA,
+        "uncertainty_register_schema": UNCERTAINTY_REGISTER_SCHEMA,
+        "sensitivity_analysis_schema": SENSITIVITY_ANALYSIS_SCHEMA,
+        "confidence_assessment_schema": CONFIDENCE_ASSESSMENT_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -299,6 +317,14 @@ def release_manifest() -> Dict[str, Any]:
             "normalized_criteria_weights": True,
             "matrix_coverage_diagnostics": True,
             "threshold_violation_visibility": True,
+            "uncertainty_register": True,
+            "deterministic_sensitivity_analysis": True,
+            "criterion_weight_perturbation": True,
+            "evaluation_bound_sensitivity": True,
+            "alternative_score_envelopes": True,
+            "pairwise_overlap_diagnostics": True,
+            "bounded_process_confidence": True,
+            "confidence_is_probability_of_correctness": False,
             "automatic_winner_selection": False,
             "automatic_recommendation": False,
         },
@@ -5398,6 +5424,75 @@ def decision_packet_tradeoff_matrix_endpoint(req: TradeoffMatrixRequest):
     return {"ok": True, "version": APP_VERSION, "decision_object": obj, "tradeoff_matrix": matrix, "decision_packet": packet}
 
 
+@app.get("/uncertainty-register/template")
+def uncertainty_register_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "uncertainty_register": uncertainty_register_template(APP_VERSION)}
+
+
+@app.get("/sensitivity-analysis/template")
+def sensitivity_analysis_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "sensitivity_analysis": sensitivity_analysis_template(APP_VERSION)}
+
+
+@app.get("/confidence-assessment/template")
+def confidence_assessment_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "confidence_assessment": confidence_assessment_template(APP_VERSION)}
+
+
+def _resolve_uncertainty_v240(req: UncertaintyConfidenceRequest):
+    obj = deepcopy(req.decisionObject) if req.decisionObject else decision_object_from_packet(req.packet, APP_VERSION, DECISION_PACKET_SCHEMA)
+    matrix = deepcopy(req.tradeoffMatrix)
+    if matrix.get("schema") != TRADEOFF_MATRIX_SCHEMA:
+        matrices = obj.get("tradeoff_matrices", []) if isinstance(obj.get("tradeoff_matrices"), list) else []
+        matrix = deepcopy(matrices[-1]) if matrices else {}
+    decision_id = str(obj.get("decision_id") or (req.packet or {}).get("decision_packet_id") or matrix.get("decision_id") or "")
+    register = deepcopy(req.uncertaintyRegister) if req.uncertaintyRegister.get("schema") == UNCERTAINTY_REGISTER_SCHEMA else build_uncertainty_register(req.uncertainties, matrix, APP_VERSION, decision_id=decision_id)
+    sensitivity = deepcopy(req.sensitivityAnalysis) if req.sensitivityAnalysis.get("schema") == SENSITIVITY_ANALYSIS_SCHEMA else run_sensitivity_analysis(matrix, register, APP_VERSION, decision_id=decision_id, config=req.sensitivityConfig)
+    confidence = deepcopy(req.confidenceAssessment) if req.confidenceAssessment.get("schema") == CONFIDENCE_ASSESSMENT_SCHEMA else assess_confidence(matrix, register, sensitivity, APP_VERSION, decision_id=decision_id)
+    return obj, matrix, register, sensitivity, confidence
+
+
+@app.post("/uncertainty-register/build")
+def uncertainty_register_build_endpoint(req: UncertaintyConfidenceRequest):
+    obj, matrix, register, sensitivity, confidence = _resolve_uncertainty_v240(req)
+    return {"ok": True, "version": APP_VERSION, "uncertainty_register": register, "tradeoff_matrix": matrix}
+
+
+@app.post("/sensitivity-analysis/run")
+def sensitivity_analysis_run_endpoint(req: UncertaintyConfidenceRequest):
+    obj, matrix, register, sensitivity, confidence = _resolve_uncertainty_v240(req)
+    return {"ok": True, "version": APP_VERSION, "uncertainty_register": register, "sensitivity_analysis": sensitivity, "tradeoff_matrix": matrix}
+
+
+@app.post("/confidence-assessment/build")
+def confidence_assessment_build_endpoint(req: UncertaintyConfidenceRequest):
+    obj, matrix, register, sensitivity, confidence = _resolve_uncertainty_v240(req)
+    return {"ok": True, "version": APP_VERSION, "uncertainty_register": register, "sensitivity_analysis": sensitivity, "confidence_assessment": confidence, "tradeoff_matrix": matrix}
+
+
+@app.post("/decision-object/uncertainty-confidence")
+def decision_object_uncertainty_confidence_endpoint(req: UncertaintyConfidenceRequest):
+    obj, matrix, register, sensitivity, confidence = _resolve_uncertainty_v240(req)
+    obj = attach_uncertainty_confidence(obj, register, sensitivity, confidence, APP_VERSION)
+    obj["mapping_summary"] = decision_object_completeness(obj)
+    return {"ok": True, "version": APP_VERSION, "decision_object": obj, "tradeoff_matrix": matrix, "uncertainty_register": register, "sensitivity_analysis": sensitivity, "confidence_assessment": confidence}
+
+
+@app.post("/decision-packet/uncertainty-confidence")
+def decision_packet_uncertainty_confidence_endpoint(req: UncertaintyConfidenceRequest):
+    obj, matrix, register, sensitivity, confidence = _resolve_uncertainty_v240(req)
+    obj = attach_uncertainty_confidence(obj, register, sensitivity, confidence, APP_VERSION)
+    obj["mapping_summary"] = decision_object_completeness(obj)
+    packet = deepcopy(req.packet) if req.packet else decision_object_to_packet(obj, APP_VERSION, DECISION_PACKET_SCHEMA)
+    packet["uncertainty_register"] = deepcopy(register)
+    packet["sensitivity_analysis"] = deepcopy(sensitivity)
+    packet["confidence_assessment"] = deepcopy(confidence)
+    packet["uncertainties"] = deepcopy(register.get("uncertainties", []))
+    packet["confidence"] = deepcopy(obj.get("confidence", {}))
+    packet["decision_object"] = {key: deepcopy(value) for key, value in obj.items() if key != "source_packet"}
+    return {"ok": True, "version": APP_VERSION, "decision_object": obj, "decision_packet": packet, "tradeoff_matrix": matrix, "uncertainty_register": register, "sensitivity_analysis": sensitivity, "confidence_assessment": confidence}
+
+
 @app.get("/public/landing-template")
 def public_landing_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "landing": public_landing_template()}
@@ -5409,10 +5504,10 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle", "/criteria/template", "/criteria/build", "/alternatives/template", "/alternatives/build", "/tradeoff-matrix/template", "/tradeoff-matrix/build", "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle", "/criteria/template", "/criteria/build", "/alternatives/template", "/alternatives/build", "/tradeoff-matrix/template", "/tradeoff-matrix/build", "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle", "/criteria/template", "/criteria/build", "/alternatives/template", "/alternatives/build", "/tradeoff-matrix/template", "/tradeoff-matrix/build", "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix", "/uncertainty-register/template", "/uncertainty-register/build", "/sensitivity-analysis/template", "/sensitivity-analysis/run", "/confidence-assessment/template", "/confidence-assessment/build", "/decision-object/uncertainty-confidence", "/decision-packet/uncertainty-confidence"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle", "/criteria/template", "/criteria/build", "/alternatives/template", "/alternatives/build", "/tradeoff-matrix/template", "/tradeoff-matrix/build", "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix", "/uncertainty-register/template", "/uncertainty-register/build", "/sensitivity-analysis/template", "/sensitivity-analysis/run", "/confidence-assessment/template", "/confidence-assessment/build", "/decision-object/uncertainty-confidence", "/decision-packet/uncertainty-confidence"]}
 
 
 # Energy Systems Intelligence v1.2.0 target-side runtime consumer.
-# Introduced in Decision Studio v2.3.0 and intentionally preserved in v2.3.1.
+# Introduced in Decision Studio v2.3.0 and intentionally preserved in v2.4.0.
 from .energy_runtime_consumer import router as energy_runtime_consumer_router
 app.include_router(energy_runtime_consumer_router)

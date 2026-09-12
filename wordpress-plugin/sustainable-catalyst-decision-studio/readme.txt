@@ -4,20 +4,21 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.3.1
+Stable tag: 2.4.0
 License: GPLv2 or later
 
-Criteria, alternatives, and transparent tradeoff-matrix layer for the Unified Decision Object, with evidence-linked evaluations, matrix diagnostics, thresholds, and human-review boundaries.
+Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
 
 == Description ==
 
-Decision Studio v2.3.1 adds first-class criteria, alternatives, and tradeoff matrices while preserving v2.2 Evidence & Source Bundles, the v2.1 Unified Decision Object, Platform Context, Decision Packet 2.0, and the full connected platform. Criteria weights, score derivation, missing matrix cells, evidence references, review state, and threshold violations remain inspectable.
+Decision Studio v2.4.0 adds first-class uncertainty registers, deterministic sensitivity analysis, alternative score envelopes, overlap diagnostics, and bounded process-confidence assessment while preserving v2.3.1 Tradeoff Matrix, v2.2 Evidence & Source Bundles, the v2.1 Unified Decision Object, Decision Packet 2.0, and the v2.3.0 Energy Systems Runtime Consumer.
 
-Automated decision support cannot determine truth, certify evidence sufficiency, approve, publish, externally deliver, amend, suspend, retire, assure, or professionally sign off a decision.
+Process confidence summarizes documentation and analysis coverage. It is not a probability that an alternative or recommendation is correct. Sensitivity results do not automatically select a winner or create a recommendation.
 
 == Shortcodes ==
 
 [sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]
+[sc_decision_studio mode="uncertainty" title="Uncertainty, Sensitivity & Confidence"]
 [sc_decision_studio mode="tradeoffs" title="Criteria, Alternatives & Tradeoff Matrix"]
 [sc_decision_studio mode="evidence" title="Evidence & Source Bundles"]
 [sc_decision_studio mode="decision-object" title="Unified Decision Object"]
@@ -32,6 +33,15 @@ Automated decision support cannot determine truth, certify evidence sufficiency,
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 2.4.0 =
+* Added Uncertainty Register, Sensitivity Analysis, and Confidence Assessment schemas.
+* Added deterministic criterion-weight and bounded-evaluation sensitivity testing.
+* Added alternative score envelopes, pairwise overlap diagnostics, and ordering-change visibility.
+* Added transparent process-confidence dimensions and limiting factors.
+* Added Decision Object/Packet attachment and WordPress REST/UI parity.
+* Preserved the Energy Runtime Consumer v2.3.0 and all v2.3.1 Tradeoff Matrix capabilities.
+* Preserved no-winner, no-auto-recommendation, and no-probability-of-correctness boundaries.
 
 = 2.3.1 =
 * Added Criteria Set, Alternatives Set, Tradeoff Matrix, and Tradeoff Diagnostics schemas.

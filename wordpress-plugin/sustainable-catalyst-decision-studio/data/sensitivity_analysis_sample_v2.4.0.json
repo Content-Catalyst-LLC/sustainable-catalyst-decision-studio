@@ -1,0 +1,226 @@
+{
+  "schema": "scds-sensitivity-analysis/1.0",
+  "version": "2.4.0",
+  "sensitivity_analysis_id": "sensitivity-analysis-8e55efa9d6ba7deb",
+  "decision_id": "SCDS-V240-SAMPLE",
+  "matrix_id": "tradeoff-matrix-8ae6beda037bdeeb",
+  "created_at": "2026-09-12T04:19:02.448576Z",
+  "baseline_scores": [
+    {
+      "alternative_id": "baseline",
+      "score": 36.0
+    },
+    {
+      "alternative_id": "option-a",
+      "score": 70.0
+    }
+  ],
+  "criterion_weight_sensitivity": [
+    {
+      "criterion_id": "cost",
+      "criterion_name": "Lifecycle cost",
+      "baseline_weight": 40.0,
+      "tests": [
+        {
+          "case": "low",
+          "weight": 32.0,
+          "alternative_scores": [
+            {
+              "alternative_id": "baseline",
+              "score": 36.5217,
+              "delta_from_baseline": 0.5217
+            },
+            {
+              "alternative_id": "option-a",
+              "score": 71.3043,
+              "delta_from_baseline": 1.3043
+            }
+          ],
+          "ordering_changed": false
+        },
+        {
+          "case": "high",
+          "weight": 48.0,
+          "alternative_scores": [
+            {
+              "alternative_id": "baseline",
+              "score": 35.5556,
+              "delta_from_baseline": -0.4444
+            },
+            {
+              "alternative_id": "option-a",
+              "score": 68.8889,
+              "delta_from_baseline": -1.1111
+            }
+          ],
+          "ordering_changed": false
+        }
+      ]
+    },
+    {
+      "criterion_id": "impact",
+      "criterion_name": "Sustainability impact",
+      "baseline_weight": 60.0,
+      "tests": [
+        {
+          "case": "low",
+          "weight": 48.0,
+          "alternative_scores": [
+            {
+              "alternative_id": "baseline",
+              "score": 35.4545,
+              "delta_from_baseline": -0.5455
+            },
+            {
+              "alternative_id": "option-a",
+              "score": 68.6364,
+              "delta_from_baseline": -1.3636
+            }
+          ],
+          "ordering_changed": false
+        },
+        {
+          "case": "high",
+          "weight": 72.0,
+          "alternative_scores": [
+            {
+              "alternative_id": "baseline",
+              "score": 36.4286,
+              "delta_from_baseline": 0.4286
+            },
+            {
+              "alternative_id": "option-a",
+              "score": 71.0714,
+              "delta_from_baseline": 1.0714
+            }
+          ],
+          "ordering_changed": false
+        }
+      ]
+    }
+  ],
+  "evaluation_uncertainty_sensitivity": [
+    {
+      "uncertainty_id": "u-a-cost",
+      "evaluation_id": "ev-a-cost",
+      "alternative_id": "option-a",
+      "criterion_id": "cost",
+      "parameter": "value",
+      "tests": [
+        {
+          "case": "lower",
+          "input": 35.0,
+          "alternative_scores": [
+            {
+              "alternative_id": "baseline",
+              "score": 36.0,
+              "delta_from_baseline": 0.0
+            },
+            {
+              "alternative_id": "option-a",
+              "score": 74.0,
+              "delta_from_baseline": 4.0
+            }
+          ],
+          "ordering_changed": false
+        },
+        {
+          "case": "upper",
+          "input": 60.0,
+          "alternative_scores": [
+            {
+              "alternative_id": "baseline",
+              "score": 36.0,
+              "delta_from_baseline": 0.0
+            },
+            {
+              "alternative_id": "option-a",
+              "score": 64.0,
+              "delta_from_baseline": -6.0
+            }
+          ],
+          "ordering_changed": false
+        }
+      ]
+    },
+    {
+      "uncertainty_id": "u-a-impact",
+      "evaluation_id": "ev-a-impact",
+      "alternative_id": "option-a",
+      "criterion_id": "impact",
+      "parameter": "value",
+      "tests": [
+        {
+          "case": "lower",
+          "input": 6.0,
+          "alternative_scores": [
+            {
+              "alternative_id": "baseline",
+              "score": 36.0,
+              "delta_from_baseline": 0.0
+            },
+            {
+              "alternative_id": "option-a",
+              "score": 58.0,
+              "delta_from_baseline": -12.0
+            }
+          ],
+          "ordering_changed": false
+        },
+        {
+          "case": "upper",
+          "input": 9.0,
+          "alternative_scores": [
+            {
+              "alternative_id": "baseline",
+              "score": 36.0,
+              "delta_from_baseline": 0.0
+            },
+            {
+              "alternative_id": "option-a",
+              "score": 76.0,
+              "delta_from_baseline": 6.0
+            }
+          ],
+          "ordering_changed": false
+        }
+      ]
+    }
+  ],
+  "alternative_score_envelopes": [
+    {
+      "alternative_id": "baseline",
+      "name": "Baseline",
+      "baseline_score": 36.0,
+      "min_score": 35.4545,
+      "max_score": 36.5217,
+      "span": 1.0672
+    },
+    {
+      "alternative_id": "option-a",
+      "name": "Option A",
+      "baseline_score": 70.0,
+      "min_score": 58.0,
+      "max_score": 76.0,
+      "span": 18.0
+    }
+  ],
+  "pairwise_overlap_diagnostics": [
+    {
+      "alternative_a": "baseline",
+      "alternative_b": "option-a",
+      "score_ranges_overlap": false,
+      "overlap_interval": []
+    }
+  ],
+  "diagnostics": {
+    "weight_tests": 4,
+    "uncertainty_tests": 4,
+    "max_absolute_score_shift": 12.0,
+    "ordering_reversal_observed": false
+  },
+  "configuration": {
+    "weight_perturbation_percent": 20.0
+  },
+  "boundary": "Sensitivity results show how comparative scores respond to explicit perturbations. They are not forecasts, probabilities, winner selection, or recommendations."
+}

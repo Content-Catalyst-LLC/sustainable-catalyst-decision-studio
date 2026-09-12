@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-uncertainty-register-1.0.json",
+  "title": "SCDS Uncertainty Register 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "uncertainty_register_id",
+    "uncertainties",
+    "diagnostics",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-uncertainty-register/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "uncertainty_register_id": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "uncertainties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "uncertainty_id",
+          "target_type",
+          "target_id",
+          "parameter",
+          "method",
+          "valid_bounds",
+          "target_known"
+        ],
+        "properties": {
+          "uncertainty_id": {
+            "type": "string"
+          },
+          "target_type": {
+            "type": "string"
+          },
+          "target_id": {
+            "type": "string"
+          },
+          "parameter": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "baseline": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "lower": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "upper": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "source_refs": {
+            "type": "array"
+          },
+          "review_status": {
+            "type": "string"
+          },
+          "valid_bounds": {
+            "type": "boolean"
+          },
+          "target_known": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "object"
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "boundary": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

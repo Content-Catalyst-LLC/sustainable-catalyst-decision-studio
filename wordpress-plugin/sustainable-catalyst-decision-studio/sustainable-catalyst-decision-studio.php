@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Criteria, Alternatives & Tradeoff Matrix for provenance-aware decision comparison, preserving Evidence & Source Bundles, the Unified Decision Object, and the connected decision lifecycle.
- * Version: 2.3.1
+ * Description: Uncertainty, Sensitivity & Confidence for transparent decision robustness analysis, preserving Tradeoff Matrix, Energy Systems Runtime Consumer, Evidence & Source Bundles, and the Unified Decision Object.
+ * Version: 2.4.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.3.1';
-    const BUILD_FINGERPRINT = 'scds-v2.3.1-criteria-alternatives-tradeoff-matrix';
-    const SOURCE_COMMIT = 'release-v2.3.1';
+    const VERSION = '2.4.0';
+    const BUILD_FINGERPRINT = 'scds-v2.4.0-uncertainty-sensitivity-confidence';
+    const SOURCE_COMMIT = 'release-v2.4.0';
     const RELEASE_DATE = '2026-09-11';
-    const DB_VERSION = '2.3.1';
+    const DB_VERSION = '2.4.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -69,6 +69,9 @@ class Sustainable_Catalyst_Decision_Studio {
     const ALTERNATIVES_SET_SCHEMA = 'scds-alternatives-set/1.0';
     const TRADEOFF_MATRIX_SCHEMA = 'scds-tradeoff-matrix/1.0';
     const TRADEOFF_DIAGNOSTICS_SCHEMA = 'scds-tradeoff-diagnostics/1.0';
+    const UNCERTAINTY_REGISTER_SCHEMA = 'scds-uncertainty-register/1.0';
+    const SENSITIVITY_ANALYSIS_SCHEMA = 'scds-sensitivity-analysis/1.0';
+    const CONFIDENCE_ASSESSMENT_SCHEMA = 'scds-confidence-assessment/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -351,7 +354,7 @@ class Sustainable_Catalyst_Decision_Studio {
         ], $atts, 'sc_decision_studio');
 
         $mode = sanitize_key($atts['mode']);
-        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'packs', 'publication', 'outcomes', 'integration', 'hardening', 'connected', 'decision-object', 'evidence', 'tradeoffs', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
+        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'packs', 'publication', 'outcomes', 'integration', 'hardening', 'connected', 'decision-object', 'evidence', 'tradeoffs', 'uncertainty', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
             $mode = 'full';
         }
         $display = sanitize_key($atts['display'] ?: $mode);
@@ -367,6 +370,7 @@ class Sustainable_Catalyst_Decision_Studio {
         if ($mode === 'decision-object') $start_tab = 'decision-object';
         if ($mode === 'evidence') $start_tab = 'evidence';
         if ($mode === 'tradeoffs') $start_tab = 'tradeoffs';
+        if ($mode === 'uncertainty') $start_tab = 'uncertainty';
         $uid = 'scds-' . wp_generate_uuid4();
 
         wp_enqueue_style('scds-decision-studio');
@@ -485,10 +489,18 @@ class Sustainable_Catalyst_Decision_Studio {
             'restTradeoffMatrixBuildUrl' => esc_url_raw(rest_url('scds/v1/tradeoff-matrix/build')),
             'restDecisionObjectTradeoffsUrl' => esc_url_raw(rest_url('scds/v1/decision-object/tradeoffs')),
             'restDecisionPacketTradeoffMatrixUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/tradeoff-matrix')),
+            'restUncertaintyRegisterTemplateUrl' => esc_url_raw(rest_url('scds/v1/uncertainty-register/template')),
+            'restUncertaintyRegisterBuildUrl' => esc_url_raw(rest_url('scds/v1/uncertainty-register/build')),
+            'restSensitivityAnalysisTemplateUrl' => esc_url_raw(rest_url('scds/v1/sensitivity-analysis/template')),
+            'restSensitivityAnalysisRunUrl' => esc_url_raw(rest_url('scds/v1/sensitivity-analysis/run')),
+            'restConfidenceAssessmentTemplateUrl' => esc_url_raw(rest_url('scds/v1/confidence-assessment/template')),
+            'restConfidenceAssessmentBuildUrl' => esc_url_raw(rest_url('scds/v1/confidence-assessment/build')),
+            'restDecisionObjectUncertaintyConfidenceUrl' => esc_url_raw(rest_url('scds/v1/decision-object/uncertainty-confidence')),
+            'restDecisionPacketUncertaintyConfidenceUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/uncertainty-confidence')),
             'restModuleNavigationUrl' => esc_url_raw(rest_url('scds/v1/integrations/module-navigation')),
             'moduleNavigation' => $this->catalyst_module_navigation(),
             'moduleHandoffEnabled' => $settings['module_handoff_enabled'] === '1',
-            'moduleHandoffStoragePrefix' => 'scds_module_handoff_v2_3_1_',
+            'moduleHandoffStoragePrefix' => 'scds_module_handoff_v2_4_0_',
             'decisionStudioReturnUrl' => esc_url_raw(home_url('/platform/decision-studio/')),
             'isLoggedIn' => is_user_logged_in(),
             'currentUser' => ['id'=>get_current_user_id(),'name'=>is_user_logged_in()?wp_get_current_user()->display_name:'','role'=>current_user_can('manage_options')?'owner':(current_user_can('edit_posts')?'editor':'observer')],
@@ -520,6 +532,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <button type="button" class="scds-tab" data-scds-tab="decision-object">Decision Object</button>
                 <button type="button" class="scds-tab" data-scds-tab="evidence">Evidence &amp; Sources</button>
                 <button type="button" class="scds-tab" data-scds-tab="tradeoffs">Tradeoff Matrix</button>
+                <button type="button" class="scds-tab" data-scds-tab="uncertainty">Uncertainty &amp; Confidence</button>
                 <button type="button" class="scds-tab" data-scds-tab="workflow">Catalyst Modules</button>
                 <button type="button" class="scds-tab" data-scds-tab="readiness">Readiness</button>
                 <button type="button" class="scds-tab" data-scds-tab="governance">Governance</button>
@@ -544,6 +557,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <?php $this->render_panel_decision_object($mode); ?>
                 <?php $this->render_panel_evidence_v220($mode); ?>
                 <?php $this->render_panel_tradeoffs_v230($mode); ?>
+                <?php $this->render_panel_uncertainty_v240($mode); ?>
                 <?php $this->render_panel_workflow($mode); ?>
                 <?php $this->render_panel_readiness($mode); ?>
                 <?php $this->render_panel_governance($mode); ?>
@@ -750,6 +764,42 @@ class Sustainable_Catalyst_Decision_Studio {
         $missing=[];$expected=0;foreach($alt_map as $aid=>$a)foreach($criteria_map as $cid=>$c){$expected++;if(empty($present[$aid.'|'.$cid]))$missing[]=['alternative_id'=>$aid,'criterion_id'=>$cid];}$summaries=[];foreach($alt_map as $aid=>$a){$sum=0.0;$used=0.0;$complete=true;$viol=[];foreach($criteria_map as $cid=>$c){$found=null;foreach($cells as $cell)if($cell['alternative_id']===$aid&&$cell['criterion_id']===$cid){$found=$cell;break;}if(!$found||$found['score']===null){$complete=false;continue;}$w=(float)($c['normalized_weight']??0);$sum+=(float)$found['score']*$w;$used+=$w;if(!empty($found['threshold_violation']))$viol[]=$cid;}$summaries[]=['alternative_id'=>$aid,'name'=>$a['name']??$aid,'weighted_score'=>($complete&&$used>0)?round($sum/$used,4):null,'complete'=>$complete,'threshold_violation_criteria'=>$viol,'score_interpretation'=>'Comparative decision-support score only; not an automatic recommendation.'];}
         $out=$this->tradeoff_matrix_template_local_v230();$out['matrix_id']='tradeoff-matrix-'.substr(hash('sha256',wp_json_encode([$criteria_set['criteria_set_id']??'', $alternatives_set['alternatives_set_id']??'', array_column($cells,'content_fingerprint')])),0,16);$out['decision_id']=$decision_id;$out['created_at']=gmdate('c');$out['updated_at']=$out['created_at'];$out['criteria_set']=$criteria_set;$out['alternatives_set']=$alternatives_set;$out['evaluations']=$cells;$out['alternative_summaries']=$summaries;$out['diagnostics']=['schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,'version'=>self::VERSION,'criteria_count'=>count($criteria_map),'alternatives_count'=>count($alt_map),'expected_cell_count'=>$expected,'evaluated_cell_count'=>count($present),'matrix_coverage_percent'=>round((count($present)/max(1,$expected))*100,1),'input_weight_total'=>(float)($criteria_set['weighting']['input_weight_total']??0),'weights_normalizable'=>(float)($criteria_set['weighting']['input_weight_total']??0)>0,'missing_evaluations'=>$missing,'unscored_evaluation_ids'=>$unscored,'needs_review_evaluation_ids'=>$needs,'threshold_violations'=>$thresholds,'complete'=>count($criteria_map)>0&&count($alt_map)>0&&!$missing&&!$unscored];return $out;
     }
+    private function uncertainty_register_template_local_v240() {
+        return ['schema'=>self::UNCERTAINTY_REGISTER_SCHEMA,'version'=>self::VERSION,'uncertainty_register_id'=>'','decision_id'=>'','created_at'=>'','updated_at'=>'','uncertainties'=>[],'diagnostics'=>['record_count'=>0,'bounded_count'=>0,'reviewed_count'=>0,'invalid_bound_ids'=>[],'unknown_target_ids'=>[],'characterization_coverage_percent'=>0.0],'provenance'=>['created_by'=>'decision-studio','records'=>[]],'boundary'=>'Uncertainty records describe bounded assumptions and input variability. They do not convert uncertainty into certainty or certify a decision outcome.'];
+    }
+    private function sensitivity_analysis_template_local_v240() {
+        return ['schema'=>self::SENSITIVITY_ANALYSIS_SCHEMA,'version'=>self::VERSION,'sensitivity_analysis_id'=>'','decision_id'=>'','matrix_id'=>'','created_at'=>'','baseline_scores'=>[],'criterion_weight_sensitivity'=>[],'evaluation_uncertainty_sensitivity'=>[],'alternative_score_envelopes'=>[],'pairwise_overlap_diagnostics'=>[],'diagnostics'=>['weight_tests'=>0,'uncertainty_tests'=>0,'max_absolute_score_shift'=>0.0,'ordering_reversal_observed'=>false],'configuration'=>['weight_perturbation_percent'=>20.0],'boundary'=>'Sensitivity results show how comparative scores respond to explicit perturbations. They are not forecasts, probabilities, winner selection, or recommendations.'];
+    }
+    private function confidence_assessment_template_local_v240() {
+        return ['schema'=>self::CONFIDENCE_ASSESSMENT_SCHEMA,'version'=>self::VERSION,'confidence_assessment_id'=>'','decision_id'=>'','matrix_id'=>'','created_at'=>'','dimensions'=>['matrix_completeness_percent'=>0.0,'review_coverage_percent'=>0.0,'evidence_linkage_percent'=>0.0,'uncertainty_characterization_percent'=>0.0,'sensitivity_coverage_percent'=>0.0],'process_confidence_index'=>0.0,'process_confidence_level'=>'insufficient','limiting_factors'=>[],'interpretation'=>'','boundary'=>'Process confidence describes documentation, review, evidence linkage, uncertainty characterization, and sensitivity coverage. It is not the probability that an alternative or recommendation is correct.'];
+    }
+    private function uncertainty_register_build_local_v240($uncertainties,$matrix,$decision_id='') {
+        if(!is_array($uncertainties))$uncertainties=[];if(!is_array($matrix))$matrix=[];$eval_ids=[];$criterion_ids=[];$alt_ids=[];foreach((array)($matrix['evaluations']??[]) as $x)if(is_array($x)&&!empty($x['evaluation_id']))$eval_ids[(string)$x['evaluation_id']]=true;foreach((array)($matrix['criteria_set']['criteria']??[]) as $x)if(is_array($x)&&!empty($x['criterion_id']))$criterion_ids[(string)$x['criterion_id']]=true;foreach((array)($matrix['alternatives_set']['alternatives']??[]) as $x)if(is_array($x)&&!empty($x['alternative_id']))$alt_ids[(string)$x['alternative_id']]=true;$rows=[];$invalid=[];$unknown=[];$bounded=0;$reviewed=0;
+        foreach($uncertainties as $i=>$u){if(!is_array($u))continue;$id=(string)($u['uncertainty_id']??($u['id']??('uncertainty-'.($i+1))));$type=strtolower((string)($u['target_type']??'evaluation'));$target=(string)($u['target_id']??($u['evaluation_id']??($u['criterion_id']??'')));$lower=is_numeric($u['lower']??null)?(float)$u['lower']:null;$upper=is_numeric($u['upper']??null)?(float)$u['upper']:null;$valid=$lower!==null&&$upper!==null&&$lower<=$upper;$known=true;if($type==='evaluation'&&$target!=='')$known=!empty($eval_ids[$target]);elseif(in_array($type,['criterion','criterion_weight'],true)&&$target!=='')$known=!empty($criterion_ids[$target]);elseif($type==='alternative'&&$target!=='')$known=!empty($alt_ids[$target]);if($valid)$bounded++;else $invalid[]=$id;if(!$known)$unknown[]=$id;$status=(string)($u['review_status']??'needs_review');if(in_array($status,['reviewed','accepted','approved'],true))$reviewed++;$rows[]=['uncertainty_id'=>$id,'target_type'=>$type,'target_id'=>$target,'parameter'=>(string)($u['parameter']??($type==='evaluation'?'score':'value')),'label'=>(string)($u['label']??($u['name']??$id)),'method'=>(string)($u['method']??'range'),'baseline'=>is_numeric($u['baseline']??null)?(float)$u['baseline']:(($valid)?(($lower+$upper)/2):null),'lower'=>$lower,'upper'=>$upper,'unit'=>(string)($u['unit']??''),'distribution'=>(array)($u['distribution']??[]),'confidence_level'=>is_numeric($u['confidence_level']??null)?(float)$u['confidence_level']:null,'source_refs'=>(array)($u['source_refs']??($u['evidence_refs']??[])),'rationale'=>(string)($u['rationale']??($u['notes']??'')),'review_status'=>$status,'valid_bounds'=>$valid,'target_known'=>$known,'content_fingerprint'=>hash('sha256',wp_json_encode($u)),'raw'=>$u];}
+        $out=$this->uncertainty_register_template_local_v240();$out['uncertainty_register_id']='uncertainty-register-'.substr(hash('sha256',wp_json_encode(array_column($rows,'content_fingerprint'))),0,16);$out['decision_id']=$decision_id;$out['created_at']=gmdate('c');$out['updated_at']=$out['created_at'];$out['uncertainties']=$rows;$out['diagnostics']=['record_count'=>count($rows),'bounded_count'=>$bounded,'reviewed_count'=>$reviewed,'invalid_bound_ids'=>$invalid,'unknown_target_ids'=>$unknown,'characterization_coverage_percent'=>count($rows)?round(($bounded/count($rows))*100,1):0.0];return $out;
+    }
+    private function matrix_scores_local_v240($matrix,$criteria_override=null,$eval_override=null) {
+        $criteria=is_array($criteria_override)?$criteria_override:(array)($matrix['criteria_set']['criteria']??[]);$alts=(array)($matrix['alternatives_set']['alternatives']??[]);$evals=is_array($eval_override)?$eval_override:(array)($matrix['evaluations']??[]);$weights=[];$total=0.0;foreach($criteria as $c){if(!is_array($c)||empty($c['criterion_id']))continue;$w=max(0,(float)($c['weight']??0));$weights[(string)$c['criterion_id']]=$w;$total+=$w;}$cells=[];foreach($evals as $e)if(is_array($e))$cells[(string)($e['alternative_id']??'').'|'.(string)($e['criterion_id']??'')]=$e;$scores=[];foreach($alts as $a){$aid=(string)($a['alternative_id']??'');$sum=0.0;$used=0.0;$complete=true;foreach($criteria as $c){$cid=(string)($c['criterion_id']??'');$cell=$cells[$aid.'|'.$cid]??null;if(!$cell||!isset($cell['score'])||$cell['score']===null){$complete=false;continue;}$w=$total>0?(($weights[$cid]??0)/$total):0;$sum+=(float)$cell['score']*$w;$used+=$w;}$scores[$aid]=($complete&&$used>0)?round($sum/$used,4):null;}return $scores;
+    }
+    private function sensitivity_analysis_build_local_v240($matrix,$register,$config=[],$decision_id='') {
+        $out=$this->sensitivity_analysis_template_local_v240();if(!is_array($matrix)||($matrix['schema']??'')!==self::TRADEOFF_MATRIX_SCHEMA){$out['diagnostics']['error']='A scds-tradeoff-matrix/1.0 matrix is required.';return $out;}$pct=is_numeric($config['weight_perturbation_percent']??null)?max(0,min(100,(float)$config['weight_perturbation_percent'])):20.0;$criteria=(array)($matrix['criteria_set']['criteria']??[]);$evals=(array)($matrix['evaluations']??[]);$baseline=$this->matrix_scores_local_v240($matrix);$all=[$baseline];$weight_tests=[];$reversal=false;$base_order=array_keys(array_filter($baseline,function($v){return $v!==null;}));usort($base_order,function($a,$b)use($baseline){return ($baseline[$b]??-INF)<=>($baseline[$a]??-INF);});
+        foreach($criteria as $c){if(!is_array($c))continue;$cid=(string)($c['criterion_id']??'');$orig=(float)($c['weight']??0);$row=['criterion_id'=>$cid,'criterion_name'=>(string)($c['name']??$cid),'baseline_weight'=>$orig,'tests'=>[]];foreach([['low',max(0,$orig*(1-$pct/100))],['high',$orig*(1+$pct/100)]] as $test){$changed=$criteria;foreach($changed as &$cc)if((string)($cc['criterion_id']??'')===$cid)$cc['weight']=$test[1];unset($cc);$scores=$this->matrix_scores_local_v240($matrix,$changed,$evals);$all[]=$scores;$order=array_keys(array_filter($scores,function($v){return $v!==null;}));usort($order,function($a,$b)use($scores){return ($scores[$b]??-INF)<=>($scores[$a]??-INF);});$changed_order=$base_order&&$order&&$base_order!==$order;if($changed_order)$reversal=true;$row['tests'][]=['case'=>$test[0],'weight'=>round($test[1],6),'alternative_scores'=>array_map(function($aid,$score)use($baseline){return ['alternative_id'=>$aid,'score'=>$score,'delta_from_baseline'=>($score!==null&&isset($baseline[$aid])&&$baseline[$aid]!==null)?round($score-$baseline[$aid],4):null];},array_keys($scores),array_values($scores)),'ordering_changed'=>$changed_order];}$weight_tests[]=$row;}
+        $unc_tests=[];$eval_map=[];foreach($evals as $i=>$e)if(is_array($e)&&!empty($e['evaluation_id']))$eval_map[(string)$e['evaluation_id']]=$i;foreach((array)($register['uncertainties']??[]) as $u){if(!is_array($u)||($u['target_type']??'')!=='evaluation'||empty($u['valid_bounds']))continue;$eid=(string)($u['target_id']??'');if(!isset($eval_map[$eid]))continue;$idx=$eval_map[$eid];$cell=$evals[$idx];$row=['uncertainty_id'=>$u['uncertainty_id']??'','evaluation_id'=>$eid,'alternative_id'=>$cell['alternative_id']??'','criterion_id'=>$cell['criterion_id']??'','parameter'=>$u['parameter']??'score','tests'=>[]];foreach([['lower',$u['lower']],['upper',$u['upper']]] as $test){$changed=$evals;$val=(float)$test[1];if(in_array((string)($u['parameter']??'score'),['score','normalized_score'],true))$changed[$idx]['score']=max(0,min(100,$val));else{$changed[$idx]['value']=$val;$criterion=null;foreach($criteria as $cc)if((string)($cc['criterion_id']??'')===(string)($cell['criterion_id']??'')){$criterion=$cc;break;}$scale=is_array($criterion['scale']??null)?$criterion['scale']:[];$lo=is_numeric($scale['min']??null)?(float)$scale['min']:null;$hi=is_numeric($scale['max']??null)?(float)$scale['max']:null;if($lo!==null&&$hi!==null&&$hi>$lo){$bounded=max($lo,min($hi,$val));$score=(($bounded-$lo)/($hi-$lo))*100;if(($criterion['direction']??'maximize')==='minimize')$score=100-$score;$changed[$idx]['score']=round($score,4);}}$scores=$this->matrix_scores_local_v240($matrix,$criteria,$changed);$all[]=$scores;$order=array_keys(array_filter($scores,function($v){return $v!==null;}));usort($order,function($a,$b)use($scores){return ($scores[$b]??-INF)<=>($scores[$a]??-INF);});$changed_order=$base_order&&$order&&$base_order!==$order;if($changed_order)$reversal=true;$row['tests'][]=['case'=>$test[0],'input'=>$test[1],'alternative_scores'=>array_map(function($aid,$score)use($baseline){return ['alternative_id'=>$aid,'score'=>$score,'delta_from_baseline'=>($score!==null&&isset($baseline[$aid])&&$baseline[$aid]!==null)?round($score-$baseline[$aid],4):null];},array_keys($scores),array_values($scores)),'ordering_changed'=>$changed_order];}$unc_tests[]=$row;}
+        $envelopes=[];$max_shift=0.0;foreach($baseline as $aid=>$base){$vals=[];foreach($all as $scores)if(isset($scores[$aid])&&$scores[$aid]!==null)$vals[]=(float)$scores[$aid];if($vals){$lo=min($vals);$hi=max($vals);if($base!==null)$max_shift=max($max_shift,abs($lo-$base),abs($hi-$base));$envelopes[]=['alternative_id'=>$aid,'baseline_score'=>$base,'min_score'=>round($lo,4),'max_score'=>round($hi,4),'span'=>round($hi-$lo,4)];}}
+        $out['sensitivity_analysis_id']='sensitivity-analysis-'.substr(hash('sha256',wp_json_encode([$matrix['matrix_id']??'',$register['uncertainty_register_id']??'',$pct])),0,16);$out['decision_id']=$decision_id?:($matrix['decision_id']??'');$out['matrix_id']=$matrix['matrix_id']??'';$out['created_at']=gmdate('c');$out['baseline_scores']=array_map(function($aid,$score){return ['alternative_id'=>$aid,'score'=>$score];},array_keys($baseline),array_values($baseline));$out['criterion_weight_sensitivity']=$weight_tests;$out['evaluation_uncertainty_sensitivity']=$unc_tests;$out['alternative_score_envelopes']=$envelopes;$out['diagnostics']=['weight_tests'=>count($weight_tests)*2,'uncertainty_tests'=>count($unc_tests)*2,'max_absolute_score_shift'=>round($max_shift,4),'ordering_reversal_observed'=>$reversal];$out['configuration']=['weight_perturbation_percent'=>$pct];return $out;
+    }
+    private function confidence_assessment_build_local_v240($matrix,$register,$sensitivity,$decision_id='') {
+        $evals=(array)($matrix['evaluations']??[]);$total=count($evals);$reviewed=0;$evidence=0;foreach($evals as $e){if(!is_array($e))continue;if(in_array((string)($e['review_status']??''),['reviewed','accepted','approved'],true))$reviewed++;if(!empty($e['evidence_refs']))$evidence++;}$dims=['matrix_completeness_percent'=>(float)($matrix['diagnostics']['matrix_coverage_percent']??0),'review_coverage_percent'=>$total?round(($reviewed/$total)*100,1):0.0,'evidence_linkage_percent'=>$total?round(($evidence/$total)*100,1):0.0,'uncertainty_characterization_percent'=>(float)($register['diagnostics']['characterization_coverage_percent']??0),'sensitivity_coverage_percent'=>((int)($sensitivity['diagnostics']['weight_tests']??0)>0)?100.0:0.0];$index=round(array_sum($dims)/count($dims),1);$floor=min($dims);$level=($index>=90&&$floor>=80)?'high_process_confidence':(($index>=70&&$floor>=50)?'moderate_process_confidence':($index>=50?'limited_process_confidence':'insufficient_process_confidence'));$limiting=[];foreach($dims as $k=>$v)if($v<70)$limiting[]=$k;if(!empty($sensitivity['diagnostics']['ordering_reversal_observed']))$limiting[]='ordering_changes_under_tested_perturbations';if(!empty($matrix['diagnostics']['threshold_violations']))$limiting[]='threshold_violations_present';$out=$this->confidence_assessment_template_local_v240();$out['confidence_assessment_id']='confidence-assessment-'.substr(hash('sha256',wp_json_encode([$matrix['matrix_id']??'',$register['uncertainty_register_id']??'',$sensitivity['sensitivity_analysis_id']??'',$dims])),0,16);$out['decision_id']=$decision_id?:($matrix['decision_id']??'');$out['matrix_id']=$matrix['matrix_id']??'';$out['created_at']=gmdate('c');$out['dimensions']=$dims;$out['process_confidence_index']=$index;$out['process_confidence_level']=$level;$out['limiting_factors']=array_values(array_unique($limiting));$out['interpretation']=ucfirst(str_replace('_',' ',$level)).': process confidence index '.$index.'/100. This index summarizes documentation and analysis coverage only; it is not a probability of correctness.';return $out;
+    }
+    private function render_panel_uncertainty_v240($mode) { ?>
+        <section class="scds-panel" data-scds-panel="uncertainty" aria-labelledby="scds-uncertainty-title">
+            <div class="scds-section-heading"><p class="scds-kicker">v2.4.0 · Uncertainty, Sensitivity &amp; Confidence</p><h3 id="scds-uncertainty-title">Test how much the comparison moves</h3><p>Register explicit bounds, perturb criterion weights, test evaluation ranges, inspect score envelopes and ordering changes, and assess process confidence from visible coverage dimensions.</p></div>
+            <div class="scds-grid scds-grid-2"><label class="scds-field scds-field-wide"><span>Uncertainties JSON</span><textarea rows="14" data-scds-uncertainty-json>[{"uncertainty_id":"u-option-a-cost","target_type":"evaluation","target_id":"evaluation-3","parameter":"value","label":"Option A lifecycle cost range","lower":35,"upper":60,"review_status":"reviewed","source_refs":["src-cost"]}]</textarea></label><label class="scds-field scds-field-wide"><span>Sensitivity configuration JSON</span><textarea rows="14" data-scds-sensitivity-config>{"weight_perturbation_percent":20}</textarea></label></div>
+            <div class="scds-actions"><button type="button" class="scds-button" data-scds-uncertainty-build>Build Uncertainty Register</button><button type="button" class="scds-button scds-button-primary" data-scds-sensitivity-run>Run Sensitivity</button><button type="button" class="scds-button" data-scds-confidence-build>Assess Confidence</button><button type="button" class="scds-button" data-scds-uncertainty-attach>Attach to Decision Object</button><button type="button" class="scds-button" data-scds-uncertainty-download>Download Analysis JSON</button></div>
+            <div class="scds-note"><strong>Confidence boundary:</strong> Process confidence measures documentation, review, evidence linkage, uncertainty characterization, and sensitivity coverage. It is not a probability that an alternative or recommendation is correct, and no sensitivity result selects a winner.</div><div data-scds-uncertainty-output aria-live="polite"></div>
+        </section>
+    <?php }
+
     private function render_panel_tradeoffs_v230($mode) { ?>
         <section class="scds-panel" data-scds-panel="tradeoffs" aria-labelledby="scds-tradeoffs-title">
             <div class="scds-section-heading"><p class="scds-kicker">v2.3.1 · Criteria, Alternatives &amp; Tradeoff Matrix</p><h3 id="scds-tradeoffs-title">Compare choices without hiding the judgment</h3><p>Define criteria and weights, name candidate alternatives, enter evidence-linked evaluations, and build a transparent comparison matrix with coverage, threshold, and review diagnostics.</p></div>
@@ -1602,7 +1652,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Criteria, Alternatives & Tradeoff Matrix',
+            'release_name'=>'Uncertainty, Sensitivity & Confidence',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
@@ -1646,6 +1696,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'alternatives_set_schema'=>self::ALTERNATIVES_SET_SCHEMA,
             'tradeoff_matrix_schema'=>self::TRADEOFF_MATRIX_SCHEMA,
             'tradeoff_diagnostics_schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,
+            'uncertainty_register_schema'=>self::UNCERTAINTY_REGISTER_SCHEMA,
+            'sensitivity_analysis_schema'=>self::SENSITIVITY_ANALYSIS_SCHEMA,
+            'confidence_assessment_schema'=>self::CONFIDENCE_ASSESSMENT_SCHEMA,
             'decision_pack_count'=>count($this->decision_pack_catalog()),
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
@@ -1679,6 +1732,13 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'normalized_criteria_weights'=>true,
                 'matrix_coverage_diagnostics'=>true,
                 'threshold_violation_visibility'=>true,
+                'uncertainty_register'=>true,
+                'deterministic_sensitivity_analysis'=>true,
+                'criterion_weight_perturbation'=>true,
+                'evaluation_bound_sensitivity'=>true,
+                'alternative_score_envelopes'=>true,
+                'bounded_process_confidence'=>true,
+                'confidence_is_probability_of_correctness'=>false,
                 'automatic_winner_selection'=>false,
                 'automatic_recommendation'=>false,
                 'connected_decision_intelligence_platform'=>true,
@@ -1790,6 +1850,14 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/tradeoff-matrix/build', ['methods'=>'POST','callback'=>[$this,'rest_tradeoff_matrix_action_v230'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-object/tradeoffs', ['methods'=>'POST','callback'=>[$this,'rest_tradeoff_matrix_action_v230'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/tradeoff-matrix', ['methods'=>'POST','callback'=>[$this,'rest_tradeoff_matrix_action_v230'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/uncertainty-register/template', ['methods'=>'GET','callback'=>[$this,'rest_uncertainty_register_template_v240'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/uncertainty-register/build', ['methods'=>'POST','callback'=>[$this,'rest_uncertainty_confidence_action_v240'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/sensitivity-analysis/template', ['methods'=>'GET','callback'=>[$this,'rest_sensitivity_analysis_template_v240'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/sensitivity-analysis/run', ['methods'=>'POST','callback'=>[$this,'rest_uncertainty_confidence_action_v240'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/confidence-assessment/template', ['methods'=>'GET','callback'=>[$this,'rest_confidence_assessment_template_v240'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/confidence-assessment/build', ['methods'=>'POST','callback'=>[$this,'rest_uncertainty_confidence_action_v240'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/uncertainty-confidence', ['methods'=>'POST','callback'=>[$this,'rest_uncertainty_confidence_action_v240'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/uncertainty-confidence', ['methods'=>'POST','callback'=>[$this,'rest_uncertainty_confidence_action_v240'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/states', ['methods'=>'GET','callback'=>[$this,'rest_governance_states'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/template', ['methods'=>'GET','callback'=>[$this,'rest_governance_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/evaluate', ['methods'=>'POST','callback'=>[$this,'rest_governance_evaluate'],'permission_callback'=>'__return_true']);
@@ -2122,6 +2190,10 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_object'=>$built]);
     }
 
+    public function rest_uncertainty_register_template_v240(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'uncertainty_register'=>$this->uncertainty_register_template_local_v240()]);}
+    public function rest_sensitivity_analysis_template_v240(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'sensitivity_analysis'=>$this->sensitivity_analysis_template_local_v240()]);}
+    public function rest_confidence_assessment_template_v240(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'confidence_assessment'=>$this->confidence_assessment_template_local_v240()]);}
+    public function rest_uncertainty_confidence_action_v240(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);}$packet=is_array($payload['packet']??null)?$payload['packet']:[];$object=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];if(!$object)$object=$this->decision_object_from_packet_local_v210($packet);$matrix=is_array($payload['tradeoffMatrix']??null)?$payload['tradeoffMatrix']:[];if(($matrix['schema']??'')!==self::TRADEOFF_MATRIX_SCHEMA&&!empty($object['tradeoff_matrices']))$matrix=end($object['tradeoff_matrices']);$decision_id=(string)($object['decision_id']??($packet['decision_packet_id']??($matrix['decision_id']??'')));$uncertainties=is_array($payload['uncertainties']??null)?$payload['uncertainties']:[];$register=is_array($payload['uncertaintyRegister']??null)&&(($payload['uncertaintyRegister']['schema']??'')===self::UNCERTAINTY_REGISTER_SCHEMA)?$payload['uncertaintyRegister']:$this->uncertainty_register_build_local_v240($uncertainties,$matrix,$decision_id);$config=is_array($payload['sensitivityConfig']??null)?$payload['sensitivityConfig']:[];$sensitivity=is_array($payload['sensitivityAnalysis']??null)&&(($payload['sensitivityAnalysis']['schema']??'')===self::SENSITIVITY_ANALYSIS_SCHEMA)?$payload['sensitivityAnalysis']:$this->sensitivity_analysis_build_local_v240($matrix,$register,$config,$decision_id);$confidence=is_array($payload['confidenceAssessment']??null)&&(($payload['confidenceAssessment']['schema']??'')===self::CONFIDENCE_ASSESSMENT_SCHEMA)?$payload['confidenceAssessment']:$this->confidence_assessment_build_local_v240($matrix,$register,$sensitivity,$decision_id);if(strpos($route,'uncertainty-register/build')!==false)return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'uncertainty_register'=>$register,'tradeoff_matrix'=>$matrix]);if(strpos($route,'sensitivity-analysis/run')!==false)return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'uncertainty_register'=>$register,'sensitivity_analysis'=>$sensitivity,'tradeoff_matrix'=>$matrix]);if(strpos($route,'confidence-assessment/build')!==false)return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'uncertainty_register'=>$register,'sensitivity_analysis'=>$sensitivity,'confidence_assessment'=>$confidence,'tradeoff_matrix'=>$matrix]);$object['uncertainty_registers']=[$register];$object['sensitivity_analyses']=[$sensitivity];$object['confidence_assessments']=[$confidence];$object['uncertainties']=$register['uncertainties'];$object['confidence']=['process_confidence_index'=>$confidence['process_confidence_index'],'process_confidence_level'=>$confidence['process_confidence_level'],'limiting_factors'=>$confidence['limiting_factors'],'boundary'=>$confidence['boundary']];$object['updated_at']=gmdate('c');$object['provenance']['records'][]=['at'=>gmdate('c'),'action'=>'uncertainty_sensitivity_confidence_attached','uncertainty_register_id'=>$register['uncertainty_register_id'],'sensitivity_analysis_id'=>$sensitivity['sensitivity_analysis_id'],'confidence_assessment_id'=>$confidence['confidence_assessment_id']];if(strpos($route,'decision-packet/uncertainty-confidence')!==false){$packet['uncertainty_register']=$register;$packet['sensitivity_analysis']=$sensitivity;$packet['confidence_assessment']=$confidence;$packet['uncertainties']=$register['uncertainties'];$packet['confidence']=$object['confidence'];$packet['decision_object']=$object;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_object'=>$object,'decision_packet'=>$packet,'tradeoff_matrix'=>$matrix,'uncertainty_register'=>$register,'sensitivity_analysis'=>$sensitivity,'confidence_assessment'=>$confidence]);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_object'=>$object,'tradeoff_matrix'=>$matrix,'uncertainty_register'=>$register,'sensitivity_analysis'=>$sensitivity,'confidence_assessment'=>$confidence]);}
     public function rest_criteria_template_v230(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'criteria_set'=>$this->criteria_set_template_local_v230()]);}
     public function rest_alternatives_template_v230(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'alternatives_set'=>$this->alternatives_set_template_local_v230()]);}
     public function rest_tradeoff_matrix_template_v230(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230()]);}
@@ -2144,7 +2216,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'publication_handoff_schema'=>self::PUBLICATION_HANDOFF_SCHEMA,
             'publication_redaction_schema'=>self::PUBLICATION_REDACTION_SCHEMA,'release'=>$this->release_manifest()]); }
     public function rest_release() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'release'=>$this->release_manifest()]); }
-    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220(),'criteria_set'=>$this->criteria_set_template_local_v230(),'alternatives_set'=>$this->alternatives_set_template_local_v230(),'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230()]); }
+    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220(),'criteria_set'=>$this->criteria_set_template_local_v230(),'alternatives_set'=>$this->alternatives_set_template_local_v230(),'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230(),'uncertainty_register'=>$this->uncertainty_register_template_local_v240(),'sensitivity_analysis'=>$this->sensitivity_analysis_template_local_v240(),'confidence_assessment'=>$this->confidence_assessment_template_local_v240()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
 
     public function rest_backend_status() {

@@ -1,0 +1,20 @@
+{
+  "schema": "scds-confidence-assessment/1.0",
+  "version": "2.4.0",
+  "confidence_assessment_id": "confidence-assessment-f51932dbc0214055",
+  "decision_id": "SCDS-V240-SAMPLE",
+  "matrix_id": "tradeoff-matrix-8ae6beda037bdeeb",
+  "created_at": "2026-09-12T04:19:02.448625Z",
+  "dimensions": {
+    "matrix_completeness_percent": 100.0,
+    "review_coverage_percent": 100.0,
+    "evidence_linkage_percent": 100.0,
+    "uncertainty_characterization_percent": 100.0,
+    "sensitivity_coverage_percent": 100.0
+  },
+  "process_confidence_index": 100.0,
+  "process_confidence_level": "high_process_confidence",
+  "limiting_factors": [],
+  "interpretation": "High process confidence: process confidence index 100.0/100. This index summarizes documentation and analysis coverage only; it is not a probability of correctness.",
+  "boundary": "Process confidence describes documentation, review, evidence linkage, uncertainty characterization, and sensitivity coverage. It is not the probability that an alternative or recommendation is correct."
+}

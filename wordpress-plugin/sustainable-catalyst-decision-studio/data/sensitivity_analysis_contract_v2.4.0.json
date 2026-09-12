@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-sensitivity-analysis-1.0.json",
+  "title": "SCDS Sensitivity Analysis 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "sensitivity_analysis_id",
+    "baseline_scores",
+    "criterion_weight_sensitivity",
+    "alternative_score_envelopes",
+    "diagnostics",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-sensitivity-analysis/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "sensitivity_analysis_id": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "matrix_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "baseline_scores": {
+      "type": "array"
+    },
+    "criterion_weight_sensitivity": {
+      "type": "array"
+    },
+    "evaluation_uncertainty_sensitivity": {
+      "type": "array"
+    },
+    "alternative_score_envelopes": {
+      "type": "array"
+    },
+    "pairwise_overlap_diagnostics": {
+      "type": "array"
+    },
+    "diagnostics": {
+      "type": "object"
+    },
+    "configuration": {
+      "type": "object"
+    },
+    "boundary": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}
