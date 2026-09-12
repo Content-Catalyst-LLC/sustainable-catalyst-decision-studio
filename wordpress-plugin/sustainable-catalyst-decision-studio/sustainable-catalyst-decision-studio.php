@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Unified Decision Object Model and Platform Context Foundation for provenance-aware cross-product decision intelligence, while preserving the connected lifecycle, governance, scenarios, publication, monitoring, and institutional integration.
- * Version: 2.1.0
+ * Version: 2.2.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.1.0';
-    const BUILD_FINGERPRINT = 'scds-v2.1.0-unified-decision-object-platform-context-foundation';
-    const SOURCE_COMMIT = 'release-v2.1.0';
+    const VERSION = '2.2.0';
+    const BUILD_FINGERPRINT = 'scds-v2.2.0-evidence-source-bundles';
+    const SOURCE_COMMIT = 'release-v2.2.0';
     const RELEASE_DATE = '2026-09-11';
-    const DB_VERSION = '2.1.0';
+    const DB_VERSION = '2.2.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -62,6 +62,9 @@ class Sustainable_Catalyst_Decision_Studio {
     const DECISION_OBJECT_SCHEMA = 'scds-decision-object/1.0';
     const PLATFORM_CONTEXT_SCHEMA = 'scds-platform-context/1.0';
     const DECISION_OBJECT_MIGRATION_SCHEMA = 'scds-decision-object-migration/1.0';
+    const EVIDENCE_BUNDLE_SCHEMA = 'scds-evidence-bundle/1.0';
+    const SOURCE_BUNDLE_SCHEMA = 'scds-source-bundle/1.0';
+    const EVIDENCE_COVERAGE_SCHEMA = 'scds-evidence-coverage/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -344,7 +347,7 @@ class Sustainable_Catalyst_Decision_Studio {
         ], $atts, 'sc_decision_studio');
 
         $mode = sanitize_key($atts['mode']);
-        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'packs', 'publication', 'outcomes', 'integration', 'hardening', 'connected', 'decision-object', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
+        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'packs', 'publication', 'outcomes', 'integration', 'hardening', 'connected', 'decision-object', 'evidence', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
             $mode = 'full';
         }
         $display = sanitize_key($atts['display'] ?: $mode);
@@ -358,6 +361,7 @@ class Sustainable_Catalyst_Decision_Studio {
 
         $start_tab = $mode === 'workflow' ? 'workflow' : ($mode === 'readiness' ? 'readiness' : ($mode === 'governance' ? 'governance' : ($mode === 'room' ? 'room' : ($mode === 'packs' ? 'packs' : ($mode === 'publication' ? 'publication' : ($mode === 'outcomes' ? 'outcomes' : ($mode === 'integration' ? 'integration' : ($mode === 'hardening' ? 'hardening' : ($mode === 'connected' ? 'connected' : ($mode === 'project-intake' ? 'intake' : (in_array($mode, ['scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report'], true) ? $mode : 'intake')))))))))));
         if ($mode === 'decision-object') $start_tab = 'decision-object';
+        if ($mode === 'evidence') $start_tab = 'evidence';
         $uid = 'scds-' . wp_generate_uuid4();
 
         wp_enqueue_style('scds-decision-studio');
@@ -461,10 +465,17 @@ class Sustainable_Catalyst_Decision_Studio {
             'restDecisionObjectContextUrl' => esc_url_raw(rest_url('scds/v1/decision-object/context')),
             'restDecisionObjectToPacketUrl' => esc_url_raw(rest_url('scds/v1/decision-object/to-packet')),
             'restDecisionPacketDecisionObjectUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/decision-object')),
+            'restSourceBundleTemplateUrl' => esc_url_raw(rest_url('scds/v1/source-bundle/template')),
+            'restSourceBundleBuildUrl' => esc_url_raw(rest_url('scds/v1/source-bundle/build')),
+            'restEvidenceBundleTemplateUrl' => esc_url_raw(rest_url('scds/v1/evidence-bundle/template')),
+            'restEvidenceBundleBuildUrl' => esc_url_raw(rest_url('scds/v1/evidence-bundle/build')),
+            'restEvidenceBundleMergeUrl' => esc_url_raw(rest_url('scds/v1/evidence-bundle/merge')),
+            'restDecisionObjectEvidenceUrl' => esc_url_raw(rest_url('scds/v1/decision-object/evidence')),
+            'restDecisionPacketEvidenceBundleUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/evidence-bundle')),
             'restModuleNavigationUrl' => esc_url_raw(rest_url('scds/v1/integrations/module-navigation')),
             'moduleNavigation' => $this->catalyst_module_navigation(),
             'moduleHandoffEnabled' => $settings['module_handoff_enabled'] === '1',
-            'moduleHandoffStoragePrefix' => 'scds_module_handoff_v2_1_0_',
+            'moduleHandoffStoragePrefix' => 'scds_module_handoff_v2_2_0_',
             'decisionStudioReturnUrl' => esc_url_raw(home_url('/platform/decision-studio/')),
             'isLoggedIn' => is_user_logged_in(),
             'currentUser' => ['id'=>get_current_user_id(),'name'=>is_user_logged_in()?wp_get_current_user()->display_name:'','role'=>current_user_can('manage_options')?'owner':(current_user_can('edit_posts')?'editor':'observer')],
@@ -494,6 +505,7 @@ class Sustainable_Catalyst_Decision_Studio {
             <nav class="scds-tabs" aria-label="Decision Studio sections">
                 <button type="button" class="scds-tab is-active" data-scds-tab="intake">Intake</button>
                 <button type="button" class="scds-tab" data-scds-tab="decision-object">Decision Object</button>
+                <button type="button" class="scds-tab" data-scds-tab="evidence">Evidence &amp; Sources</button>
                 <button type="button" class="scds-tab" data-scds-tab="workflow">Catalyst Modules</button>
                 <button type="button" class="scds-tab" data-scds-tab="readiness">Readiness</button>
                 <button type="button" class="scds-tab" data-scds-tab="governance">Governance</button>
@@ -516,6 +528,7 @@ class Sustainable_Catalyst_Decision_Studio {
             <div class="scds-panels">
                 <?php $this->render_panel_intake($mode); ?>
                 <?php $this->render_panel_decision_object($mode); ?>
+                <?php $this->render_panel_evidence_v220($mode); ?>
                 <?php $this->render_panel_workflow($mode); ?>
                 <?php $this->render_panel_readiness($mode); ?>
                 <?php $this->render_panel_governance($mode); ?>
@@ -658,7 +671,7 @@ class Sustainable_Catalyst_Decision_Studio {
     private function decision_object_template_local_v210() {
         return [
             'schema'=>self::DECISION_OBJECT_SCHEMA,'version'=>self::VERSION,'decision_id'=>'','status'=>'draft','created_at'=>'','updated_at'=>'',
-            'question'=>'','objective'=>'','alternatives'=>[],'criteria'=>[],'constraints'=>[],'assumptions'=>[],'evidence'=>[],'models'=>[],'scenarios'=>[],
+            'question'=>'','objective'=>'','alternatives'=>[],'criteria'=>[],'constraints'=>[],'assumptions'=>[],'evidence'=>[],'evidence_bundles'=>[],'source_bundles'=>[],'models'=>[],'scenarios'=>[],
             'uncertainties'=>[],'stakeholders'=>[],'tradeoffs'=>[],'recommendation'=>[],'confidence'=>[],'counterarguments'=>[],
             'provenance'=>['source_packet_schema'=>'scds-decision-packet/2.0','source_packet_id'=>'','source_packet_fingerprint'=>'','migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,'records'=>[]],
             'decision'=>[],'rationale'=>[],'outcome_review'=>[],'platform_context'=>$this->platform_context_template_local_v210(),'links'=>[],
@@ -681,6 +694,31 @@ class Sustainable_Catalyst_Decision_Studio {
         $o['source_packet']=$packet;
         return $o;
     }
+    private function source_bundle_template_local_v220() {
+        return ['schema'=>self::SOURCE_BUNDLE_SCHEMA,'version'=>self::VERSION,'bundle_id'=>'','title'=>'','created_at'=>'','updated_at'=>'','sources'=>[],'deduplication'=>['input_count'=>0,'unique_count'=>0,'duplicate_count'=>0],'provenance'=>['created_by'=>'decision-studio','records'=>[]],'boundary'=>'Inclusion does not imply truth, endorsement, freshness, or evidentiary sufficiency.'];
+    }
+    private function evidence_bundle_template_local_v220() {
+        return ['schema'=>self::EVIDENCE_BUNDLE_SCHEMA,'version'=>self::VERSION,'bundle_id'=>'','decision_id'=>'','title'=>'','created_at'=>'','updated_at'=>'','source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_records'=>[],'contradictions'=>[],'coverage'=>['schema'=>self::EVIDENCE_COVERAGE_SCHEMA,'version'=>self::VERSION,'evidence_count'=>0,'source_count'=>0,'cited_evidence_count'=>0,'uncited_evidence_count'=>0,'citation_coverage_percent'=>0,'review_ready'=>false],'provenance'=>['created_by'=>'decision-studio','records'=>[]],'review'=>['status'=>'needs_review','reviewed_by'=>'','reviewed_at'=>''],'boundary'=>'Evidence bundles organize support and challenge relationships; they do not automatically verify claims or authorize decisions.'];
+    }
+    private function source_bundle_build_local_v220($sources) {
+        if(!is_array($sources))$sources=[];$unique=[];$duplicates=[];
+        foreach($sources as $i=>$source){if(!is_array($source))continue;$fp=hash('sha256',wp_json_encode($source));$sid=sanitize_text_field((string)($source['source_id']??($source['id']??('src-'.substr($fp,0,12)))));if(isset($unique[$fp])){$duplicates[]=['duplicate_source_id'=>$sid,'canonical_source_id'=>$unique[$fp]['source_id']];continue;}$unique[$fp]=['source_id'=>$sid,'title'=>(string)($source['title']??($source['name']??$sid)),'source_type'=>(string)($source['source_type']??($source['type']??'source')),'authors'=>(array)($source['authors']??[]),'publisher'=>(string)($source['publisher']??($source['organization']??'')),'published_at'=>(string)($source['published_at']??($source['date']??'')),'url'=>(string)($source['url']??($source['uri']??'')),'doi'=>(string)($source['doi']??''),'citation'=>(string)($source['citation']??($source['formatted_citation']??'')),'freshness'=>(array)($source['freshness']??[]),'quality'=>(array)($source['quality']??($source['evidence_quality']??[])),'review_status'=>(string)($source['review_status']??'needs_review'),'provenance'=>(array)($source['provenance']??[]),'content_fingerprint'=>$fp,'raw'=>$source];}
+        $out=$this->source_bundle_template_local_v220();$out['sources']=array_values($unique);$out['bundle_id']='source-bundle-'.substr(hash('sha256',wp_json_encode(array_keys($unique))),0,16);$out['title']='Decision source bundle';$out['created_at']=gmdate('c');$out['updated_at']=$out['created_at'];$out['deduplication']=['input_count'=>count($sources),'unique_count'=>count($unique),'duplicate_count'=>count($duplicates),'duplicate_links'=>$duplicates];return $out;
+    }
+    private function evidence_bundle_build_local_v220($evidence,$sources,$decision_id='',$source_bundle=[]) {
+        if(!is_array($evidence))$evidence=[];if(!is_array($sources))$sources=[];if(!is_array($source_bundle)||($source_bundle['schema']??'')!==self::SOURCE_BUNDLE_SCHEMA)$source_bundle=$this->source_bundle_build_local_v220($sources);$known=[];foreach(($source_bundle['sources']??[]) as $s){if(is_array($s)&&!empty($s['source_id']))$known[(string)$s['source_id']]=true;}$records=[];$seen=[];$dupes=[];
+        foreach($evidence as $i=>$e){if(!is_array($e))continue;$ids=$e['source_ids']??($e['sources']??[]);if(is_string($ids))$ids=[$ids];$ids=array_values(array_filter(array_map(function($x){return is_array($x)?(string)($x['source_id']??($x['id']??'')):(string)$x;},(array)$ids)));$claim=(string)($e['claim']??($e['statement']??($e['summary']??'')));$stance=(string)($e['stance']??($e['relationship']??'context'));$fp=hash('sha256',wp_json_encode([$claim,$stance,$ids]));$eid=sanitize_text_field((string)($e['evidence_id']??($e['id']??('ev-'.substr($fp,0,12)))));if(isset($seen[$fp])){$dupes[]=['duplicate_evidence_id'=>$eid,'canonical_evidence_id'=>$seen[$fp]];continue;}$seen[$fp]=$eid;$records[]=['evidence_id'=>$eid,'claim'=>$claim,'stance'=>$stance,'source_ids'=>$ids,'citations'=>(array)($e['citations']??[]),'confidence'=>$e['confidence']??[],'quality'=>$e['quality']??($e['evidence_quality']??[]),'freshness'=>$e['freshness']??[],'limitations'=>(array)($e['limitations']??[]),'review_status'=>(string)($e['review_status']??'needs_review'),'provenance'=>(array)($e['provenance']??[]),'unresolved_source_ids'=>array_values(array_filter($ids,function($id)use($known){return !isset($known[$id]);})),'content_fingerprint'=>$fp,'raw'=>$e];}
+        $cited=0;$needs=[];$unresolved=[];$stances=[];foreach($records as $r){if(!empty($r['source_ids'])||!empty($r['citations']))$cited++;if(!in_array($r['review_status'],['reviewed','accepted','approved'],true))$needs[]=$r['evidence_id'];if(!empty($r['unresolved_source_ids']))$unresolved[]=$r['evidence_id'];$key=strtolower(trim(preg_replace('/\s+/',' ',$r['claim'])));if($key!=='')$stances[$key][$r['stance']]=true;}$contr=[];foreach($stances as $claim=>$set){if(isset($set['supports'])&&isset($set['challenges']))$contr[]=['claim'=>$claim,'stances'=>array_keys($set)];}$count=count($records);$coverage=['schema'=>self::EVIDENCE_COVERAGE_SCHEMA,'version'=>self::VERSION,'evidence_count'=>$count,'source_count'=>count($source_bundle['sources']??[]),'cited_evidence_count'=>$cited,'uncited_evidence_count'=>$count-$cited,'citation_coverage_percent'=>round(($cited/max(1,$count))*100,1),'unresolved_source_evidence_ids'=>$unresolved,'needs_review_evidence_ids'=>$needs,'contradiction_count'=>count($contr),'contradictions'=>$contr,'review_ready'=>$count>0&&($count-$cited)===0&&!$unresolved&&!$needs];$out=$this->evidence_bundle_template_local_v220();$out['bundle_id']='evidence-bundle-'.substr(hash('sha256',wp_json_encode(array_column($records,'content_fingerprint'))),0,16);$out['decision_id']=$decision_id;$out['title']='Decision evidence bundle';$out['created_at']=gmdate('c');$out['updated_at']=$out['created_at'];$out['source_bundle']=$source_bundle;$out['evidence_records']=$records;$out['deduplication']=['input_count'=>count($evidence),'unique_count'=>$count,'duplicate_count'=>count($dupes),'duplicate_links'=>$dupes];$out['contradictions']=$contr;$out['coverage']=$coverage;return $out;
+    }
+    private function render_panel_evidence_v220($mode) { ?>
+        <section class="scds-panel" data-scds-panel="evidence" aria-labelledby="scds-evidence-title">
+            <div class="scds-section-heading"><p class="scds-kicker">v2.2.0 · Evidence &amp; Source Bundles</p><h3 id="scds-evidence-title">Trace claims back to sources</h3><p>Build reusable source bundles, map evidence claims to source identities, expose citation gaps and contradictions, and attach the resulting evidence bundle to the active Decision Object.</p></div>
+            <div class="scds-grid scds-grid-2"><label class="scds-field scds-field-wide"><span>Sources JSON</span><textarea rows="12" data-scds-source-bundle-json>[{"source_id":"src-example","title":"Example source","source_type":"report","citation":"Example citation","review_status":"reviewed"}]</textarea></label><label class="scds-field scds-field-wide"><span>Evidence JSON</span><textarea rows="12" data-scds-evidence-bundle-json>[{"evidence_id":"ev-example","claim":"Example claim","stance":"supports","source_ids":["src-example"],"review_status":"reviewed"}]</textarea></label></div>
+            <div class="scds-actions"><button type="button" class="scds-button" data-scds-source-bundle-build>Build Source Bundle</button><button type="button" class="scds-button scds-button-primary" data-scds-evidence-bundle-build>Build Evidence Bundle</button><button type="button" class="scds-button" data-scds-evidence-attach>Attach to Decision Object</button><button type="button" class="scds-button" data-scds-evidence-download>Download Evidence JSON</button></div>
+            <div class="scds-note"><strong>Evidence boundary:</strong> Citation coverage, source identity, review state, and contradictions are made visible. The Studio does not automatically determine whether a claim is true or whether evidence is sufficient for professional approval.</div><div data-scds-evidence-output aria-live="polite"></div>
+        </section>
+    <?php }
+
     private function render_panel_decision_object($mode) { ?>
         <section class="scds-panel" data-scds-panel="decision-object" aria-labelledby="scds-decision-object-title">
             <div class="scds-section-heading"><p class="scds-kicker">v2.1.0 · Unified Decision Object Model</p><h3 id="scds-decision-object-title">One decision object across the platform</h3><p>Promote the current Decision Packet into a first-class object that can carry evidence, models, scenarios, uncertainty, provenance, recommendations, governance, and outcomes across Library, Research Librarian, Site Intelligence, Workbench, Research Lab, Platform Core, and Decision Studio.</p></div>
@@ -1514,7 +1552,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Unified Decision Object Model & Platform Context Foundation',
+            'release_name'=>'Evidence & Source Bundles',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
@@ -1551,6 +1589,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'decision_object_schema'=>self::DECISION_OBJECT_SCHEMA,
             'platform_context_schema'=>self::PLATFORM_CONTEXT_SCHEMA,
             'decision_object_migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,
+            'evidence_bundle_schema'=>self::EVIDENCE_BUNDLE_SCHEMA,
+            'source_bundle_schema'=>self::SOURCE_BUNDLE_SCHEMA,
+            'evidence_coverage_schema'=>self::EVIDENCE_COVERAGE_SCHEMA,
             'decision_pack_count'=>count($this->decision_pack_catalog()),
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
@@ -1573,6 +1614,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'platform_context_foundation'=>true,
                 'decision_packet_projection'=>true,
                 'decision_packet_to_object_migration'=>true,
+                'evidence_source_bundles'=>true,
+                'deterministic_source_deduplication'=>true,
+                'evidence_coverage_diagnostics'=>true,
+                'contradiction_visibility'=>true,
+                'automatic_truth_verification'=>false,
                 'connected_decision_intelligence_platform'=>true,
                 'end_to_end_lifecycle_orchestration'=>true,
                 'cross_product_action_routing'=>true,
@@ -1667,6 +1713,13 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/decision-object/context', ['methods'=>'POST','callback'=>[$this,'rest_decision_object_action_v210'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-object/to-packet', ['methods'=>'POST','callback'=>[$this,'rest_decision_object_action_v210'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/decision-object', ['methods'=>'POST','callback'=>[$this,'rest_decision_object_action_v210'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/source-bundle/template', ['methods'=>'GET','callback'=>[$this,'rest_source_bundle_template_v220'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/source-bundle/build', ['methods'=>'POST','callback'=>[$this,'rest_evidence_bundle_action_v220'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/evidence-bundle/template', ['methods'=>'GET','callback'=>[$this,'rest_evidence_bundle_template_v220'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/evidence-bundle/build', ['methods'=>'POST','callback'=>[$this,'rest_evidence_bundle_action_v220'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/evidence-bundle/merge', ['methods'=>'POST','callback'=>[$this,'rest_evidence_bundle_action_v220'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/evidence', ['methods'=>'POST','callback'=>[$this,'rest_evidence_bundle_action_v220'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/evidence-bundle', ['methods'=>'POST','callback'=>[$this,'rest_evidence_bundle_action_v220'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/states', ['methods'=>'GET','callback'=>[$this,'rest_governance_states'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/template', ['methods'=>'GET','callback'=>[$this,'rest_governance_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/evaluate', ['methods'=>'POST','callback'=>[$this,'rest_governance_evaluate'],'permission_callback'=>'__return_true']);
@@ -1999,6 +2052,10 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_object'=>$built]);
     }
 
+    public function rest_source_bundle_template_v220(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'source_bundle'=>$this->source_bundle_template_local_v220()]);}
+    public function rest_evidence_bundle_template_v220(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$this->evidence_bundle_template_local_v220()]);}
+    public function rest_evidence_bundle_action_v220(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);}$sources=is_array($payload['sources']??null)?$payload['sources']:[];$evidence=is_array($payload['evidence']??null)?$payload['evidence']:[];$packet=is_array($payload['packet']??null)?$payload['packet']:[];$object=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];$source_bundle=is_array($payload['sourceBundle']??null)?$payload['sourceBundle']:[];if(strpos($route,'source-bundle/build')!==false)return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'source_bundle'=>$this->source_bundle_build_local_v220($sources)]);if(strpos($route,'merge')!==false){$bundles=is_array($payload['bundles']??null)?$payload['bundles']:[];$sources=[];$evidence=[];foreach($bundles as $b){if(!is_array($b))continue;foreach(($b['source_bundle']['sources']??[]) as $src)$sources[]=is_array($src['raw']??null)?$src['raw']:$src;foreach(($b['evidence_records']??[]) as $ev)$evidence[]=is_array($ev['raw']??null)?$ev['raw']:$ev;}}$decision_id=(string)($object['decision_id']??($packet['decision_packet_id']??''));$bundle=is_array($payload['evidenceBundle']??null)&&(($payload['evidenceBundle']['schema']??'')===self::EVIDENCE_BUNDLE_SCHEMA)?$payload['evidenceBundle']:$this->evidence_bundle_build_local_v220($evidence,$sources,$decision_id,$source_bundle);if(strpos($route,'decision-object/evidence')!==false||strpos($route,'decision-packet/evidence-bundle')!==false){if(!$object)$object=$this->decision_object_from_packet_local_v210($packet);$object['evidence']=$bundle['evidence_records'];$object['evidence_bundles']=[$bundle];$object['source_bundles']=[$bundle['source_bundle']];$object['updated_at']=gmdate('c');if(strpos($route,'decision-packet/evidence-bundle')!==false){$packet['evidence_bundle']=$bundle;$packet['source_bundle']=$bundle['source_bundle'];$packet['evidence_registry']=$bundle['evidence_records'];$packet['decision_object']=$object;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$bundle,'decision_object'=>$object,'decision_packet'=>$packet]);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$bundle,'decision_object'=>$object]);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$bundle]);}
+
     public function rest_health() { return rest_ensure_response(['ok'=>true,'ready'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio','build_fingerprint'=>self::BUILD_FINGERPRINT,'database_version'=>(string)get_option(self::DB_VERSION_OPTION,'not-recorded'),'installed_version'=>(string)get_option(self::INSTALLED_VERSION_OPTION,'not-recorded'),'limits'=>['max_request_bytes'=>self::MAX_PUBLIC_REQUEST_BYTES,'public_rate_limit'=>self::PUBLIC_RATE_LIMIT],'governance_schema'=>'scds-decision-governance/1.0','review_event_schema'=>'scds-review-event/1.0','scenario_studio_schema'=>'scds-scenario-studio/1.0','collaboration_room_schema'=>self::COLLABORATION_ROOM_SCHEMA,'collaboration_event_schema'=>self::COLLABORATION_EVENT_SCHEMA,'decision_pack_schema'=>self::DECISION_PACK_SCHEMA,'decision_pack_application_schema'=>self::DECISION_PACK_APPLICATION_SCHEMA,
             'publication_studio_schema'=>self::PUBLICATION_STUDIO_SCHEMA,
             'outcome_monitoring_schema'=>self::OUTCOME_MONITORING_SCHEMA,
@@ -2007,10 +2064,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'public_api_schema'=>self::PUBLIC_API_SCHEMA,'embed_descriptor_schema'=>self::EMBED_DESCRIPTOR_SCHEMA,'institutional_archive_schema'=>self::INSTITUTIONAL_ARCHIVE_SCHEMA,'webhook_event_schema'=>self::WEBHOOK_EVENT_SCHEMA,'sdk_contract_schema'=>self::SDK_CONTRACT_SCHEMA,'platform_core_gateway_schema'=>self::PLATFORM_CORE_GATEWAY_SCHEMA,
             'accessibility_audit_schema'=>self::ACCESSIBILITY_AUDIT_SCHEMA,'offline_workspace_schema'=>self::OFFLINE_WORKSPACE_SCHEMA,'release_readiness_schema'=>self::RELEASE_READINESS_SCHEMA,'recovery_snapshot_schema'=>self::RECOVERY_SNAPSHOT_SCHEMA,'migration_assessment_schema'=>self::MIGRATION_ASSESSMENT_SCHEMA,
             'connected_platform_schema'=>self::CONNECTED_PLATFORM_SCHEMA,'lifecycle_assessment_schema'=>self::LIFECYCLE_ASSESSMENT_SCHEMA,'decision_intelligence_graph_schema'=>self::DECISION_INTELLIGENCE_GRAPH_SCHEMA,'action_queue_schema'=>self::ACTION_QUEUE_SCHEMA,'portfolio_index_schema'=>self::PORTFOLIO_INDEX_SCHEMA,'connected_exchange_schema'=>self::CONNECTED_EXCHANGE_SCHEMA,'lifecycle_event_schema'=>self::LIFECYCLE_EVENT_SCHEMA,'decision_object_schema'=>self::DECISION_OBJECT_SCHEMA,'platform_context_schema'=>self::PLATFORM_CONTEXT_SCHEMA,'decision_object_migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,
+            'evidence_bundle_schema'=>self::EVIDENCE_BUNDLE_SCHEMA,'source_bundle_schema'=>self::SOURCE_BUNDLE_SCHEMA,'evidence_coverage_schema'=>self::EVIDENCE_COVERAGE_SCHEMA,
             'publication_handoff_schema'=>self::PUBLICATION_HANDOFF_SCHEMA,
             'publication_redaction_schema'=>self::PUBLICATION_REDACTION_SCHEMA,'release'=>$this->release_manifest()]); }
     public function rest_release() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'release'=>$this->release_manifest()]); }
-    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210()]); }
+    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
 
     public function rest_backend_status() {

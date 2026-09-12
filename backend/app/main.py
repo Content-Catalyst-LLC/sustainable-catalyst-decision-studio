@@ -84,11 +84,24 @@ from app.decision_object import (
     normalize_decision_object,
     attach_platform_context,
     decision_object_to_packet,
+    decision_object_completeness,
+)
+from app.evidence_bundle import (
+    EVIDENCE_BUNDLE_SCHEMA,
+    SOURCE_BUNDLE_SCHEMA,
+    EVIDENCE_COVERAGE_SCHEMA,
+    EvidenceBundleRequest,
+    evidence_bundle_template,
+    source_bundle_template,
+    build_source_bundle,
+    build_evidence_bundle,
+    merge_evidence_bundles,
+    attach_evidence_bundle,
 )
 
-APP_VERSION = "2.1.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.1.0-unified-decision-object-platform-context-foundation")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.1.0")
+APP_VERSION = "2.2.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.2.0-evidence-source-bundles")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.2.0")
 RELEASE_DATE = "2026-09-11"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -139,6 +152,8 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/connected-platform/exchange", "/decision-packet/connected-platform",
     "/decision-object/normalize", "/decision-object/from-packet", "/decision-object/context",
     "/decision-object/to-packet", "/decision-packet/decision-object",
+    "/source-bundle/build", "/evidence-bundle/build", "/evidence-bundle/merge",
+    "/decision-object/evidence", "/decision-packet/evidence-bundle",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -147,7 +162,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Unified Decision Object Model & Platform Context Foundation",
+        "release_name": "Evidence & Source Bundles",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -188,6 +203,9 @@ def release_manifest() -> Dict[str, Any]:
         "decision_object_schema": DECISION_OBJECT_SCHEMA,
         "platform_context_schema": PLATFORM_CONTEXT_SCHEMA,
         "decision_object_migration_schema": DECISION_OBJECT_MIGRATION_SCHEMA,
+        "evidence_bundle_schema": EVIDENCE_BUNDLE_SCHEMA,
+        "source_bundle_schema": SOURCE_BUNDLE_SCHEMA,
+        "evidence_coverage_schema": EVIDENCE_COVERAGE_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -250,6 +268,11 @@ def release_manifest() -> Dict[str, Any]:
             "platform_context_foundation": True,
             "decision_packet_projection": True,
             "decision_packet_to_object_migration": True,
+            "evidence_source_bundles": True,
+            "deterministic_source_deduplication": True,
+            "evidence_coverage_diagnostics": True,
+            "contradiction_visibility": True,
+            "automatic_truth_verification": False,
         },
     }
 
@@ -1035,7 +1058,7 @@ def apply_institutional_decision_pack(req: DecisionPackRequest) -> Dict[str, Any
 def decision_packet_template() -> Dict[str, Any]:
     modules = module_integrations()
     return {
-        "packet_version": "2.1.0",
+        "packet_version": APP_VERSION,
         "decision_packet_schema": DECISION_PACKET_SCHEMA,
         "workflow": "Frame → Research → Gather evidence → Model → Compare → Challenge assumptions → Review → Approve → Publish → Implement → Monitor → Reassess",
         "artifact_schema": PLATFORM_ARTIFACT_SCHEMA,
@@ -4585,6 +4608,11 @@ def health():
         "portfolio_index_schema": PORTFOLIO_INDEX_SCHEMA,
         "connected_exchange_schema": CONNECTED_EXCHANGE_SCHEMA,
         "lifecycle_event_schema": LIFECYCLE_EVENT_SCHEMA,
+        "decision_object_schema": DECISION_OBJECT_SCHEMA,
+        "platform_context_schema": PLATFORM_CONTEXT_SCHEMA,
+        "evidence_bundle_schema": EVIDENCE_BUNDLE_SCHEMA,
+        "source_bundle_schema": SOURCE_BUNDLE_SCHEMA,
+        "evidence_coverage_schema": EVIDENCE_COVERAGE_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -5223,6 +5251,61 @@ def decision_packet_decision_object_endpoint(req: DecisionObjectRequest):
     packet["platform_context"] = deepcopy(obj.get("platform_context", {}))
     return {"ok": True, "version": APP_VERSION, "decision_object": obj, "decision_packet": packet}
 
+@app.get("/source-bundle/template")
+def source_bundle_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "source_bundle": source_bundle_template(APP_VERSION)}
+
+
+@app.get("/evidence-bundle/template")
+def evidence_bundle_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "evidence_bundle": evidence_bundle_template(APP_VERSION)}
+
+
+@app.post("/source-bundle/build")
+def source_bundle_build_endpoint(req: EvidenceBundleRequest):
+    bundle = build_source_bundle(req.sources, APP_VERSION)
+    return {"ok": True, "version": APP_VERSION, "source_bundle": bundle}
+
+
+@app.post("/evidence-bundle/build")
+def evidence_bundle_build_endpoint(req: EvidenceBundleRequest):
+    decision_id = str((req.decisionObject or {}).get("decision_id") or (req.packet or {}).get("decision_packet_id") or "")
+    bundle = build_evidence_bundle(req.evidence, req.sources, APP_VERSION, decision_id=decision_id, source_bundle=req.sourceBundle)
+    return {"ok": True, "version": APP_VERSION, "evidence_bundle": bundle}
+
+
+@app.post("/evidence-bundle/merge")
+def evidence_bundle_merge_endpoint(req: EvidenceBundleRequest):
+    decision_id = str((req.decisionObject or {}).get("decision_id") or (req.packet or {}).get("decision_packet_id") or "")
+    bundle = merge_evidence_bundles(req.bundles, APP_VERSION, decision_id=decision_id)
+    return {"ok": True, "version": APP_VERSION, "evidence_bundle": bundle}
+
+
+@app.post("/decision-object/evidence")
+def decision_object_evidence_endpoint(req: EvidenceBundleRequest):
+    obj = deepcopy(req.decisionObject) if req.decisionObject else decision_object_from_packet(req.packet, APP_VERSION, DECISION_PACKET_SCHEMA)
+    decision_id = str(obj.get("decision_id") or (req.packet or {}).get("decision_packet_id") or "")
+    bundle = deepcopy(req.evidenceBundle) if req.evidenceBundle.get("schema") == EVIDENCE_BUNDLE_SCHEMA else build_evidence_bundle(req.evidence, req.sources, APP_VERSION, decision_id=decision_id, source_bundle=req.sourceBundle)
+    obj = attach_evidence_bundle(obj, bundle, APP_VERSION)
+    obj["mapping_summary"] = decision_object_completeness(obj)
+    return {"ok": True, "version": APP_VERSION, "decision_object": obj, "evidence_bundle": bundle}
+
+
+@app.post("/decision-packet/evidence-bundle")
+def decision_packet_evidence_bundle_endpoint(req: EvidenceBundleRequest):
+    obj = deepcopy(req.decisionObject) if req.decisionObject else decision_object_from_packet(req.packet, APP_VERSION, DECISION_PACKET_SCHEMA)
+    decision_id = str(obj.get("decision_id") or (req.packet or {}).get("decision_packet_id") or "")
+    bundle = deepcopy(req.evidenceBundle) if req.evidenceBundle.get("schema") == EVIDENCE_BUNDLE_SCHEMA else build_evidence_bundle(req.evidence, req.sources, APP_VERSION, decision_id=decision_id, source_bundle=req.sourceBundle)
+    obj = attach_evidence_bundle(obj, bundle, APP_VERSION)
+    obj["mapping_summary"] = decision_object_completeness(obj)
+    packet = deepcopy(req.packet) if req.packet else decision_object_to_packet(obj, APP_VERSION, DECISION_PACKET_SCHEMA)
+    packet["evidence_bundle"] = deepcopy(bundle)
+    packet["source_bundle"] = deepcopy(bundle.get("source_bundle", {}))
+    packet["evidence_registry"] = deepcopy(bundle.get("evidence_records", []))
+    packet["decision_object"] = {key: deepcopy(value) for key, value in obj.items() if key != "source_packet"}
+    return {"ok": True, "version": APP_VERSION, "decision_object": obj, "evidence_bundle": bundle, "decision_packet": packet}
+
+
 @app.get("/public/landing-template")
 def public_landing_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "landing": public_landing_template()}
@@ -5234,4 +5317,4 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle"]}

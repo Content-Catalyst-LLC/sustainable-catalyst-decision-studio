@@ -1,0 +1,236 @@
+{
+  "schema": "scds-evidence-bundle/1.0",
+  "version": "2.2.0",
+  "bundle_id": "evidence-bundle-sample",
+  "decision_id": "decision-energy-001",
+  "title": "Energy transition evidence",
+  "created_at": "2026-09-11T00:00:00Z",
+  "updated_at": "2026-09-11T00:00:00Z",
+  "source_bundle": {
+    "schema": "scds-source-bundle/1.0",
+    "version": "2.2.0",
+    "bundle_id": "source-bundle-sample",
+    "title": "Energy transition sources",
+    "created_at": "2026-09-11T00:00:00Z",
+    "updated_at": "2026-09-11T00:00:00Z",
+    "sources": [
+      {
+        "source_id": "src-ipcc-ar6",
+        "title": "IPCC AR6 Synthesis Report",
+        "source_type": "report",
+        "authors": [],
+        "publisher": "IPCC",
+        "published_at": "2023",
+        "url": "https://www.ipcc.ch/report/ar6/syr/",
+        "doi": "",
+        "citation": "IPCC (2023) AR6 Synthesis Report.",
+        "freshness": {},
+        "quality": {
+          "level": "high"
+        },
+        "review_status": "reviewed",
+        "provenance": {
+          "product_id": "knowledge-library"
+        },
+        "content_fingerprint": "4c497071333b4854361a98841c3e14f0ca2ed92e3ecae3b837e1fdde78d3fa0e",
+        "raw": {
+          "source_id": "src-ipcc-ar6",
+          "title": "IPCC AR6 Synthesis Report",
+          "source_type": "report",
+          "publisher": "IPCC",
+          "published_at": "2023",
+          "url": "https://www.ipcc.ch/report/ar6/syr/",
+          "citation": "IPCC (2023) AR6 Synthesis Report.",
+          "review_status": "reviewed",
+          "quality": {
+            "level": "high"
+          },
+          "provenance": {
+            "product_id": "knowledge-library"
+          }
+        }
+      },
+      {
+        "source_id": "src-grid-study",
+        "title": "Regional grid transition study",
+        "source_type": "study",
+        "authors": [],
+        "publisher": "Example Research Institute",
+        "published_at": "2026",
+        "url": "",
+        "doi": "",
+        "citation": "Example Research Institute (2026) Regional grid transition study.",
+        "freshness": {},
+        "quality": {
+          "level": "medium"
+        },
+        "review_status": "needs_review",
+        "provenance": {
+          "product_id": "research-librarian"
+        },
+        "content_fingerprint": "989cb49865082160c3148bef1775903833c7df224d5130d5d1df3d73a4f383ab",
+        "raw": {
+          "source_id": "src-grid-study",
+          "title": "Regional grid transition study",
+          "source_type": "study",
+          "publisher": "Example Research Institute",
+          "published_at": "2026",
+          "citation": "Example Research Institute (2026) Regional grid transition study.",
+          "review_status": "needs_review",
+          "quality": {
+            "level": "medium"
+          },
+          "provenance": {
+            "product_id": "research-librarian"
+          }
+        }
+      }
+    ],
+    "deduplication": {
+      "input_count": 2,
+      "unique_count": 2,
+      "duplicate_count": 0,
+      "duplicate_links": []
+    },
+    "provenance": {
+      "created_by": "decision-studio",
+      "records": []
+    },
+    "boundary": "Inclusion does not imply truth, endorsement, freshness, or evidentiary sufficiency."
+  },
+  "evidence_records": [
+    {
+      "evidence_id": "ev-emissions",
+      "claim": "Electrification can reduce lifecycle emissions when grid carbon intensity declines.",
+      "stance": "supports",
+      "source_ids": [
+        "src-ipcc-ar6"
+      ],
+      "citations": [
+        "IPCC (2023)"
+      ],
+      "review_status": "reviewed",
+      "confidence": {
+        "level": "high"
+      },
+      "quality": {
+        "level": "high"
+      },
+      "freshness": {},
+      "limitations": [
+        "Outcome depends on grid mix and lifecycle assumptions"
+      ],
+      "provenance": {
+        "product_id": "knowledge-library"
+      },
+      "unresolved_source_ids": [],
+      "content_fingerprint": "4ca26a4160c40e45f6fef95d0b5ae77ff31a7a4dd334a78d658962cd0c256257",
+      "raw": {
+        "evidence_id": "ev-emissions",
+        "claim": "Electrification can reduce lifecycle emissions when grid carbon intensity declines.",
+        "stance": "supports",
+        "source_ids": [
+          "src-ipcc-ar6"
+        ],
+        "citations": [
+          "IPCC (2023)"
+        ],
+        "review_status": "reviewed",
+        "confidence": {
+          "level": "high"
+        },
+        "quality": {
+          "level": "high"
+        },
+        "freshness": {},
+        "limitations": [
+          "Outcome depends on grid mix and lifecycle assumptions"
+        ],
+        "provenance": {
+          "product_id": "knowledge-library"
+        }
+      }
+    },
+    {
+      "evidence_id": "ev-grid-risk",
+      "claim": "Grid constraints may delay some high-load electrification projects.",
+      "stance": "challenges",
+      "source_ids": [
+        "src-grid-study"
+      ],
+      "citations": [
+        "Example Research Institute (2026)"
+      ],
+      "review_status": "needs_review",
+      "confidence": {
+        "level": "medium"
+      },
+      "quality": {
+        "level": "medium"
+      },
+      "freshness": {},
+      "limitations": [],
+      "provenance": {
+        "product_id": "research-librarian"
+      },
+      "unresolved_source_ids": [],
+      "content_fingerprint": "cec559683fea76c37d00c0cf3de0d8b1d2aec1f235d93a917353ccfc76113ab2",
+      "raw": {
+        "evidence_id": "ev-grid-risk",
+        "claim": "Grid constraints may delay some high-load electrification projects.",
+        "stance": "challenges",
+        "source_ids": [
+          "src-grid-study"
+        ],
+        "citations": [
+          "Example Research Institute (2026)"
+        ],
+        "review_status": "needs_review",
+        "confidence": {
+          "level": "medium"
+        },
+        "quality": {
+          "level": "medium"
+        },
+        "freshness": {},
+        "limitations": [],
+        "provenance": {
+          "product_id": "research-librarian"
+        }
+      }
+    }
+  ],
+  "deduplication": {
+    "input_count": 2,
+    "unique_count": 2,
+    "duplicate_count": 0,
+    "duplicate_links": []
+  },
+  "contradictions": [],
+  "coverage": {
+    "schema": "scds-evidence-coverage/1.0",
+    "version": "2.2.0",
+    "evidence_count": 2,
+    "source_count": 2,
+    "cited_evidence_count": 2,
+    "uncited_evidence_count": 0,
+    "citation_coverage_percent": 100.0,
+    "unresolved_source_evidence_ids": [],
+    "needs_review_evidence_ids": [
+      "ev-grid-risk"
+    ],
+    "contradiction_count": 0,
+    "contradictions": [],
+    "review_ready": false
+  },
+  "provenance": {
+    "created_by": "decision-studio",
+    "records": []
+  },
+  "review": {
+    "status": "needs_review",
+    "reviewed_by": "",
+    "reviewed_at": ""
+  },
+  "boundary": "The bundle organizes evidence relationships but does not automatically verify truth or authorize a decision."
+}

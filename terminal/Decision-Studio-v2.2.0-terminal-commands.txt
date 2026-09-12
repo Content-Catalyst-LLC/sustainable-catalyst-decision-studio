@@ -1,0 +1,26 @@
+DECISION STUDIO v2.2.0 — EVIDENCE & SOURCE BUNDLES
+
+MAC — APPLY FULL RELEASE, VALIDATE, BUILD, COMMIT, TAG, PUSH
+
+cd ~/Downloads
+chmod +x install_and_push_sustainable_catalyst_decision_studio_v2_2_0_macos.sh
+./install_and_push_sustainable_catalyst_decision_studio_v2_2_0_macos.sh \
+  "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+MAC — VPS UPLOAD
+
+scp -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes \
+  ~/Downloads/sustainable-catalyst-decision-studio-backend-v2.2.0.zip \
+  ~/Downloads/upgrade_decision_studio_backend_v2_2_0_contabo.sh \
+  catalystadmin@94.72.113.77:/tmp/
+
+VPS — DEPLOY
+
+ssh -i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes catalystadmin@94.72.113.77
+chmod +x /tmp/upgrade_decision_studio_backend_v2_2_0_contabo.sh
+/tmp/upgrade_decision_studio_backend_v2_2_0_contabo.sh \
+  /tmp/sustainable-catalyst-decision-studio-backend-v2.2.0.zip
+
+VERIFY PUBLIC
+
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool

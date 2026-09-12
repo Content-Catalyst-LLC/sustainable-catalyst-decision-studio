@@ -1,3 +1,13 @@
+## v2.2.0 — Evidence & Source Bundles
+
+- Added first-class source bundles with stable identities, citations, provenance, review state, and SHA-256 content fingerprints.
+- Added evidence bundles that connect claims to one or more sources while preserving raw payloads.
+- Added deterministic source/evidence deduplication and explicit duplicate-link diagnostics.
+- Added citation-coverage, unresolved-source, review-gap, and support/challenge contradiction diagnostics.
+- Added bundle merge, Decision Object attachment, and Decision Packet projection endpoints.
+- Added WordPress Evidence & Sources workspace, shortcode mode, and REST parity.
+- Preserved Decision Object 1.0, Platform Context 1.0, Decision Packet 2.0, and all v2.0.x capabilities.
+
 ## v2.1.0 — Unified Decision Object Model & Platform Context Foundation
 
 - Added `scds-decision-object/1.0` as the first-class cross-product representation of a decision.

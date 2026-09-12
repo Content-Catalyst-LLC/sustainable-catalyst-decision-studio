@@ -1,22 +1,24 @@
-# Sustainable Catalyst Decision Studio v2.1.0
+# Sustainable Catalyst Decision Studio v2.2.0
 
-## Unified Decision Object Model & Platform Context Foundation
+## Evidence & Source Bundles
 
-Decision Studio v2.1.0 makes the **decision** a first-class cross-product object while preserving Decision Packet 2.0 and the complete Connected Decision Intelligence Platform. The new `scds-decision-object/1.0` model carries the decision question, objective, alternatives, criteria, constraints, assumptions, evidence, models, scenarios, uncertainty, stakeholders, tradeoffs, recommendation, confidence, counterarguments, provenance, decision record, rationale, and outcome review.
+Decision Studio v2.2.0 builds on the v2.1 Unified Decision Object with first-class source and evidence bundles. `scds-source-bundle/1.0` preserves reusable source identity, citation, provenance, quality, freshness, review status, and SHA-256 fingerprints. `scds-evidence-bundle/1.0` links claims to source IDs and exposes citation coverage, unresolved links, review gaps, and support/challenge contradictions through `scds-evidence-coverage/1.0`.
 
-`scds-platform-context/1.0` gives Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, Platform Core, and Decision Studio explicit roles around that object. Packet promotion is additive and projection is reversible: the source packet and its unknown fields are preserved rather than silently flattened.
+Evidence bundles attach directly to the Decision Object and project additively back into Decision Packet 2.0. The system improves traceability and review; it does not automatically verify truth or approve evidence.
 
-### v2.1.0 endpoints
+### v2.2.0 endpoints
 
-- `GET /decision-object/template`
-- `GET /platform-context/template`
-- `POST /decision-object/from-packet`
-- `POST /decision-object/normalize`
-- `POST /decision-object/context`
-- `POST /decision-object/to-packet`
-- `POST /decision-packet/decision-object`
+- `GET /source-bundle/template`
+- `POST /source-bundle/build`
+- `GET /evidence-bundle/template`
+- `POST /evidence-bundle/build`
+- `POST /evidence-bundle/merge`
+- `POST /decision-object/evidence`
+- `POST /decision-packet/evidence-bundle`
 
-WordPress route parity lives under `/wp-json/scds/v1`, with `[sc_decision_studio mode="decision-object"]`.
+WordPress route parity lives under `/wp-json/scds/v1`, with `[sc_decision_studio mode="evidence" title="Evidence & Source Bundles"]`.
+
+## v2.1.0 foundation
 
 ## Connected Decision Intelligence Platform
 

@@ -1,0 +1,39 @@
+{
+  "schema": "scds-evidence-bundle/1.0",
+  "version": "2.2.0",
+  "description": "Evidence claims linked to reusable source identities, citations, review state, provenance, coverage, and contradictions.",
+  "required": [
+    "schema",
+    "version",
+    "bundle_id",
+    "source_bundle",
+    "evidence_records",
+    "coverage",
+    "provenance",
+    "review",
+    "boundary"
+  ],
+  "record_fields": [
+    "evidence_id",
+    "claim",
+    "stance",
+    "source_ids",
+    "citations",
+    "confidence",
+    "quality",
+    "freshness",
+    "limitations",
+    "review_status",
+    "provenance",
+    "unresolved_source_ids",
+    "content_fingerprint",
+    "raw"
+  ],
+  "coverage_schema": "scds-evidence-coverage/1.0",
+  "stances": [
+    "supports",
+    "challenges",
+    "context"
+  ],
+  "boundary": "The bundle organizes evidence relationships but does not automatically verify truth or authorize a decision."
+}

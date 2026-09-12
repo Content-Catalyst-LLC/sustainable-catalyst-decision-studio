@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="2.1.0"
+VERSION="2.2.0"
 OUT="${1:-$ROOT/dist}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 PLUGIN_DIR="$ROOT/wordpress-plugin/sustainable-catalyst-decision-studio"
 mkdir -p "$OUT"
-rm -f "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip"
+rm -f "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip" "$OUT/sustainable-catalyst-decision-studio-backend-v${VERSION}.zip"
 (
   cd "$ROOT/backend"
   "$PYTHON_BIN" -m compileall -q app tests
-  "$PYTHON_BIN" -m pytest
+  "$PYTHON_BIN" -m pytest -q
 )
 "$PYTHON_BIN" "$ROOT/scripts/test_release.py"
 php -l "$PLUGIN_DIR/sustainable-catalyst-decision-studio.php"
@@ -25,4 +25,12 @@ find "$ROOT" -type f -name '*.pyc' -delete
   cd "$ROOT/.."
   zip -qr "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip" "$(basename "$ROOT")" -x '*/__pycache__/*' '*.pyc' '*/.pytest_cache/*' '*/dist/*' '*/.DS_Store'
 )
-printf 'Built:\n%s\n%s\n' "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip"
+BACKEND_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-backend-v220.XXXXXX")"
+trap 'rm -rf "$BACKEND_STAGE"' EXIT
+mkdir -p "$BACKEND_STAGE/sustainable-catalyst-decision-studio-backend-v${VERSION}/backend"
+rsync -a --exclude='__pycache__/' --exclude='.pytest_cache/' --exclude='*.pyc' --exclude='.env' --exclude='.env.*' "$ROOT/backend/" "$BACKEND_STAGE/sustainable-catalyst-decision-studio-backend-v${VERSION}/backend/"
+(
+  cd "$BACKEND_STAGE"
+  zip -qr "$OUT/sustainable-catalyst-decision-studio-backend-v${VERSION}.zip" "sustainable-catalyst-decision-studio-backend-v${VERSION}"
+)
+printf 'Built:\n%s\n%s\n%s\n' "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip" "$OUT/sustainable-catalyst-decision-studio-backend-v${VERSION}.zip"

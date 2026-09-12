@@ -1,0 +1,54 @@
+{
+  "release": "2.2.0",
+  "title": "Evidence & Source Bundles",
+  "release_date": "2026-09-11",
+  "build_fingerprint": "scds-v2.2.0-evidence-source-bundles",
+  "source_commit": "release-v2.2.0",
+  "wordpress": {
+    "plugin_version": "2.2.0",
+    "database_version": "2.2.0",
+    "shortcode": "[sc_decision_studio mode=\"evidence\" title=\"Evidence & Source Bundles\"]"
+  },
+  "backend": {
+    "version": "2.2.0",
+    "new_routes": [
+      "/source-bundle/template",
+      "/source-bundle/build",
+      "/evidence-bundle/template",
+      "/evidence-bundle/build",
+      "/evidence-bundle/merge",
+      "/decision-object/evidence",
+      "/decision-packet/evidence-bundle"
+    ]
+  },
+  "schemas": {
+    "decision_packet": "scds-decision-packet/2.0",
+    "decision_object": "scds-decision-object/1.0",
+    "platform_context": "scds-platform-context/1.0",
+    "evidence_bundle": "scds-evidence-bundle/1.0",
+    "source_bundle": "scds-source-bundle/1.0",
+    "evidence_coverage": "scds-evidence-coverage/1.0"
+  },
+  "capabilities": [
+    "Reusable source bundles with stable IDs and SHA-256 fingerprints",
+    "Deterministic source and evidence deduplication",
+    "Evidence claims linked to one or more source identities",
+    "Citation-coverage and unresolved-source diagnostics",
+    "Review-state visibility and contradiction detection",
+    "Evidence bundle attachment to the Unified Decision Object",
+    "Decision Packet evidence-bundle projection",
+    "WordPress Evidence & Sources workspace with FastAPI parity"
+  ],
+  "compatibility": {
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "packet_schema_breaking_changes": false,
+    "v2_1_0_decision_object_preserved": true,
+    "source_packet_preserved": true,
+    "automatic_truth_verification": false
+  },
+  "tests": {
+    "release_contract": true,
+    "php_syntax": true,
+    "javascript_syntax": true
+  }
+}

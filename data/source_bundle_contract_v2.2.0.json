@@ -1,0 +1,33 @@
+{
+  "schema": "scds-source-bundle/1.0",
+  "version": "2.2.0",
+  "description": "Reusable provenance-preserving source collection for Decision Studio evidence workflows.",
+  "required": [
+    "schema",
+    "version",
+    "bundle_id",
+    "sources",
+    "deduplication",
+    "provenance",
+    "boundary"
+  ],
+  "source_fields": [
+    "source_id",
+    "title",
+    "source_type",
+    "authors",
+    "publisher",
+    "published_at",
+    "url",
+    "doi",
+    "citation",
+    "freshness",
+    "quality",
+    "review_status",
+    "provenance",
+    "content_fingerprint",
+    "raw"
+  ],
+  "deduplication": "SHA-256 canonical-content fingerprint; first occurrence is canonical.",
+  "boundary": "Inclusion does not imply truth, endorsement, freshness, or evidentiary sufficiency."
+}

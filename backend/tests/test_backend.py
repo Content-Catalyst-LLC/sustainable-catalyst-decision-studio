@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '2.1.0'
+    assert r.json()['version'] == '2.2.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '2.1.0'
+    assert data['decision_packet']['packet_version'] == '2.2.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -161,7 +161,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.1.0'
+    assert data['version'] == '2.2.0'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -189,7 +189,7 @@ def test_review_status_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.1.0'
+    assert data['version'] == '2.2.0'
     assert len(data['sections']) >= 8
     assert any(s['id'] == 'finance' for s in data['sections'])
 
@@ -200,7 +200,7 @@ def test_brief_readiness_default():
     data = r.json()
     assert data['ok'] is True
     readiness = data['readiness']
-    assert readiness['readiness_version'] == '2.1.0'
+    assert readiness['readiness_version'] == '2.2.0'
     assert 0 <= readiness['readiness_percent'] <= 100
     assert 'sections' in readiness
     assert 'export_gate' in readiness
@@ -232,7 +232,7 @@ def test_scenario_comparison_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.1.0'
+    assert data['version'] == '2.2.0'
     comparison = data['scenario_comparison']
     assert comparison['scenario_count'] >= 4
     assert 'matrix' in comparison
@@ -263,7 +263,7 @@ def test_workbench_handoff_default():
     data = r.json()
     assert data['ok'] is True
     handoff = data['workbench_handoff']
-    assert handoff['handoff_version'] == '2.1.0'
+    assert handoff['handoff_version'] == '2.2.0'
     ids = [h['tool_id'] for h in handoff['recommended_handoffs']]
     assert 'economics-forecasting-and-scenario-tool' in ids
     assert any('sc_workbench' in h['shortcode'] for h in handoff['recommended_handoffs'])
@@ -273,7 +273,7 @@ def test_integrated_brief_includes_scenario_and_handoff():
     r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
     assert r.status_code == 200
     data = r.json()
-    assert data['version'] == '2.1.0'
+    assert data['version'] == '2.2.0'
     assert 'scenario_comparison' in data
     assert 'workbench_handoff' in data
     assert 'scenario_comparison_matrix' in data['brief']
@@ -286,7 +286,7 @@ def test_export_center_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['export_center']['export_center_version'] == '2.1.0'
+    assert data['export_center']['export_center_version'] == '2.2.0'
     assert any(e['id'] == 'packet_json' for e in data['export_center']['exports'])
 
 
@@ -296,7 +296,7 @@ def test_decision_packet_save_template():
     data = r.json()
     assert data['ok'] is True
     saved = data['saved_packet']
-    assert saved['packet_version'] == '2.1.0'
+    assert saved['packet_version'] == '2.2.0'
     assert saved['project_name'] == 'Saved packet test'
     assert 'readiness' in saved
     assert 'integrated_brief' in saved
@@ -308,7 +308,7 @@ def test_export_center_bundle_default():
     data = r.json()
     assert data['ok'] is True
     bundle = data['export_bundle']
-    assert bundle['bundle_version'] == '2.1.0'
+    assert bundle['bundle_version'] == '2.2.0'
     assert 'decision_packet_json' in bundle['exports']
     assert 'integrated_brief_markdown' in bundle['exports']
     assert 'audit_json' in bundle['exports']
@@ -321,8 +321,8 @@ def test_public_landing_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.1.0'
-    assert data['landing']['page_version'] == '2.1.0'
+    assert data['version'] == '2.2.0'
+    assert data['landing']['page_version'] == '2.2.0'
     assert 'Decision Studio' in data['landing']['headline']
     assert len(data['landing']['workflow']) == 7
     assert data['landing']['workflow'][0]['module'] == 'Knowledge Library'
@@ -334,7 +334,7 @@ def test_public_demo_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['demo']['demo_version'] == '2.1.0'
+    assert data['demo']['demo_version'] == '2.2.0'
     assert len(data['demo']['demo_cards']) >= 4
     assert 'Knowledge Library to source' in data['demo']['public_copy']
     assert 'Decision Studio to decide' in data['demo']['public_copy']
@@ -344,8 +344,8 @@ def test_release_manifest_identity():
     response = client.get('/release')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '2.1.0'
-    assert data['release']['build_fingerprint'] == 'scds-v2.1.0-unified-decision-object-platform-context-foundation'
+    assert data['version'] == '2.2.0'
+    assert data['release']['build_fingerprint'] == 'scds-v2.2.0-evidence-source-bundles'
     assert data['release']['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert data['release']['compatibility']['packet_schema_breaking_changes'] is False
 
@@ -358,7 +358,7 @@ def test_health_reports_cold_start_and_limits():
     assert data['cold_start_ready'] is True
     assert data['uptime_seconds'] >= 0
     assert data['limits']['max_request_bytes'] == 1048576
-    assert response.headers['x-scds-version'] == '2.1.0'
+    assert response.headers['x-scds-version'] == '2.2.0'
 
 
 def test_oversized_public_request_is_rejected():
@@ -558,7 +558,7 @@ def test_platform_handoff_template_has_new_packet_sections():
     r = client.get('/decision-packet/platform-handoffs')
     assert r.status_code == 200
     packet = r.json()['decision_packet']
-    assert packet['packet_version'] == '2.1.0'
+    assert packet['packet_version'] == '2.2.0'
     assert packet['artifact_schema'] == 'scds-platform-artifact/1.0'
     for key in ['evidence_registry', 'research_routes', 'live_evidence', 'experimental_evidence', 'platform_registry', 'integrity_checks']:
         assert key in packet
@@ -663,7 +663,7 @@ def test_review_history_detects_tampering():
 
 def test_governance_is_in_decision_packet_and_export_bundle():
     packet = client.get('/decision-packet/template').json()['decision_packet']
-    assert packet['packet_version'] == '2.1.0'
+    assert packet['packet_version'] == '2.2.0'
     assert packet['governance_schema'] == 'scds-decision-governance/1.0'
     assert packet['governance_center']['current_state'] == 'draft'
     governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
@@ -735,7 +735,7 @@ def test_scenario_studio_default_analysis():
     assert response.status_code == 200
     data = response.json()
     studio = data['scenario_studio']
-    assert data['version'] == '2.1.0'
+    assert data['version'] == '2.2.0'
     assert studio['schema'] == 'scds-scenario-studio/1.0'
     assert studio['alternative_count'] == 5
     assert len(studio['weighted_ranking']) == 5
@@ -807,7 +807,7 @@ def test_scenario_studio_time_horizon_comparison():
 def test_scenario_studio_updates_decision_packet():
     response = client.post('/decision-packet/scenario-studio', json=advanced_scenario_payload())
     packet = response.json()['decision_packet']
-    assert packet['packet_version'] == '2.1.0'
+    assert packet['packet_version'] == '2.2.0'
     assert packet['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
     assert packet['scenario_studio']['alternative_count'] == 3
     assert packet['sensitivity_analysis']['parameters']
@@ -932,14 +932,14 @@ def test_collaboration_contact_and_engagement_handoff():
     handoff = response.json()['contact_engagement_handoff']
     assert handoff['schema'] == 'sc-contact-engagement-handoff/1.0'
     assert handoff['private_workspace_required'] is True
-    assert handoff['source_version'] == '2.1.0'
+    assert handoff['source_version'] == '2.2.0'
 
 
 def test_collaboration_is_saved_and_exported_with_packet_schema_1_5():
     created = client.post('/collaboration/room', json=room_payload()).json()
     room = created['room']
     saved = client.post('/decision-packet/save-template', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['saved_packet']
-    assert saved['decision_packet']['packet_version'] == '2.1.0'
+    assert saved['decision_packet']['packet_version'] == '2.2.0'
     assert saved['decision_packet']['collaboration_room_schema'] == 'scds-collaborative-decision-room/1.0'
     assert saved['collaboration']['room_id'] == room['room_id']
     bundle = client.post('/export-center/bundle', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['export_bundle']
@@ -1017,7 +1017,7 @@ def test_apply_decision_pack_updates_packet_schema_and_plans():
     data = response.json()
     packet = data['decision_packet']
     assert data['schema'] == 'scds-decision-pack-application/1.0'
-    assert packet['packet_version'] == '2.1.0'
+    assert packet['packet_version'] == '2.2.0'
     assert packet['decision_pack_schema'] == 'scds-institutional-decision-pack/1.0'
     assert packet['institutional_decision_pack']['pack_id'] == 'responsible-ai-governance'
     assert len(packet['criteria_registry']) == 6
@@ -1461,7 +1461,7 @@ def _complete_hardening_payload():
 
 def test_release_hardening_template():
     data = client.get('/release-hardening/template').json()
-    assert data['version'] == '2.1.0'
+    assert data['version'] == '2.2.0'
     assert data['release_hardening']['schema'] == 'scds-release-readiness/1.0'
     assert 'offline_recovery' in data['release_hardening']['release_gates']
 
@@ -1577,7 +1577,7 @@ def _connected_complete_packet():
 
 def test_connected_platform_template_and_health_contracts():
     template = client.get('/connected-platform/template').json()
-    assert template['version'] == '2.1.0'
+    assert template['version'] == '2.2.0'
     assert template['connected_platform']['schema'] == 'scds-connected-decision-platform/2.0'
     assert len(template['connected_platform']['lifecycle']) == 12
     health = client.get('/health').json()
@@ -1667,8 +1667,8 @@ def test_decision_packet_connected_platform_is_additive():
 
 def test_release_manifest_declares_v2_connected_platform():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.1.0'
-    assert release['release_name'] == 'Unified Decision Object Model & Platform Context Foundation'
+    assert release['release'] == '2.2.0'
+    assert release['release_name'] == 'Evidence & Source Bundles'
     assert release['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert release['connected_platform_schema'] == 'scds-connected-decision-platform/2.0'
     assert release['compatibility']['end_to_end_lifecycle_orchestration'] is True
@@ -1680,7 +1680,7 @@ def test_catalyst_module_navigation_repair():
     response = client.get('/integrations/module-navigation')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '2.1.0'
+    assert data['version'] == '2.2.0'
     assert data['schema'] == 'scds-catalyst-module-navigation/1.0'
     assert data['handoff_schema'] == 'scds-catalyst-module-handoff/1.0'
     assert [item['id'] for item in data['modules']] == [
@@ -1699,7 +1699,7 @@ def test_decision_object_template_v210():
     assert response.status_code == 200
     data = response.json()
     obj = data['decision_object']
-    assert data['version'] == '2.1.0'
+    assert data['version'] == '2.2.0'
     assert obj['schema'] == 'scds-decision-object/1.0'
     assert obj['platform_context']['schema'] == 'scds-platform-context/1.0'
     for key in ['question','objective','alternatives','criteria','constraints','assumptions','evidence','models','scenarios','uncertainties','stakeholders','tradeoffs','recommendation','confidence','counterarguments','provenance','decision','rationale','outcome_review']:
@@ -1784,8 +1784,8 @@ def test_decision_packet_decision_object_alias_v210():
 
 def test_release_declares_v210_decision_object_foundation():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.1.0'
-    assert release['release_name'] == 'Unified Decision Object Model & Platform Context Foundation'
+    assert release['release'] == '2.2.0'
+    assert release['release_name'] == 'Evidence & Source Bundles'
     assert release['decision_object_schema'] == 'scds-decision-object/1.0'
     assert release['platform_context_schema'] == 'scds-platform-context/1.0'
     assert release['compatibility']['decision_packet_projection'] is True
@@ -1798,3 +1798,101 @@ def test_decision_packet_template_exposes_v210_object_slots():
     assert packet['platform_context_schema'] == 'scds-platform-context/1.0'
     assert packet['platform_context']['context_summary']['products_available'] == 7
     assert 'decision_object_json' in packet['export_center']['available_formats']
+
+
+def test_source_bundle_template_v220():
+    data = client.get('/source-bundle/template').json()
+    assert data['version'] == '2.2.0'
+    assert data['source_bundle']['schema'] == 'scds-source-bundle/1.0'
+
+
+def test_source_bundle_build_deduplicates_v220():
+    source = {'title':'Same source','url':'https://example.org/a','review_status':'reviewed'}
+    data = client.post('/source-bundle/build', json={'sources':[source, source]}).json()['source_bundle']
+    assert data['deduplication']['input_count'] == 2
+    assert data['deduplication']['unique_count'] == 1
+    assert data['deduplication']['duplicate_count'] == 1
+    assert len(data['sources']) == 1
+
+
+def test_evidence_bundle_build_coverage_and_review_v220():
+    payload = {
+        'sources':[{'source_id':'src-1','title':'Source 1','review_status':'reviewed'}],
+        'evidence':[{'evidence_id':'ev-1','claim':'A material claim','stance':'supports','source_ids':['src-1'],'review_status':'reviewed'}],
+    }
+    bundle = client.post('/evidence-bundle/build', json=payload).json()['evidence_bundle']
+    assert bundle['schema'] == 'scds-evidence-bundle/1.0'
+    assert bundle['coverage']['citation_coverage_percent'] == 100.0
+    assert bundle['coverage']['review_ready'] is True
+
+
+def test_evidence_bundle_exposes_unresolved_source_v220():
+    bundle = client.post('/evidence-bundle/build', json={
+        'sources':[],
+        'evidence':[{'evidence_id':'ev-x','claim':'Claim','source_ids':['missing-source'],'review_status':'reviewed'}],
+    }).json()['evidence_bundle']
+    assert bundle['coverage']['unresolved_source_evidence_ids'] == ['ev-x']
+    assert bundle['coverage']['review_ready'] is False
+
+
+def test_evidence_bundle_detects_support_challenge_v220():
+    data = client.post('/evidence-bundle/build', json={
+        'sources':[{'source_id':'s1','title':'S1'},{'source_id':'s2','title':'S2'}],
+        'evidence':[
+            {'evidence_id':'e1','claim':'Shared claim','stance':'supports','source_ids':['s1']},
+            {'evidence_id':'e2','claim':'Shared claim','stance':'challenges','source_ids':['s2']},
+        ],
+    }).json()['evidence_bundle']
+    assert data['coverage']['contradiction_count'] == 1
+    assert data['contradictions'][0]['claim'] == 'shared claim'
+
+
+def test_evidence_bundle_attaches_to_decision_object_v220():
+    data = client.post('/decision-object/evidence', json={
+        'packet':{'decision_packet_id':'D-22','project':{'decision_question':'Which option?'}},
+        'sources':[{'source_id':'s1','title':'Source','review_status':'reviewed'}],
+        'evidence':[{'evidence_id':'e1','claim':'Claim','source_ids':['s1'],'review_status':'reviewed'}],
+    }).json()
+    obj = data['decision_object']
+    assert obj['decision_id'] == 'D-22'
+    assert len(obj['evidence_bundles']) == 1
+    assert obj['evidence'][0]['evidence_id'] == 'e1'
+    assert obj['provenance']['records'][-1]['action'] == 'evidence_bundle_attached'
+
+
+def test_decision_packet_evidence_bundle_projection_v220():
+    data = client.post('/decision-packet/evidence-bundle', json={
+        'packet':{'decision_packet_id':'D-22','project':{'decision_question':'Which option?'}},
+        'sources':[{'source_id':'s1','title':'Source','review_status':'reviewed'}],
+        'evidence':[{'evidence_id':'e1','claim':'Claim','source_ids':['s1'],'review_status':'reviewed'}],
+    }).json()
+    packet = data['decision_packet']
+    assert packet['evidence_bundle']['schema'] == 'scds-evidence-bundle/1.0'
+    assert packet['source_bundle']['schema'] == 'scds-source-bundle/1.0'
+    assert packet['evidence_registry'][0]['evidence_id'] == 'e1'
+    assert packet['decision_object']['evidence_bundles'][0]['schema'] == 'scds-evidence-bundle/1.0'
+
+
+def test_evidence_bundle_merge_v220():
+    first = client.post('/evidence-bundle/build', json={
+        'sources':[{'source_id':'s1','title':'Source 1'}],
+        'evidence':[{'evidence_id':'e1','claim':'First','source_ids':['s1']}],
+    }).json()['evidence_bundle']
+    second = client.post('/evidence-bundle/build', json={
+        'sources':[{'source_id':'s2','title':'Source 2'}],
+        'evidence':[{'evidence_id':'e2','claim':'Second','source_ids':['s2']}],
+    }).json()['evidence_bundle']
+    merged = client.post('/evidence-bundle/merge', json={'bundles':[first, second]}).json()['evidence_bundle']
+    assert len(merged['source_bundle']['sources']) == 2
+    assert len(merged['evidence_records']) == 2
+    assert len(merged['provenance']['records']) == 2
+
+
+def test_release_declares_v220_evidence_bundle_foundation():
+    release = client.get('/release').json()['release']
+    assert release['release'] == '2.2.0'
+    assert release['release_name'] == 'Evidence & Source Bundles'
+    assert release['evidence_bundle_schema'] == 'scds-evidence-bundle/1.0'
+    assert release['source_bundle_schema'] == 'scds-source-bundle/1.0'
+    assert release['evidence_coverage_schema'] == 'scds-evidence-coverage/1.0'
+    assert release['compatibility']['automatic_truth_verification'] is False

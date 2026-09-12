@@ -149,6 +149,8 @@ def decision_object_template(app_version: str, packet_schema: str) -> Dict[str, 
         "constraints": [],
         "assumptions": [],
         "evidence": [],
+        "evidence_bundles": [],
+        "source_bundles": [],
         "models": [],
         "scenarios": [],
         "uncertainties": [],
@@ -358,6 +360,8 @@ def decision_object_to_packet(decision_object: Dict[str, Any], app_version: str,
     packet["criteria_registry"] = deepcopy(obj.get("criteria", []))
     packet["assumptions"] = deepcopy(obj.get("assumptions", []))
     packet["evidence_registry"] = deepcopy(obj.get("evidence", []))
+    packet["evidence_bundles"] = deepcopy(obj.get("evidence_bundles", []))
+    packet["source_bundles"] = deepcopy(obj.get("source_bundles", []))
     packet.setdefault("scenarios", {})["records"] = deepcopy(obj.get("scenarios") or obj.get("alternatives", []))
     packet["technical_artifacts"] = deepcopy(obj.get("models", []))
     packet["risks"] = deepcopy(obj.get("uncertainties", []))

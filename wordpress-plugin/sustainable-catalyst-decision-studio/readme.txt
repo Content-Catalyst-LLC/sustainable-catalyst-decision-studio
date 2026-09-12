@@ -4,22 +4,21 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.2.0
 License: GPLv2 or later
 
-Unified decision-object and platform-context foundation for evidence, modeling, alternatives, governance, publication, implementation, monitoring, reassessment, and institutional exchange.
+Evidence and source bundle layer for the Unified Decision Object, with citation coverage, provenance, deterministic deduplication, review state, and contradiction visibility.
 
 == Description ==
 
-Decision Studio v2.1.0 makes the decision a first-class platform object while preserving Decision Packet 2.0, Connected Platform, and Catalyst module handoffs. The unified object carries question, objective, alternatives, criteria, constraints, assumptions, evidence, models, scenarios, uncertainty, stakeholders, tradeoffs, recommendation, confidence, counterarguments, provenance, decision record, rationale, and outcome review.
+Decision Studio v2.2.0 adds first-class Source Bundles and Evidence Bundles while preserving the v2.1 Unified Decision Object, Platform Context, Decision Packet 2.0, and the full connected platform. Evidence claims link to reusable source identities, retain raw provenance, and expose citation coverage, unresolved sources, review gaps, and support/challenge contradictions.
 
-Platform Context assigns explicit roles to Knowledge Library, Research Librarian, Site Intelligence, Workbench, Research Lab, Platform Core, and Decision Studio. Packet promotion and projection are additive and reversible.
-
-Automated decision support cannot approve, publish, externally deliver, amend, suspend, retire, certify, assure, or professionally sign off a decision.
+Automated decision support cannot determine truth, certify evidence sufficiency, approve, publish, externally deliver, amend, suspend, retire, assure, or professionally sign off a decision.
 
 == Shortcodes ==
 
 [sc_decision_studio mode="full" title="Sustainable Catalyst Decision Studio"]
+[sc_decision_studio mode="evidence" title="Evidence & Source Bundles"]
 [sc_decision_studio mode="decision-object" title="Unified Decision Object"]
 [sc_decision_studio mode="connected" title="Connected Decision Intelligence Platform"]
 [sc_decision_studio mode="hardening" title="Accessibility, Offline Use, and Release Hardening"]
@@ -32,6 +31,13 @@ Automated decision support cannot approve, publish, externally deliver, amend, s
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 2.2.0 =
+* Added Source Bundle, Evidence Bundle, and Evidence Coverage schemas.
+* Added deterministic SHA-256 deduplication and source-linked evidence records.
+* Added citation coverage, unresolved-source, review-gap, and contradiction diagnostics.
+* Added Evidence & Sources workspace, bundle merge, Decision Object attachment, and Decision Packet projection.
+* Preserved v2.1.0 Decision Object, Decision Packet 2.0, and all connected-platform capabilities.
 
 = 2.1.0 =
 * Added first-class Unified Decision Object and Platform Context schemas.
