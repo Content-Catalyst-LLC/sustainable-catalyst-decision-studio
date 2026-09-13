@@ -1,3 +1,7 @@
+## v2.8.0 — Decision Graph & Dependency Mapping
+
+**Status: built for release.** Adds inspectable decision dependencies, orphan/cycle/unresolved-reference diagnostics, and review-only change-impact tracing while preserving non-causal and human-control boundaries.
+
 ## v2.7.0 — Site Intelligence Context Integration
 
 **Status: built for release.** Adds provenance-aware real-world context bundles from Site Intelligence while keeping observation ownership and human interpretation boundaries explicit.
@@ -10,8 +14,6 @@ Status: built. Typed source-owned handoffs, bounded analysis/computation request
 
 ## Next
 
-- v2.7.0 — Site Intelligence Context Integration
-- v2.8.0 — Decision Graph & Dependency Mapping
 - v2.9.0 — Recommendations, Review & Challenge Layer
 - v3.0.0 — Connected Decision Intelligence
 

@@ -1,0 +1,287 @@
+{
+  "release": "2.8.0",
+  "workflow_label": "Sources \u2192 Evidence \u2192 Site Context \u2192 Dependencies \u2192 Criteria \u2192 Alternatives \u2192 Tradeoffs \u2192 Uncertainty \u2192 Sensitivity \u2192 Confidence \u2192 Scenarios \u2192 Stress Tests \u2192 Lab/Workbench Handoffs \u2192 Recommendation \u2192 Human Decision \u2192 Outcome Review",
+  "navigation_schema": "scds-catalyst-module-navigation/1.0",
+  "handoff_schema": "scds-catalyst-module-handoff/1.0",
+  "modules": [
+    {
+      "id": "catalyst-canvas",
+      "name": "Catalyst Canvas",
+      "stage": "Frame",
+      "url": "/narrative-strategy/catalyst-canvas/",
+      "artifact_key": "framing",
+      "packet_section": "decision_framing",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "catalyst-data",
+      "name": "Catalyst Data",
+      "stage": "Anchor",
+      "url": "/infrastructure/catalyst-data/",
+      "artifact_key": "evidence_records",
+      "packet_section": "evidence_and_measurement",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "catalyst-analytics-r",
+      "name": "Catalyst Analytics R",
+      "stage": "Model",
+      "url": "/modeling-analytics/catalyst-analytics-r/",
+      "artifact_key": "scenario_analysis",
+      "packet_section": "scenarios",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "global-impact-catalyst",
+      "name": "Global Impact Catalyst",
+      "stage": "Measure",
+      "url": "/modeling-analytics/global-impact-catalyst/",
+      "artifact_key": "impact_records",
+      "packet_section": "impact_measurement",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "catalyst-narrative-risk",
+      "name": "Narrative Risk",
+      "stage": "Review",
+      "url": "/narrative-strategy/narrative-risk/",
+      "artifact_key": "claim_reviews",
+      "packet_section": "claim_and_risk_review",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "catalyst-finance",
+      "name": "Catalyst Finance",
+      "stage": "Evaluate",
+      "url": "/modeling-analytics/catalyst-finance/",
+      "artifact_key": "finance_analysis",
+      "packet_section": "financial_tradeoffs",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    },
+    {
+      "id": "catalyst-grit",
+      "name": "Catalyst Grit",
+      "stage": "Sustain",
+      "url": "/human-systems/catalyst-grit/",
+      "artifact_key": "execution_recovery",
+      "packet_section": "execution_and_recovery",
+      "contract": "scds-platform-artifact/1.0 + legacy adapter"
+    }
+  ],
+  "compatibility": {
+    "typed_artifact_schema": "scds-platform-artifact/1.0",
+    "legacy_adapters_preserved": true,
+    "decision_packet_schema": "scds-decision-packet/2.0",
+    "decision_object_projection": true,
+    "packet_breaking_changes": false,
+    "lab_native_handoffs": true,
+    "workbench_native_handoffs": true,
+    "bidirectional_analysis_requests": true,
+    "site_intelligence_context_bundles": true,
+    "site_intelligence_source_identity_preserved": true,
+    "site_intelligence_freshness_visible": true,
+    "explicit_scenario_context_links": true,
+    "decision_dependency_graphs": true,
+    "change_impact_tracing": true
+  },
+  "boundaries": [
+    "Scenario conditions are explicit assumptions, not forecasts or likelihood estimates.",
+    "Stress-test passes do not imply approval, certification, or recommendation.",
+    "Ordering changes, threshold breaches, and score swings are surfaced for accountable review rather than resolved automatically.",
+    "Uncertainty bounds and sensitivity tests remain available from v2.4.0 and do not convert uncertainty into certainty.",
+    "Process confidence describes documentation and analysis coverage, not probability of correctness.",
+    "Decision Object promotion is additive; Decision Packet 2.0 remains supported and reversible.",
+    "Browser-local handoffs are not remote API delivery.",
+    "Human review remains required before approval, publication, or consequential use.",
+    "Decision Studio does not execute Lab experiments or Workbench computations; it requests, receives, links, and reviews source-owned artifacts.",
+    "A successful handoff receipt confirms contract and fingerprint checks only; it is not scientific validation, engineering verification, approval, or recommendation.",
+    "Site Intelligence context remains source-owned observation/context and is not rewritten as a causal claim.",
+    "Freshness, observation time, geography, methodology, and limitations remain visible in every attached context snapshot.",
+    "Scenario links are explicit reviewer-supplied relationships; they do not change scenario scores or imply likelihood.",
+    "A Site Intelligence context receipt confirms contract and fingerprint integrity only; it is not truth verification, approval, or recommendation.",
+    "Dependency edges represent explicit or structural relationships, not causal proof.",
+    "Node degree and fan-out are structural diagnostics, not importance, truth, confidence, or priority scores.",
+    "Change-impact reachability creates a review queue; it does not automatically invalidate a scenario, recommendation, or decision."
+  ],
+  "decision_object_schema": "scds-decision-object/1.0",
+  "platform_context_schema": "scds-platform-context/1.0",
+  "platform_context": [
+    {
+      "id": "knowledge-library",
+      "name": "Knowledge Library",
+      "role": "evidence",
+      "provides": [
+        "sources",
+        "citations",
+        "evidence_records",
+        "source_bundles",
+        "evidence_quality"
+      ],
+      "decision_object_targets": [
+        "evidence",
+        "provenance",
+        "assumptions"
+      ]
+    },
+    {
+      "id": "research-librarian",
+      "name": "Research Librarian",
+      "role": "research_routing",
+      "provides": [
+        "research_routes",
+        "source_discovery",
+        "evidence_gaps",
+        "contradictions",
+        "follow_up_questions"
+      ],
+      "decision_object_targets": [
+        "evidence",
+        "uncertainties",
+        "counterarguments",
+        "provenance"
+      ]
+    },
+    {
+      "id": "site-intelligence",
+      "name": "Site Intelligence",
+      "role": "real_world_context",
+      "provides": [
+        "observations",
+        "geospatial_context",
+        "environmental_signals",
+        "country_context",
+        "monitoring_signals"
+      ],
+      "decision_object_targets": [
+        "context",
+        "evidence",
+        "scenarios",
+        "outcome_review"
+      ]
+    },
+    {
+      "id": "workbench",
+      "name": "Workbench",
+      "role": "computation",
+      "provides": [
+        "calculations",
+        "engineering_models",
+        "simulations",
+        "optimization",
+        "reports"
+      ],
+      "decision_object_targets": [
+        "models",
+        "scenarios",
+        "tradeoffs",
+        "uncertainties",
+        "provenance"
+      ]
+    },
+    {
+      "id": "research-lab",
+      "name": "Research Lab",
+      "role": "analysis",
+      "provides": [
+        "experiments",
+        "statistical_models",
+        "causal_inference",
+        "bayesian_analysis",
+        "sensitivity_analysis"
+      ],
+      "decision_object_targets": [
+        "models",
+        "evidence",
+        "scenarios",
+        "uncertainties",
+        "confidence"
+      ]
+    },
+    {
+      "id": "platform-core",
+      "name": "Platform Core",
+      "role": "infrastructure",
+      "provides": [
+        "durable_objects",
+        "provenance",
+        "storage",
+        "processing_adapters",
+        "cross_product_identity"
+      ],
+      "decision_object_targets": [
+        "identity",
+        "provenance",
+        "platform_context",
+        "links"
+      ]
+    },
+    {
+      "id": "decision-studio",
+      "name": "Decision Studio",
+      "role": "choice",
+      "provides": [
+        "framing",
+        "alternatives",
+        "criteria",
+        "tradeoffs",
+        "recommendation",
+        "governance",
+        "decision_record"
+      ],
+      "decision_object_targets": [
+        "question",
+        "objective",
+        "alternatives",
+        "criteria",
+        "recommendation",
+        "decision",
+        "outcome_review"
+      ]
+    }
+  ],
+  "evidence_bundle_schema": "scds-evidence-bundle/1.0",
+  "source_bundle_schema": "scds-source-bundle/1.0",
+  "evidence_coverage_schema": "scds-evidence-coverage/1.0",
+  "criteria_set_schema": "scds-criteria-set/1.0",
+  "alternatives_set_schema": "scds-alternatives-set/1.0",
+  "tradeoff_matrix_schema": "scds-tradeoff-matrix/1.0",
+  "tradeoff_diagnostics_schema": "scds-tradeoff-diagnostics/1.0",
+  "native_handoffs": {
+    "analysis_handoff_schema": "scds-analysis-handoff/1.0",
+    "computation_handoff_schema": "scds-computation-handoff/1.0",
+    "handoff_receipt_schema": "scds-handoff-receipt/1.0",
+    "analysis_request_schema": "scds-analysis-request/1.0",
+    "sources": [
+      "research-lab",
+      "workbench"
+    ],
+    "request_targets": [
+      "research-lab",
+      "workbench"
+    ],
+    "fingerprint": "sha256",
+    "source_execution_preserved": true
+  },
+  "dependency_mapping": {
+    "decision_dependency_graph_schema": "scds-decision-dependency-graph/1.0",
+    "dependency_diagnostics_schema": "scds-dependency-diagnostics/1.0",
+    "change_impact_assessment_schema": "scds-change-impact-assessment/1.0",
+    "node_types": [
+      "decision",
+      "evidence",
+      "assumption",
+      "model",
+      "scenario",
+      "criterion",
+      "alternative",
+      "uncertainty",
+      "tradeoff",
+      "analysis_request",
+      "recommendation",
+      "decision_record"
+    ],
+    "edge_semantics": "upstream dependency or context \u2192 downstream record",
+    "causal_claims": false,
+    "automatic_invalidation": false
+  }
+}

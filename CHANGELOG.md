@@ -1,3 +1,14 @@
+## 2.8.0 — Decision Graph & Dependency Mapping
+
+- Added first-class Decision Dependency Graph, Dependency Diagnostics, and Change Impact Assessment contracts.
+- Added stable node/edge identities and deterministic SHA-256 graph fingerprints.
+- Preserved explicit record references separately from deterministic structural relationships.
+- Added orphan, unresolved-reference, cycle, root/leaf, and structural fan-out diagnostics.
+- Added downstream change-impact traversal that creates a human review queue without automatic invalidation or recommendation changes.
+- Added Decision Object and Decision Packet graph attachment with provenance lineage.
+- Preserved v2.7.0 Site Intelligence context, v2.6.0 Lab + Workbench Native Handoffs, v2.5.0 Scenario/Stress, and Energy Runtime Consumer v2.3.0.
+- Graph edges do not imply causality and node degree does not imply importance.
+
 ## 2.7.0 — Site Intelligence Context Integration
 
 - Added first-class Site Intelligence context bundles and immutable signal snapshots.

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-change-impact-assessment-1.0.json",
+  "title": "SCDS Change Impact Assessment 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "assessment_id",
+    "graph_id",
+    "changed_node_ids",
+    "directly_affected_node_ids",
+    "transitively_affected_node_ids",
+    "review_queue",
+    "automatic_invalidation",
+    "causal_claim",
+    "recommendation_changed",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-change-impact-assessment/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "assessment_id": {
+      "type": "string"
+    },
+    "changed_node_ids": {
+      "type": "array"
+    },
+    "review_queue": {
+      "type": "array"
+    },
+    "automatic_invalidation": {
+      "const": false
+    },
+    "causal_claim": {
+      "const": false
+    },
+    "recommendation_changed": {
+      "const": false
+    }
+  },
+  "additionalProperties": true
+}

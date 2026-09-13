@@ -1,0 +1,63 @@
+{
+  "schema": "scds-change-impact-assessment/1.0",
+  "version": "2.8.0",
+  "assessment_id": "change-impact:768c8a1e59ae1cdc021d",
+  "graph_id": "dependency-graph:decision:sample-v280:e2b4929bdb1c3341",
+  "changed_node_ids": [
+    "assumption:a-demand"
+  ],
+  "directly_affected_node_ids": [
+    "scenario:scenario:dry"
+  ],
+  "transitively_affected_node_ids": [
+    "scenario:scenario:dry",
+    "evidence:site-snapshot:drought",
+    "uncertainty:u-demand",
+    "tradeoff:matrix-1",
+    "recommendation:recommendation:0:d54444fb60d2bf06",
+    "decision:decision:sample-v280"
+  ],
+  "review_queue": [
+    {
+      "node_id": "scenario:scenario:dry",
+      "node_type": "scenario",
+      "label": "Dry conditions",
+      "review_reason": "reachable_from_changed_dependency"
+    },
+    {
+      "node_id": "evidence:site-snapshot:drought",
+      "node_type": "evidence",
+      "label": "Drought context",
+      "review_reason": "reachable_from_changed_dependency"
+    },
+    {
+      "node_id": "uncertainty:u-demand",
+      "node_type": "uncertainty",
+      "label": "Demand uncertainty",
+      "review_reason": "reachable_from_changed_dependency"
+    },
+    {
+      "node_id": "tradeoff:matrix-1",
+      "node_type": "tradeoff",
+      "label": "Tradeoff matrix",
+      "review_reason": "reachable_from_changed_dependency"
+    },
+    {
+      "node_id": "recommendation:recommendation:0:d54444fb60d2bf06",
+      "node_type": "recommendation",
+      "label": "Advance Option A for human review.",
+      "review_reason": "reachable_from_changed_dependency"
+    },
+    {
+      "node_id": "decision:decision:sample-v280",
+      "node_type": "decision",
+      "label": "Which resilient infrastructure option should proceed?",
+      "review_reason": "reachable_from_changed_dependency"
+    }
+  ],
+  "unresolved_changed_node_ids": [],
+  "automatic_invalidation": false,
+  "causal_claim": false,
+  "recommendation_changed": false,
+  "boundary": "Reachability identifies records that may require review. It does not prove causality or automatically invalidate a conclusion."
+}

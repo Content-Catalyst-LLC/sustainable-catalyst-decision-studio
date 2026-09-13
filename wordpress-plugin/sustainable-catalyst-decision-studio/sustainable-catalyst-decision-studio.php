@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Site Intelligence Context Integration for provenance-aware real-world context in the Unified Decision Object.
- * Version: 2.7.0
+ * Description: Decision Graph & Dependency Mapping for inspectable dependencies, review queues, and change-impact tracing in the Unified Decision Object.
+ * Version: 2.8.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.7.0';
-    const BUILD_FINGERPRINT = 'scds-v2.7.0-site-intelligence-context-integration';
-    const SOURCE_COMMIT = 'release-v2.7.0';
+    const VERSION = '2.8.0';
+    const BUILD_FINGERPRINT = 'scds-v2.8.0-decision-graph-dependency-mapping';
+    const SOURCE_COMMIT = 'release-v2.8.0';
     const RELEASE_DATE = '2026-09-13';
-    const DB_VERSION = '2.7.0';
+    const DB_VERSION = '2.8.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -82,6 +82,9 @@ class Sustainable_Catalyst_Decision_Studio {
     const SITE_CONTEXT_BUNDLE_SCHEMA = 'scds-site-intelligence-context-bundle/1.0';
     const SITE_SIGNAL_SNAPSHOT_SCHEMA = 'scds-site-intelligence-signal-snapshot/1.0';
     const SITE_CONTEXT_RECEIPT_SCHEMA = 'scds-site-intelligence-context-receipt/1.0';
+    const DEPENDENCY_GRAPH_SCHEMA = 'scds-decision-dependency-graph/1.0';
+    const DEPENDENCY_DIAGNOSTICS_SCHEMA = 'scds-dependency-diagnostics/1.0';
+    const CHANGE_IMPACT_SCHEMA = 'scds-change-impact-assessment/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -526,6 +529,12 @@ class Sustainable_Catalyst_Decision_Studio {
             'restSiteContextValidateUrl' => esc_url_raw(rest_url('scds/v1/site-intelligence-context/validate')),
             'restDecisionObjectSiteContextUrl' => esc_url_raw(rest_url('scds/v1/decision-object/site-intelligence-context')),
             'restDecisionPacketSiteContextUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/site-intelligence-context')),
+            'restDependencyGraphTemplateUrl' => esc_url_raw(rest_url('scds/v1/decision-dependency-graph/template')),
+            'restDependencyGraphBuildUrl' => esc_url_raw(rest_url('scds/v1/decision-dependency-graph/build')),
+            'restDependencyGraphValidateUrl' => esc_url_raw(rest_url('scds/v1/decision-dependency-graph/validate')),
+            'restDependencyGraphImpactUrl' => esc_url_raw(rest_url('scds/v1/decision-dependency-graph/impact')),
+            'restDecisionObjectDependencyGraphUrl' => esc_url_raw(rest_url('scds/v1/decision-object/dependency-graph')),
+            'restDecisionPacketDependencyGraphUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/dependency-graph')),
             'restModuleNavigationUrl' => esc_url_raw(rest_url('scds/v1/integrations/module-navigation')),
             'moduleNavigation' => $this->catalyst_module_navigation(),
             'moduleHandoffEnabled' => $settings['module_handoff_enabled'] === '1',
@@ -561,6 +570,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <button type="button" class="scds-tab" data-scds-tab="decision-object">Decision Object</button>
                 <button type="button" class="scds-tab" data-scds-tab="evidence">Evidence &amp; Sources</button>
                 <button type="button" class="scds-tab" data-scds-tab="site-context">Site Intelligence Context</button>
+                <button type="button" class="scds-tab" data-scds-tab="dependency-graph">Decision Graph</button>
                 <button type="button" class="scds-tab" data-scds-tab="tradeoffs">Tradeoff Matrix</button>
                 <button type="button" class="scds-tab" data-scds-tab="uncertainty">Uncertainty &amp; Confidence</button>
                 <button type="button" class="scds-tab" data-scds-tab="native-handoffs">Lab + Workbench Handoffs</button>
@@ -588,6 +598,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <?php $this->render_panel_decision_object($mode); ?>
                 <?php $this->render_panel_evidence_v220($mode); ?>
                 <?php $this->render_panel_site_intelligence_context_v270($mode); ?>
+                <?php $this->render_panel_dependency_graph_v280($mode); ?>
                 <?php $this->render_panel_tradeoffs_v230($mode); ?>
                 <?php $this->render_panel_uncertainty_v240($mode); ?>
                 <?php $this->render_panel_native_handoffs_v260($mode); ?>
@@ -868,6 +879,41 @@ class Sustainable_Catalyst_Decision_Studio {
     public function rest_site_context_contracts_v270(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'contracts'=>['context_bundle_schema'=>self::SITE_CONTEXT_BUNDLE_SCHEMA,'signal_snapshot_schema'=>self::SITE_SIGNAL_SNAPSHOT_SCHEMA,'context_receipt_schema'=>self::SITE_CONTEXT_RECEIPT_SCHEMA,'source_product'=>'site-intelligence','boundary'=>'Site Intelligence context remains source-owned and does not imply causality or recommendation.']]);}
     public function rest_site_context_template_v270(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'context_bundle'=>$this->site_context_template_local_v270()]);}
     public function rest_site_context_action_v270(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);} $packet=is_array($payload['packet']??null)?$payload['packet']:[];$obj=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];if(!$obj)$obj=$this->decision_object_from_packet_local_v210($packet);$bundle=is_array($payload['contextBundle']??null)&&!empty($payload['contextBundle'])?$payload['contextBundle']:$this->site_context_build_local_v270($payload);$validation=$this->site_context_validate_local_v270($bundle);$receipt=$this->site_context_receipt_local_v270($bundle,$validation);$attach=strpos($route,'decision-object/site-intelligence-context')!==false||strpos($route,'decision-packet/site-intelligence-context')!==false;if($attach&&!empty($validation['valid'])){$obj['site_intelligence_context_bundles'][]=$bundle;$obj['site_intelligence_context_receipts'][]=$receipt;foreach(($bundle['snapshots']??[]) as $snap){$ctx=['context_id'=>$snap['snapshot_id']??'','source_product'=>'site-intelligence','signal_id'=>$snap['signal_id']??'','label'=>$snap['label']??'','category'=>$snap['category']??'','value'=>$snap['value']??null,'unit'=>$snap['unit']??'','source'=>$snap['source']??[],'geography'=>$snap['geography']??[],'observed_at'=>$snap['observed_at']??'','updated_at'=>$snap['updated_at']??'','freshness_state'=>$snap['freshness_state']??'unknown','methodology'=>$snap['methodology']??[],'limitations'=>$snap['limitations']??[],'signal_fingerprint'=>$snap['signal_fingerprint']??'','scenario_refs'=>$snap['scenario_refs']??[],'evidence_role'=>'contextual_evidence','causal_claim'=>false,'recommendation_effect'=>'none'];$obj['real_world_context'][]=$ctx;$obj['evidence'][]=$ctx;foreach(($snap['scenario_refs']??[]) as $ref)$obj['links'][]=['relationship'=>'explicit_site_context_for_scenario','scenario_ref'=>$ref,'context_id'=>$snap['snapshot_id']??'','signal_fingerprint'=>$snap['signal_fingerprint']??'','automatic_score_change'=>false];}$obj['links'][]=['relationship'=>'site_intelligence_context_bundle','bundle_id'=>$bundle['bundle_id']??'','bundle_fingerprint'=>$bundle['bundle_fingerprint']??'','signal_count'=>count($bundle['snapshots']??[])];$obj['provenance']['records'][]=['at'=>gmdate('c'),'action'=>'site_intelligence_context_attached','source_product'=>'site-intelligence','bundle_id'=>$bundle['bundle_id']??'','receipt_id'=>$receipt['receipt_id']??'']; if(strpos($route,'decision-packet/site-intelligence-context')!==false){$packet['site_intelligence_context_bundles'][]=$bundle;$packet['site_intelligence_context_receipts'][]=$receipt;$packet['live_evidence']=array_merge($packet['live_evidence']??[],$bundle['snapshots']??[]);$packet['decision_object']=$obj;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'context_bundle'=>$bundle,'validation'=>$validation,'receipt'=>$receipt,'decision_object'=>$obj,'decision_packet'=>$packet]);}}return rest_ensure_response(['ok'=>!empty($validation['valid']),'version'=>self::VERSION,'context_bundle'=>$bundle,'validation'=>$validation,'receipt'=>$receipt,'decision_object'=>$obj]);}
+    private function dependency_graph_template_local_v280() {
+        return ['schema'=>self::DEPENDENCY_GRAPH_SCHEMA,'version'=>self::VERSION,'graph_id'=>'','decision_id'=>'','generated_at'=>'','nodes'=>[],'edges'=>[],'diagnostics'=>['schema'=>self::DEPENDENCY_DIAGNOSTICS_SCHEMA,'version'=>self::VERSION,'node_count'=>0,'edge_count'=>0,'orphan_node_ids'=>[],'root_node_ids'=>[],'leaf_node_ids'=>[],'cycle_node_ids'=>[],'unresolved_references'=>[],'high_fanout_nodes'=>[],'unsupported_recommendation'=>false,'structural_note'=>'Fan-out describes graph structure only; it is not importance, truth, or causal influence.'],'graph_fingerprint'=>'','boundary'=>'Dependency edges record explicit or structural relationships. They are not causal proof; node degree is not importance; downstream reachability is not automatic invalidation, approval, or recommendation.'];
+    }
+    private function dependency_graph_hash_local_v280($value) { return hash('sha256', wp_json_encode($value, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); }
+    private function dependency_graph_build_local_v280($obj,$explicit_edges=[],$include_structural=true) {
+        if(!is_array($obj))$obj=[];$decision_id=(string)($obj['decision_id']??'DRAFT');$decision_node='decision:'.$decision_id;$nodes=[];$edges=[];$aliases=[];$kinds=[];
+        $add_node=function($kind,$record,$idx,$source='decision-studio') use (&$nodes,&$aliases,&$kinds){if(!is_array($record))$record=['value'=>$record];$keys=['node_id','decision_id','evidence_id','assumption_id','model_id','artifact_id','handoff_id','scenario_id','criterion_id','alternative_id','uncertainty_id','matrix_id','request_id','context_id','snapshot_id','bundle_id','id','signal_id'];$key='';foreach($keys as $k)if(isset($record[$k])&&$record[$k]!==''){$key=(string)$record[$k];break;}if($key==='')$key=$kind.':'.$idx.':'.substr(hash('sha256',wp_json_encode($record)),0,16);$nid=$kind.':'.$key;$label='';foreach(['label','title','name','question','summary','claim','indicator','signal_id'] as $k)if(isset($record[$k])&&$record[$k]!==''){$label=(string)$record[$k];break;}if($label==='')$label=ucwords(str_replace('_',' ',$kind));$nodes[]=['node_id'=>$nid,'node_type'=>$kind,'label'=>substr($label,0,240),'source_product'=>$source,'record_fingerprint'=>hash('sha256',wp_json_encode($record)),'record'=>$record,'review_state'=>(string)($record['review_state']??$record['status']??'')];$aliases[$nid]=$nid;foreach($keys as $k)if(isset($record[$k])&&$record[$k]!=='')$aliases[(string)$record[$k]]=$nid;$kinds[$kind][]=$nid;return $nid;};
+        $nodes[]=['node_id'=>$decision_node,'node_type'=>'decision','label'=>(string)($obj['question']??$decision_id),'source_product'=>'decision-studio','record_fingerprint'=>$this->dependency_graph_hash_local_v280(['decision_id'=>$decision_id,'question'=>$obj['question']??'']),'record'=>['decision_id'=>$decision_id,'question'=>$obj['question']??'','status'=>$obj['status']??'draft'],'review_state'=>(string)($obj['status']??'draft')];$aliases[$decision_id]=$decision_node;$aliases[$decision_node]=$decision_node;$kinds['decision']=[$decision_node];
+        $groups=['evidence'=>['evidence','decision-studio'],'assumption'=>['assumptions','decision-studio'],'model'=>['models','workbench/research-lab'],'scenario'=>['scenarios','decision-studio'],'criterion'=>['criteria','decision-studio'],'alternative'=>['alternatives','decision-studio'],'uncertainty'=>['uncertainties','decision-studio'],'tradeoff'=>['tradeoff_matrices','decision-studio'],'analysis_request'=>['analysis_requests','decision-studio'],'recommendation'=>['recommendations','decision-studio'],'decision_record'=>['decisions','decision-studio']];
+        foreach($groups as $kind=>$spec){$arr=$obj[$spec[0]]??[];if(!is_array($arr))continue;$i=0;foreach($arr as $record){$source=$spec[1];if(is_array($record)&&!empty($record['source_product']))$source=(string)$record['source_product'];$add_node($kind,$record,$i++,$source);}}
+        foreach((array)($obj['real_world_context']??[]) as $record){if(!is_array($record))continue;$finger=(string)($record['signal_fingerprint']??$record['context_id']??'');$dup=false;foreach($nodes as $n)if($n['node_type']==='evidence'&&($n['record']['signal_fingerprint']??$n['record']['context_id']??'')===$finger&&$finger!==''){$dup=true;break;}if(!$dup)$add_node('evidence',$record,count($kinds['evidence']??[]),'site-intelligence');}
+        $seen=[];$add_edge=function($from,$to,$rel,$origin='structural',$explicit=false,$metadata=[]) use (&$edges,&$seen){if(!$from||!$to||$from===$to)return;$key=$from.'|'.$to.'|'.$rel;if(isset($seen[$key]))return;$seen[$key]=1;$edges[]=['edge_id'=>'edge:'.substr(hash('sha256',$key.'|'.$origin),0,20),'from'=>$from,'to'=>$to,'relationship'=>$rel,'origin'=>$origin,'explicit'=>(bool)$explicit,'causal_claim'=>false,'automatic_invalidation'=>false,'metadata'=>$metadata];};
+        foreach((array)$explicit_edges as $e){if(!is_array($e))continue;$f=(string)($e['from']??'');$t=(string)($e['to']??'');$f=$aliases[$f]??$f;$t=$aliases[$t]??$t;if($f&&$t)$add_edge($f,$t,(string)($e['relationship']??'depends_on'),'explicit',true,$e['metadata']??[]);}
+        foreach(($kinds['evidence']??[]) as $nid){$r=[];foreach($nodes as $n)if($n['node_id']===$nid){$r=$n['record'];break;}if(($r['source_product']??'')==='site-intelligence'||($r['evidence_role']??'')==='contextual_evidence')foreach((array)($r['scenario_refs']??[]) as $ref)if(isset($aliases[(string)$ref]))$add_edge($nid,$aliases[(string)$ref],'contextualizes','site-intelligence',true,['automatic_score_change'=>false]);}
+        if($include_structural){$trade=($kinds['tradeoff']??[]);$trade=$trade?end($trade):'';$rec=($kinds['recommendation']??[]);$rec=$rec?end($rec):'';$dr=($kinds['decision_record']??[]);$dr=$dr?end($dr):'';foreach(($kinds['criterion']??[]) as $nid)$add_edge($nid,$trade?:$decision_node,'frames_evaluation');foreach(($kinds['alternative']??[]) as $nid)$add_edge($nid,$trade?:$decision_node,'candidate_in_evaluation');foreach(($kinds['scenario']??[]) as $nid)$add_edge($nid,$trade?:($rec?:$decision_node),'conditions_evaluation');foreach(($kinds['assumption']??[]) as $nid){if(!empty($kinds['scenario']))foreach(array_slice($kinds['scenario'],0,20) as $target)$add_edge($nid,$target,'conditions_scenario');else $add_edge($nid,$trade?:$decision_node,'conditions_evaluation');}foreach(($kinds['model']??[]) as $nid)$add_edge($nid,(!empty($kinds['scenario'])?$kinds['scenario'][0]:($trade?:$decision_node)),'supports_analysis');foreach(($kinds['evidence']??[]) as $nid)$add_edge($nid,$trade?:($rec?:$decision_node),'supports');foreach(($kinds['uncertainty']??[]) as $nid)$add_edge($nid,$trade?:($rec?:$decision_node),'qualifies');foreach(($kinds['analysis_request']??[]) as $nid)$add_edge($nid,$trade?:$decision_node,'requests_analysis_for');foreach(($kinds['tradeoff']??[]) as $nid)$add_edge($nid,$rec?:($dr?:$decision_node),'informs');foreach(($kinds['recommendation']??[]) as $nid)$add_edge($nid,$dr?:$decision_node,'proposes');foreach(($kinds['decision_record']??[]) as $nid)$add_edge($nid,$decision_node,'records_decision');}
+        $incoming=[];$outgoing=[];foreach($nodes as $n){$incoming[$n['node_id']]=0;$outgoing[$n['node_id']]=0;}foreach($edges as $e){if(isset($outgoing[$e['from']]))$outgoing[$e['from']]++;if(isset($incoming[$e['to']]))$incoming[$e['to']]++;}$orph=[];$roots=[];$leaves=[];$fan=[];foreach($nodes as $n){$id=$n['node_id'];if($id!==$decision_node&&$incoming[$id]===0&&$outgoing[$id]===0)$orph[]=$id;if($incoming[$id]===0)$roots[]=$id;if($outgoing[$id]===0)$leaves[]=$id;if($outgoing[$id]>=4)$fan[]=['node_id'=>$id,'out_degree'=>$outgoing[$id]];}$diag=['schema'=>self::DEPENDENCY_DIAGNOSTICS_SCHEMA,'version'=>self::VERSION,'node_count'=>count($nodes),'edge_count'=>count($edges),'orphan_node_ids'=>$orph,'root_node_ids'=>$roots,'leaf_node_ids'=>$leaves,'cycle_node_ids'=>[],'unresolved_references'=>[],'high_fanout_nodes'=>$fan,'unsupported_recommendation'=>false,'structural_note'=>'Fan-out describes graph structure only; it is not a measure of importance, truth, or causal influence.'];$core=['decision_id'=>$decision_id,'nodes'=>$nodes,'edges'=>$edges];$fp=$this->dependency_graph_hash_local_v280($core);return ['schema'=>self::DEPENDENCY_GRAPH_SCHEMA,'version'=>self::VERSION,'graph_id'=>'dependency-graph:'.substr($fp,0,20),'decision_id'=>$decision_id,'generated_at'=>gmdate('c'),'nodes'=>$nodes,'edges'=>$edges,'diagnostics'=>$diag,'graph_fingerprint'=>$fp,'boundary'=>'Dependency edges record explicit or structural relationships. They are not causal proof; node degree is not importance; downstream reachability is not automatic invalidation, approval, or recommendation.'];
+    }
+    private function dependency_graph_validate_local_v280($graph) {$errors=[];if(!is_array($graph)||($graph['schema']??'')!==self::DEPENDENCY_GRAPH_SCHEMA)$errors[]='schema mismatch';$core=['decision_id'=>$graph['decision_id']??'','nodes'=>$graph['nodes']??[],'edges'=>$graph['edges']??[]];$expected=$this->dependency_graph_hash_local_v280($core);if(!hash_equals((string)($graph['graph_fingerprint']??''),$expected))$errors[]='graph fingerprint mismatch';return ['valid'=>empty($errors),'errors'=>$errors,'graph_fingerprint'=>$graph['graph_fingerprint']??'','expected_fingerprint'=>$expected,'causality_verified'=>false,'automatic_invalidation'=>false];}
+    private function dependency_graph_impact_local_v280($graph,$changed) {$nodes=[];foreach((array)($graph['nodes']??[]) as $n)if(is_array($n))$nodes[(string)($n['node_id']??'')]=$n;$adj=[];foreach((array)($graph['edges']??[]) as $e)if(is_array($e))$adj[(string)($e['from']??'')][]=(string)($e['to']??'');$resolved=[];$unresolved=[];foreach((array)$changed as $id){$id=(string)$id;if(isset($nodes[$id]))$resolved[]=$id;else $unresolved[]=$id;}$direct=[];foreach($resolved as $id)foreach(($adj[$id]??[]) as $to)$direct[$to]=1;$seen=$direct;$queue=array_keys($direct);while($queue){$x=array_shift($queue);foreach(($adj[$x]??[]) as $to)if(!isset($seen[$to])){$seen[$to]=1;$queue[]=$to;}}$trans=array_values(array_diff(array_keys($seen),array_keys($direct)));$review=[];foreach(array_keys($seen) as $id)$review[]=['node_id'=>$id,'node_type'=>$nodes[$id]['node_type']??'unknown','label'=>$nodes[$id]['label']??$id,'reason'=>'Downstream of a changed dependency; review is requested, not automatic invalidation.'];$core=[$graph['graph_id']??'',$resolved,array_keys($seen)];return ['schema'=>self::CHANGE_IMPACT_SCHEMA,'version'=>self::VERSION,'assessment_id'=>'change-impact:'.substr($this->dependency_graph_hash_local_v280($core),0,20),'graph_id'=>$graph['graph_id']??'','changed_node_ids'=>$resolved,'directly_affected_node_ids'=>array_keys($direct),'transitively_affected_node_ids'=>$trans,'review_queue'=>$review,'unresolved_changed_node_ids'=>$unresolved,'automatic_invalidation'=>false,'causal_claim'=>false,'recommendation_changed'=>false,'boundary'=>'Reachability identifies records that may require review. It does not prove causality or automatically invalidate a conclusion.'];}
+    public function rest_dependency_graph_template_v280(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'decision_dependency_graph'=>$this->dependency_graph_template_local_v280(),'dependency_diagnostics'=>$this->dependency_graph_template_local_v280()['diagnostics'],'change_impact_assessment'=>['schema'=>self::CHANGE_IMPACT_SCHEMA,'version'=>self::VERSION,'automatic_invalidation'=>false,'causal_claim'=>false,'recommendation_changed'=>false]]);}
+    public function rest_dependency_graph_action_v280(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);} $packet=is_array($payload['packet']??null)?$payload['packet']:[];$obj=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];if(!$obj)$obj=$this->decision_object_from_packet_local_v210($packet);$graph=is_array($payload['graph']??null)&&!empty($payload['graph'])?$payload['graph']:$this->dependency_graph_build_local_v280($obj,$payload['explicitEdges']??[],!isset($payload['includeStructuralEdges'])||!empty($payload['includeStructuralEdges']));if(strpos($route,'/validate')!==false)return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'graph'=>$graph,'validation'=>$this->dependency_graph_validate_local_v280($graph)]);if(strpos($route,'/impact')!==false){$impact=$this->dependency_graph_impact_local_v280($graph,$payload['changedNodeIds']??[]);return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'graph'=>$graph,'change_impact_assessment'=>$impact]);}$attach=strpos($route,'decision-object/dependency-graph')!==false||strpos($route,'decision-packet/dependency-graph')!==false;if($attach){$obj['decision_dependency_graphs'][]=$graph;$obj['dependency_diagnostics'][]=$graph['diagnostics']??[];$obj['links'][]=['relationship'=>'decision_dependency_graph','graph_id'=>$graph['graph_id']??'','graph_fingerprint'=>$graph['graph_fingerprint']??''];$obj['provenance']['records'][]=['at'=>gmdate('c'),'action'=>'decision_dependency_graph_attached','graph_id'=>$graph['graph_id']??''];if(strpos($route,'decision-packet/dependency-graph')!==false){$packet['decision_dependency_graph']=$graph;$packet['dependency_diagnostics']=$graph['diagnostics']??[];$packet['decision_object']=$obj;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'graph'=>$graph,'diagnostics'=>$graph['diagnostics']??[],'decision_object'=>$obj,'decision_packet'=>$packet]);}}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'graph'=>$graph,'diagnostics'=>$graph['diagnostics']??[],'decision_object'=>$obj]);}
+    private function render_panel_dependency_graph_v280($mode) { ?>
+        <section class="scds-panel" data-scds-panel="dependency-graph">
+            <div class="scds-section-heading"><p class="scds-kicker">v2.8.0 · Decision Graph &amp; Dependency Mapping</p><h3 id="scds-dependency-graph-title">See what the decision depends on before the reasoning disappears into a final answer</h3><p>Map evidence, assumptions, models, Site Intelligence context, scenarios, criteria, alternatives, uncertainty, tradeoffs, requests, recommendations, and decisions as an inspectable dependency graph.</p></div>
+            <div class="scds-note"><strong>Dependency boundary:</strong> edges show declared or structural relationships, not causality. Fan-out is not importance. Change impact creates a review queue; it does not invalidate records or change recommendations automatically.</div>
+            <div class="scds-form-grid">
+                <label>Explicit dependency edges JSON<textarea rows="8" data-scds-v280-explicit-edges placeholder='[{"from":"evidence:e1","to":"model:m1","relationship":"supports"}]'></textarea></label>
+                <label>Changed node IDs JSON<textarea rows="8" data-scds-v280-changed-node-ids placeholder='["assumption:a1"]'></textarea></label>
+            </div>
+            <label><input type="checkbox" data-scds-v280-structural checked> Include deterministic structural edges</label>
+            <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-v280-build>Build Decision Graph</button><button type="button" class="scds-button" data-scds-v280-validate>Validate Graph</button><button type="button" class="scds-button" data-scds-v280-impact>Trace Change Impact</button><button type="button" class="scds-button" data-scds-v280-attach>Attach to Decision Object</button><button type="button" class="scds-button" data-scds-v280-download>Download Graph JSON</button></div>
+            <div class="scds-output" data-scds-v280-output><p>Build the graph to inspect dependencies, orphan records, cycles, unresolved references, and downstream review paths.</p></div>
+        </section>
+    <?php }
+
     private function render_panel_site_intelligence_context_v270($mode) { ?>
         <section class="scds-panel" data-scds-panel="site-context" aria-labelledby="scds-site-context-title">
             <div class="scds-section-heading"><p class="scds-kicker">v2.7.0 · Site Intelligence Context Integration</p><h3 id="scds-site-context-title">Bring real-world context into the decision without turning signals into conclusions</h3><p>Capture Site Intelligence signals with source identity, geography, observation time, freshness, methodology, limitations, provenance, and explicit scenario relationships.</p></div>
@@ -1775,7 +1821,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Site Intelligence Context Integration',
+            'release_name'=>'Decision Graph & Dependency Mapping',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
@@ -1831,7 +1877,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'analysis_request_schema'=>self::ANALYSIS_REQUEST_SCHEMA,
             'site_intelligence_context_bundle_schema'=>self::SITE_CONTEXT_BUNDLE_SCHEMA,
             'site_intelligence_signal_snapshot_schema'=>self::SITE_SIGNAL_SNAPSHOT_SCHEMA,
-            'site_intelligence_context_receipt_schema'=>self::SITE_CONTEXT_RECEIPT_SCHEMA,
+            'site_intelligence_context_receipt_schema'=>self::SITE_CONTEXT_RECEIPT_SCHEMA,'decision_dependency_graph_schema'=>self::DEPENDENCY_GRAPH_SCHEMA,'dependency_diagnostics_schema'=>self::DEPENDENCY_DIAGNOSTICS_SCHEMA,'change_impact_assessment_schema'=>self::CHANGE_IMPACT_SCHEMA,
             'decision_pack_count'=>count($this->decision_pack_catalog()),
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
@@ -1895,6 +1941,17 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'site_intelligence_context_implies_recommendation'=>false,
                 'site_intelligence_context_receipt_implies_truth_verification'=>false,
                 'decision_studio_rewrites_site_intelligence_observations'=>false,
+                'v2_7_0_site_intelligence_context_preserved'=>true,
+                'decision_dependency_graphs'=>true,
+                'dependency_mapping'=>true,
+                'change_impact_tracing'=>true,
+                'explicit_dependency_edges_preserved'=>true,
+                'orphan_dependency_diagnostics'=>true,
+                'cycle_dependency_diagnostics'=>true,
+                'dependency_graph_implies_causality'=>false,
+                'dependency_degree_implies_importance'=>false,
+                'change_impact_implies_invalidation'=>false,
+                'change_impact_changes_recommendation_automatically'=>false,
                 'automatic_winner_selection'=>false,
                 'automatic_recommendation'=>false,
                 'connected_decision_intelligence_platform'=>true,
@@ -2028,6 +2085,12 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/site-intelligence-context/validate', ['methods'=>'POST','callback'=>[$this,'rest_site_context_action_v270'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-object/site-intelligence-context', ['methods'=>'POST','callback'=>[$this,'rest_site_context_action_v270'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/site-intelligence-context', ['methods'=>'POST','callback'=>[$this,'rest_site_context_action_v270'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-dependency-graph/template', ['methods'=>'GET','callback'=>[$this,'rest_dependency_graph_template_v280'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-dependency-graph/build', ['methods'=>'POST','callback'=>[$this,'rest_dependency_graph_action_v280'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-dependency-graph/validate', ['methods'=>'POST','callback'=>[$this,'rest_dependency_graph_action_v280'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-dependency-graph/impact', ['methods'=>'POST','callback'=>[$this,'rest_dependency_graph_action_v280'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/dependency-graph', ['methods'=>'POST','callback'=>[$this,'rest_dependency_graph_action_v280'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/dependency-graph', ['methods'=>'POST','callback'=>[$this,'rest_dependency_graph_action_v280'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/contracts', ['methods'=>'GET','callback'=>[$this,'rest_native_handoff_contracts_v260'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/template', ['methods'=>'GET','callback'=>[$this,'rest_native_handoff_template_v260'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/receive', ['methods'=>'POST','callback'=>[$this,'rest_native_handoff_action_v260'],'permission_callback'=>'__return_true']);

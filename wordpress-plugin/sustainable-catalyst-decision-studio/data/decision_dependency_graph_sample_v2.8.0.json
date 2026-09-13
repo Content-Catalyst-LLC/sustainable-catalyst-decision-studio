@@ -1,0 +1,340 @@
+{
+  "schema": "scds-decision-dependency-graph/1.0",
+  "version": "2.8.0",
+  "graph_id": "dependency-graph:decision:sample-v280:e2b4929bdb1c3341",
+  "decision_id": "decision:sample-v280",
+  "generated_at": "2026-09-13T09:46:29.790426Z",
+  "nodes": [
+    {
+      "node_id": "decision:decision:sample-v280",
+      "node_type": "decision",
+      "label": "Which resilient infrastructure option should proceed?",
+      "source_product": "decision-studio",
+      "record_fingerprint": "7d8b3b4fda8866a76610f14ac88040ef9e58799903e15b5cfdb51620762824f5",
+      "record": {
+        "decision_id": "decision:sample-v280",
+        "question": "Which resilient infrastructure option should proceed?",
+        "status": "draft"
+      },
+      "review_state": "draft"
+    },
+    {
+      "node_id": "evidence:ev-cost",
+      "node_type": "evidence",
+      "label": "Lifecycle cost evidence",
+      "source_product": "decision-studio",
+      "record_fingerprint": "e2936d949f404db7b757583c4a6b0679dda63da08947999e5e5f3882c0836c32",
+      "record": {
+        "evidence_id": "ev-cost",
+        "label": "Lifecycle cost evidence",
+        "review_state": "reviewed"
+      },
+      "review_state": "reviewed"
+    },
+    {
+      "node_id": "evidence:site-snapshot:drought",
+      "node_type": "evidence",
+      "label": "Drought context",
+      "source_product": "decision-studio",
+      "record_fingerprint": "516f2af7b56f104b394001006e848a108cd9f5857ec1305804442ece811cafaa",
+      "record": {
+        "context_id": "site-snapshot:drought",
+        "signal_id": "drought-index",
+        "label": "Drought context",
+        "source_product": "site-intelligence",
+        "scenario_refs": [
+          "scenario:dry"
+        ]
+      },
+      "review_state": ""
+    },
+    {
+      "node_id": "assumption:a-demand",
+      "node_type": "assumption",
+      "label": "Demand remains within planning range",
+      "source_product": "decision-studio",
+      "record_fingerprint": "7dca3c616e548a3cdd336673983c2edcc1631efdf886038969c636078cc58cb4",
+      "record": {
+        "assumption_id": "a-demand",
+        "label": "Demand remains within planning range"
+      },
+      "review_state": ""
+    },
+    {
+      "node_id": "model:m-cost",
+      "node_type": "model",
+      "label": "Lifecycle cost model",
+      "source_product": "workbench/research-lab",
+      "record_fingerprint": "da3eff12fc99505c3c7196cd15abdfb52484e4fcb9cf7072eca8551f8814eef2",
+      "record": {
+        "model_id": "m-cost",
+        "label": "Lifecycle cost model",
+        "evidence_refs": [
+          "ev-cost"
+        ]
+      },
+      "review_state": ""
+    },
+    {
+      "node_id": "scenario:scenario:dry",
+      "node_type": "scenario",
+      "label": "Dry conditions",
+      "source_product": "decision-studio",
+      "record_fingerprint": "38d2f416366bfcc40a22e04795c3b1585fcb5d150769bda4fa907d51d24a5b08",
+      "record": {
+        "scenario_id": "scenario:dry",
+        "label": "Dry conditions"
+      },
+      "review_state": ""
+    },
+    {
+      "node_id": "criterion:c-cost",
+      "node_type": "criterion",
+      "label": "Lifecycle cost",
+      "source_product": "decision-studio",
+      "record_fingerprint": "c174e99332833c1ce6d2a07e6c6204d16262d3e4d4ce6ba9b799a68e1b0dd3cb",
+      "record": {
+        "criterion_id": "c-cost",
+        "label": "Lifecycle cost"
+      },
+      "review_state": ""
+    },
+    {
+      "node_id": "alternative:alt-a",
+      "node_type": "alternative",
+      "label": "Option A",
+      "source_product": "decision-studio",
+      "record_fingerprint": "6461b908d898b1913f491be7a928ddf3a95dee5c72ddaeb907607bca6afafc6b",
+      "record": {
+        "alternative_id": "alt-a",
+        "label": "Option A"
+      },
+      "review_state": ""
+    },
+    {
+      "node_id": "alternative:alt-b",
+      "node_type": "alternative",
+      "label": "Option B",
+      "source_product": "decision-studio",
+      "record_fingerprint": "d839b4a4a252467b66ae5db744c28463092554bf6fdc293e210d74708fdd2bcb",
+      "record": {
+        "alternative_id": "alt-b",
+        "label": "Option B"
+      },
+      "review_state": ""
+    },
+    {
+      "node_id": "uncertainty:u-demand",
+      "node_type": "uncertainty",
+      "label": "Demand uncertainty",
+      "source_product": "decision-studio",
+      "record_fingerprint": "5507250c9edec81f54dd3770e7f10abef3acf65f3cd1c7819e7f0ca11b86ff25",
+      "record": {
+        "uncertainty_id": "u-demand",
+        "label": "Demand uncertainty",
+        "target_ref": "scenario:dry"
+      },
+      "review_state": ""
+    },
+    {
+      "node_id": "tradeoff:matrix-1",
+      "node_type": "tradeoff",
+      "label": "Tradeoff matrix",
+      "source_product": "decision-studio",
+      "record_fingerprint": "f1b00d0db3ed77ad60c474b576c6acdc1c4cfa792e9113cdb405c2dc0cded8fd",
+      "record": {
+        "matrix_id": "matrix-1",
+        "label": "Tradeoff matrix"
+      },
+      "review_state": ""
+    },
+    {
+      "node_id": "recommendation:recommendation:0:d54444fb60d2bf06",
+      "node_type": "recommendation",
+      "label": "Advance Option A for human review.",
+      "source_product": "decision-studio",
+      "record_fingerprint": "d54444fb60d2bf06b8b15abe38346ab7d93a189dd9e7aa8484c91ae3723fba47",
+      "record": {
+        "summary": "Advance Option A for human review."
+      },
+      "review_state": ""
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "edge:2b4bcb7ec3b5dbf45abf",
+      "from": "scenario:scenario:dry",
+      "to": "evidence:site-snapshot:drought",
+      "relationship": "scenario_context",
+      "origin": "record-reference",
+      "explicit": true,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:b2a8dc4c1bf7965e0fc4",
+      "from": "evidence:ev-cost",
+      "to": "model:m-cost",
+      "relationship": "supported_by",
+      "origin": "record-reference",
+      "explicit": true,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:98fa67b468bf634d0e0f",
+      "from": "scenario:scenario:dry",
+      "to": "uncertainty:u-demand",
+      "relationship": "qualifies",
+      "origin": "record-reference",
+      "explicit": true,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:8977a684722f4f93c269",
+      "from": "evidence:site-snapshot:drought",
+      "to": "scenario:scenario:dry",
+      "relationship": "contextualizes",
+      "origin": "site-intelligence",
+      "explicit": true,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {
+        "automatic_score_change": false
+      }
+    },
+    {
+      "edge_id": "edge:2890820156731c899421",
+      "from": "criterion:c-cost",
+      "to": "tradeoff:matrix-1",
+      "relationship": "frames_evaluation",
+      "origin": "structural",
+      "explicit": false,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:aff985561ed687ef5115",
+      "from": "alternative:alt-a",
+      "to": "tradeoff:matrix-1",
+      "relationship": "candidate_in_evaluation",
+      "origin": "structural",
+      "explicit": false,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:4828e26840c2b1bcd978",
+      "from": "alternative:alt-b",
+      "to": "tradeoff:matrix-1",
+      "relationship": "candidate_in_evaluation",
+      "origin": "structural",
+      "explicit": false,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:3a0bfef5ac9698d6c2dc",
+      "from": "scenario:scenario:dry",
+      "to": "tradeoff:matrix-1",
+      "relationship": "conditions_evaluation",
+      "origin": "structural",
+      "explicit": false,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:9b4ab29a0cc1f063ce11",
+      "from": "assumption:a-demand",
+      "to": "scenario:scenario:dry",
+      "relationship": "conditions_scenario",
+      "origin": "structural",
+      "explicit": false,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:c95ceb3540826a5e4057",
+      "from": "model:m-cost",
+      "to": "scenario:scenario:dry",
+      "relationship": "informs",
+      "origin": "structural",
+      "explicit": false,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:29dae9ae8cc12b9d2c58",
+      "from": "uncertainty:u-demand",
+      "to": "tradeoff:matrix-1",
+      "relationship": "qualifies",
+      "origin": "structural",
+      "explicit": false,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:aee6a2cf2b0f432ddf4f",
+      "from": "tradeoff:matrix-1",
+      "to": "recommendation:recommendation:0:d54444fb60d2bf06",
+      "relationship": "informs_recommendation",
+      "origin": "structural",
+      "explicit": false,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    },
+    {
+      "edge_id": "edge:44b090259dab9dee2449",
+      "from": "recommendation:recommendation:0:d54444fb60d2bf06",
+      "to": "decision:decision:sample-v280",
+      "relationship": "proposes",
+      "origin": "structural",
+      "explicit": false,
+      "causal_claim": false,
+      "automatic_invalidation": false,
+      "metadata": {}
+    }
+  ],
+  "diagnostics": {
+    "schema": "scds-dependency-diagnostics/1.0",
+    "version": "2.8.0",
+    "node_count": 12,
+    "edge_count": 13,
+    "orphan_node_ids": [],
+    "root_node_ids": [
+      "alternative:alt-a",
+      "alternative:alt-b",
+      "assumption:a-demand",
+      "criterion:c-cost",
+      "evidence:ev-cost"
+    ],
+    "leaf_node_ids": [],
+    "cycle_node_ids": [
+      "evidence:site-snapshot:drought",
+      "scenario:scenario:dry"
+    ],
+    "unresolved_references": [],
+    "high_fanout_nodes": [
+      {
+        "node_id": "scenario:scenario:dry",
+        "outdegree": 3
+      }
+    ],
+    "unsupported_recommendation": false,
+    "structural_note": "Fan-out describes graph structure only; it is not a measure of importance, truth, or causal influence."
+  },
+  "boundary": "The dependency graph records explicit and structural relationships inside a Decision Object. An edge is not causal proof, node degree is not importance, and downstream reachability is not automatic invalidation, approval, or recommendation.",
+  "graph_fingerprint": "1d51e518235a59f41e6d8b351add88412b42d37c47dfc4ae88648078287a685a"
+}

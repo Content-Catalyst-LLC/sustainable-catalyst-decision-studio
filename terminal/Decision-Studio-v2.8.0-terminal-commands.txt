@@ -1,0 +1,25 @@
+Decision Studio v2.8.0 — Decision Graph & Dependency Mapping
+
+MAC — APPLY / VALIDATE / PUSH
+cd ~/Downloads
+rm -rf scds-decision-studio-v2.8.0-tiny-patch
+unzip -q sustainable-catalyst-decision-studio-v2.8.0-tiny-patch.zip
+cd scds-decision-studio-v2.8.0-tiny-patch
+chmod +x apply_and_push_decision_studio_v2_8_0_macos.sh
+./apply_and_push_decision_studio_v2_8_0_macos.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+WORDPRESS
+Upload ~/Downloads/sustainable-catalyst-decision-studio-plugin-v2.8.0.zip
+
+MAC — DEPLOY CONTABO BACKEND
+cd ~/Downloads
+chmod +x deploy_decision_studio_v2_8_0_from_macos.sh
+./deploy_decision_studio_v2_8_0_from_macos.sh
+
+VERIFY WORDPRESS/BACKEND PARITY
+curl -fsS "https://sustainablecatalyst.com/wp-json/scds/v1/backend-status?cb=$(date +%s)" | python3 -m json.tool
+
+EXPECTED IDENTITY
+version: 2.8.0
+build_fingerprint: scds-v2.8.0-decision-graph-dependency-mapping
+source_commit: release-v2.8.0

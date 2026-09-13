@@ -1,3 +1,28 @@
+# Sustainable Catalyst Decision Studio v2.8.0
+
+## Decision Graph & Dependency Mapping
+
+Decision Studio v2.8.0 builds on the v2.7.0 Site Intelligence Context Integration release and makes the reasoning structure of a Decision Object inspectable. Evidence, assumptions, models, real-world context, scenarios, criteria, alternatives, uncertainty, tradeoffs, requests, recommendations, and recorded decisions can be mapped as stable nodes and dependency edges.
+
+### v2.8.0 endpoints
+
+- `GET /decision-dependency-graph/template`
+- `POST /decision-dependency-graph/build`
+- `POST /decision-dependency-graph/validate`
+- `POST /decision-dependency-graph/impact`
+- `POST /decision-object/dependency-graph`
+- `POST /decision-packet/dependency-graph`
+
+### v2.8.0 contracts
+
+- `scds-decision-dependency-graph/1.0`
+- `scds-dependency-diagnostics/1.0`
+- `scds-change-impact-assessment/1.0`
+
+**Boundary:** graph edges are declared or structural relationships, not causal proof. Node degree is not importance. Downstream reachability queues records for review; it does not automatically invalidate a conclusion, approve an action, select a winner, or change a recommendation.
+
+---
+
 # Sustainable Catalyst Decision Studio v2.7.0
 
 ## Site Intelligence Context Integration

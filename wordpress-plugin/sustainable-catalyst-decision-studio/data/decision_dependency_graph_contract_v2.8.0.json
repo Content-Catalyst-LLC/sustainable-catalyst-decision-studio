@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-decision-dependency-graph-1.0.json",
+  "title": "SCDS Decision Dependency Graph 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "graph_id",
+    "decision_id",
+    "nodes",
+    "edges",
+    "diagnostics",
+    "graph_fingerprint",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-decision-dependency-graph/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "graph_id": {
+      "type": "string"
+    },
+    "nodes": {
+      "type": "array"
+    },
+    "edges": {
+      "type": "array"
+    },
+    "diagnostics": {
+      "type": "object"
+    },
+    "graph_fingerprint": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64
+    }
+  },
+  "additionalProperties": true
+}

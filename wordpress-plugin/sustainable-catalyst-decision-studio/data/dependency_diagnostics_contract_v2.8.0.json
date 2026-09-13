@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-dependency-diagnostics-1.0.json",
+  "title": "SCDS Dependency Diagnostics 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "node_count",
+    "edge_count",
+    "orphan_node_ids",
+    "cycle_node_ids",
+    "unresolved_references",
+    "structural_note"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-dependency-diagnostics/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "node_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "edge_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "orphan_node_ids": {
+      "type": "array"
+    },
+    "cycle_node_ids": {
+      "type": "array"
+    },
+    "unresolved_references": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": true
+}

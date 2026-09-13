@@ -1,0 +1,28 @@
+{
+  "schema": "scds-dependency-diagnostics/1.0",
+  "version": "2.8.0",
+  "node_count": 12,
+  "edge_count": 13,
+  "orphan_node_ids": [],
+  "root_node_ids": [
+    "alternative:alt-a",
+    "alternative:alt-b",
+    "assumption:a-demand",
+    "criterion:c-cost",
+    "evidence:ev-cost"
+  ],
+  "leaf_node_ids": [],
+  "cycle_node_ids": [
+    "evidence:site-snapshot:drought",
+    "scenario:scenario:dry"
+  ],
+  "unresolved_references": [],
+  "high_fanout_nodes": [
+    {
+      "node_id": "scenario:scenario:dry",
+      "outdegree": 3
+    }
+  ],
+  "unsupported_recommendation": false,
+  "structural_note": "Fan-out describes graph structure only; it is not a measure of importance, truth, or causal influence."
+}
