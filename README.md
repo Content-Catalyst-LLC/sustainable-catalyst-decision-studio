@@ -1,5 +1,9 @@
 ## Decision Studio v2.9.0 — Recommendations, Review & Challenge Layer
 
+## v3.0.0 — Connected Decision Intelligence
+
+Decision Studio v3.0.0 unifies Frame → Evidence → Analyze → Compare → Stress → Review → Decide → Monitor into one inspectable lifecycle. It derives readiness only from recorded objects, preserves cross-product lineage, and suggests bounded next-action routes without automatic stage transitions, approval, winner selection, or external execution.
+
 Decision Studio now supports explicit human-selected recommendation candidates, first-class reviewer challenges, review evaluation, and human disposition records. The layer does not automatically select a winner, infer approval from scores, or execute a decision.
 
 # Sustainable Catalyst Decision Studio v2.8.0

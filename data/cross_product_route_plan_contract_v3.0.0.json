@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cross Product Route Plan",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "routes",
+    "external_execution_performed"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-cross-product-route-plan/1.0"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

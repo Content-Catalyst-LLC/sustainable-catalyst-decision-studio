@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Connected Decision Intelligence",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "readiness_matrix",
+    "lifecycle_state",
+    "route_plan",
+    "human_control"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-connected-decision-intelligence/3.0"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

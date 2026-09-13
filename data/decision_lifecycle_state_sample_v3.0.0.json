@@ -1,0 +1,24 @@
+{
+  "schema": "scds-decision-lifecycle-state/1.0",
+  "version": "3.0.0",
+  "decision_id": "decision:v300:example",
+  "current_stage": "decide",
+  "next_stage": "monitor",
+  "completed_stages": [
+    "frame",
+    "evidence",
+    "analyze",
+    "compare",
+    "stress",
+    "review"
+  ],
+  "blocked_stages": [
+    "decide",
+    "monitor"
+  ],
+  "automatic_transition": false,
+  "human_transition_required": true,
+  "generated_at": "2026-09-13T10:54:53Z",
+  "boundary": "Connected Decision Intelligence summarizes recorded decision work and proposes bounded next-action routes. Readiness is not approval, lifecycle position is not an automatic transition, route plans do not execute external work, and Decision Studio does not select a winner or authorize consequential action.",
+  "state_fingerprint": "75ca2be9d7f42245aeb54ce0376ac5535b556e6ad7fe2b64650bed200f60a6f9"
+}

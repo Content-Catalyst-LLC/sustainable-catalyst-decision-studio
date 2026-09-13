@@ -1,3 +1,13 @@
+# Decision Studio Changelog
+
+## 3.0.0 — Connected Decision Intelligence
+
+- Added `scds-connected-decision-intelligence/3.0`, lifecycle state, readiness matrix, and cross-product route-plan contracts.
+- Added eight-stage lifecycle synthesis: Frame → Evidence → Analyze → Compare → Stress → Review → Decide → Monitor.
+- Added bounded cross-product next-action routing and lineage visibility.
+- Preserved v2.9 review/challenge, v2.8 graph, v2.7 Site Intelligence, v2.6 handoffs, v2.5 scenario/stress, and Energy v2.3.0.
+- Readiness does not imply approval; routes do not execute external work; stage transitions remain human-controlled.
+
 ## 2.9.0 — Recommendations, Review & Challenge Layer
 
 - Added explicit recommendation candidates and support/counterargument links.

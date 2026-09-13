@@ -1,0 +1,184 @@
+{
+  "schema": "scds-decision-readiness-matrix/1.0",
+  "version": "3.0.0",
+  "generated_at": "2026-09-13T10:54:53Z",
+  "stages": [
+    {
+      "stage_id": "frame",
+      "label": "Frame",
+      "status": "ready",
+      "requirements": [
+        "decision question"
+      ],
+      "met_requirements": [
+        "decision question"
+      ],
+      "missing_requirements": [],
+      "signals": {
+        "question": true,
+        "objective": true
+      },
+      "product_routes": [
+        "decision-studio"
+      ]
+    },
+    {
+      "stage_id": "evidence",
+      "label": "Evidence",
+      "status": "ready",
+      "requirements": [
+        "reviewable evidence or contextual source"
+      ],
+      "met_requirements": [
+        "reviewable evidence or contextual source"
+      ],
+      "missing_requirements": [],
+      "signals": {
+        "evidence_records": 1,
+        "site_context_bundles": 0
+      },
+      "product_routes": [
+        "knowledge-library",
+        "research-librarian",
+        "site-intelligence"
+      ]
+    },
+    {
+      "stage_id": "analyze",
+      "label": "Analyze",
+      "status": "ready",
+      "requirements": [
+        "analysis, model, or computation artifact"
+      ],
+      "met_requirements": [
+        "analysis, model, or computation artifact"
+      ],
+      "missing_requirements": [],
+      "signals": {
+        "analysis_artifacts": 1
+      },
+      "product_routes": [
+        "research-lab",
+        "workbench"
+      ]
+    },
+    {
+      "stage_id": "compare",
+      "label": "Compare",
+      "status": "ready",
+      "requirements": [
+        "two or more alternatives",
+        "criteria",
+        "tradeoff matrix"
+      ],
+      "met_requirements": [
+        "two or more alternatives",
+        "criteria",
+        "tradeoff matrix"
+      ],
+      "missing_requirements": [],
+      "signals": {
+        "alternatives": 2,
+        "criteria": 1,
+        "tradeoff_matrices": 1
+      },
+      "product_routes": [
+        "decision-studio",
+        "workbench"
+      ]
+    },
+    {
+      "stage_id": "stress",
+      "label": "Stress",
+      "status": "ready",
+      "requirements": [
+        "uncertainty, sensitivity, scenario, or stress analysis"
+      ],
+      "met_requirements": [
+        "uncertainty, sensitivity, scenario, or stress analysis"
+      ],
+      "missing_requirements": [],
+      "signals": {
+        "stress_analysis_artifacts": 1
+      },
+      "product_routes": [
+        "decision-studio",
+        "research-lab",
+        "workbench",
+        "site-intelligence"
+      ]
+    },
+    {
+      "stage_id": "review",
+      "label": "Review",
+      "status": "ready",
+      "requirements": [
+        "dependency graph",
+        "recommendation candidate",
+        "human review disposition"
+      ],
+      "met_requirements": [
+        "dependency graph",
+        "recommendation candidate",
+        "human review disposition"
+      ],
+      "missing_requirements": [],
+      "signals": {
+        "dependency_graphs": 1,
+        "recommendation_candidates": 1,
+        "recommendation_reviews": 1,
+        "human_disposition_recorded": true,
+        "decision_ready": true
+      },
+      "product_routes": [
+        "decision-studio",
+        "research-librarian"
+      ]
+    },
+    {
+      "stage_id": "decide",
+      "label": "Decide",
+      "status": "not_started",
+      "requirements": [
+        "explicit human decision record"
+      ],
+      "met_requirements": [],
+      "missing_requirements": [
+        "explicit human decision record"
+      ],
+      "signals": {
+        "decision_recorded": false
+      },
+      "product_routes": [
+        "decision-studio"
+      ]
+    },
+    {
+      "stage_id": "monitor",
+      "label": "Monitor",
+      "status": "not_started",
+      "requirements": [
+        "outcome or monitoring record"
+      ],
+      "met_requirements": [],
+      "missing_requirements": [
+        "outcome or monitoring record"
+      ],
+      "signals": {
+        "outcome_monitoring_recorded": false
+      },
+      "product_routes": [
+        "site-intelligence",
+        "decision-studio"
+      ]
+    }
+  ],
+  "summary": {
+    "ready_stage_count": 6,
+    "total_stage_count": 8,
+    "completion_percent": 75.0,
+    "first_incomplete_stage": "decide"
+  },
+  "boundary": "Connected Decision Intelligence summarizes recorded decision work and proposes bounded next-action routes. Readiness is not approval, lifecycle position is not an automatic transition, route plans do not execute external work, and Decision Studio does not select a winner or authorize consequential action.",
+  "readiness_fingerprint": "ff7867eb26ad294997d6d7168a491d17252183bb2c6a17179f622400ee4eb366"
+}

@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Recommendations, Review & Challenge Layer for explicit recommendation candidates, counterarguments, human review, and governed disposition in the Unified Decision Object.
- * Version: 2.9.0
+ * Description: Connected Decision Intelligence unifies the eight-stage decision lifecycle, readiness, cross-product routing, lineage, and human-controlled progression across the Sustainable Catalyst platform.
+ * Version: 3.0.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.9.0';
-    const BUILD_FINGERPRINT = 'scds-v2.9.0-recommendations-review-challenge';
-    const SOURCE_COMMIT = 'release-v2.9.0';
+    const VERSION = '3.0.0';
+    const BUILD_FINGERPRINT = 'scds-v3.0.0-connected-decision-intelligence';
+    const SOURCE_COMMIT = 'release-v3.0.0';
     const RELEASE_DATE = '2026-09-13';
-    const DB_VERSION = '2.9.0';
+    const DB_VERSION = '3.0.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -88,6 +88,10 @@ class Sustainable_Catalyst_Decision_Studio {
     const RECOMMENDATION_CANDIDATE_SCHEMA = 'scds-recommendation-candidate/1.0';
     const RECOMMENDATION_CHALLENGE_SCHEMA = 'scds-recommendation-challenge/1.0';
     const RECOMMENDATION_REVIEW_SCHEMA = 'scds-recommendation-review/1.0';
+    const CONNECTED_DECISION_INTELLIGENCE_SCHEMA = 'scds-connected-decision-intelligence/3.0';
+    const DECISION_LIFECYCLE_STATE_SCHEMA = 'scds-decision-lifecycle-state/1.0';
+    const DECISION_READINESS_MATRIX_SCHEMA = 'scds-decision-readiness-matrix/1.0';
+    const CROSS_PRODUCT_ROUTE_PLAN_SCHEMA = 'scds-cross-product-route-plan/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -545,6 +549,11 @@ class Sustainable_Catalyst_Decision_Studio {
             'restRecommendationDispositionUrl' => esc_url_raw(rest_url('scds/v1/recommendation-review/disposition')),
             'restDecisionObjectRecommendationReviewUrl' => esc_url_raw(rest_url('scds/v1/decision-object/recommendation-review')),
             'restDecisionPacketRecommendationReviewUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/recommendation-review')),
+            'restConnectedIntelligenceTemplateUrl' => esc_url_raw(rest_url('scds/v1/connected-intelligence/template')),
+            'restConnectedIntelligenceBuildUrl' => esc_url_raw(rest_url('scds/v1/connected-intelligence/build')),
+            'restConnectedIntelligenceValidateUrl' => esc_url_raw(rest_url('scds/v1/connected-intelligence/validate')),
+            'restDecisionObjectConnectedIntelligenceUrl' => esc_url_raw(rest_url('scds/v1/decision-object/connected-intelligence')),
+            'restDecisionPacketConnectedIntelligenceUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/connected-intelligence')),
             'restModuleNavigationUrl' => esc_url_raw(rest_url('scds/v1/integrations/module-navigation')),
             'moduleNavigation' => $this->catalyst_module_navigation(),
             'moduleHandoffEnabled' => $settings['module_handoff_enabled'] === '1',
@@ -582,6 +591,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <button type="button" class="scds-tab" data-scds-tab="site-context">Site Intelligence Context</button>
                 <button type="button" class="scds-tab" data-scds-tab="dependency-graph">Decision Graph</button>
                 <button type="button" class="scds-tab" data-scds-tab="recommendation-review">Recommendation Review</button>
+                <button type="button" class="scds-tab" data-scds-tab="connected-intelligence">Connected Intelligence</button>
                 <button type="button" class="scds-tab" data-scds-tab="tradeoffs">Tradeoff Matrix</button>
                 <button type="button" class="scds-tab" data-scds-tab="uncertainty">Uncertainty &amp; Confidence</button>
                 <button type="button" class="scds-tab" data-scds-tab="native-handoffs">Lab + Workbench Handoffs</button>
@@ -611,6 +621,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <?php $this->render_panel_site_intelligence_context_v270($mode); ?>
                 <?php $this->render_panel_dependency_graph_v280($mode); ?>
                 <?php $this->render_panel_recommendation_review_v290($mode); ?>
+                <?php $this->render_panel_connected_intelligence_v300($mode); ?>
                 <?php $this->render_panel_tradeoffs_v230($mode); ?>
                 <?php $this->render_panel_uncertainty_v240($mode); ?>
                 <?php $this->render_panel_native_handoffs_v260($mode); ?>
@@ -964,6 +975,38 @@ class Sustainable_Catalyst_Decision_Studio {
             <div class="scds-grid scds-grid-2"><label class="scds-field"><span>Source / target product</span><select data-scds-v260-product><option value="research-lab">Research Lab</option><option value="workbench">Workbench</option></select></label><label class="scds-field"><span>Source version</span><input data-scds-v260-source-version value="0.72.0"></label><label class="scds-field scds-field-wide"><span>Artifact JSON</span><textarea rows="12" data-scds-v260-artifact-json>{"artifact_id":"lab:study:example","schema":"sc-lab-study-result/1.0","artifact_type":"analysis-result","result":{"finding":"Example bounded result"},"assumptions":[],"uncertainty":[],"provenance":[{"source":"research-lab"}],"review_state":"needs_review"}</textarea></label><label class="scds-field scds-field-wide"><span>Analysis / computation request</span><textarea rows="5" data-scds-v260-request-json>{"question":"What additional analysis would reduce this decision uncertainty?","needed_for":"scenario:stress","requested_artifact_types":["sensitivity-analysis"]}</textarea></label></div>
             <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-v260-receive>Receive Native Handoff</button><button type="button" class="scds-button" data-scds-v260-request>Create Analysis Request</button><button type="button" class="scds-button" data-scds-v260-return>Attach Returned Artifact</button><button type="button" class="scds-button" data-scds-v260-download>Download Handoff JSON</button></div>
             <div class="scds-note"><strong>Execution boundary:</strong> Lab owns experiments and scientific analysis. Workbench owns calculations, models, simulations, and engineering computation. Decision Studio requests, receives, links, and reviews those artifacts; a handoff receipt is not validation or approval.</div><div data-scds-v260-output aria-live="polite"></div>
+        </section>
+    <?php }
+
+    private function connected_intelligence_local_v300($obj) {
+        $obj=is_array($obj)?$obj:[];
+        $counts=[
+            'frame'=>trim((string)($obj['question']??''))!==''?1:0,
+            'evidence'=>count((array)($obj['evidence']??[]))+count((array)($obj['evidence_bundles']??[]))+count((array)($obj['site_intelligence_contexts']??[])),
+            'analyze'=>count((array)($obj['models']??[]))+count((array)($obj['analysis_handoffs']??[]))+count((array)($obj['computation_handoffs']??[])),
+            'compare'=>(count((array)($obj['alternatives']??[]))>=2 && count((array)($obj['criteria']??[]))>0 && count((array)($obj['tradeoff_matrices']??[]))>0)?1:0,
+            'stress'=>count((array)($obj['stress_test_suites']??[]))+count((array)($obj['scenario_comparisons']??[]))+count((array)($obj['sensitivity_analyses']??[])),
+            'review'=>(count((array)($obj['dependency_graphs']??[]))>0 && count((array)($obj['recommendation_candidates']??[]))>0 && count((array)($obj['recommendation_reviews']??[]))>0)?1:0,
+            'decide'=>!empty($obj['decision'])?1:0,
+            'monitor'=>!empty($obj['outcome_review'])?1:0,
+        ];
+        $labels=['frame'=>'Frame','evidence'=>'Evidence','analyze'=>'Analyze','compare'=>'Compare','stress'=>'Stress','review'=>'Review','decide'=>'Decide','monitor'=>'Monitor'];
+        $routes=['frame'=>['decision-studio'],'evidence'=>['knowledge-library','research-librarian','site-intelligence'],'analyze'=>['research-lab','workbench'],'compare'=>['decision-studio','workbench'],'stress'=>['decision-studio','research-lab','workbench','site-intelligence'],'review'=>['decision-studio','research-librarian'],'decide'=>['decision-studio'],'monitor'=>['site-intelligence','decision-studio']];
+        $rows=[];$ready=[];$first='';foreach($labels as $id=>$label){$ok=!empty($counts[$id]);if($ok)$ready[]=$id;elseif(!$first)$first=$id;$rows[]=['stage_id'=>$id,'label'=>$label,'status'=>$ok?'ready':'not_started','requirements'=>[],'met_requirements'=>$ok?['recorded work']:[],'missing_requirements'=>$ok?[]:['recorded work required'],'signals'=>['recorded'=>(bool)$ok],'product_routes'=>$routes[$id]];}
+        if(!$first)$first='monitor';$matrix=['schema'=>self::DECISION_READINESS_MATRIX_SCHEMA,'version'=>self::VERSION,'generated_at'=>gmdate('c'),'stages'=>$rows,'summary'=>['ready_stage_count'=>count($ready),'total_stage_count'=>8,'completion_percent'=>round(count($ready)/8*100,1),'first_incomplete_stage'=>count($ready)===8?'':$first],'boundary'=>'Readiness is not approval.'];
+        $lifecycle=['schema'=>self::DECISION_LIFECYCLE_STATE_SCHEMA,'version'=>self::VERSION,'decision_id'=>(string)($obj['decision_id']??''),'current_stage'=>$first,'next_stage'=>$first,'completed_stages'=>$ready,'blocked_stages'=>array_values(array_diff(array_keys($labels),$ready)),'automatic_transition'=>false,'human_transition_required'=>true,'generated_at'=>gmdate('c'),'boundary'=>'Lifecycle position does not transition automatically.'];
+        $plan=['schema'=>self::CROSS_PRODUCT_ROUTE_PLAN_SCHEMA,'version'=>self::VERSION,'routes'=>[],'route_count'=>0,'external_execution_performed'=>false,'automatic_delivery'=>false,'boundary'=>'Route plans suggest next work but do not execute it.'];if(count($ready)<8){foreach($routes[$first] as $p)$plan['routes'][]=['stage_id'=>$first,'product'=>$p,'reason'=>'recorded work required','status'=>'suggested','execution_performed'=>false,'requires_explicit_handoff'=>$p!=='decision-studio'];$plan['route_count']=count($plan['routes']);}
+        return ['schema'=>self::CONNECTED_DECISION_INTELLIGENCE_SCHEMA,'version'=>self::VERSION,'decision_id'=>(string)($obj['decision_id']??''),'generated_at'=>gmdate('c'),'readiness_matrix'=>$matrix,'lifecycle_state'=>$lifecycle,'route_plan'=>$plan,'cross_product_lineage'=>[],'human_control'=>['winner_selection_automatic'=>false,'recommendation_automatic'=>false,'stage_transition_automatic'=>false,'approval_automatic'=>false,'external_execution_automatic'=>false],'boundary'=>'Connected Decision Intelligence summarizes recorded work and proposes bounded next-action routes. Readiness is not approval, lifecycle position is not an automatic transition, route plans do not execute external work, and Decision Studio does not select a winner or authorize consequential action.'];
+    }
+    public function rest_connected_intelligence_template_v300(){if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request('/connected-intelligence/template',[],'GET');if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'schema'=>self::CONNECTED_DECISION_INTELLIGENCE_SCHEMA,'lifecycle'=>['Frame','Evidence','Analyze','Compare','Stress','Review','Decide','Monitor'],'automatic_transition'=>false,'approval_automatic'=>false,'external_execution_automatic'=>false]);}
+    public function rest_connected_intelligence_action_v300(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);} $packet=is_array($payload['packet']??null)?$payload['packet']:[];$obj=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];if(!$obj)$obj=$this->decision_object_from_packet_local_v210($packet);$ci=is_array($payload['connectedIntelligence']??null)&&$payload['connectedIntelligence']?$payload['connectedIntelligence']:$this->connected_intelligence_local_v300($obj);if(strpos($route,'/validate')!==false)return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'validation'=>['valid'=>($ci['schema']??'')===self::CONNECTED_DECISION_INTELLIGENCE_SCHEMA,'errors'=>[],'boundary'=>'Validation checks structure only; readiness is not approval.']]);if(strpos($route,'decision-object/connected-intelligence')!==false||strpos($route,'decision-packet/connected-intelligence')!==false){$obj['connected_decision_intelligence'][]=$ci;$obj['connected_intelligence']=$ci;$obj['provenance']['records'][]=['action'=>'connected_decision_intelligence_attached','at'=>gmdate('c'),'version'=>self::VERSION];if(strpos($route,'decision-packet/')!==false){$packet['connected_decision_intelligence'][]=$ci;$packet['connected_intelligence']=$ci;$packet['decision_object']=$obj;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'connected_intelligence'=>$ci,'decision_object'=>$obj,'decision_packet'=>$packet]);}}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'connected_intelligence'=>$ci,'decision_object'=>$obj]);}
+
+    private function render_panel_connected_intelligence_v300($mode) { ?>
+        <section class="scds-panel" data-scds-panel="connected-intelligence" aria-labelledby="scds-connected-intelligence-title">
+            <div class="scds-section-heading"><p class="scds-kicker">v3.0.0 · Connected Decision Intelligence</p><h3 id="scds-connected-intelligence-title">See the whole decision lifecycle as one connected system</h3><p>Summarize the recorded path from framing through monitoring, expose the first incomplete stage, preserve cross-product lineage, and propose bounded next-action routes without automatic transitions or execution.</p></div>
+            <div class="scds-pipeline" aria-label="Eight-stage decision lifecycle"><span>Frame</span><span>Evidence</span><span>Analyze</span><span>Compare</span><span>Stress</span><span>Review</span><span>Decide</span><span>Monitor</span></div>
+            <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-v300-build>Build Lifecycle Snapshot</button><button type="button" class="scds-button" data-scds-v300-validate>Validate Snapshot</button><button type="button" class="scds-button" data-scds-v300-attach>Attach to Decision Object</button><button type="button" class="scds-button" data-scds-v300-packet>Attach to Decision Packet</button><button type="button" class="scds-button" data-scds-v300-download>Download JSON</button></div>
+            <div class="scds-note"><strong>Connected intelligence boundary:</strong> Readiness is not approval. Lifecycle position is not an automatic transition. Suggested routes do not execute Lab, Workbench, Site Intelligence, Library, or Research Librarian work. Human decision ownership is preserved.</div><div data-scds-v300-output aria-live="polite"></div>
         </section>
     <?php }
 
@@ -1868,7 +1911,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Recommendations, Review & Challenge Layer',
+            'release_name'=>'Connected Decision Intelligence',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
@@ -2008,6 +2051,15 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'recommendation_score_implies_approval'=>false,
                 'challenge_resolution_is_automatic'=>false,
                 'human_disposition_executes_decision'=>false,
+                'connected_decision_intelligence_v3'=>true,
+                'canonical_eight_stage_lifecycle'=>true,
+                'cross_product_readiness_matrix'=>true,
+                'bounded_cross_product_route_plan'=>true,
+                'readiness_implies_approval'=>false,
+                'lifecycle_stage_transition_is_automatic'=>false,
+                'route_plan_executes_external_work'=>false,
+                'decision_record_is_human_owned'=>true,
+                'v2_9_0_recommendation_review_preserved'=>true,
                 'v2_8_0_dependency_graph_preserved'=>true,
                 'automatic_winner_selection'=>false,
                 'automatic_recommendation'=>false,
@@ -2155,6 +2207,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/recommendation-review/disposition', ['methods'=>'POST','callback'=>[$this,'rest_recommendation_review_action_v290'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-object/recommendation-review', ['methods'=>'POST','callback'=>[$this,'rest_recommendation_review_action_v290'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/recommendation-review', ['methods'=>'POST','callback'=>[$this,'rest_recommendation_review_action_v290'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/connected-intelligence/template', ['methods'=>'GET','callback'=>[$this,'rest_connected_intelligence_template_v300'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/connected-intelligence/build', ['methods'=>'POST','callback'=>[$this,'rest_connected_intelligence_action_v300'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/connected-intelligence/validate', ['methods'=>'POST','callback'=>[$this,'rest_connected_intelligence_action_v300'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/connected-intelligence', ['methods'=>'POST','callback'=>[$this,'rest_connected_intelligence_action_v300'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/connected-intelligence', ['methods'=>'POST','callback'=>[$this,'rest_connected_intelligence_action_v300'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/contracts', ['methods'=>'GET','callback'=>[$this,'rest_native_handoff_contracts_v260'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/template', ['methods'=>'GET','callback'=>[$this,'rest_native_handoff_template_v260'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/receive', ['methods'=>'POST','callback'=>[$this,'rest_native_handoff_action_v260'],'permission_callback'=>'__return_true']);

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Decision Lifecycle State",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "current_stage",
+    "automatic_transition",
+    "human_transition_required"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-decision-lifecycle-state/1.0"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

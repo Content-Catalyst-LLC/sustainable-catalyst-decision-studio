@@ -1,0 +1,19 @@
+{
+  "schema": "scds-cross-product-route-plan/1.0",
+  "version": "3.0.0",
+  "routes": [
+    {
+      "stage_id": "decide",
+      "product": "decision-studio",
+      "reason": "explicit human decision record",
+      "status": "suggested",
+      "execution_performed": false,
+      "requires_explicit_handoff": false
+    }
+  ],
+  "external_execution_performed": false,
+  "automatic_delivery": false,
+  "boundary": "Connected Decision Intelligence summarizes recorded decision work and proposes bounded next-action routes. Readiness is not approval, lifecycle position is not an automatic transition, route plans do not execute external work, and Decision Studio does not select a winner or authorize consequential action.",
+  "route_count": 1,
+  "plan_fingerprint": "2b8f4cf0c44ae160571efb914def74ce85a4c048002ee02db8964b4e35162fa8"
+}
