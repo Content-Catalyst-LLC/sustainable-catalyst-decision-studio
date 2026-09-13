@@ -1,0 +1,39 @@
+{
+  "schema": "scds-handoff-receipt/1.0",
+  "version": "2.6.0",
+  "receipt_id": "receipt:87773abc36fee78636b6",
+  "created_at": "2026-09-13T07:00:20.132748+00:00",
+  "handoff_id": "handoff:workbench:eeafa19a87bead7c5031",
+  "decision_id": "D-260",
+  "source": {
+    "product": "workbench",
+    "name": "Workbench",
+    "version": "5.4.0",
+    "role": "computation"
+  },
+  "target": {
+    "product": "decision-studio",
+    "name": "Decision Studio",
+    "version": "2.6.0"
+  },
+  "accepted": true,
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "source_product": "workbench",
+    "app_version": "2.6.0"
+  },
+  "artifact_fingerprint": "da29c6088ac7090aee14c985ea43b36072e00f5d5e10f451b86ae351f43e291c",
+  "request_id": "",
+  "execution": {
+    "performed": false,
+    "mode": "source-owned"
+  },
+  "persistence": {
+    "performed": false,
+    "mode": "attached-only-when-requested"
+  },
+  "receipt_fingerprint": "87773abc36fee78636b636eb2d3fa31ac36423060ce7c967fdf7b70a028dd1ac",
+  "boundary": "Native handoffs preserve source artifacts and lineage. Decision Studio does not execute Lab experiments or Workbench computations, silently reinterpret source results, or treat receipt as validation, approval, or recommendation."
+}

@@ -1,0 +1,28 @@
+Decision Studio v2.6.0 — Lab + Workbench Native Handoffs
+
+MAC — APPLY / VALIDATE / PUSH
+cd ~/Downloads
+rm -rf scds-decision-studio-v2.6.0-tiny-patch
+unzip -q sustainable-catalyst-decision-studio-v2.6.0-tiny-patch.zip
+cd scds-decision-studio-v2.6.0-tiny-patch
+chmod +x apply_and_push_decision_studio_v2_6_0_macos.sh
+./apply_and_push_decision_studio_v2_6_0_macos.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+WORDPRESS
+Upload: ~/Downloads/sustainable-catalyst-decision-studio-plugin-v2.6.0.zip
+
+MAC — DEPLOY CONTABO BACKEND
+cd ~/Downloads
+chmod +x deploy_decision_studio_v2_6_0_from_macos.sh
+./deploy_decision_studio_v2_6_0_from_macos.sh
+
+EXPECTED LIVE IDENTITY
+version: 2.6.0
+build_fingerprint: scds-v2.6.0-lab-workbench-native-handoffs
+source_commit: release-v2.6.0
+
+PRESERVED TAGS
+v2.5.0 = 489c2c04d2fe8042762c5f796c0c9b71141bc7cc
+v2.4.0 = e32be572c675678baa60061f27d35f9e12d64528
+v2.3.1 = f93e704da141e6dbc6fe64fff0cede366f1c5542
+v2.3.0 = 590e109d9ba85cb9928fda7e44be203504410632

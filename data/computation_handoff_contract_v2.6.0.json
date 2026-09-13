@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-computation-handoff-1.0.json",
+  "title": "SCDS Computation Handoff 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "handoff_id",
+    "source",
+    "target",
+    "artifact",
+    "review_state",
+    "provenance",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-computation-handoff/1.0"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

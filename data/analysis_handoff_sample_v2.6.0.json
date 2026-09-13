@@ -1,0 +1,79 @@
+{
+  "schema": "scds-analysis-handoff/1.0",
+  "version": "2.6.0",
+  "handoff_id": "handoff:research-lab:bd40a447055c6ab36098",
+  "decision_id": "D-260",
+  "created_at": "2026-09-13T07:00:20.132643+00:00",
+  "source": {
+    "product": "research-lab",
+    "name": "Research Lab",
+    "version": "0.72.0",
+    "role": "analysis"
+  },
+  "target": {
+    "product": "decision-studio",
+    "name": "Decision Studio",
+    "version": "2.6.0",
+    "role": "choice"
+  },
+  "artifact": {
+    "artifact_id": "lab:study:42",
+    "artifact_type": "causal-analysis",
+    "artifact_schema": "sc-lab-study-result/1.0",
+    "payload": {
+      "artifact_id": "lab:study:42",
+      "schema": "sc-lab-study-result/1.0",
+      "artifact_type": "causal-analysis",
+      "title": "Policy intervention study",
+      "result": {
+        "effect_estimate": 0.18,
+        "interval": [
+          0.05,
+          0.31
+        ]
+      },
+      "assumptions": [
+        {
+          "assumption_id": "parallel-trends",
+          "status": "reviewed"
+        }
+      ],
+      "uncertainty": [
+        {
+          "uncertainty_id": "sampling",
+          "type": "statistical"
+        }
+      ],
+      "provenance": [
+        {
+          "source": "lab",
+          "study_id": "study:42"
+        }
+      ],
+      "review_state": "reviewed"
+    },
+    "fingerprint": "f16649a439f95ebb4ca01a9a3400efec32a4680cc0f7098d116f7c09f3b7f299"
+  },
+  "review_state": "reviewed",
+  "assumptions": [
+    {
+      "assumption_id": "parallel-trends",
+      "status": "reviewed"
+    }
+  ],
+  "uncertainty": [
+    {
+      "uncertainty_id": "sampling",
+      "type": "statistical"
+    }
+  ],
+  "provenance": [
+    {
+      "source": "lab",
+      "study_id": "study:42"
+    }
+  ],
+  "links": [],
+  "request_id": "",
+  "boundary": "Native handoffs preserve source artifacts and lineage. Decision Studio does not execute Lab experiments or Workbench computations, silently reinterpret source results, or treat receipt as validation, approval, or recommendation."
+}

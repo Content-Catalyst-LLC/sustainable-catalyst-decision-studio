@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Static release-integrity checks for Decision Studio v2.5.0."""
+"""Static release-integrity checks for Decision Studio v2.6.0."""
 from __future__ import annotations
+
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "wordpress-plugin" / "sustainable-catalyst-decision-studio"
-VERSION = "2.5.0"
-BUILD = "scds-v2.5.0-scenario-comparison-stress-testing"
-SOURCE = "release-v2.5.0"
+VERSION = "2.6.0"
+BUILD = "scds-v2.6.0-lab-workbench-native-handoffs"
+SOURCE = "release-v2.6.0"
 PACKET = "scds-decision-packet/2.0"
 OBJECT = "scds-decision-object/1.0"
 CONTEXT = "scds-platform-context/1.0"
@@ -25,7 +26,11 @@ CONFIDENCE = "scds-confidence-assessment/1.0"
 SCENARIO_SET = "scds-scenario-set/1.0"
 SCENARIO_COMPARISON = "scds-scenario-comparison/1.0"
 STRESS_SUITE = "scds-stress-test-suite/1.0"
-PRODUCT_IDS = ["knowledge-library","research-librarian","site-intelligence","workbench","research-lab","platform-core","decision-studio"]
+ANALYSIS_HANDOFF = "scds-analysis-handoff/1.0"
+COMPUTATION_HANDOFF = "scds-computation-handoff/1.0"
+HANDOFF_RECEIPT = "scds-handoff-receipt/1.0"
+ANALYSIS_REQUEST = "scds-analysis-request/1.0"
+PRODUCT_IDS = ["knowledge-library", "research-librarian", "site-intelligence", "workbench", "research-lab", "platform-core", "decision-studio"]
 
 
 def require(condition: bool, message: str) -> None:
@@ -37,108 +42,223 @@ def load(path: Path):
     with path.open(encoding="utf-8") as handle:
         return json.load(handle)
 
-main=(ROOT/'backend/app/main.py').read_text()
-scenario_model=(ROOT/'backend/app/scenario_stress.py').read_text()
-model=(ROOT/'backend/app/decision_object.py').read_text()
-evidence_model=(ROOT/'backend/app/evidence_bundle.py').read_text()
-tradeoff_model=(ROOT/'backend/app/tradeoff_matrix.py').read_text()
-uncertainty_model=(ROOT/'backend/app/uncertainty_confidence.py').read_text()
-energy_model=(ROOT/'backend/app/energy_runtime_consumer.py').read_text()
-energy_test=(ROOT/'backend/tests/test_energy_runtime_consumer.py').read_text()
-energy_doc=(ROOT/'ENERGY_RUNTIME_CONSUMER_2.3.0.md').read_text()
-php=(PLUGIN/'sustainable-catalyst-decision-studio.php').read_text()
-js=(PLUGIN/'assets/js/scds-decision-studio.js').read_text()
-docker=(ROOT/'backend/Dockerfile').read_text()
-compose=(ROOT/'compose.yml').read_text()
-render=(ROOT/'backend/render.yaml').read_text()
-readme=(ROOT/'README.md').read_text()
-changelog=(ROOT/'CHANGELOG.md').read_text()
-doc=(ROOT/'docs/V250_SCENARIO_COMPARISON_STRESS_TESTING.md').read_text()
-plugin_readme=(PLUGIN/'readme.txt').read_text()
 
-require(f'APP_VERSION = "{VERSION}"' in main, 'backend version')
+main = (ROOT / "backend/app/main.py").read_text()
+native = (ROOT / "backend/app/native_handoffs.py").read_text()
+scenario = (ROOT / "backend/app/scenario_stress.py").read_text()
+uncertainty = (ROOT / "backend/app/uncertainty_confidence.py").read_text()
+tradeoff = (ROOT / "backend/app/tradeoff_matrix.py").read_text()
+evidence = (ROOT / "backend/app/evidence_bundle.py").read_text()
+obj_model = (ROOT / "backend/app/decision_object.py").read_text()
+energy_model = (ROOT / "backend/app/energy_runtime_consumer.py").read_text()
+energy_test = (ROOT / "backend/tests/test_energy_runtime_consumer.py").read_text()
+energy_doc = (ROOT / "ENERGY_RUNTIME_CONSUMER_2.3.0.md").read_text()
+backend_tests = (ROOT / "backend/tests/test_backend.py").read_text()
+php = (PLUGIN / "sustainable-catalyst-decision-studio.php").read_text()
+js = (PLUGIN / "assets/js/scds-decision-studio.js").read_text()
+docker = (ROOT / "backend/Dockerfile").read_text()
+compose = (ROOT / "compose.yml").read_text()
+render = (ROOT / "backend/render.yaml").read_text()
+readme = (ROOT / "README.md").read_text()
+changelog = (ROOT / "CHANGELOG.md").read_text()
+doc = (ROOT / "docs/V260_LAB_WORKBENCH_NATIVE_HANDOFFS.md").read_text()
+plugin_readme = (PLUGIN / "readme.txt").read_text()
+
+# Release identity.
+require(f'APP_VERSION = "{VERSION}"' in main, "backend version")
 for text in [main, php, docker, compose, render]:
-    require(BUILD in text, 'build fingerprint parity')
-    require(SOURCE in text, 'source commit parity')
-require(' * Version: 2.5.0' in php and "const VERSION = '2.5.0';" in php, 'plugin version')
-require('Stable tag: 2.5.0' in plugin_readme, 'stable tag')
-for schema in [PACKET, OBJECT, CONTEXT, EVIDENCE, SOURCE_BUNDLE, COVERAGE, CRITERIA, ALTERNATIVES, MATRIX, DIAGNOSTICS, UNCERTAINTY, SENSITIVITY, CONFIDENCE, SCENARIO_SET, SCENARIO_COMPARISON, STRESS_SUITE]:
-    require(schema in main+php+doc+scenario_model+uncertainty_model+tradeoff_model+evidence_model+model, f'schema parity {schema}')
+    require(BUILD in text, "build fingerprint parity")
+    require(SOURCE in text, "source commit parity")
+require(" * Version: 2.6.0" in php and "const VERSION = '2.6.0';" in php, "plugin version")
+require("Stable tag: 2.6.0" in plugin_readme, "stable tag")
 
-routes=[
-    '/scenario-set/template','/scenario-set/build',
-    '/scenario-analysis/template','/scenario-analysis/compare',
-    '/stress-test-suite/template','/stress-test-suite/run',
-    '/decision-object/scenario-stress','/decision-packet/scenario-stress'
+# Schema lineage, including v2.6 native exchange.
+all_schemas = [
+    PACKET, OBJECT, CONTEXT, EVIDENCE, SOURCE_BUNDLE, COVERAGE,
+    CRITERIA, ALTERNATIVES, MATRIX, DIAGNOSTICS,
+    UNCERTAINTY, SENSITIVITY, CONFIDENCE,
+    SCENARIO_SET, SCENARIO_COMPARISON, STRESS_SUITE,
+    ANALYSIS_HANDOFF, COMPUTATION_HANDOFF, HANDOFF_RECEIPT, ANALYSIS_REQUEST,
+]
+combined = main + php + native + scenario + uncertainty + tradeoff + evidence + obj_model + doc
+for schema in all_schemas:
+    require(schema in combined, f"schema parity/preservation {schema}")
+
+# Native route parity.
+routes = [
+    "/native-handoffs/contracts",
+    "/native-handoffs/template",
+    "/native-handoffs/receive",
+    "/native-handoffs/request",
+    "/native-handoffs/return",
+    "/decision-object/native-handoff",
+    "/decision-packet/native-handoff",
 ]
 for route in routes:
-    require(route in main and route in php, f'route parity {route}')
-for marker in ['data-scds-v250-scenarios','data-scds-v250-stress-config','data-scds-v250-scenario-set','data-scds-v250-compare','data-scds-v250-stress','data-scds-v250-attach','data-scds-v250-download','Scenario Comparison &amp; Stress Testing']:
-    require(marker in php, f'WordPress UI {marker}')
-for marker in ['runScenarioStress','scenarioStressHtml','downloadScenarioStress','restScenarioAnalysisCompareUrl','restStressTestSuiteRunUrl','restDecisionObjectScenarioStressUrl']:
-    require(marker in js+php, f'JS/WordPress binding {marker}')
+    require(route in main and route in php, f"route parity {route}")
 
-manifest=load(ROOT/'data/decision_studio_release_manifest_v2.5.0.json')
-pmanifest=load(PLUGIN/'data/release_manifest_v2.5.0.json')
-integrations=load(ROOT/'data/decision_studio_integrations_v2.5.0.json')
-pintegrations=load(PLUGIN/'data/decision_studio_integrations_v2.5.0.json')
-require(manifest==pmanifest,'manifest parity')
-require(integrations==pintegrations,'integration parity')
-require(manifest['release']==VERSION and manifest['schemas']['decision_packet']==PACKET,'manifest identity')
-require(manifest['schemas']['decision_object']==OBJECT and manifest['schemas']['platform_context']==CONTEXT,'v2.1 schema preservation')
-require(manifest['schemas']['evidence_bundle']==EVIDENCE and manifest['schemas']['source_bundle']==SOURCE_BUNDLE and manifest['schemas']['evidence_coverage']==COVERAGE,'v2.2 schema preservation')
-require(manifest['schemas']['criteria_set']==CRITERIA and manifest['schemas']['alternatives_set']==ALTERNATIVES and manifest['schemas']['tradeoff_matrix']==MATRIX and manifest['schemas']['tradeoff_diagnostics']==DIAGNOSTICS,'v2.3.1 schema preservation')
-require(manifest['schemas']['uncertainty_register']==UNCERTAINTY and manifest['schemas']['sensitivity_analysis']==SENSITIVITY and manifest['schemas']['confidence_assessment']==CONFIDENCE,'v2.4 schema preservation')
-require(manifest['schemas']['scenario_set']==SCENARIO_SET and manifest['schemas']['scenario_comparison']==SCENARIO_COMPARISON and manifest['schemas']['stress_test_suite']==STRESS_SUITE,'v2.5 schemas')
+# Preserve v2.5 routes rather than replacing them.
+for route in [
+    "/scenario-set/template", "/scenario-set/build",
+    "/scenario-analysis/template", "/scenario-analysis/compare",
+    "/stress-test-suite/template", "/stress-test-suite/run",
+    "/decision-object/scenario-stress", "/decision-packet/scenario-stress",
+]:
+    require(route in main and route in php, f"v2.5 route preserved {route}")
 
-for stem in ['scenario_set_contract','scenario_comparison_contract','stress_test_suite_contract','scenario_set_sample','scenario_comparison_sample','stress_test_suite_sample']:
-    a=load(ROOT/f'data/{stem}_v2.5.0.json')
-    b=load(PLUGIN/f'data/{stem}_v2.5.0.json')
-    require(a==b, f'{stem} parity')
+# WordPress UI and browser bindings.
+for marker in [
+    "Lab + Workbench Handoffs",
+    "data-scds-v260-product",
+    "data-scds-v260-source-version",
+    "data-scds-v260-artifact-json",
+    "data-scds-v260-request-json",
+    "data-scds-v260-receive",
+    "data-scds-v260-request",
+    "data-scds-v260-return",
+    "data-scds-v260-download",
+    "Execution boundary:",
+]:
+    require(marker in php, f"WordPress UI {marker}")
+for marker in [
+    "nativeHandoffInputs", "nativeHandoffHtml", "runNativeHandoff", "downloadNativeHandoff",
+    "restNativeHandoffContractsUrl", "restNativeHandoffTemplateUrl", "restNativeHandoffReceiveUrl",
+    "restNativeHandoffRequestUrl", "restNativeHandoffReturnUrl",
+    "restDecisionObjectNativeHandoffUrl", "restDecisionPacketNativeHandoffUrl",
+]:
+    require(marker in js + php, f"JS/WordPress binding {marker}")
 
-sample_set=load(ROOT/'data/scenario_set_sample_v2.5.0.json')
-sample_comp=load(ROOT/'data/scenario_comparison_sample_v2.5.0.json')
-sample_stress=load(ROOT/'data/stress_test_suite_sample_v2.5.0.json')
-require(sample_set['schema']==SCENARIO_SET and sample_set['diagnostics']['scenario_count']>=3,'scenario set sample')
-require(sample_comp['schema']==SCENARIO_COMPARISON and sample_comp['diagnostics']['max_score_swing']>0,'scenario comparison sample')
-require('recommended_option' not in sample_comp and 'winner' not in sample_comp,'no automatic scenario winner fields')
-require(sample_stress['schema']==STRESS_SUITE and sample_stress['diagnostics']['test_count']>0,'stress suite sample')
-require('approval' in sample_stress['boundary'].lower(),'stress-test approval boundary')
+# Root/plugin release metadata must agree.
+manifest = load(ROOT / "data/decision_studio_release_manifest_v2.6.0.json")
+pmanifest = load(PLUGIN / "data/release_manifest_v2.6.0.json")
+integrations = load(ROOT / "data/decision_studio_integrations_v2.6.0.json")
+pintegrations = load(PLUGIN / "data/decision_studio_integrations_v2.6.0.json")
+require(manifest == pmanifest, "manifest parity")
+require(integrations == pintegrations, "integration parity")
+require(manifest["release"] == VERSION, "manifest version")
+require(manifest["build_fingerprint"] == BUILD and manifest["source_commit"] == SOURCE, "manifest build/source")
 
-compat=manifest['compatibility']
-require(compat['automatic_winner_selection'] is False,'no automatic winner selection')
-require(compat['automatic_recommendation'] is False,'no automatic recommendation')
-require(compat['confidence_is_probability_of_correctness'] is False,'confidence not correctness probability')
-require(compat['scenario_likelihood_inference'] is False,'no scenario likelihood inference')
-require(compat['stress_test_pass_implies_approval'] is False,'stress pass not approval')
-require(compat['v2_3_0_energy_runtime_consumer_preserved'] is True,'Energy v2.3.0 runtime consumer preservation')
-require(compat['energy_runtime_consumer_version']=='2.3.0','Energy consumer component version')
+schemas = manifest["schemas"]
+expected_schema_map = {
+    "decision_packet": PACKET,
+    "decision_object": OBJECT,
+    "platform_context": CONTEXT,
+    "evidence_bundle": EVIDENCE,
+    "source_bundle": SOURCE_BUNDLE,
+    "evidence_coverage": COVERAGE,
+    "criteria_set": CRITERIA,
+    "alternatives_set": ALTERNATIVES,
+    "tradeoff_matrix": MATRIX,
+    "tradeoff_diagnostics": DIAGNOSTICS,
+    "uncertainty_register": UNCERTAINTY,
+    "sensitivity_analysis": SENSITIVITY,
+    "confidence_assessment": CONFIDENCE,
+    "scenario_set": SCENARIO_SET,
+    "scenario_comparison": SCENARIO_COMPARISON,
+    "stress_test_suite": STRESS_SUITE,
+    "analysis_handoff": ANALYSIS_HANDOFF,
+    "computation_handoff": COMPUTATION_HANDOFF,
+    "handoff_receipt": HANDOFF_RECEIPT,
+    "analysis_request": ANALYSIS_REQUEST,
+}
+for key, value in expected_schema_map.items():
+    require(schemas.get(key) == value, f"manifest schema {key}")
+
+# v2.6 contracts/samples match the WordPress copy exactly.
+for stem in [
+    "analysis_handoff_contract", "analysis_handoff_sample",
+    "computation_handoff_contract", "computation_handoff_sample",
+    "handoff_receipt_contract", "handoff_receipt_sample",
+    "analysis_request_contract", "analysis_request_sample",
+]:
+    a = load(ROOT / f"data/{stem}_v2.6.0.json")
+    b = load(PLUGIN / f"data/{stem}_v2.6.0.json")
+    require(a == b, f"{stem} parity")
+
+analysis_sample = load(ROOT / "data/analysis_handoff_sample_v2.6.0.json")
+computation_sample = load(ROOT / "data/computation_handoff_sample_v2.6.0.json")
+receipt_sample = load(ROOT / "data/handoff_receipt_sample_v2.6.0.json")
+request_sample = load(ROOT / "data/analysis_request_sample_v2.6.0.json")
+require(analysis_sample["schema"] == ANALYSIS_HANDOFF and analysis_sample["source"]["product"] == "research-lab", "analysis handoff sample")
+require(computation_sample["schema"] == COMPUTATION_HANDOFF and computation_sample["source"]["product"] == "workbench", "computation handoff sample")
+require(len(analysis_sample["artifact"]["fingerprint"]) == 64 and len(computation_sample["artifact"]["fingerprint"]) == 64, "artifact fingerprints")
+require(receipt_sample["schema"] == HANDOFF_RECEIPT and receipt_sample["accepted"] is True, "handoff receipt sample")
+require(receipt_sample["execution"]["performed"] is False, "receipt does not execute source work")
+require(request_sample["schema"] == ANALYSIS_REQUEST and request_sample["execution"]["performed_by_decision_studio"] is False, "analysis request execution boundary")
+require(len(request_sample["request_fingerprint"]) == 64, "analysis request fingerprint")
+
+# Human-control and source-ownership boundaries.
+compat = manifest["compatibility"]
+for flag in [
+    "lab_native_handoffs", "workbench_native_handoffs", "bidirectional_analysis_requests",
+    "source_artifact_payload_preserved", "deterministic_handoff_fingerprints",
+    "v2_5_0_scenario_stress_preserved", "v2_4_0_uncertainty_confidence_preserved",
+    "v2_3_1_tradeoff_matrix_preserved", "v2_3_0_energy_runtime_consumer_preserved",
+]:
+    require(compat.get(flag) is True, f"compatibility true: {flag}")
+for flag in [
+    "handoff_receipt_implies_validation", "decision_studio_executes_external_analysis",
+    "automatic_winner_selection", "automatic_recommendation", "automatic_truth_verification",
+    "confidence_is_probability_of_correctness", "scenario_likelihood_inference", "stress_test_pass_implies_approval",
+]:
+    require(compat.get(flag) is False, f"compatibility false: {flag}")
+require(compat.get("energy_runtime_consumer_version") == "2.3.0", "Energy consumer component version")
+require("Decision Studio does not execute Lab experiments" in native and "Workbench computations" in native, "source execution boundary")
+require("artifact fingerprint does not match payload" in native, "tamper detection")
+require("performed_by_decision_studio" in native, "request execution boundary")
+
+# Backend regression coverage for the new exchange lifecycle.
+for test_name in [
+    "test_v260_contracts_and_templates_exposed",
+    "test_v260_lab_handoff_preserves_exact_artifact_payload_and_fingerprint",
+    "test_v260_workbench_handoff_is_computation_contract",
+    "test_v260_handoff_rejects_tampered_payload_fingerprint",
+    "test_v260_decision_studio_can_request_lab_analysis_without_executing_it",
+    "test_v260_decision_studio_can_request_workbench_computation",
+    "test_v260_lab_return_attaches_to_decision_object_with_lineage",
+    "test_v260_workbench_return_attaches_to_decision_packet_without_breaking_schema",
+    "test_v260_return_can_link_back_to_analysis_request",
+    "test_v260_release_declares_native_handoffs_and_preserves_boundaries",
+]:
+    require(test_name in backend_tests, f"backend regression test {test_name}")
+
+# Energy v2.3.0 remains a distinct preserved component.
 for marker in ["CONSUMER_VERSION = '2.3.0'", "/v1/energy-runtime", "sc-energy-runtime-decision-studio-handoff/1.0"]:
-    require(marker in energy_model+energy_doc+main, f'Energy runtime preservation {marker}')
-require('test_consume_builds_ephemeral_receipt' in energy_test,'Energy runtime regression test preserved')
-require('energy_runtime_consumer_router' in main,'Energy runtime router registered')
-require("'energy_systems_runtime_consumer'=>true" in php and "'energy_runtime_consumer_version'=>'2.3.0'" in php,'WordPress release manifest declares Energy preservation')
-require([x['id'] for x in integrations['platform_context']]==PRODUCT_IDS,'platform context preserved')
+    require(marker in energy_model + energy_doc + main, f"Energy runtime preservation {marker}")
+require("test_consume_builds_ephemeral_receipt" in energy_test, "Energy runtime regression test preserved")
+require("energy_runtime_consumer_router" in main, "Energy runtime router registered")
+require("'energy_systems_runtime_consumer'=>true" in php and "'energy_runtime_consumer_version'=>'2.3.0'" in php, "WordPress Energy preservation")
+require([x["id"] for x in integrations["platform_context"]] == PRODUCT_IDS, "platform context preserved")
 
-require('python:3.12-slim' in docker and '8089' in docker and '2.5.0' in docker, 'Docker runtime identity')
-require('sustainable-catalyst-decision-studio:2.5.0' in compose and 'sc-decision-studio' in compose and 'sc-internal' in compose, 'Contabo compose identity')
+# Runtime/deployment identity.
+require("python:3.12-slim" in docker and "8089" in docker and "2.6.0" in docker, "Docker runtime identity")
+require("sustainable-catalyst-decision-studio:2.6.0" in compose and "sc-decision-studio" in compose and "sc-internal" in compose, "Contabo compose identity")
 
+# Historical artifacts remain in the repository.
 for path in [
-    'data/decision_studio_release_manifest_v2.4.0.json','data/confidence_assessment_contract_v2.4.0.json',
-    'data/decision_studio_release_manifest_v2.3.1.json','data/tradeoff_matrix_contract_v2.3.1.json',
-    'data/decision_studio_release_manifest_v2.2.0.json','data/evidence_bundle_contract_v2.2.0.json','data/source_bundle_contract_v2.2.0.json',
-    'data/decision_studio_release_manifest_v2.1.0.json','data/decision_object_contract_v2.1.0.json','data/platform_context_contract_v2.1.0.json',
-    'data/decision_studio_release_manifest_v2.0.1.json']:
-    require((ROOT/path).exists(), f'preserved {path}')
-for marker in [SCENARIO_SET,SCENARIO_COMPARISON,STRESS_SUITE,UNCERTAINTY,SENSITIVITY,CONFIDENCE,MATRIX,EVIDENCE,OBJECT,CONTEXT]:
-    require(marker in main+php+scenario_model+uncertainty_model+tradeoff_model+evidence_model+model, f'preserved capability {marker}')
-require('Scenario Comparison & Stress Testing' in readme+changelog+doc+plugin_readme,'documentation')
-require('ordering_changed_vs_baseline' in scenario_model,'scenario ordering diagnostics')
-require('failure_codes' in scenario_model,'stress failure diagnostics')
-require('scenario_likelihood_inference' in main+php and 'stress_test_pass_implies_approval' in main+php,'human-control markers')
-require('automatic_winner_selection' in main+php and 'automatic_recommendation' in main+php,'human control markers')
+    "data/decision_studio_release_manifest_v2.5.0.json", "data/scenario_set_contract_v2.5.0.json", "data/stress_test_suite_contract_v2.5.0.json",
+    "data/decision_studio_release_manifest_v2.4.0.json", "data/confidence_assessment_contract_v2.4.0.json",
+    "data/decision_studio_release_manifest_v2.3.1.json", "data/tradeoff_matrix_contract_v2.3.1.json",
+    "data/decision_studio_release_manifest_v2.2.0.json", "data/evidence_bundle_contract_v2.2.0.json", "data/source_bundle_contract_v2.2.0.json",
+    "data/decision_studio_release_manifest_v2.1.0.json", "data/decision_object_contract_v2.1.0.json", "data/platform_context_contract_v2.1.0.json",
+    "data/decision_studio_release_manifest_v2.0.1.json",
+]:
+    require((ROOT / path).exists(), f"preserved {path}")
 
-json_files=[p for p in ROOT.rglob('*.json') if '.git' not in p.parts]
+# v2.5 scenario/stress and earlier capabilities remain executable in source.
+require("ordering_changed_vs_baseline" in scenario, "scenario ordering diagnostics preserved")
+require("failure_codes" in scenario, "stress failure diagnostics preserved")
+require("automatic_winner_selection" in main + php and "automatic_recommendation" in main + php, "human-control markers")
+require("Scenario Comparison & Stress Testing" in changelog + plugin_readme, "v2.5 documentation preserved")
+require("Lab + Workbench Native Handoffs" in readme + changelog + doc + plugin_readme, "v2.6 documentation")
+
+# Every JSON file in the package must parse.
+json_files = [p for p in ROOT.rglob("*.json") if ".git" not in p.parts]
 for path in json_files:
     load(path)
-print(f'Decision Studio v{VERSION} release-integrity checks passed. Validated {len(json_files)} JSON files, {len(PRODUCT_IDS)} platform roles, Scenario/Stress v1.0 contracts, preserved v2.4 uncertainty/confidence, and preserved Energy Runtime Consumer v2.3.0.')
+
+print(
+    f"Decision Studio v{VERSION} release-integrity checks passed. "
+    f"Validated {len(json_files)} JSON files, {len(PRODUCT_IDS)} platform roles, "
+    "Lab/Workbench native handoff v1.0 contracts, v2.5 Scenario/Stress preservation, and Energy v2.3.0 preservation."
+)

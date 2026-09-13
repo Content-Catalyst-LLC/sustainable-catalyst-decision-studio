@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-handoff-receipt-1.0.json",
+  "title": "SCDS Handoff Receipt 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "receipt_id",
+    "handoff_id",
+    "accepted",
+    "validation",
+    "artifact_fingerprint",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-handoff-receipt/1.0"
+    },
+    "version": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Scenario Comparison & Stress Testing for explicit conditional decision analysis, preserving uncertainty, tradeoffs, evidence, Energy Systems Runtime Consumer, and the Unified Decision Object.
- * Version: 2.5.0
+ * Description: Lab + Workbench Native Handoffs for typed, provenance-preserving analytical exchange with the Unified Decision Object.
+ * Version: 2.6.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.5.0';
-    const BUILD_FINGERPRINT = 'scds-v2.5.0-scenario-comparison-stress-testing';
-    const SOURCE_COMMIT = 'release-v2.5.0';
-    const RELEASE_DATE = '2026-09-11';
-    const DB_VERSION = '2.5.0';
+    const VERSION = '2.6.0';
+    const BUILD_FINGERPRINT = 'scds-v2.6.0-lab-workbench-native-handoffs';
+    const SOURCE_COMMIT = 'release-v2.6.0';
+    const RELEASE_DATE = '2026-09-13';
+    const DB_VERSION = '2.6.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -75,6 +75,10 @@ class Sustainable_Catalyst_Decision_Studio {
     const SCENARIO_SET_SCHEMA = 'scds-scenario-set/1.0';
     const SCENARIO_COMPARISON_V250_SCHEMA = 'scds-scenario-comparison/1.0';
     const STRESS_TEST_SUITE_SCHEMA = 'scds-stress-test-suite/1.0';
+    const ANALYSIS_HANDOFF_SCHEMA = 'scds-analysis-handoff/1.0';
+    const COMPUTATION_HANDOFF_SCHEMA = 'scds-computation-handoff/1.0';
+    const HANDOFF_RECEIPT_SCHEMA = 'scds-handoff-receipt/1.0';
+    const ANALYSIS_REQUEST_SCHEMA = 'scds-analysis-request/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -505,6 +509,13 @@ class Sustainable_Catalyst_Decision_Studio {
             'restStressTestSuiteRunUrl' => esc_url_raw(rest_url('scds/v1/stress-test-suite/run')),
             'restDecisionObjectScenarioStressUrl' => esc_url_raw(rest_url('scds/v1/decision-object/scenario-stress')),
             'restDecisionPacketScenarioStressUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/scenario-stress')),
+            'restNativeHandoffContractsUrl' => esc_url_raw(rest_url('scds/v1/native-handoffs/contracts')),
+            'restNativeHandoffTemplateUrl' => esc_url_raw(rest_url('scds/v1/native-handoffs/template')),
+            'restNativeHandoffReceiveUrl' => esc_url_raw(rest_url('scds/v1/native-handoffs/receive')),
+            'restNativeHandoffRequestUrl' => esc_url_raw(rest_url('scds/v1/native-handoffs/request')),
+            'restNativeHandoffReturnUrl' => esc_url_raw(rest_url('scds/v1/native-handoffs/return')),
+            'restDecisionObjectNativeHandoffUrl' => esc_url_raw(rest_url('scds/v1/decision-object/native-handoff')),
+            'restDecisionPacketNativeHandoffUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/native-handoff')),
             'restModuleNavigationUrl' => esc_url_raw(rest_url('scds/v1/integrations/module-navigation')),
             'moduleNavigation' => $this->catalyst_module_navigation(),
             'moduleHandoffEnabled' => $settings['module_handoff_enabled'] === '1',
@@ -541,6 +552,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <button type="button" class="scds-tab" data-scds-tab="evidence">Evidence &amp; Sources</button>
                 <button type="button" class="scds-tab" data-scds-tab="tradeoffs">Tradeoff Matrix</button>
                 <button type="button" class="scds-tab" data-scds-tab="uncertainty">Uncertainty &amp; Confidence</button>
+                <button type="button" class="scds-tab" data-scds-tab="native-handoffs">Lab + Workbench Handoffs</button>
                 <button type="button" class="scds-tab" data-scds-tab="workflow">Catalyst Modules</button>
                 <button type="button" class="scds-tab" data-scds-tab="readiness">Readiness</button>
                 <button type="button" class="scds-tab" data-scds-tab="governance">Governance</button>
@@ -566,6 +578,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <?php $this->render_panel_evidence_v220($mode); ?>
                 <?php $this->render_panel_tradeoffs_v230($mode); ?>
                 <?php $this->render_panel_uncertainty_v240($mode); ?>
+                <?php $this->render_panel_native_handoffs_v260($mode); ?>
                 <?php $this->render_panel_workflow($mode); ?>
                 <?php $this->render_panel_readiness($mode); ?>
                 <?php $this->render_panel_governance($mode); ?>
@@ -824,6 +837,38 @@ class Sustainable_Catalyst_Decision_Studio {
     private function stress_test_suite_build_local_v250($comparison,$scenario_set,$confidence,$config,$decision_id='') {
         if(!is_array($config))$config=[];$drop=(float)($config['max_allowed_score_drop']??15);$maxthr=(int)($config['max_allowed_threshold_violations']??0);$req=!isset($config['require_complete_matrix'])||!empty($config['require_complete_matrix']);$minc=(float)($config['minimum_process_confidence']??0);$smap=[];foreach((array)($scenario_set['scenarios']??[]) as $s)if(is_array($s))$smap[(string)($s['scenario_id']??'')]=$s;$tests=[];$fails=[];$oc=0;$tb=0;foreach((array)($comparison['scenario_results']??[]) as $r){if(!is_array($r))continue;$sid=(string)($r['scenario_id']??'');if(($smap[$sid]['kind']??'')!=='stress')continue;$d=[];foreach((array)($r['alternative_scores']??[]) as $a)if(is_array($a)&&$a['delta_vs_baseline']!==null)$d[]=(float)$a['delta_vs_baseline'];$worst=$d?min($d):0.0;$thr=(int)($r['threshold_violation_count']??0);$complete=!empty($r['complete']);$changed=!empty($r['ordering_changed_vs_baseline']);if($changed)$oc++;if($thr)$tb++;$pc=(float)($confidence['process_confidence_index']??0);$codes=[];if($worst<(-abs($drop)))$codes[]='score_drop_limit_exceeded';if($thr>$maxthr)$codes[]='threshold_violation_limit_exceeded';if($req&&!$complete)$codes[]='matrix_incomplete';if($pc<$minc)$codes[]='process_confidence_below_floor';foreach($codes as $c)$fails[]=['scenario_id'=>$sid,'failure_code'=>$c];$tests[]=['scenario_id'=>$sid,'name'=>$r['name']??$sid,'passed'=>!$codes,'worst_score_delta'=>round($worst,4),'threshold_violation_count'=>$thr,'matrix_complete'=>$complete,'ordering_changed_vs_baseline'=>$changed,'process_confidence_index'=>$pc,'failure_codes'=>$codes];}$out=$this->stress_test_suite_template_local_v250();$out['stress_test_suite_id']='stress-test-suite-'.substr(hash('sha256',wp_json_encode([$comparison['scenario_comparison_id']??'',$tests,$config])),0,16);$out['decision_id']=$decision_id;$out['created_at']=gmdate('c');$out['tests']=$tests;$out['failure_modes']=$fails;$out['diagnostics']=['test_count'=>count($tests),'passed_count'=>count(array_filter($tests,function($x){return !empty($x['passed']);})),'failed_count'=>count(array_filter($tests,function($x){return empty($x['passed']);})),'stress_scenario_count'=>count($tests),'ordering_change_count'=>$oc,'threshold_breach_count'=>$tb];$out['configuration']=['max_allowed_score_drop'=>$drop,'max_allowed_threshold_violations'=>$maxthr,'require_complete_matrix'=>$req,'minimum_process_confidence'=>$minc];return $out;
     }
+
+    private function native_handoff_template_local_v260() {
+        return ['schema'=>self::ANALYSIS_HANDOFF_SCHEMA,'version'=>self::VERSION,'handoff_id'=>'','decision_id'=>'','created_at'=>'','source'=>['product'=>'research-lab','name'=>'Research Lab','version'=>'','role'=>'analysis'],'target'=>['product'=>'decision-studio','name'=>'Decision Studio','version'=>self::VERSION,'role'=>'choice'],'artifact'=>['artifact_id'=>'','artifact_type'=>'experiment-result','artifact_schema'=>'','payload'=>[],'fingerprint'=>''],'review_state'=>'needs_review','assumptions'=>[],'uncertainty'=>[],'provenance'=>[],'links'=>[],'request_id'=>'','boundary'=>'Native handoffs preserve source artifacts and lineage. Decision Studio does not execute Lab experiments or Workbench computations, silently reinterpret source results, or treat receipt as validation, approval, or recommendation.'];
+    }
+    private function analysis_request_template_local_v260() {
+        return ['schema'=>self::ANALYSIS_REQUEST_SCHEMA,'version'=>self::VERSION,'request_id'=>'','decision_id'=>'','created_at'=>'','source'=>['product'=>'decision-studio','name'=>'Decision Studio','version'=>self::VERSION,'role'=>'choice'],'target'=>['product'=>'research-lab','name'=>'Research Lab','role'=>'analysis'],'question'=>'','needed_for'=>'','requested_artifact_types'=>[],'decision_context'=>[],'assumptions'=>[],'uncertainty'=>[],'provenance'=>[],'return_contract'=>self::ANALYSIS_HANDOFF_SCHEMA,'execution'=>['requested'=>true,'performed_by_decision_studio'=>false],'boundary'=>'Decision Studio requests analysis but does not execute source-product analysis.'];
+    }
+    private function native_handoff_hash_local_v260($value) { return hash('sha256', wp_json_encode($value, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); }
+    private function native_handoff_source_local_v260($value) { $k=sanitize_key(str_replace('_','-',strtolower((string)$value))); if(in_array($k,['lab','researchlab','sustainable-catalyst-lab'],true))$k='research-lab'; if(in_array($k,['work-bench','sustainable-catalyst-workbench'],true))$k='workbench'; return $k; }
+    private function native_handoff_build_local_v260($payload) {
+        $source=$this->native_handoff_source_local_v260($payload['sourceProduct']??''); $artifact=is_array($payload['artifact']??null)?$payload['artifact']:[]; $schema=$source==='workbench'?self::COMPUTATION_HANDOFF_SCHEMA:self::ANALYSIS_HANDOFF_SCHEMA; $role=$source==='workbench'?'computation':'analysis'; $name=$source==='workbench'?'Workbench':'Research Lab'; $fp=$this->native_handoff_hash_local_v260($artifact); $decision_id=(string)($payload['decisionObject']['decision_id']??($payload['packet']['decision_packet_id']??'')); $core=['decision_id'=>$decision_id,'source_product'=>$source,'source_version'=>(string)($payload['sourceVersion']??''),'artifact_type'=>(string)($payload['artifactType']??($artifact['artifact_type']??($artifact['type']??'analysis-artifact'))),'artifact_schema'=>(string)($payload['artifactSchema']??($artifact['schema']??'')),'artifact_fingerprint'=>$fp,'request_id'=>(string)($payload['request']['request_id']??'')];
+        return ['schema'=>$schema,'version'=>self::VERSION,'handoff_id'=>'handoff:'.$source.':'.substr($this->native_handoff_hash_local_v260($core),0,20),'decision_id'=>$decision_id,'created_at'=>gmdate('c'),'source'=>['product'=>$source,'name'=>$name,'version'=>(string)($payload['sourceVersion']??''),'role'=>$role],'target'=>['product'=>'decision-studio','name'=>'Decision Studio','version'=>self::VERSION,'role'=>'choice'],'artifact'=>['artifact_id'=>(string)($artifact['artifact_id']??($artifact['id']??'')),'artifact_type'=>$core['artifact_type'],'artifact_schema'=>$core['artifact_schema'],'payload'=>$artifact,'fingerprint'=>$fp],'review_state'=>(string)($payload['reviewState']??($artifact['review_state']??'needs_review')),'assumptions'=>is_array($payload['assumptions']??null)?$payload['assumptions']:($artifact['assumptions']??[]),'uncertainty'=>is_array($payload['uncertainty']??null)?$payload['uncertainty']:($artifact['uncertainty']??($artifact['uncertainties']??[])),'provenance'=>is_array($payload['provenance']??null)?$payload['provenance']:($artifact['provenance']??[]),'links'=>is_array($payload['links']??null)?$payload['links']:($artifact['links']??[]),'request_id'=>(string)($payload['request']['request_id']??''),'boundary'=>'Native handoffs preserve source artifacts and lineage. Decision Studio does not execute Lab experiments or Workbench computations, silently reinterpret source results, or treat receipt as validation, approval, or recommendation.'];
+    }
+    private function native_handoff_receipt_local_v260($handoff) {
+        $artifact=is_array($handoff['artifact']??null)?$handoff['artifact']:[]; $expected=$this->native_handoff_hash_local_v260($artifact['payload']??[]); $source=$this->native_handoff_source_local_v260($handoff['source']['product']??''); $expected_schema=$source==='workbench'?self::COMPUTATION_HANDOFF_SCHEMA:self::ANALYSIS_HANDOFF_SCHEMA; $errors=[]; if(!in_array($source,['research-lab','workbench'],true))$errors[]='source.product must be research-lab or workbench'; if(($handoff['schema']??'')!==$expected_schema)$errors[]='handoff schema does not match source product'; if(($artifact['fingerprint']??'')!==$expected)$errors[]='artifact fingerprint does not match payload'; $valid=!$errors; $core=['handoff_id'=>$handoff['handoff_id']??'','artifact_fingerprint'=>$artifact['fingerprint']??'','errors'=>$errors];
+        return ['schema'=>self::HANDOFF_RECEIPT_SCHEMA,'version'=>self::VERSION,'receipt_id'=>'receipt:'.substr($this->native_handoff_hash_local_v260($core),0,20),'created_at'=>gmdate('c'),'handoff_id'=>$handoff['handoff_id']??'','decision_id'=>$handoff['decision_id']??'','source'=>$handoff['source']??[],'target'=>['product'=>'decision-studio','name'=>'Decision Studio','version'=>self::VERSION],'accepted'=>$valid,'validation'=>['valid'=>$valid,'errors'=>$errors,'warnings'=>[],'source_product'=>$source,'app_version'=>self::VERSION],'artifact_fingerprint'=>$artifact['fingerprint']??'','request_id'=>$handoff['request_id']??'','execution'=>['performed'=>false,'mode'=>'source-owned'],'persistence'=>['performed'=>false,'mode'=>'attached-only-when-requested'],'receipt_fingerprint'=>$this->native_handoff_hash_local_v260($core),'boundary'=>'Receipt confirms contract and fingerprint checks only; it is not scientific validation, engineering verification, approval, or recommendation.'];
+    }
+    private function native_analysis_request_local_v260($payload) {
+        $target=$this->native_handoff_source_local_v260($payload['targetProduct']??''); $name=$target==='workbench'?'Workbench':'Research Lab'; $role=$target==='workbench'?'computation':'analysis'; $return=$target==='workbench'?self::COMPUTATION_HANDOFF_SCHEMA:self::ANALYSIS_HANDOFF_SCHEMA; $decision_id=(string)($payload['decisionObject']['decision_id']??($payload['packet']['decision_packet_id']??'')); $core=['decision_id'=>$decision_id,'target_product'=>$target,'question'=>(string)($payload['question']??''),'needed_for'=>(string)($payload['neededFor']??''),'requested_artifact_types'=>$payload['request']['requested_artifact_types']??[]]; $id='analysis-request:'.$target.':'.substr($this->native_handoff_hash_local_v260($core),0,20); $out=['schema'=>self::ANALYSIS_REQUEST_SCHEMA,'version'=>self::VERSION,'request_id'=>$id,'decision_id'=>$decision_id,'created_at'=>gmdate('c'),'source'=>['product'=>'decision-studio','name'=>'Decision Studio','version'=>self::VERSION,'role'=>'choice'],'target'=>['product'=>$target,'name'=>$name,'role'=>$role],'question'=>(string)($payload['question']??''),'needed_for'=>(string)($payload['neededFor']??''),'requested_artifact_types'=>$payload['request']['requested_artifact_types']??[],'decision_context'=>$payload['request']['decision_context']??($payload['decisionObject']??[]),'assumptions'=>$payload['assumptions']??[],'uncertainty'=>$payload['uncertainty']??[],'provenance'=>$payload['provenance']??[],'return_to'=>$payload['returnTo']??['product'=>'decision-studio','decision_id'=>$decision_id],'return_contract'=>$return,'execution'=>['requested'=>true,'performed_by_decision_studio'=>false],'boundary'=>'Decision Studio requests analysis but does not execute Lab experiments or Workbench computations.']; $out['request_fingerprint']=$this->native_handoff_hash_local_v260($out); return $out;
+    }
+    public function rest_native_handoff_contracts_v260(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'contracts'=>['analysis_handoff_schema'=>self::ANALYSIS_HANDOFF_SCHEMA,'computation_handoff_schema'=>self::COMPUTATION_HANDOFF_SCHEMA,'handoff_receipt_schema'=>self::HANDOFF_RECEIPT_SCHEMA,'analysis_request_schema'=>self::ANALYSIS_REQUEST_SCHEMA,'products'=>['research-lab'=>['role'=>'analysis'],'workbench'=>['role'=>'computation']],'boundary'=>'Decision Studio links source-owned analysis and computation without absorbing external execution responsibilities.']]);}
+    public function rest_native_handoff_template_v260(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'handoff'=>$this->native_handoff_template_local_v260(),'analysis_request'=>$this->analysis_request_template_local_v260()]);}
+    public function rest_native_handoff_action_v260(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);} $packet=is_array($payload['packet']??null)?$payload['packet']:[];$object=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];if(!$object)$object=$this->decision_object_from_packet_local_v210($packet); if(strpos($route,'/request')!==false){$analysis=$this->native_analysis_request_local_v260($payload);$object['analysis_requests'][]=$analysis;$object['links'][]=['relationship'=>'analysis_request','target_product'=>$analysis['target']['product'],'request_id'=>$analysis['request_id'],'request_fingerprint'=>$analysis['request_fingerprint']];$object['provenance']['records'][]=['at'=>gmdate('c'),'action'=>'analysis_request_created','target_product'=>$analysis['target']['product'],'request_id'=>$analysis['request_id']];return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'analysis_request'=>$analysis,'decision_object'=>$object]);} $handoff=is_array($payload['handoff']??null)&&!empty($payload['handoff'])?$payload['handoff']:$this->native_handoff_build_local_v260($payload);$receipt=$this->native_handoff_receipt_local_v260($handoff);$valid=!empty($receipt['accepted']);if($valid&&(strpos($route,'return')!==false||strpos($route,'decision-object/native-handoff')!==false||strpos($route,'decision-packet/native-handoff')!==false)){$source=$this->native_handoff_source_local_v260($handoff['source']['product']??'');$key=$source==='workbench'?'computation_handoffs':'analysis_handoffs';$object[$key][]=$handoff;$object['handoff_receipts'][]=$receipt;$object['models'][]=['source_product'=>$source,'artifact_type'=>$handoff['artifact']['artifact_type']??'','artifact_schema'=>$handoff['artifact']['artifact_schema']??'','artifact_fingerprint'=>$handoff['artifact']['fingerprint']??'','handoff_id'=>$handoff['handoff_id']??'','source_artifact'=>$handoff['artifact']['payload']??[]];$object['links'][]=['relationship'=>'native_handoff','source_product'=>$source,'handoff_id'=>$handoff['handoff_id']??'','artifact_fingerprint'=>$handoff['artifact']['fingerprint']??''];$object['provenance']['records'][]=['at'=>gmdate('c'),'action'=>'native_handoff_attached','source_product'=>$source,'handoff_id'=>$handoff['handoff_id']??'','receipt_id'=>$receipt['receipt_id']??'']; if(strpos($route,'decision-packet/native-handoff')!==false){$packet['native_handoffs'][]=$handoff;$packet['handoff_receipts'][]=$receipt;$packet['decision_object']=$object;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'handoff'=>$handoff,'receipt'=>$receipt,'decision_object'=>$object,'decision_packet'=>$packet]);}} return rest_ensure_response(['ok'=>$valid,'version'=>self::VERSION,'handoff'=>$handoff,'validation'=>$receipt['validation'],'receipt'=>$receipt,'decision_object'=>$object]);}
+
+    private function render_panel_native_handoffs_v260($mode) { ?>
+        <section class="scds-panel" data-scds-panel="native-handoffs" aria-labelledby="scds-native-handoffs-title">
+            <div class="scds-section-heading"><p class="scds-kicker">v2.6.0 · Lab + Workbench Native Handoffs</p><h3 id="scds-native-handoffs-title">Move analytical artifacts without losing their origin</h3><p>Receive Research Lab experiments and analyses or Workbench calculations and models as typed, fingerprinted source artifacts. Send an unresolved decision question back to Lab or Workbench and retain the request/return relationship in the Decision Object.</p></div>
+            <div class="scds-grid scds-grid-2"><label class="scds-field"><span>Source / target product</span><select data-scds-v260-product><option value="research-lab">Research Lab</option><option value="workbench">Workbench</option></select></label><label class="scds-field"><span>Source version</span><input data-scds-v260-source-version value="0.72.0"></label><label class="scds-field scds-field-wide"><span>Artifact JSON</span><textarea rows="12" data-scds-v260-artifact-json>{"artifact_id":"lab:study:example","schema":"sc-lab-study-result/1.0","artifact_type":"analysis-result","result":{"finding":"Example bounded result"},"assumptions":[],"uncertainty":[],"provenance":[{"source":"research-lab"}],"review_state":"needs_review"}</textarea></label><label class="scds-field scds-field-wide"><span>Analysis / computation request</span><textarea rows="5" data-scds-v260-request-json>{"question":"What additional analysis would reduce this decision uncertainty?","needed_for":"scenario:stress","requested_artifact_types":["sensitivity-analysis"]}</textarea></label></div>
+            <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-v260-receive>Receive Native Handoff</button><button type="button" class="scds-button" data-scds-v260-request>Create Analysis Request</button><button type="button" class="scds-button" data-scds-v260-return>Attach Returned Artifact</button><button type="button" class="scds-button" data-scds-v260-download>Download Handoff JSON</button></div>
+            <div class="scds-note"><strong>Execution boundary:</strong> Lab owns experiments and scientific analysis. Workbench owns calculations, models, simulations, and engineering computation. Decision Studio requests, receives, links, and reviews those artifacts; a handoff receipt is not validation or approval.</div><div data-scds-v260-output aria-live="polite"></div>
+        </section>
+    <?php }
 
     private function render_panel_uncertainty_v240($mode) { ?>
         <section class="scds-panel" data-scds-panel="uncertainty" aria-labelledby="scds-uncertainty-title">
@@ -1691,7 +1736,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Scenario Comparison & Stress Testing',
+            'release_name'=>'Lab + Workbench Native Handoffs',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
@@ -1741,6 +1786,10 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'scenario_set_schema'=>self::SCENARIO_SET_SCHEMA,
             'scenario_comparison_schema'=>self::SCENARIO_COMPARISON_V250_SCHEMA,
             'stress_test_suite_schema'=>self::STRESS_TEST_SUITE_SCHEMA,
+            'analysis_handoff_schema'=>self::ANALYSIS_HANDOFF_SCHEMA,
+            'computation_handoff_schema'=>self::COMPUTATION_HANDOFF_SCHEMA,
+            'handoff_receipt_schema'=>self::HANDOFF_RECEIPT_SCHEMA,
+            'analysis_request_schema'=>self::ANALYSIS_REQUEST_SCHEMA,
             'decision_pack_count'=>count($this->decision_pack_catalog()),
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
@@ -1786,6 +1835,13 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'stress_test_suites'=>true,
                 'scenario_likelihood_inference'=>false,
                 'stress_test_pass_implies_approval'=>false,
+                'lab_native_handoffs'=>true,
+                'workbench_native_handoffs'=>true,
+                'bidirectional_analysis_requests'=>true,
+                'source_artifact_payload_preserved'=>true,
+                'deterministic_handoff_fingerprints'=>true,
+                'handoff_receipt_implies_validation'=>false,
+                'decision_studio_executes_external_analysis'=>false,
                 'automatic_winner_selection'=>false,
                 'automatic_recommendation'=>false,
                 'connected_decision_intelligence_platform'=>true,
@@ -1913,6 +1969,13 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/stress-test-suite/run', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-object/scenario-stress', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/scenario-stress', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/native-handoffs/contracts', ['methods'=>'GET','callback'=>[$this,'rest_native_handoff_contracts_v260'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/native-handoffs/template', ['methods'=>'GET','callback'=>[$this,'rest_native_handoff_template_v260'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/native-handoffs/receive', ['methods'=>'POST','callback'=>[$this,'rest_native_handoff_action_v260'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/native-handoffs/request', ['methods'=>'POST','callback'=>[$this,'rest_native_handoff_action_v260'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/native-handoffs/return', ['methods'=>'POST','callback'=>[$this,'rest_native_handoff_action_v260'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/native-handoff', ['methods'=>'POST','callback'=>[$this,'rest_native_handoff_action_v260'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/native-handoff', ['methods'=>'POST','callback'=>[$this,'rest_native_handoff_action_v260'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/states', ['methods'=>'GET','callback'=>[$this,'rest_governance_states'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/template', ['methods'=>'GET','callback'=>[$this,'rest_governance_template'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/governance/evaluate', ['methods'=>'POST','callback'=>[$this,'rest_governance_evaluate'],'permission_callback'=>'__return_true']);
@@ -2267,11 +2330,11 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'accessibility_audit_schema'=>self::ACCESSIBILITY_AUDIT_SCHEMA,'offline_workspace_schema'=>self::OFFLINE_WORKSPACE_SCHEMA,'release_readiness_schema'=>self::RELEASE_READINESS_SCHEMA,'recovery_snapshot_schema'=>self::RECOVERY_SNAPSHOT_SCHEMA,'migration_assessment_schema'=>self::MIGRATION_ASSESSMENT_SCHEMA,
             'connected_platform_schema'=>self::CONNECTED_PLATFORM_SCHEMA,'lifecycle_assessment_schema'=>self::LIFECYCLE_ASSESSMENT_SCHEMA,'decision_intelligence_graph_schema'=>self::DECISION_INTELLIGENCE_GRAPH_SCHEMA,'action_queue_schema'=>self::ACTION_QUEUE_SCHEMA,'portfolio_index_schema'=>self::PORTFOLIO_INDEX_SCHEMA,'connected_exchange_schema'=>self::CONNECTED_EXCHANGE_SCHEMA,'lifecycle_event_schema'=>self::LIFECYCLE_EVENT_SCHEMA,'decision_object_schema'=>self::DECISION_OBJECT_SCHEMA,'platform_context_schema'=>self::PLATFORM_CONTEXT_SCHEMA,'decision_object_migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,
             'evidence_bundle_schema'=>self::EVIDENCE_BUNDLE_SCHEMA,'source_bundle_schema'=>self::SOURCE_BUNDLE_SCHEMA,'evidence_coverage_schema'=>self::EVIDENCE_COVERAGE_SCHEMA,
-            'criteria_set_schema'=>self::CRITERIA_SET_SCHEMA,'alternatives_set_schema'=>self::ALTERNATIVES_SET_SCHEMA,'tradeoff_matrix_schema'=>self::TRADEOFF_MATRIX_SCHEMA,'tradeoff_diagnostics_schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,'uncertainty_register_schema'=>self::UNCERTAINTY_REGISTER_SCHEMA,'sensitivity_analysis_schema'=>self::SENSITIVITY_ANALYSIS_SCHEMA,'confidence_assessment_schema'=>self::CONFIDENCE_ASSESSMENT_SCHEMA,'scenario_set_schema'=>self::SCENARIO_SET_SCHEMA,'scenario_comparison_schema'=>self::SCENARIO_COMPARISON_V250_SCHEMA,'stress_test_suite_schema'=>self::STRESS_TEST_SUITE_SCHEMA,
+            'criteria_set_schema'=>self::CRITERIA_SET_SCHEMA,'alternatives_set_schema'=>self::ALTERNATIVES_SET_SCHEMA,'tradeoff_matrix_schema'=>self::TRADEOFF_MATRIX_SCHEMA,'tradeoff_diagnostics_schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,'uncertainty_register_schema'=>self::UNCERTAINTY_REGISTER_SCHEMA,'sensitivity_analysis_schema'=>self::SENSITIVITY_ANALYSIS_SCHEMA,'confidence_assessment_schema'=>self::CONFIDENCE_ASSESSMENT_SCHEMA,'scenario_set_schema'=>self::SCENARIO_SET_SCHEMA,'scenario_comparison_schema'=>self::SCENARIO_COMPARISON_V250_SCHEMA,'stress_test_suite_schema'=>self::STRESS_TEST_SUITE_SCHEMA,'analysis_handoff_schema'=>self::ANALYSIS_HANDOFF_SCHEMA,'computation_handoff_schema'=>self::COMPUTATION_HANDOFF_SCHEMA,'handoff_receipt_schema'=>self::HANDOFF_RECEIPT_SCHEMA,'analysis_request_schema'=>self::ANALYSIS_REQUEST_SCHEMA,
             'publication_handoff_schema'=>self::PUBLICATION_HANDOFF_SCHEMA,
             'publication_redaction_schema'=>self::PUBLICATION_REDACTION_SCHEMA,'release'=>$this->release_manifest()]); }
     public function rest_release() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'release'=>$this->release_manifest()]); }
-    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220(),'criteria_set'=>$this->criteria_set_template_local_v230(),'alternatives_set'=>$this->alternatives_set_template_local_v230(),'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230(),'uncertainty_register'=>$this->uncertainty_register_template_local_v240(),'sensitivity_analysis'=>$this->sensitivity_analysis_template_local_v240(),'confidence_assessment'=>$this->confidence_assessment_template_local_v240(),'scenario_set'=>$this->scenario_set_template_local_v250(),'scenario_comparison_v250'=>$this->scenario_comparison_template_local_v250(),'stress_test_suite'=>$this->stress_test_suite_template_local_v250()]); }
+    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220(),'criteria_set'=>$this->criteria_set_template_local_v230(),'alternatives_set'=>$this->alternatives_set_template_local_v230(),'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230(),'uncertainty_register'=>$this->uncertainty_register_template_local_v240(),'sensitivity_analysis'=>$this->sensitivity_analysis_template_local_v240(),'confidence_assessment'=>$this->confidence_assessment_template_local_v240(),'scenario_set'=>$this->scenario_set_template_local_v250(),'scenario_comparison_v250'=>$this->scenario_comparison_template_local_v250(),'stress_test_suite'=>$this->stress_test_suite_template_local_v250(),'native_handoff'=>$this->native_handoff_template_local_v260(),'analysis_request'=>$this->analysis_request_template_local_v260()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
 
     public function rest_backend_status() {

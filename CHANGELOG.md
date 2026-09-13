@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.6.0 — Lab + Workbench Native Handoffs
+
+- Added first-class Research Lab analysis handoffs and Workbench computation handoffs.
+- Added bounded Decision Studio → Lab/Workbench analysis requests with explicit return contracts.
+- Added deterministic SHA-256 artifact/request fingerprints and tamper detection.
+- Added handoff receipts that distinguish acceptance from validation or approval.
+- Added Decision Object and Decision Packet native-handoff attachment with preserved source payloads.
+- Preserved v2.5 scenario/stress analysis, v2.4 uncertainty/confidence, v2.3.1 tradeoffs, and Energy Runtime Consumer v2.3.0.
+
+
 ## 2.5.0 — Scenario Comparison & Stress Testing
 
 - Added first-class Scenario Set, Scenario Comparison, and Stress Test Suite contracts.

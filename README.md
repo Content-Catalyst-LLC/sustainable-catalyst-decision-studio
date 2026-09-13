@@ -1,3 +1,32 @@
+# Sustainable Catalyst Decision Studio v2.6.0
+
+**Lab + Workbench Native Handoffs**
+
+Decision Studio v2.6.0 builds on the verified v2.5.0 Scenario Comparison & Stress Testing release and adds first-class, provenance-preserving analytical exchange with Research Lab and Workbench. Decision Studio can receive source-owned analytical artifacts, create bounded requests for additional analysis or computation, attach returned artifacts to the Unified Decision Object, and retain request/return lineage without executing Lab experiments or Workbench computation itself.
+
+## v2.6.0 endpoints
+
+- `GET /native-handoffs/contracts`
+- `GET /native-handoffs/template`
+- `POST /native-handoffs/receive`
+- `POST /native-handoffs/request`
+- `POST /native-handoffs/return`
+- `POST /decision-object/native-handoff`
+- `POST /decision-packet/native-handoff`
+
+## v2.6.0 contracts
+
+- `scds-analysis-handoff/1.0`
+- `scds-computation-handoff/1.0`
+- `scds-handoff-receipt/1.0`
+- `scds-analysis-request/1.0`
+
+Source artifact payloads remain intact and are SHA-256 fingerprinted. Handoff acceptance confirms contract/fingerprint handling only; it is not scientific validation, engineering verification, approval, or recommendation.
+
+---
+
+## Previous release documentation
+
 # Sustainable Catalyst Decision Studio v2.5.0
 
 ## Scenario Comparison & Stress Testing

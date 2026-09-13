@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '2.5.0'
+    assert r.json()['version'] == '2.6.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '2.5.0'
+    assert data['decision_packet']['packet_version'] == '2.6.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -161,7 +161,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -189,7 +189,7 @@ def test_review_status_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     assert len(data['sections']) >= 8
     assert any(s['id'] == 'finance' for s in data['sections'])
 
@@ -200,7 +200,7 @@ def test_brief_readiness_default():
     data = r.json()
     assert data['ok'] is True
     readiness = data['readiness']
-    assert readiness['readiness_version'] == '2.5.0'
+    assert readiness['readiness_version'] == '2.6.0'
     assert 0 <= readiness['readiness_percent'] <= 100
     assert 'sections' in readiness
     assert 'export_gate' in readiness
@@ -232,7 +232,7 @@ def test_scenario_comparison_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     comparison = data['scenario_comparison']
     assert comparison['scenario_count'] >= 4
     assert 'matrix' in comparison
@@ -263,7 +263,7 @@ def test_workbench_handoff_default():
     data = r.json()
     assert data['ok'] is True
     handoff = data['workbench_handoff']
-    assert handoff['handoff_version'] == '2.5.0'
+    assert handoff['handoff_version'] == '2.6.0'
     ids = [h['tool_id'] for h in handoff['recommended_handoffs']]
     assert 'economics-forecasting-and-scenario-tool' in ids
     assert any('sc_workbench' in h['shortcode'] for h in handoff['recommended_handoffs'])
@@ -273,7 +273,7 @@ def test_integrated_brief_includes_scenario_and_handoff():
     r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
     assert r.status_code == 200
     data = r.json()
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     assert 'scenario_comparison' in data
     assert 'workbench_handoff' in data
     assert 'scenario_comparison_matrix' in data['brief']
@@ -286,7 +286,7 @@ def test_export_center_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['export_center']['export_center_version'] == '2.5.0'
+    assert data['export_center']['export_center_version'] == '2.6.0'
     assert any(e['id'] == 'packet_json' for e in data['export_center']['exports'])
 
 
@@ -296,7 +296,7 @@ def test_decision_packet_save_template():
     data = r.json()
     assert data['ok'] is True
     saved = data['saved_packet']
-    assert saved['packet_version'] == '2.5.0'
+    assert saved['packet_version'] == '2.6.0'
     assert saved['project_name'] == 'Saved packet test'
     assert 'readiness' in saved
     assert 'integrated_brief' in saved
@@ -308,7 +308,7 @@ def test_export_center_bundle_default():
     data = r.json()
     assert data['ok'] is True
     bundle = data['export_bundle']
-    assert bundle['bundle_version'] == '2.5.0'
+    assert bundle['bundle_version'] == '2.6.0'
     assert 'decision_packet_json' in bundle['exports']
     assert 'integrated_brief_markdown' in bundle['exports']
     assert 'audit_json' in bundle['exports']
@@ -321,8 +321,8 @@ def test_public_landing_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.5.0'
-    assert data['landing']['page_version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
+    assert data['landing']['page_version'] == '2.6.0'
     assert 'Decision Studio' in data['landing']['headline']
     assert len(data['landing']['workflow']) == 7
     assert data['landing']['workflow'][0]['module'] == 'Knowledge Library'
@@ -334,7 +334,7 @@ def test_public_demo_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['demo']['demo_version'] == '2.5.0'
+    assert data['demo']['demo_version'] == '2.6.0'
     assert len(data['demo']['demo_cards']) >= 4
     assert 'Knowledge Library to source' in data['demo']['public_copy']
     assert 'Decision Studio to decide' in data['demo']['public_copy']
@@ -344,8 +344,8 @@ def test_release_manifest_identity():
     response = client.get('/release')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '2.5.0'
-    assert data['release']['build_fingerprint'] == 'scds-v2.5.0-scenario-comparison-stress-testing'
+    assert data['version'] == '2.6.0'
+    assert data['release']['build_fingerprint'] == 'scds-v2.6.0-lab-workbench-native-handoffs'
     assert data['release']['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert data['release']['compatibility']['packet_schema_breaking_changes'] is False
 
@@ -358,7 +358,7 @@ def test_health_reports_cold_start_and_limits():
     assert data['cold_start_ready'] is True
     assert data['uptime_seconds'] >= 0
     assert data['limits']['max_request_bytes'] == 1048576
-    assert response.headers['x-scds-version'] == '2.5.0'
+    assert response.headers['x-scds-version'] == '2.6.0'
 
 
 def test_oversized_public_request_is_rejected():
@@ -558,7 +558,7 @@ def test_platform_handoff_template_has_new_packet_sections():
     r = client.get('/decision-packet/platform-handoffs')
     assert r.status_code == 200
     packet = r.json()['decision_packet']
-    assert packet['packet_version'] == '2.5.0'
+    assert packet['packet_version'] == '2.6.0'
     assert packet['artifact_schema'] == 'scds-platform-artifact/1.0'
     for key in ['evidence_registry', 'research_routes', 'live_evidence', 'experimental_evidence', 'platform_registry', 'integrity_checks']:
         assert key in packet
@@ -663,7 +663,7 @@ def test_review_history_detects_tampering():
 
 def test_governance_is_in_decision_packet_and_export_bundle():
     packet = client.get('/decision-packet/template').json()['decision_packet']
-    assert packet['packet_version'] == '2.5.0'
+    assert packet['packet_version'] == '2.6.0'
     assert packet['governance_schema'] == 'scds-decision-governance/1.0'
     assert packet['governance_center']['current_state'] == 'draft'
     governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
@@ -735,7 +735,7 @@ def test_scenario_studio_default_analysis():
     assert response.status_code == 200
     data = response.json()
     studio = data['scenario_studio']
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     assert studio['schema'] == 'scds-scenario-studio/1.0'
     assert studio['alternative_count'] == 5
     assert len(studio['weighted_ranking']) == 5
@@ -807,7 +807,7 @@ def test_scenario_studio_time_horizon_comparison():
 def test_scenario_studio_updates_decision_packet():
     response = client.post('/decision-packet/scenario-studio', json=advanced_scenario_payload())
     packet = response.json()['decision_packet']
-    assert packet['packet_version'] == '2.5.0'
+    assert packet['packet_version'] == '2.6.0'
     assert packet['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
     assert packet['scenario_studio']['alternative_count'] == 3
     assert packet['sensitivity_analysis']['parameters']
@@ -932,14 +932,14 @@ def test_collaboration_contact_and_engagement_handoff():
     handoff = response.json()['contact_engagement_handoff']
     assert handoff['schema'] == 'sc-contact-engagement-handoff/1.0'
     assert handoff['private_workspace_required'] is True
-    assert handoff['source_version'] == '2.5.0'
+    assert handoff['source_version'] == '2.6.0'
 
 
 def test_collaboration_is_saved_and_exported_with_packet_schema_1_5():
     created = client.post('/collaboration/room', json=room_payload()).json()
     room = created['room']
     saved = client.post('/decision-packet/save-template', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['saved_packet']
-    assert saved['decision_packet']['packet_version'] == '2.5.0'
+    assert saved['decision_packet']['packet_version'] == '2.6.0'
     assert saved['decision_packet']['collaboration_room_schema'] == 'scds-collaborative-decision-room/1.0'
     assert saved['collaboration']['room_id'] == room['room_id']
     bundle = client.post('/export-center/bundle', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['export_bundle']
@@ -1017,7 +1017,7 @@ def test_apply_decision_pack_updates_packet_schema_and_plans():
     data = response.json()
     packet = data['decision_packet']
     assert data['schema'] == 'scds-decision-pack-application/1.0'
-    assert packet['packet_version'] == '2.5.0'
+    assert packet['packet_version'] == '2.6.0'
     assert packet['decision_pack_schema'] == 'scds-institutional-decision-pack/1.0'
     assert packet['institutional_decision_pack']['pack_id'] == 'responsible-ai-governance'
     assert len(packet['criteria_registry']) == 6
@@ -1461,7 +1461,7 @@ def _complete_hardening_payload():
 
 def test_release_hardening_template():
     data = client.get('/release-hardening/template').json()
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     assert data['release_hardening']['schema'] == 'scds-release-readiness/1.0'
     assert 'offline_recovery' in data['release_hardening']['release_gates']
 
@@ -1577,7 +1577,7 @@ def _connected_complete_packet():
 
 def test_connected_platform_template_and_health_contracts():
     template = client.get('/connected-platform/template').json()
-    assert template['version'] == '2.5.0'
+    assert template['version'] == '2.6.0'
     assert template['connected_platform']['schema'] == 'scds-connected-decision-platform/2.0'
     assert len(template['connected_platform']['lifecycle']) == 12
     health = client.get('/health').json()
@@ -1667,8 +1667,8 @@ def test_decision_packet_connected_platform_is_additive():
 
 def test_release_manifest_declares_v2_connected_platform():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.5.0'
-    assert release['release_name'] == 'Scenario Comparison & Stress Testing'
+    assert release['release'] == '2.6.0'
+    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
     assert release['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert release['connected_platform_schema'] == 'scds-connected-decision-platform/2.0'
     assert release['compatibility']['end_to_end_lifecycle_orchestration'] is True
@@ -1680,7 +1680,7 @@ def test_catalyst_module_navigation_repair():
     response = client.get('/integrations/module-navigation')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     assert data['schema'] == 'scds-catalyst-module-navigation/1.0'
     assert data['handoff_schema'] == 'scds-catalyst-module-handoff/1.0'
     assert [item['id'] for item in data['modules']] == [
@@ -1699,7 +1699,7 @@ def test_decision_object_template_v210():
     assert response.status_code == 200
     data = response.json()
     obj = data['decision_object']
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     assert obj['schema'] == 'scds-decision-object/1.0'
     assert obj['platform_context']['schema'] == 'scds-platform-context/1.0'
     for key in ['question','objective','alternatives','criteria','constraints','assumptions','evidence','models','scenarios','uncertainties','stakeholders','tradeoffs','recommendation','confidence','counterarguments','provenance','decision','rationale','outcome_review']:
@@ -1784,8 +1784,8 @@ def test_decision_packet_decision_object_alias_v210():
 
 def test_release_declares_v210_decision_object_foundation():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.5.0'
-    assert release['release_name'] == 'Scenario Comparison & Stress Testing'
+    assert release['release'] == '2.6.0'
+    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
     assert release['decision_object_schema'] == 'scds-decision-object/1.0'
     assert release['platform_context_schema'] == 'scds-platform-context/1.0'
     assert release['compatibility']['decision_packet_projection'] is True
@@ -1802,7 +1802,7 @@ def test_decision_packet_template_exposes_v210_object_slots():
 
 def test_source_bundle_template_v220():
     data = client.get('/source-bundle/template').json()
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     assert data['source_bundle']['schema'] == 'scds-source-bundle/1.0'
 
 
@@ -1890,8 +1890,8 @@ def test_evidence_bundle_merge_v220():
 
 def test_release_declares_v220_evidence_bundle_foundation():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.5.0'
-    assert release['release_name'] == 'Scenario Comparison & Stress Testing'
+    assert release['release'] == '2.6.0'
+    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
     assert release['evidence_bundle_schema'] == 'scds-evidence-bundle/1.0'
     assert release['source_bundle_schema'] == 'scds-source-bundle/1.0'
     assert release['evidence_coverage_schema'] == 'scds-evidence-coverage/1.0'
@@ -1901,13 +1901,13 @@ def test_release_declares_v220_evidence_bundle_foundation():
 
 def test_criteria_template_v230():
     data = client.get('/criteria/template').json()
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     assert data['criteria_set']['schema'] == 'scds-criteria-set/1.0'
 
 
 def test_alternatives_template_v230():
     data = client.get('/alternatives/template').json()
-    assert data['version'] == '2.5.0'
+    assert data['version'] == '2.6.0'
     assert data['alternatives_set']['schema'] == 'scds-alternatives-set/1.0'
 
 
@@ -2013,8 +2013,8 @@ def test_decision_packet_tradeoff_matrix_projection_v230():
 
 def test_release_declares_v230_tradeoff_foundation():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.5.0'
-    assert release['release_name'] == 'Scenario Comparison & Stress Testing'
+    assert release['release'] == '2.6.0'
+    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
     assert release['criteria_set_schema'] == 'scds-criteria-set/1.0'
     assert release['alternatives_set_schema'] == 'scds-alternatives-set/1.0'
     assert release['tradeoff_matrix_schema'] == 'scds-tradeoff-matrix/1.0'
@@ -2157,8 +2157,8 @@ def test_v240_decision_packet_projection_preserves_analysis():
 
 def test_release_declares_v240_uncertainty_sensitivity_confidence():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.5.0'
-    assert release['release_name'] == 'Scenario Comparison & Stress Testing'
+    assert release['release'] == '2.6.0'
+    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
     assert release['uncertainty_register_schema'] == 'scds-uncertainty-register/1.0'
     assert release['sensitivity_analysis_schema'] == 'scds-sensitivity-analysis/1.0'
     assert release['confidence_assessment_schema'] == 'scds-confidence-assessment/1.0'
@@ -2255,8 +2255,8 @@ def test_v250_decision_packet_projection_preserves_scenario_analysis():
 
 def test_release_declares_v250_scenario_comparison_stress_testing():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.5.0'
-    assert release['release_name'] == 'Scenario Comparison & Stress Testing'
+    assert release['release'] == '2.6.0'
+    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
     assert release['scenario_set_schema'] == 'scds-scenario-set/1.0'
     assert release['scenario_comparison_schema'] == 'scds-scenario-comparison/1.0'
     assert release['stress_test_suite_schema'] == 'scds-stress-test-suite/1.0'
@@ -2265,3 +2265,179 @@ def test_release_declares_v250_scenario_comparison_stress_testing():
     assert release['compatibility']['stress_test_pass_implies_approval'] is False
     assert release['compatibility']['automatic_winner_selection'] is False
     assert release['compatibility']['automatic_recommendation'] is False
+
+
+def _v260_lab_artifact():
+    return {
+        'artifact_id':'lab:study:42',
+        'schema':'sc-lab-study-result/1.0',
+        'artifact_type':'causal-analysis',
+        'title':'Policy intervention study',
+        'result':{'effect_estimate':0.18,'interval':[0.05,0.31]},
+        'assumptions':[{'assumption_id':'parallel-trends','status':'reviewed'}],
+        'uncertainty':[{'uncertainty_id':'sampling','type':'statistical'}],
+        'provenance':[{'source':'lab','study_id':'study:42'}],
+        'review_state':'reviewed',
+    }
+
+
+def _v260_workbench_artifact():
+    return {
+        'artifact_id':'wb:model:77',
+        'schema':'sc-workbench-model-output/1.0',
+        'artifact_type':'engineering-model-output',
+        'title':'Lifecycle cost model',
+        'formula':'NPV = -CAPEX + discounted benefits',
+        'inputs':{'capex':1000000,'discount_rate':0.05},
+        'results':{'npv':225000,'payback_years':6.4},
+        'assumptions':[{'assumption_id':'discount-rate','value':0.05}],
+        'uncertainty':[{'uncertainty_id':'capex-range','lower':900000,'upper':1200000}],
+        'provenance':[{'source':'workbench','run_id':'run:77'}],
+        'review_state':'reviewed',
+    }
+
+
+def test_v260_contracts_and_templates_exposed():
+    contracts = client.get('/native-handoffs/contracts').json()['contracts']
+    template = client.get('/native-handoffs/template').json()
+    assert contracts['analysis_handoff_schema'] == 'scds-analysis-handoff/1.0'
+    assert contracts['computation_handoff_schema'] == 'scds-computation-handoff/1.0'
+    assert contracts['handoff_receipt_schema'] == 'scds-handoff-receipt/1.0'
+    assert contracts['analysis_request_schema'] == 'scds-analysis-request/1.0'
+    assert template['handoff']['schema'] == 'scds-analysis-handoff/1.0'
+    assert template['analysis_request']['schema'] == 'scds-analysis-request/1.0'
+
+
+def test_v260_lab_handoff_preserves_exact_artifact_payload_and_fingerprint():
+    artifact = _v260_lab_artifact()
+    data = client.post('/native-handoffs/receive', json={
+        'sourceProduct':'research-lab','sourceVersion':'0.72.0','artifact':artifact,
+        'artifactType':'causal-analysis','artifactSchema':artifact['schema'],
+    }).json()
+    assert data['ok'] is True
+    h = data['handoff']
+    assert h['schema'] == 'scds-analysis-handoff/1.0'
+    assert h['artifact']['payload'] == artifact
+    assert len(h['artifact']['fingerprint']) == 64
+    assert data['receipt']['accepted'] is True
+    assert data['receipt']['artifact_fingerprint'] == h['artifact']['fingerprint']
+
+
+def test_v260_workbench_handoff_is_computation_contract():
+    artifact = _v260_workbench_artifact()
+    data = client.post('/native-handoffs/receive', json={
+        'sourceProduct':'workbench','sourceVersion':'5.4.0','artifact':artifact,
+        'artifactType':'engineering-model-output','artifactSchema':artifact['schema'],
+    }).json()
+    assert data['ok'] is True
+    assert data['handoff']['schema'] == 'scds-computation-handoff/1.0'
+    assert data['handoff']['source']['role'] == 'computation'
+    assert data['receipt']['execution']['performed'] is False
+
+
+def test_v260_handoff_rejects_tampered_payload_fingerprint():
+    artifact = _v260_lab_artifact()
+    built = client.post('/native-handoffs/receive', json={
+        'sourceProduct':'research-lab','sourceVersion':'0.72.0','artifact':artifact,
+    }).json()['handoff']
+    built['artifact']['payload']['result']['effect_estimate'] = 0.99
+    data = client.post('/native-handoffs/receive', json={'handoff':built}).json()
+    assert data['ok'] is False
+    assert data['receipt']['accepted'] is False
+    assert any('fingerprint' in x for x in data['validation']['errors'])
+
+
+def test_v260_decision_studio_can_request_lab_analysis_without_executing_it():
+    data = client.post('/native-handoffs/request', json={
+        'decisionObject':{'schema':'scds-decision-object/1.0','decision_id':'D-260','assumptions':[],'uncertainties':[],'provenance':{'records':[]}},
+        'targetProduct':'research-lab',
+        'question':'Test whether the observed relationship is plausibly causal.',
+        'neededFor':'criterion:evidence-strength',
+        'request':{'requested_artifact_types':['causal-analysis','sensitivity-analysis']},
+    }).json()
+    req = data['analysis_request']
+    assert req['schema'] == 'scds-analysis-request/1.0'
+    assert req['target']['product'] == 'research-lab'
+    assert req['return_contract'] == 'scds-analysis-handoff/1.0'
+    assert req['execution']['performed_by_decision_studio'] is False
+    assert data['decision_object']['analysis_requests'][-1]['request_id'] == req['request_id']
+
+
+def test_v260_decision_studio_can_request_workbench_computation():
+    data = client.post('/native-handoffs/request', json={
+        'decisionObject':{'schema':'scds-decision-object/1.0','decision_id':'D-261','provenance':{'records':[]}},
+        'targetProduct':'workbench',
+        'question':'Calculate lifecycle cost under the downside scenario.',
+        'neededFor':'scenario:downside',
+        'request':{'requested_artifact_types':['calculation-report','graph-output']},
+    }).json()
+    req = data['analysis_request']
+    assert req['target']['product'] == 'workbench'
+    assert req['return_contract'] == 'scds-computation-handoff/1.0'
+    assert len(req['request_fingerprint']) == 64
+
+
+def test_v260_lab_return_attaches_to_decision_object_with_lineage():
+    artifact = _v260_lab_artifact()
+    data = client.post('/decision-object/native-handoff', json={
+        'decisionObject':{'schema':'scds-decision-object/1.0','decision_id':'D-LAB','assumptions':[],'uncertainties':[],'links':[],'provenance':{'records':[]}},
+        'sourceProduct':'research-lab','sourceVersion':'0.72.0','artifact':artifact,
+        'artifactType':'causal-analysis','artifactSchema':artifact['schema'],
+    }).json()
+    obj = data['decision_object']
+    assert data['ok'] is True
+    assert obj['analysis_handoffs'][-1]['artifact']['payload'] == artifact
+    assert obj['handoff_receipts'][-1]['accepted'] is True
+    assert obj['models'][-1]['source_product'] == 'research-lab'
+    assert obj['provenance']['records'][-1]['action'] == 'native_handoff_attached'
+
+
+def test_v260_workbench_return_attaches_to_decision_packet_without_breaking_schema():
+    artifact = _v260_workbench_artifact()
+    data = client.post('/decision-packet/native-handoff', json={
+        'packet':{'decision_packet_id':'P-WB','decision_question':'Which design should proceed?'},
+        'sourceProduct':'workbench','sourceVersion':'5.4.0','artifact':artifact,
+        'artifactType':'engineering-model-output','artifactSchema':artifact['schema'],
+    }).json()
+    packet = data['decision_packet']
+    assert data['ok'] is True
+    assert packet['native_handoffs'][-1]['schema'] == 'scds-computation-handoff/1.0'
+    assert packet['handoff_receipts'][-1]['schema'] == 'scds-handoff-receipt/1.0'
+    assert packet['decision_object']['schema'] == 'scds-decision-object/1.0'
+
+
+def test_v260_return_can_link_back_to_analysis_request():
+    req = client.post('/native-handoffs/request', json={
+        'decisionObject':{'schema':'scds-decision-object/1.0','decision_id':'D-RETURN','provenance':{'records':[]}},
+        'targetProduct':'workbench','question':'Calculate break-even threshold','neededFor':'criterion:cost',
+        'request':{'requested_artifact_types':['threshold-analysis']},
+    }).json()['analysis_request']
+    data = client.post('/native-handoffs/return', json={
+        'decisionObject':{'schema':'scds-decision-object/1.0','decision_id':'D-RETURN','provenance':{'records':[]}},
+        'request':req,
+        'sourceProduct':'workbench','sourceVersion':'5.4.0',
+        'artifact':_v260_workbench_artifact(),
+        'artifactType':'threshold-analysis','artifactSchema':'sc-workbench-model-output/1.0',
+    }).json()
+    assert data['handoff']['request_id'] == req['request_id']
+    assert data['receipt']['request_id'] == req['request_id']
+    assert data['decision_object']['computation_handoffs'][-1]['request_id'] == req['request_id']
+
+
+def test_v260_release_declares_native_handoffs_and_preserves_boundaries():
+    release = client.get('/release').json()['release']
+    assert release['release'] == '2.6.0'
+    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
+    assert release['analysis_handoff_schema'] == 'scds-analysis-handoff/1.0'
+    assert release['computation_handoff_schema'] == 'scds-computation-handoff/1.0'
+    assert release['handoff_receipt_schema'] == 'scds-handoff-receipt/1.0'
+    assert release['analysis_request_schema'] == 'scds-analysis-request/1.0'
+    compat = release['compatibility']
+    assert compat['lab_native_handoffs'] is True
+    assert compat['workbench_native_handoffs'] is True
+    assert compat['bidirectional_analysis_requests'] is True
+    assert compat['handoff_receipt_implies_validation'] is False
+    assert compat['decision_studio_executes_external_analysis'] is False
+    assert compat['energy_systems_runtime_consumer'] is True
+    assert compat['automatic_winner_selection'] is False
+    assert compat['automatic_recommendation'] is False

@@ -138,11 +138,27 @@ from app.scenario_stress import (
     run_stress_tests,
     attach_scenario_stress,
 )
+from app.native_handoffs import (
+    ANALYSIS_HANDOFF_SCHEMA,
+    COMPUTATION_HANDOFF_SCHEMA,
+    HANDOFF_RECEIPT_SCHEMA,
+    ANALYSIS_REQUEST_SCHEMA,
+    NativeHandoffRequest,
+    handoff_contracts_template,
+    native_handoff_template,
+    analysis_request_template,
+    build_native_handoff,
+    validate_native_handoff,
+    receive_native_handoff,
+    build_analysis_request,
+    attach_native_handoff,
+    attach_analysis_request,
+)
 
-APP_VERSION = "2.5.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.5.0-scenario-comparison-stress-testing")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.5.0")
-RELEASE_DATE = "2026-09-11"
+APP_VERSION = "2.6.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.6.0-lab-workbench-native-handoffs")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.6.0")
+RELEASE_DATE = "2026-09-13"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
 MODULE_HANDOFF_SCHEMA = "scds-catalyst-module-handoff/1.0"
@@ -200,6 +216,8 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/decision-object/uncertainty-confidence", "/decision-packet/uncertainty-confidence",
     "/scenario-set/build", "/scenario-analysis/compare", "/stress-test-suite/run",
     "/decision-object/scenario-stress", "/decision-packet/scenario-stress",
+    "/native-handoffs/receive", "/native-handoffs/request", "/native-handoffs/return",
+    "/decision-object/native-handoff", "/decision-packet/native-handoff",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -208,7 +226,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Scenario Comparison & Stress Testing",
+        "release_name": "Lab + Workbench Native Handoffs",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -262,6 +280,10 @@ def release_manifest() -> Dict[str, Any]:
         "scenario_set_schema": SCENARIO_SET_SCHEMA,
         "scenario_comparison_schema": SCENARIO_COMPARISON_SCHEMA,
         "stress_test_suite_schema": STRESS_TEST_SUITE_SCHEMA,
+        "analysis_handoff_schema": ANALYSIS_HANDOFF_SCHEMA,
+        "computation_handoff_schema": COMPUTATION_HANDOFF_SCHEMA,
+        "handoff_receipt_schema": HANDOFF_RECEIPT_SCHEMA,
+        "analysis_request_schema": ANALYSIS_REQUEST_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -348,6 +370,13 @@ def release_manifest() -> Dict[str, Any]:
             "stress_test_suites": True,
             "scenario_likelihood_inference": False,
             "stress_test_pass_implies_approval": False,
+            "lab_native_handoffs": True,
+            "workbench_native_handoffs": True,
+            "bidirectional_analysis_requests": True,
+            "source_artifact_payload_preserved": True,
+            "deterministic_handoff_fingerprints": True,
+            "handoff_receipt_implies_validation": False,
+            "decision_studio_executes_external_analysis": False,
             "automatic_winner_selection": False,
             "automatic_recommendation": False,
         },
@@ -4694,6 +4723,10 @@ def health():
         "alternatives_set_schema": ALTERNATIVES_SET_SCHEMA,
         "tradeoff_matrix_schema": TRADEOFF_MATRIX_SCHEMA,
         "tradeoff_diagnostics_schema": TRADEOFF_DIAGNOSTICS_SCHEMA,
+        "analysis_handoff_schema": ANALYSIS_HANDOFF_SCHEMA,
+        "computation_handoff_schema": COMPUTATION_HANDOFF_SCHEMA,
+        "handoff_receipt_schema": HANDOFF_RECEIPT_SCHEMA,
+        "analysis_request_schema": ANALYSIS_REQUEST_SCHEMA,
         "release": release_manifest(),
     }
 
@@ -5583,6 +5616,109 @@ def decision_packet_scenario_stress_v250_endpoint(req: ScenarioStressRequest):
     packet["scenarios"] = deepcopy(scenario_set.get("scenarios", []))
     packet["decision_object"] = {key: deepcopy(value) for key, value in obj.items() if key != "source_packet"}
     return {"ok": True, "version": APP_VERSION, "decision_object": obj, "decision_packet": packet, "scenario_set": scenario_set, "scenario_comparison": comparison, "stress_test_suite": stress, "tradeoff_matrix": matrix}
+
+
+@app.get("/native-handoffs/contracts")
+def native_handoff_contracts_endpoint():
+    return {"ok": True, "version": APP_VERSION, "contracts": handoff_contracts_template()}
+
+
+@app.get("/native-handoffs/template")
+def native_handoff_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "handoff": native_handoff_template(), "analysis_request": analysis_request_template()}
+
+
+def _resolve_native_handoff(req: NativeHandoffRequest):
+    packet = deepcopy(req.packet or {})
+    obj = deepcopy(req.decisionObject or {})
+    if not obj and packet:
+        obj = decision_object_from_packet(packet, APP_VERSION, DECISION_PACKET_SCHEMA)
+    decision_id = str(obj.get("decision_id") or packet.get("decision_packet_id") or "")
+    handoff = deepcopy(req.handoff or {})
+    if not handoff:
+        handoff = build_native_handoff(
+            req.sourceProduct,
+            req.artifact,
+            app_version=APP_VERSION,
+            decision_id=decision_id,
+            source_version=req.sourceVersion,
+            artifact_type=req.artifactType,
+            artifact_schema=req.artifactSchema,
+            review_state=req.reviewState,
+            assumptions=req.assumptions,
+            uncertainty=req.uncertainty,
+            provenance=req.provenance,
+            links=req.links,
+            request_id=str((req.request or {}).get("request_id") or ""),
+        )
+    validation = validate_native_handoff(handoff, app_version=APP_VERSION)
+    receipt = receive_native_handoff(handoff, app_version=APP_VERSION)
+    return packet, obj, handoff, validation, receipt
+
+
+@app.post("/native-handoffs/receive")
+def native_handoff_receive_endpoint(req: NativeHandoffRequest):
+    packet, obj, handoff, validation, receipt = _resolve_native_handoff(req)
+    return {"ok": validation["valid"], "version": APP_VERSION, "handoff": handoff, "validation": validation, "receipt": receipt}
+
+
+@app.post("/native-handoffs/request")
+def native_handoff_request_endpoint(req: NativeHandoffRequest):
+    packet = deepcopy(req.packet or {})
+    obj = deepcopy(req.decisionObject or {})
+    if not obj and packet:
+        obj = decision_object_from_packet(packet, APP_VERSION, DECISION_PACKET_SCHEMA)
+    decision_id = _decision_id = str(obj.get("decision_id") or packet.get("decision_packet_id") or "")
+    existing = deepcopy(req.request or {})
+    if existing.get("schema") == ANALYSIS_REQUEST_SCHEMA:
+        request_obj = existing
+    else:
+        request_obj = build_analysis_request(
+            req.targetProduct,
+            app_version=APP_VERSION,
+            decision_id=decision_id,
+            question=req.question,
+            needed_for=req.neededFor,
+            requested_artifact_types=list((req.request or {}).get("requested_artifact_types") or []),
+            decision_context=(req.request or {}).get("decision_context") or obj,
+            assumptions=req.assumptions or list(obj.get("assumptions") or []),
+            uncertainty=req.uncertainty or list(obj.get("uncertainties") or []),
+            provenance=req.provenance or list((obj.get("provenance") or {}).get("records") or []),
+            return_to=req.returnTo,
+        )
+    obj = attach_analysis_request(obj, request_obj, app_version=APP_VERSION)
+    return {"ok": True, "version": APP_VERSION, "analysis_request": request_obj, "decision_object": obj}
+
+
+@app.post("/native-handoffs/return")
+def native_handoff_return_endpoint(req: NativeHandoffRequest):
+    packet, obj, handoff, validation, receipt = _resolve_native_handoff(req)
+    if validation["valid"]:
+        obj = attach_native_handoff(obj, handoff, receipt, app_version=APP_VERSION)
+        obj["mapping_summary"] = decision_object_completeness(obj)
+    return {"ok": validation["valid"], "version": APP_VERSION, "handoff": handoff, "validation": validation, "receipt": receipt, "decision_object": obj}
+
+
+@app.post("/decision-object/native-handoff")
+def decision_object_native_handoff_endpoint(req: NativeHandoffRequest):
+    packet, obj, handoff, validation, receipt = _resolve_native_handoff(req)
+    if validation["valid"]:
+        obj = attach_native_handoff(obj, handoff, receipt, app_version=APP_VERSION)
+        obj["mapping_summary"] = decision_object_completeness(obj)
+    return {"ok": validation["valid"], "version": APP_VERSION, "handoff": handoff, "validation": validation, "receipt": receipt, "decision_object": obj}
+
+
+@app.post("/decision-packet/native-handoff")
+def decision_packet_native_handoff_endpoint(req: NativeHandoffRequest):
+    packet, obj, handoff, validation, receipt = _resolve_native_handoff(req)
+    if validation["valid"]:
+        obj = attach_native_handoff(obj, handoff, receipt, app_version=APP_VERSION)
+        obj["mapping_summary"] = decision_object_completeness(obj)
+        packet = deepcopy(packet) if packet else decision_object_to_packet(obj, APP_VERSION, DECISION_PACKET_SCHEMA)
+        packet.setdefault("native_handoffs", []).append(deepcopy(handoff))
+        packet.setdefault("handoff_receipts", []).append(deepcopy(receipt))
+        packet["decision_object"] = {key: deepcopy(value) for key, value in obj.items() if key != "source_packet"}
+    return {"ok": validation["valid"], "version": APP_VERSION, "handoff": handoff, "validation": validation, "receipt": receipt, "decision_object": obj, "decision_packet": packet}
 
 
 @app.get("/public/landing-template")

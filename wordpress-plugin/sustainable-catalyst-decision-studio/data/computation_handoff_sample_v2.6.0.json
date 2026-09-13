@@ -1,0 +1,83 @@
+{
+  "schema": "scds-computation-handoff/1.0",
+  "version": "2.6.0",
+  "handoff_id": "handoff:workbench:eeafa19a87bead7c5031",
+  "decision_id": "D-260",
+  "created_at": "2026-09-13T07:00:20.132712+00:00",
+  "source": {
+    "product": "workbench",
+    "name": "Workbench",
+    "version": "5.4.0",
+    "role": "computation"
+  },
+  "target": {
+    "product": "decision-studio",
+    "name": "Decision Studio",
+    "version": "2.6.0",
+    "role": "choice"
+  },
+  "artifact": {
+    "artifact_id": "wb:model:77",
+    "artifact_type": "engineering-model-output",
+    "artifact_schema": "sc-workbench-model-output/1.0",
+    "payload": {
+      "artifact_id": "wb:model:77",
+      "schema": "sc-workbench-model-output/1.0",
+      "artifact_type": "engineering-model-output",
+      "title": "Lifecycle cost model",
+      "formula": "NPV = -CAPEX + discounted benefits",
+      "inputs": {
+        "capex": 1000000,
+        "discount_rate": 0.05
+      },
+      "results": {
+        "npv": 225000,
+        "payback_years": 6.4
+      },
+      "assumptions": [
+        {
+          "assumption_id": "discount-rate",
+          "value": 0.05
+        }
+      ],
+      "uncertainty": [
+        {
+          "uncertainty_id": "capex-range",
+          "lower": 900000,
+          "upper": 1200000
+        }
+      ],
+      "provenance": [
+        {
+          "source": "workbench",
+          "run_id": "run:77"
+        }
+      ],
+      "review_state": "reviewed"
+    },
+    "fingerprint": "da29c6088ac7090aee14c985ea43b36072e00f5d5e10f451b86ae351f43e291c"
+  },
+  "review_state": "reviewed",
+  "assumptions": [
+    {
+      "assumption_id": "discount-rate",
+      "value": 0.05
+    }
+  ],
+  "uncertainty": [
+    {
+      "uncertainty_id": "capex-range",
+      "lower": 900000,
+      "upper": 1200000
+    }
+  ],
+  "provenance": [
+    {
+      "source": "workbench",
+      "run_id": "run:77"
+    }
+  ],
+  "links": [],
+  "request_id": "",
+  "boundary": "Native handoffs preserve source artifacts and lineage. Decision Studio does not execute Lab experiments or Workbench computations, silently reinterpret source results, or treat receipt as validation, approval, or recommendation."
+}

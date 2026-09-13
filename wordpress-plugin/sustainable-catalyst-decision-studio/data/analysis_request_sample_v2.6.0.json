@@ -1,0 +1,41 @@
+{
+  "schema": "scds-analysis-request/1.0",
+  "version": "2.6.0",
+  "request_id": "analysis-request:research-lab:c51d04df908892abd666",
+  "decision_id": "D-260",
+  "created_at": "2026-09-13T07:00:20.132768+00:00",
+  "source": {
+    "product": "decision-studio",
+    "name": "Decision Studio",
+    "version": "2.6.0",
+    "role": "choice"
+  },
+  "target": {
+    "product": "research-lab",
+    "name": "Research Lab",
+    "role": "analysis"
+  },
+  "question": "Test whether the observed relationship is plausibly causal.",
+  "needed_for": "criterion:evidence-strength",
+  "requested_artifact_types": [
+    "causal-analysis",
+    "sensitivity-analysis"
+  ],
+  "decision_context": {
+    "scenario": "downside"
+  },
+  "assumptions": [],
+  "uncertainty": [],
+  "provenance": [],
+  "return_to": {
+    "product": "decision-studio",
+    "decision_id": "D-260"
+  },
+  "return_contract": "scds-analysis-handoff/1.0",
+  "execution": {
+    "requested": true,
+    "performed_by_decision_studio": false
+  },
+  "boundary": "Native handoffs preserve source artifacts and lineage. Decision Studio does not execute Lab experiments or Workbench computations, silently reinterpret source results, or treat receipt as validation, approval, or recommendation.",
+  "request_fingerprint": "5cc6534a063d1318998f7700bf2f1250410a1bdaea212daac82881d1d065525d"
+}
