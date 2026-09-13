@@ -1,0 +1,81 @@
+{
+  "schema": "scds-recommendation-candidate/1.0",
+  "version": "1.0",
+  "title": "Recommendation Candidate",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "candidate_id",
+    "selected_alternative_id",
+    "candidate_fingerprint",
+    "human_selection_required",
+    "automatic_selection",
+    "automatic_approval"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-recommendation-candidate/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "selected_alternative_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selected_alternative": {
+      "type": "object"
+    },
+    "rationale": {
+      "type": "array"
+    },
+    "explicit_support_node_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "explicit_counter_node_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "structural_dependency_node_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "conditions": {
+      "type": "array"
+    },
+    "required_reviews": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "candidate_fingerprint": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "human_selection_required": {
+      "const": true
+    },
+    "automatic_selection": {
+      "const": false
+    },
+    "automatic_approval": {
+      "const": false
+    }
+  }
+}

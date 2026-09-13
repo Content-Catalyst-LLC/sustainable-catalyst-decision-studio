@@ -1,0 +1,69 @@
+{
+  "schema": "scds-recommendation-review/1.0",
+  "version": "1.0",
+  "title": "Recommendation Review",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "review_id",
+    "candidate_id",
+    "review_status",
+    "decision_ready",
+    "automatic_approval",
+    "automatic_recommendation",
+    "review_fingerprint"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-recommendation-review/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "review_id": {
+      "type": "string"
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "review_status": {
+      "type": "string"
+    },
+    "challenge_counts": {
+      "type": "object"
+    },
+    "open_challenge_ids": {
+      "type": "array"
+    },
+    "graph_review_flags": {
+      "type": "array"
+    },
+    "required_reviews": {
+      "type": "array"
+    },
+    "completed_reviews": {
+      "type": "array"
+    },
+    "missing_required_reviews": {
+      "type": "array"
+    },
+    "human_disposition": {
+      "type": "object"
+    },
+    "decision_ready": {
+      "type": "boolean"
+    },
+    "automatic_approval": {
+      "const": false
+    },
+    "automatic_recommendation": {
+      "const": false
+    },
+    "review_fingerprint": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64
+    }
+  }
+}

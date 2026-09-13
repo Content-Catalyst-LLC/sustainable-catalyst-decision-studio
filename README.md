@@ -1,3 +1,7 @@
+## Decision Studio v2.9.0 — Recommendations, Review & Challenge Layer
+
+Decision Studio now supports explicit human-selected recommendation candidates, first-class reviewer challenges, review evaluation, and human disposition records. The layer does not automatically select a winner, infer approval from scores, or execute a decision.
+
 # Sustainable Catalyst Decision Studio v2.8.0
 
 ## Decision Graph & Dependency Mapping

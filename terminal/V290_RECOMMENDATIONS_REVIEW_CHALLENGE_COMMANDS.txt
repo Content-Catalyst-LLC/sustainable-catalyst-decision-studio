@@ -1,0 +1,7 @@
+Decision Studio v2.9.0 adds:
+- explicit human-selected recommendation candidates
+- support and counterargument graph-node links
+- reviewer challenges and resolutions
+- open-challenge review gates
+- explicit human disposition and override
+- no automatic winner selection, approval, or decision execution

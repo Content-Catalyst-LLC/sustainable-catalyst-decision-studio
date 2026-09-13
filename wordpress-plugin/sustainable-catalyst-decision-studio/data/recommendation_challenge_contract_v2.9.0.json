@@ -1,0 +1,69 @@
+{
+  "schema": "scds-recommendation-challenge/1.0",
+  "version": "1.0",
+  "title": "Recommendation Challenge",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "challenge_id",
+    "candidate_id",
+    "challenge_type",
+    "statement",
+    "status",
+    "raised_by",
+    "challenge_fingerprint",
+    "automatic_disposition"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-recommendation-challenge/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "challenge_id": {
+      "type": "string"
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "challenge_type": {
+      "type": "string"
+    },
+    "statement": {
+      "type": "string"
+    },
+    "target_node_ids": {
+      "type": "array"
+    },
+    "evidence_refs": {
+      "type": "array"
+    },
+    "status": {
+      "enum": [
+        "open",
+        "resolved",
+        "accepted",
+        "withdrawn"
+      ]
+    },
+    "raised_by": {
+      "type": "string"
+    },
+    "resolution": {
+      "type": "string"
+    },
+    "resolved_by": {
+      "type": "string"
+    },
+    "challenge_fingerprint": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64
+    },
+    "automatic_disposition": {
+      "const": false
+    }
+  }
+}

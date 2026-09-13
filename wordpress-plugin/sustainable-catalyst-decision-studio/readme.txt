@@ -4,14 +4,14 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.8.0
+Stable tag: 2.9.0
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
 
 == Description ==
 
-Decision Studio v2.8.0 adds a first-class Decision Dependency Graph, dependency diagnostics, and change-impact review queues while preserving v2.7.0 Site Intelligence context, v2.6.0 Lab + Workbench native handoffs, v2.5.0 scenario/stress analysis, and earlier Decision Studio contracts.
+Decision Studio v2.9.0 adds explicit recommendation candidates, reviewer challenges, review evaluation, and human dispositions while preserving the v2.8.0 Decision Graph, v2.7.0 Site Intelligence context, v2.6.0 Lab + Workbench native handoffs, v2.5.0 scenario/stress analysis, and earlier Decision Studio contracts.
 
 Process confidence summarizes documentation and analysis coverage. It is not a probability that an alternative or recommendation is correct. Sensitivity results do not automatically select a winner or create a recommendation.
 
@@ -33,6 +33,13 @@ Process confidence summarizes documentation and analysis coverage. It is not a p
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 2.9.0 =
+* Added scds-recommendation-candidate/1.0, scds-recommendation-challenge/1.0, and scds-recommendation-review/1.0.
+* Recommendation candidates require an explicit human-selected alternative; scores and graph structure do not select a winner.
+* Added challenge records, open-challenge review gates, explicit human override, and governed disposition.
+* Human disposition records actor and rationale but never executes a decision or implies institutional approval.
+* Preserved v2.8 Decision Graph & Dependency Mapping and all prior contracts.
 
 = 2.8.0 =
 * Added Decision Dependency Graph, Dependency Diagnostics, and Change Impact Assessment contracts.

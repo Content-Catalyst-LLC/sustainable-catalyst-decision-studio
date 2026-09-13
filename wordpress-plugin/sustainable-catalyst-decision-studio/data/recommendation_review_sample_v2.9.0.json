@@ -1,0 +1,26 @@
+{
+  "schema": "scds-recommendation-review/1.0",
+  "version": "2.9.0",
+  "candidate_id": "recommendation:ba0be5f4ac724ee7c420",
+  "review_status": "blocked_by_open_challenges",
+  "challenge_counts": {
+    "total": 1,
+    "open": 1,
+    "resolved": 0,
+    "withdrawn": 0
+  },
+  "open_challenge_ids": [
+    "challenge:b07146c2efdc25d8caff"
+  ],
+  "graph_review_flags": [],
+  "required_reviews": [],
+  "completed_reviews": [],
+  "missing_required_reviews": [],
+  "human_disposition": {},
+  "decision_ready": false,
+  "automatic_approval": false,
+  "automatic_recommendation": false,
+  "boundary": "A recommendation candidate is an explicitly selected option prepared for review. Decision Studio does not automatically select a winner, infer approval from a score, treat dependency structure as causal proof, or convert a review disposition into execution authority.",
+  "review_id": "review:41849289c59400cdc7f5",
+  "review_fingerprint": "c93aaec87bc67d1bd4ecb82fb2f375adf500413365642da53af63b551f4fc474"
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "scds-recommendation-candidate/1.0",
+  "version": "2.9.0",
+  "decision_id": "D-SAMPLE",
+  "selected_alternative_id": "alt-a",
+  "selected_alternative": {
+    "alternative_id": "alt-a",
+    "label": "Option A"
+  },
+  "rationale": [
+    "Advance Option A for human review."
+  ],
+  "explicit_support_node_ids": [
+    "evidence:ev-1"
+  ],
+  "explicit_counter_node_ids": [
+    "uncertainty:u-1"
+  ],
+  "structural_dependency_node_ids": [
+    "evidence:ev-1"
+  ],
+  "conditions": [
+    "Recheck assumptions before commitment."
+  ],
+  "required_reviews": [],
+  "created_at": "2026-09-13T10:26:29.373405Z",
+  "human_selection_required": true,
+  "automatic_selection": false,
+  "automatic_approval": false,
+  "boundary": "A recommendation candidate is an explicitly selected option prepared for review. Decision Studio does not automatically select a winner, infer approval from a score, treat dependency structure as causal proof, or convert a review disposition into execution authority.",
+  "candidate_id": "recommendation:ba0be5f4ac724ee7c420",
+  "candidate_fingerprint": "6fac946e4f30253da28d991851dad9408cde7f6234b342a393871b39d641c9c6"
+}

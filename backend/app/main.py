@@ -179,10 +179,29 @@ from app.native_handoffs import (
     attach_native_handoff,
     attach_analysis_request,
 )
+from app.recommendation_review import (
+    RECOMMENDATION_CANDIDATE_SCHEMA,
+    RECOMMENDATION_CHALLENGE_SCHEMA,
+    RECOMMENDATION_REVIEW_SCHEMA,
+    RecommendationReviewRequest,
+    recommendation_template,
+    challenge_template,
+    review_template as recommendation_review_template,
+    build_recommendation_candidate,
+    validate_recommendation_candidate,
+    create_challenge,
+    resolve_challenge,
+    validate_challenge,
+    evaluate_recommendation,
+    apply_human_disposition,
+    validate_review as validate_recommendation_review,
+    attach_recommendation_review,
+)
 
-APP_VERSION = "2.8.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.8.0-decision-graph-dependency-mapping")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.8.0")
+
+APP_VERSION = "2.9.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v2.9.0-recommendations-review-challenge")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v2.9.0")
 RELEASE_DATE = "2026-09-13"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -247,6 +266,8 @@ EXPENSIVE_PUBLIC_PATHS = {
     "/decision-object/site-intelligence-context", "/decision-packet/site-intelligence-context",
     "/decision-dependency-graph/build", "/decision-dependency-graph/validate", "/decision-dependency-graph/impact",
     "/decision-object/dependency-graph", "/decision-packet/dependency-graph",
+    "/recommendation-review/candidate", "/recommendation-review/challenge", "/recommendation-review/evaluate", "/recommendation-review/disposition",
+    "/decision-object/recommendation-review", "/decision-packet/recommendation-review",
 }
 
 app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_VERSION)
@@ -255,7 +276,7 @@ app = FastAPI(title="Sustainable Catalyst Decision Studio Backend", version=APP_
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Decision Graph & Dependency Mapping",
+        "release_name": "Recommendations, Review & Challenge Layer",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -319,6 +340,9 @@ def release_manifest() -> Dict[str, Any]:
         "decision_dependency_graph_schema": DEPENDENCY_GRAPH_SCHEMA,
         "dependency_diagnostics_schema": DEPENDENCY_DIAGNOSTICS_SCHEMA,
         "change_impact_assessment_schema": CHANGE_IMPACT_SCHEMA,
+        "recommendation_candidate_schema": RECOMMENDATION_CANDIDATE_SCHEMA,
+        "recommendation_challenge_schema": RECOMMENDATION_CHALLENGE_SCHEMA,
+        "recommendation_review_schema": RECOMMENDATION_REVIEW_SCHEMA,
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
             "backend": APP_VERSION,
@@ -433,6 +457,16 @@ def release_manifest() -> Dict[str, Any]:
             "dependency_degree_implies_importance": False,
             "change_impact_implies_invalidation": False,
             "change_impact_changes_recommendation_automatically": False,
+            "recommendation_candidates": True,
+            "recommendation_challenges": True,
+            "human_recommendation_disposition": True,
+            "explicit_support_and_counterargument_links": True,
+            "open_challenge_override_requires_human_action": True,
+            "recommendation_candidate_implies_winner": False,
+            "recommendation_score_implies_approval": False,
+            "challenge_resolution_is_automatic": False,
+            "human_disposition_executes_decision": False,
+            "v2_8_0_dependency_graph_preserved": True,
             "v2_7_0_site_intelligence_context_preserved": True,
             "automatic_winner_selection": False,
             "automatic_recommendation": False,
@@ -5919,6 +5953,133 @@ def decision_packet_dependency_graph_endpoint(req: DependencyGraphRequest):
     return {"ok": validation["valid"], "version": APP_VERSION, "dependency_graph": graph, "validation": validation, "decision_object": obj, "decision_packet": packet}
 
 
+@app.get("/recommendation-review/template")
+def recommendation_review_template_endpoint():
+    return {
+        "ok": True,
+        "version": APP_VERSION,
+        "recommendation_candidate": recommendation_template(APP_VERSION),
+        "recommendation_challenge": challenge_template(APP_VERSION),
+        "recommendation_review": recommendation_review_template(APP_VERSION),
+    }
+
+
+def _resolve_recommendation_review(req: RecommendationReviewRequest):
+    packet = deepcopy(req.packet or {})
+    obj = deepcopy(req.decisionObject or {})
+    if not obj and packet:
+        obj = decision_object_from_packet(packet, APP_VERSION, DECISION_PACKET_SCHEMA)
+    graph = deepcopy(req.graph or {})
+    if not graph:
+        graphs = obj.get("decision_dependency_graphs") or []
+        if graphs and isinstance(graphs[-1], dict):
+            graph = deepcopy(graphs[-1])
+    candidate = deepcopy(req.candidate or {})
+    if not candidate and req.selectedAlternativeId:
+        candidate = build_recommendation_candidate(
+            obj, graph, app_version=APP_VERSION, selected_alternative_id=req.selectedAlternativeId,
+            rationale=req.rationale, support_node_ids=req.supportNodeIds, counter_node_ids=req.counterNodeIds,
+            conditions=req.conditions, required_reviews=req.requiredReviews,
+        )
+    candidate_validation = validate_recommendation_candidate(candidate, app_version=APP_VERSION) if candidate else {"valid": False, "errors": ["candidate is required"]}
+    challenges = deepcopy(req.challenges or [])
+    review = deepcopy(req.review or {})
+    if candidate and not review:
+        review = evaluate_recommendation(candidate, challenges, graph, app_version=APP_VERSION)
+    return packet, obj, graph, candidate, candidate_validation, challenges, review
+
+
+@app.post("/recommendation-review/candidate")
+def recommendation_review_candidate_endpoint(req: RecommendationReviewRequest):
+    try:
+        packet, obj, graph, candidate, validation, challenges, review = _resolve_recommendation_review(req)
+        return {"ok": validation["valid"], "version": APP_VERSION, "candidate": candidate, "validation": validation, "review": review}
+    except ValueError as exc:
+        return JSONResponse(status_code=400, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+@app.post("/recommendation-review/challenge")
+def recommendation_review_challenge_endpoint(req: RecommendationReviewRequest):
+    try:
+        packet, obj, graph, candidate, validation, challenges, review = _resolve_recommendation_review(req)
+        if not validation.get("valid"):
+            return JSONResponse(status_code=400, content={"ok": False, "version": APP_VERSION, "error": "valid candidate required", "validation": validation})
+        if req.challengeAction == "create":
+            challenge = create_challenge(candidate, app_version=APP_VERSION, challenge_type=req.challengeType, statement=req.statement, target_node_ids=req.targetNodeIds, evidence_refs=req.evidenceRefs, actor=req.actor)
+            challenges.append(challenge)
+        else:
+            challenge = next((deepcopy(x) for x in challenges if isinstance(x, dict) and x.get("challenge_id") == req.challengeId), {})
+            if not challenge:
+                raise ValueError("challengeId does not match a supplied challenge")
+            updated = resolve_challenge(challenge, app_version=APP_VERSION, actor=req.actor, resolution=req.challengeResolution, status=req.challengeStatus)
+            challenges = [updated if isinstance(x, dict) and x.get("challenge_id") == req.challengeId else x for x in challenges]
+            challenge = updated
+        challenge_validation = validate_challenge(challenge, app_version=APP_VERSION)
+        review = evaluate_recommendation(candidate, challenges, graph, app_version=APP_VERSION)
+        return {"ok": challenge_validation["valid"], "version": APP_VERSION, "candidate": candidate, "challenge": challenge, "challenge_validation": challenge_validation, "challenges": challenges, "review": review}
+    except ValueError as exc:
+        return JSONResponse(status_code=400, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+@app.post("/recommendation-review/evaluate")
+def recommendation_review_evaluate_endpoint(req: RecommendationReviewRequest):
+    packet, obj, graph, candidate, validation, challenges, review = _resolve_recommendation_review(req)
+    if not validation.get("valid"):
+        return JSONResponse(status_code=400, content={"ok": False, "version": APP_VERSION, "error": "valid candidate required", "validation": validation})
+    review = evaluate_recommendation(candidate, challenges, graph, app_version=APP_VERSION)
+    return {"ok": True, "version": APP_VERSION, "candidate": candidate, "challenges": challenges, "review": review, "validation": validate_recommendation_review(review, app_version=APP_VERSION)}
+
+
+@app.post("/recommendation-review/disposition")
+def recommendation_review_disposition_endpoint(req: RecommendationReviewRequest):
+    try:
+        packet, obj, graph, candidate, validation, challenges, review = _resolve_recommendation_review(req)
+        if not validation.get("valid"):
+            return JSONResponse(status_code=400, content={"ok": False, "version": APP_VERSION, "error": "valid candidate required", "validation": validation})
+        review = evaluate_recommendation(candidate, challenges, graph, app_version=APP_VERSION) if not review else review
+        review = apply_human_disposition(review, challenges, app_version=APP_VERSION, disposition=req.disposition, actor=req.actor, rationale=req.dispositionRationale, override_open_challenges=req.overrideOpenChallenges)
+        return {"ok": True, "version": APP_VERSION, "candidate": candidate, "challenges": challenges, "review": review, "validation": validate_recommendation_review(review, app_version=APP_VERSION)}
+    except ValueError as exc:
+        return JSONResponse(status_code=400, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def _attach_recommendation_payload(req: RecommendationReviewRequest):
+    packet, obj, graph, candidate, validation, challenges, review = _resolve_recommendation_review(req)
+    if not validation.get("valid"):
+        return packet, obj, candidate, challenges, review, validation
+    if req.disposition:
+        review = apply_human_disposition(review, challenges, app_version=APP_VERSION, disposition=req.disposition, actor=req.actor, rationale=req.dispositionRationale, override_open_challenges=req.overrideOpenChallenges)
+    review_validation = validate_recommendation_review(review, app_version=APP_VERSION)
+    if review_validation["valid"]:
+        obj = attach_recommendation_review(obj, candidate, challenges, review, app_version=APP_VERSION)
+        obj["mapping_summary"] = decision_object_completeness(obj)
+    return packet, obj, candidate, challenges, review, review_validation
+
+
+@app.post("/decision-object/recommendation-review")
+def decision_object_recommendation_review_endpoint(req: RecommendationReviewRequest):
+    try:
+        packet, obj, candidate, challenges, review, validation = _attach_recommendation_payload(req)
+        return {"ok": validation["valid"], "version": APP_VERSION, "candidate": candidate, "challenges": challenges, "review": review, "validation": validation, "decision_object": obj}
+    except ValueError as exc:
+        return JSONResponse(status_code=400, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+@app.post("/decision-packet/recommendation-review")
+def decision_packet_recommendation_review_endpoint(req: RecommendationReviewRequest):
+    try:
+        packet, obj, candidate, challenges, review, validation = _attach_recommendation_payload(req)
+        if validation["valid"]:
+            packet = deepcopy(packet) if packet else decision_object_to_packet(obj, APP_VERSION, DECISION_PACKET_SCHEMA)
+            packet.setdefault("recommendation_candidates", []).append(deepcopy(candidate))
+            packet.setdefault("recommendation_challenges", []).extend(deepcopy(challenges))
+            packet.setdefault("recommendation_reviews", []).append(deepcopy(review))
+            packet["decision_object"] = {key: deepcopy(value) for key, value in obj.items() if key != "source_packet"}
+        return {"ok": validation["valid"], "version": APP_VERSION, "candidate": candidate, "challenges": challenges, "review": review, "validation": validation, "decision_object": obj, "decision_packet": packet}
+    except ValueError as exc:
+        return JSONResponse(status_code=400, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
 @app.get("/public/landing-template")
 def public_landing_template_endpoint():
     return {"ok": True, "version": APP_VERSION, "landing": public_landing_template()}
@@ -5930,7 +6091,7 @@ def public_demo_template_endpoint():
 
 @app.get("/templates")
 def templates():
-    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle", "/criteria/template", "/criteria/build", "/alternatives/template", "/alternatives/build", "/tradeoff-matrix/template", "/tradeoff-matrix/build", "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix", "/uncertainty-register/template", "/uncertainty-register/build", "/sensitivity-analysis/template", "/sensitivity-analysis/run", "/confidence-assessment/template", "/confidence-assessment/build", "/decision-object/uncertainty-confidence", "/decision-packet/uncertainty-confidence", "/scenario-set/template", "/scenario-set/build", "/scenario-analysis/template", "/scenario-analysis/compare", "/stress-test-suite/template", "/stress-test-suite/run", "/decision-object/scenario-stress", "/decision-packet/scenario-stress", "/site-intelligence-context/contracts", "/site-intelligence-context/template", "/site-intelligence-context/build", "/site-intelligence-context/validate", "/decision-object/site-intelligence-context", "/decision-packet/site-intelligence-context", "/decision-dependency-graph/template", "/decision-dependency-graph/build", "/decision-dependency-graph/validate", "/decision-dependency-graph/impact", "/decision-object/dependency-graph", "/decision-packet/dependency-graph"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle", "/criteria/template", "/criteria/build", "/alternatives/template", "/alternatives/build", "/tradeoff-matrix/template", "/tradeoff-matrix/build", "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix", "/uncertainty-register/template", "/uncertainty-register/build", "/sensitivity-analysis/template", "/sensitivity-analysis/run", "/confidence-assessment/template", "/confidence-assessment/build", "/decision-object/uncertainty-confidence", "/decision-packet/uncertainty-confidence", "/scenario-set/template", "/scenario-set/build", "/scenario-analysis/template", "/scenario-analysis/compare", "/stress-test-suite/template", "/stress-test-suite/run", "/decision-object/scenario-stress", "/decision-packet/scenario-stress", "/site-intelligence-context/contracts", "/site-intelligence-context/template", "/site-intelligence-context/build", "/site-intelligence-context/validate", "/decision-object/site-intelligence-context", "/decision-packet/site-intelligence-context", "/decision-dependency-graph/template", "/decision-dependency-graph/build", "/decision-dependency-graph/validate", "/decision-dependency-graph/impact", "/decision-object/dependency-graph", "/decision-packet/dependency-graph"]}
+    return {"scenario_templates": ["Baseline", "Conservative", "Expected", "Ambitious", "Stress test"], "shortcodes": ["[sc_decision_studio mode=\"full\"]", "[sc_decision_studio mode=\"risk\"]", "[sc_decision_studio mode=\"report\"]"], "ai_endpoints": ["/release", "/ai/status", "/brief", "/report", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle", "/criteria/template", "/criteria/build", "/alternatives/template", "/alternatives/build", "/tradeoff-matrix/template", "/tradeoff-matrix/build", "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix", "/uncertainty-register/template", "/uncertainty-register/build", "/sensitivity-analysis/template", "/sensitivity-analysis/run", "/confidence-assessment/template", "/confidence-assessment/build", "/decision-object/uncertainty-confidence", "/decision-packet/uncertainty-confidence", "/scenario-set/template", "/scenario-set/build", "/scenario-analysis/template", "/scenario-analysis/compare", "/stress-test-suite/template", "/stress-test-suite/run", "/decision-object/scenario-stress", "/decision-packet/scenario-stress", "/site-intelligence-context/contracts", "/site-intelligence-context/template", "/site-intelligence-context/build", "/site-intelligence-context/validate", "/decision-object/site-intelligence-context", "/decision-packet/site-intelligence-context", "/decision-dependency-graph/template", "/decision-dependency-graph/build", "/decision-dependency-graph/validate", "/decision-dependency-graph/impact", "/decision-object/dependency-graph", "/decision-packet/dependency-graph", "/recommendation-review/template", "/recommendation-review/candidate", "/recommendation-review/challenge", "/recommendation-review/evaluate", "/recommendation-review/disposition", "/decision-object/recommendation-review", "/decision-packet/recommendation-review"], "integration_endpoints": ["/release", "/integrations/platform", "/integrations/contracts", "/integrations/validate", "/integrations/import-batch", "/decision-packet/platform-handoffs", "/integrations/modules", "/decision-packet/template", "/decision-packet/analyze", "/audit/template", "/audit/generate", "/review/status-template", "/brief-readiness", "/decision-packet/readiness", "/integrations/adapters", "/integrations/import", "/integrations/import-batch", "/decision-packet/import", "/integrated-brief", "/decision-packet/brief", "/brief-readiness", "/decision-packet/readiness", "/review/status", "/scenario-comparison", "/decision-packet/scenario-comparison", "/scenario-studio/template", "/scenario-studio/analyze", "/scenario-studio/sensitivity", "/scenario-studio/threshold", "/decision-packet/scenario-studio", "/workbench/handoff", "/decision-packet/workbench-handoff", "/decision-packet/storage-template", "/decision-packet/save-template", "/export-center/template", "/export-center/bundle", "/decision-packet/export-bundle", "/public/landing-template", "/public/demo-template", "/governance/states", "/governance/template", "/governance/evaluate", "/governance/transition", "/decision-packet/governance", "/governance/history/verify", "/collaboration/roles", "/collaboration/template", "/collaboration/room", "/collaboration/action", "/collaboration/comment", "/collaboration/change-request", "/collaboration/snapshot", "/collaboration/share", "/collaboration/contact-handoff", "/decision-packet/collaboration", "/decision-packs/catalog", "/decision-packs/{pack_id}", "/decision-packs/validate", "/decision-packs/apply", "/decision-packet/domain-pack", "/publication-studio/template", "/publication-studio/generate", "/publication-studio/redact", "/publication-studio/handoff", "/decision-packet/publication", "/outcomes/template", "/outcomes/evaluate", "/outcomes/record-observation", "/outcomes/reassess", "/outcomes/amend", "/outcomes/retire", "/decision-packet/outcomes", "/api/v1/capabilities", "/api/v1/sdk/contracts", "/api/v1/public-dossier", "/api/v1/embeds/readiness", "/api/v1/embeds/scenario", "/api/v1/packets/export", "/api/v1/packets/import", "/api/v1/archive", "/api/v1/platform-core/gateway", "/api/v1/events", "/decision-packet/institutional-integration", "/connected-platform/template", "/connected-platform/assess", "/connected-platform/transition", "/connected-platform/portfolio", "/connected-platform/graph", "/connected-platform/exchange", "/decision-packet/connected-platform", "/source-bundle/template", "/source-bundle/build", "/evidence-bundle/template", "/evidence-bundle/build", "/evidence-bundle/merge", "/decision-object/evidence", "/decision-packet/evidence-bundle", "/criteria/template", "/criteria/build", "/alternatives/template", "/alternatives/build", "/tradeoff-matrix/template", "/tradeoff-matrix/build", "/decision-object/tradeoffs", "/decision-packet/tradeoff-matrix", "/uncertainty-register/template", "/uncertainty-register/build", "/sensitivity-analysis/template", "/sensitivity-analysis/run", "/confidence-assessment/template", "/confidence-assessment/build", "/decision-object/uncertainty-confidence", "/decision-packet/uncertainty-confidence", "/scenario-set/template", "/scenario-set/build", "/scenario-analysis/template", "/scenario-analysis/compare", "/stress-test-suite/template", "/stress-test-suite/run", "/decision-object/scenario-stress", "/decision-packet/scenario-stress", "/site-intelligence-context/contracts", "/site-intelligence-context/template", "/site-intelligence-context/build", "/site-intelligence-context/validate", "/decision-object/site-intelligence-context", "/decision-packet/site-intelligence-context", "/decision-dependency-graph/template", "/decision-dependency-graph/build", "/decision-dependency-graph/validate", "/decision-dependency-graph/impact", "/decision-object/dependency-graph", "/decision-packet/dependency-graph", "/recommendation-review/template", "/recommendation-review/candidate", "/recommendation-review/challenge", "/recommendation-review/evaluate", "/recommendation-review/disposition", "/decision-object/recommendation-review", "/decision-packet/recommendation-review"]}
 
 
 # Energy Systems Intelligence v1.2.0 target-side runtime consumer.

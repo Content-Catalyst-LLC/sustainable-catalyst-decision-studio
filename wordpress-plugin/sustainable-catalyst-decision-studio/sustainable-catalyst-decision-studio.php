@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Decision Graph & Dependency Mapping for inspectable dependencies, review queues, and change-impact tracing in the Unified Decision Object.
- * Version: 2.8.0
+ * Description: Recommendations, Review & Challenge Layer for explicit recommendation candidates, counterarguments, human review, and governed disposition in the Unified Decision Object.
+ * Version: 2.9.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.8.0';
-    const BUILD_FINGERPRINT = 'scds-v2.8.0-decision-graph-dependency-mapping';
-    const SOURCE_COMMIT = 'release-v2.8.0';
+    const VERSION = '2.9.0';
+    const BUILD_FINGERPRINT = 'scds-v2.9.0-recommendations-review-challenge';
+    const SOURCE_COMMIT = 'release-v2.9.0';
     const RELEASE_DATE = '2026-09-13';
-    const DB_VERSION = '2.8.0';
+    const DB_VERSION = '2.9.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -85,6 +85,9 @@ class Sustainable_Catalyst_Decision_Studio {
     const DEPENDENCY_GRAPH_SCHEMA = 'scds-decision-dependency-graph/1.0';
     const DEPENDENCY_DIAGNOSTICS_SCHEMA = 'scds-dependency-diagnostics/1.0';
     const CHANGE_IMPACT_SCHEMA = 'scds-change-impact-assessment/1.0';
+    const RECOMMENDATION_CANDIDATE_SCHEMA = 'scds-recommendation-candidate/1.0';
+    const RECOMMENDATION_CHALLENGE_SCHEMA = 'scds-recommendation-challenge/1.0';
+    const RECOMMENDATION_REVIEW_SCHEMA = 'scds-recommendation-review/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -535,6 +538,13 @@ class Sustainable_Catalyst_Decision_Studio {
             'restDependencyGraphImpactUrl' => esc_url_raw(rest_url('scds/v1/decision-dependency-graph/impact')),
             'restDecisionObjectDependencyGraphUrl' => esc_url_raw(rest_url('scds/v1/decision-object/dependency-graph')),
             'restDecisionPacketDependencyGraphUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/dependency-graph')),
+            'restRecommendationReviewTemplateUrl' => esc_url_raw(rest_url('scds/v1/recommendation-review/template')),
+            'restRecommendationCandidateUrl' => esc_url_raw(rest_url('scds/v1/recommendation-review/candidate')),
+            'restRecommendationChallengeUrl' => esc_url_raw(rest_url('scds/v1/recommendation-review/challenge')),
+            'restRecommendationEvaluateUrl' => esc_url_raw(rest_url('scds/v1/recommendation-review/evaluate')),
+            'restRecommendationDispositionUrl' => esc_url_raw(rest_url('scds/v1/recommendation-review/disposition')),
+            'restDecisionObjectRecommendationReviewUrl' => esc_url_raw(rest_url('scds/v1/decision-object/recommendation-review')),
+            'restDecisionPacketRecommendationReviewUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/recommendation-review')),
             'restModuleNavigationUrl' => esc_url_raw(rest_url('scds/v1/integrations/module-navigation')),
             'moduleNavigation' => $this->catalyst_module_navigation(),
             'moduleHandoffEnabled' => $settings['module_handoff_enabled'] === '1',
@@ -571,6 +581,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <button type="button" class="scds-tab" data-scds-tab="evidence">Evidence &amp; Sources</button>
                 <button type="button" class="scds-tab" data-scds-tab="site-context">Site Intelligence Context</button>
                 <button type="button" class="scds-tab" data-scds-tab="dependency-graph">Decision Graph</button>
+                <button type="button" class="scds-tab" data-scds-tab="recommendation-review">Recommendation Review</button>
                 <button type="button" class="scds-tab" data-scds-tab="tradeoffs">Tradeoff Matrix</button>
                 <button type="button" class="scds-tab" data-scds-tab="uncertainty">Uncertainty &amp; Confidence</button>
                 <button type="button" class="scds-tab" data-scds-tab="native-handoffs">Lab + Workbench Handoffs</button>
@@ -599,6 +610,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <?php $this->render_panel_evidence_v220($mode); ?>
                 <?php $this->render_panel_site_intelligence_context_v270($mode); ?>
                 <?php $this->render_panel_dependency_graph_v280($mode); ?>
+                <?php $this->render_panel_recommendation_review_v290($mode); ?>
                 <?php $this->render_panel_tradeoffs_v230($mode); ?>
                 <?php $this->render_panel_uncertainty_v240($mode); ?>
                 <?php $this->render_panel_native_handoffs_v260($mode); ?>
@@ -961,6 +973,41 @@ class Sustainable_Catalyst_Decision_Studio {
             <div class="scds-grid scds-grid-2"><label class="scds-field scds-field-wide"><span>Uncertainties JSON</span><textarea rows="14" data-scds-uncertainty-json>[{"uncertainty_id":"u-option-a-cost","target_type":"evaluation","target_id":"evaluation-3","parameter":"value","label":"Option A lifecycle cost range","lower":35,"upper":60,"review_status":"reviewed","source_refs":["src-cost"]}]</textarea></label><label class="scds-field scds-field-wide"><span>Sensitivity configuration JSON</span><textarea rows="14" data-scds-sensitivity-config>{"weight_perturbation_percent":20}</textarea></label></div>
             <div class="scds-actions"><button type="button" class="scds-button" data-scds-uncertainty-build>Build Uncertainty Register</button><button type="button" class="scds-button scds-button-primary" data-scds-sensitivity-run>Run Sensitivity</button><button type="button" class="scds-button" data-scds-confidence-build>Assess Confidence</button><button type="button" class="scds-button" data-scds-uncertainty-attach>Attach to Decision Object</button><button type="button" class="scds-button" data-scds-uncertainty-download>Download Analysis JSON</button></div>
             <div class="scds-note"><strong>Confidence boundary:</strong> Process confidence measures documentation, review, evidence linkage, uncertainty characterization, and sensitivity coverage. It is not a probability that an alternative or recommendation is correct, and no sensitivity result selects a winner.</div><div data-scds-uncertainty-output aria-live="polite"></div>
+        </section>
+    <?php }
+
+    private function recommendation_hash_local_v290($value) { return hash('sha256', wp_json_encode($value, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); }
+    private function recommendation_candidate_local_v290($obj,$graph,$payload) {
+        $selected=trim((string)($payload['selectedAlternativeId']??'')); if(!$selected)return new WP_Error('scds_recommendation_selection_required','selectedAlternativeId is required; Decision Studio will not select a winner automatically.',['status'=>400]);
+        $alt=['alternative_id'=>$selected,'label'=>$selected,'source'=>'explicit_user_selection']; foreach((array)($obj['alternatives']??[]) as $a){if(is_array($a)&&in_array($selected,[(string)($a['alternative_id']??''),(string)($a['id']??''),(string)($a['name']??''),(string)($a['label']??'')],true)){$alt=$a;break;}}
+        $candidate=['schema'=>self::RECOMMENDATION_CANDIDATE_SCHEMA,'version'=>self::VERSION,'decision_id'=>(string)($obj['decision_id']??''),'selected_alternative_id'=>$selected,'selected_alternative'=>$alt,'rationale'=>(array)($payload['rationale']??[]),'explicit_support_node_ids'=>(array)($payload['supportNodeIds']??[]),'explicit_counter_node_ids'=>(array)($payload['counterNodeIds']??[]),'structural_dependency_node_ids'=>[],'conditions'=>(array)($payload['conditions']??[]),'required_reviews'=>(array)($payload['requiredReviews']??[]),'created_at'=>gmdate('c'),'human_selection_required'=>true,'automatic_selection'=>false,'automatic_approval'=>false,'boundary'=>'A recommendation candidate is an explicitly selected option prepared for review. Decision Studio does not automatically select a winner or infer approval.'];
+        $candidate['candidate_id']='recommendation:'.substr($this->recommendation_hash_local_v290([$candidate['decision_id'],$selected,$candidate['rationale'],$candidate['explicit_support_node_ids'],$candidate['explicit_counter_node_ids']]),0,20);$candidate['candidate_fingerprint']=$this->recommendation_hash_local_v290($candidate);return $candidate;
+    }
+    private function recommendation_review_local_v290($candidate,$challenges) {$open=array_values(array_filter((array)$challenges,function($x){return is_array($x)&&(($x['status']??'open')==='open');}));$review=['schema'=>self::RECOMMENDATION_REVIEW_SCHEMA,'version'=>self::VERSION,'candidate_id'=>$candidate['candidate_id']??'','review_status'=>$open?'blocked_by_open_challenges':'human_disposition_required','challenge_counts'=>['total'=>count((array)$challenges),'open'=>count($open),'resolved'=>count(array_filter((array)$challenges,function($x){return is_array($x)&&in_array(($x['status']??''),['resolved','accepted'],true);} )),'withdrawn'=>count(array_filter((array)$challenges,function($x){return is_array($x)&&(($x['status']??'')==='withdrawn');}))],'open_challenge_ids'=>array_values(array_map(function($x){return (string)($x['challenge_id']??'');},$open)),'graph_review_flags'=>[],'required_reviews'=>(array)($candidate['required_reviews']??[]),'completed_reviews'=>[],'missing_required_reviews'=>(array)($candidate['required_reviews']??[]),'human_disposition'=>[],'decision_ready'=>false,'automatic_approval'=>false,'automatic_recommendation'=>false,'boundary'=>'Review status surfaces unresolved work; it does not approve or execute a decision.'];$review['review_id']='review:'.substr($this->recommendation_hash_local_v290([$review['candidate_id'],$review['open_challenge_ids']]),0,20);$review['review_fingerprint']=$this->recommendation_hash_local_v290($review);return $review;}
+    public function rest_recommendation_review_template_v290(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'recommendation_candidate'=>['schema'=>self::RECOMMENDATION_CANDIDATE_SCHEMA,'version'=>self::VERSION,'human_selection_required'=>true,'automatic_selection'=>false,'automatic_approval'=>false],'recommendation_challenge'=>['schema'=>self::RECOMMENDATION_CHALLENGE_SCHEMA,'version'=>self::VERSION,'status'=>'open','automatic_disposition'=>false],'recommendation_review'=>['schema'=>self::RECOMMENDATION_REVIEW_SCHEMA,'version'=>self::VERSION,'decision_ready'=>false,'automatic_approval'=>false,'automatic_recommendation'=>false]]);}
+    public function rest_recommendation_review_action_v290(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);} $packet=is_array($payload['packet']??null)?$payload['packet']:[];$obj=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];if(!$obj)$obj=$this->decision_object_from_packet_local_v210($packet);$graph=is_array($payload['graph']??null)?$payload['graph']:[];$candidate=is_array($payload['candidate']??null)&&$payload['candidate']?$payload['candidate']:$this->recommendation_candidate_local_v290($obj,$graph,$payload);if(is_wp_error($candidate))return $candidate;$challenges=is_array($payload['challenges']??null)?$payload['challenges']:[];$review=$this->recommendation_review_local_v290($candidate,$challenges);
+        if(strpos($route,'/challenge')!==false){$statement=trim((string)($payload['statement']??''));$actor=trim((string)($payload['actor']??''));if(!$statement||!$actor)return new WP_Error('scds_challenge_fields_required','Challenge statement and actor are required.',['status'=>400]);$challenge=['schema'=>self::RECOMMENDATION_CHALLENGE_SCHEMA,'version'=>self::VERSION,'candidate_id'=>$candidate['candidate_id']??'','challenge_type'=>(string)($payload['challengeType']??'other'),'statement'=>$statement,'target_node_ids'=>(array)($payload['targetNodeIds']??[]),'evidence_refs'=>(array)($payload['evidenceRefs']??[]),'status'=>'open','raised_by'=>$actor,'raised_at'=>gmdate('c'),'resolution'=>'','resolved_by'=>'','resolved_at'=>'','automatic_disposition'=>false];$challenge['challenge_id']='challenge:'.substr($this->recommendation_hash_local_v290($challenge),0,20);$challenge['challenge_fingerprint']=$this->recommendation_hash_local_v290($challenge);$challenges[]=$challenge;$review=$this->recommendation_review_local_v290($candidate,$challenges);return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'candidate'=>$candidate,'challenge'=>$challenge,'challenges'=>$challenges,'review'=>$review]);}
+        if(strpos($route,'/disposition')!==false){$disp=(string)($payload['disposition']??'');$actor=trim((string)($payload['actor']??''));$why=trim((string)($payload['dispositionRationale']??''));if(!$disp||!$actor||!$why)return new WP_Error('scds_disposition_fields_required','Human disposition, actor, and rationale are required.',['status'=>400]);if(!empty($review['open_challenge_ids'])&&in_array($disp,['accept_for_decision','accept_with_conditions'],true)&&empty($payload['overrideOpenChallenges']))return new WP_Error('scds_open_challenge_override_required','Open challenges require explicit overrideOpenChallenges for an accepting disposition.',['status'=>400]);$review['human_disposition']=['disposition'=>$disp,'actor'=>$actor,'rationale'=>$why,'at'=>gmdate('c'),'open_challenge_ids'=>$review['open_challenge_ids'],'override_open_challenges'=>!empty($payload['overrideOpenChallenges']),'execution_authorized'=>false,'approval_inferred'=>false];$review['review_status']='human_disposition_recorded';$review['decision_ready']=in_array($disp,['accept_for_decision','accept_with_conditions'],true);$review['review_fingerprint']=$this->recommendation_hash_local_v290($review);return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'candidate'=>$candidate,'challenges'=>$challenges,'review'=>$review]);}
+        $attach=strpos($route,'decision-object/recommendation-review')!==false||strpos($route,'decision-packet/recommendation-review')!==false;if($attach){$obj['recommendation_candidates'][]=$candidate;$obj['recommendation_challenges']=array_merge((array)($obj['recommendation_challenges']??[]),$challenges);$obj['recommendation_reviews'][]=$review;$obj['provenance']['records'][]=['at'=>gmdate('c'),'action'=>'recommendation_review_attached','candidate_id'=>$candidate['candidate_id']??'','review_id'=>$review['review_id']??''];if(strpos($route,'decision-packet/recommendation-review')!==false){$packet['recommendation_candidates'][]=$candidate;$packet['recommendation_challenges']=array_merge((array)($packet['recommendation_challenges']??[]),$challenges);$packet['recommendation_reviews'][]=$review;$packet['decision_object']=$obj;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'candidate'=>$candidate,'challenges'=>$challenges,'review'=>$review,'decision_object'=>$obj,'decision_packet'=>$packet]);}}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'candidate'=>$candidate,'challenges'=>$challenges,'review'=>$review,'decision_object'=>$obj]);}
+    private function render_panel_recommendation_review_v290($mode) { ?>
+        <section class="scds-panel" data-scds-panel="recommendation-review">
+            <div class="scds-section-heading"><p class="scds-kicker">v2.9.0 · Recommendations, Review &amp; Challenge</p><h3>Turn a selected option into a challengeable recommendation record—not an automatic answer</h3><p>Record the human-selected candidate, explicit support and counterarguments, reviewer challenges, conditions, and a human disposition while preserving the Decision Graph behind it.</p></div>
+            <div class="scds-grid scds-grid-2">
+                <label>Selected alternative ID<input type="text" data-scds-v290-selected-alternative placeholder="alt-a"></label>
+                <label>Human reviewer / actor<input type="text" data-scds-v290-actor placeholder="Reviewer name or role"></label>
+                <label>Rationale JSON<textarea rows="5" data-scds-v290-rationale placeholder='["Reason for advancing this candidate"]'></textarea></label>
+                <label>Support node IDs JSON<textarea rows="5" data-scds-v290-support placeholder='["evidence:ev-1"]'></textarea></label>
+                <label>Counterargument node IDs JSON<textarea rows="5" data-scds-v290-counter placeholder='["uncertainty:u-1"]'></textarea></label>
+                <label>Conditions JSON<textarea rows="5" data-scds-v290-conditions placeholder='["Recheck assumption before commitment"]'></textarea></label>
+                <label>Challenge type<select data-scds-v290-challenge-type><option value="evidence_gap">Evidence gap</option><option value="assumption_dispute">Assumption dispute</option><option value="model_risk">Model risk</option><option value="scenario_fragility">Scenario fragility</option><option value="criterion_weighting">Criterion weighting</option><option value="uncertainty">Uncertainty</option><option value="dependency_break">Dependency break</option><option value="contextual_conflict">Contextual conflict</option><option value="implementation_risk">Implementation risk</option><option value="other">Other</option></select></label>
+                <label>Challenge statement<textarea rows="4" data-scds-v290-challenge-statement></textarea></label>
+                <label>Human disposition<select data-scds-v290-disposition><option value="">Not yet recorded</option><option value="accept_for_decision">Accept for decision</option><option value="accept_with_conditions">Accept with conditions</option><option value="revise">Revise</option><option value="defer">Defer</option><option value="reject">Reject</option></select></label>
+                <label>Disposition rationale<textarea rows="4" data-scds-v290-disposition-rationale></textarea></label>
+            </div>
+            <label class="scds-check"><input type="checkbox" data-scds-v290-override-open> Explicitly acknowledge and override open challenges for an accepting disposition</label>
+            <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-v290-candidate>Build Candidate</button><button type="button" class="scds-button" data-scds-v290-challenge>Add Challenge</button><button type="button" class="scds-button" data-scds-v290-evaluate>Evaluate Review</button><button type="button" class="scds-button" data-scds-v290-disposition-btn>Record Human Disposition</button><button type="button" class="scds-button" data-scds-v290-attach>Attach to Decision Object</button><button type="button" class="scds-button" data-scds-v290-download>Download Review JSON</button></div>
+            <div class="scds-output-card" data-scds-v290-output><p>Build a recommendation candidate to begin review.</p></div>
+            <div class="scds-note"><strong>Review boundary:</strong> A candidate is not a winner. Scores do not imply approval. Challenges are resolved or explicitly overridden by people. A disposition does not execute a decision or authorize external action.</div>
         </section>
     <?php }
 
@@ -1821,7 +1868,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Decision Graph & Dependency Mapping',
+            'release_name'=>'Recommendations, Review & Challenge Layer',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
@@ -1877,7 +1924,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'analysis_request_schema'=>self::ANALYSIS_REQUEST_SCHEMA,
             'site_intelligence_context_bundle_schema'=>self::SITE_CONTEXT_BUNDLE_SCHEMA,
             'site_intelligence_signal_snapshot_schema'=>self::SITE_SIGNAL_SNAPSHOT_SCHEMA,
-            'site_intelligence_context_receipt_schema'=>self::SITE_CONTEXT_RECEIPT_SCHEMA,'decision_dependency_graph_schema'=>self::DEPENDENCY_GRAPH_SCHEMA,'dependency_diagnostics_schema'=>self::DEPENDENCY_DIAGNOSTICS_SCHEMA,'change_impact_assessment_schema'=>self::CHANGE_IMPACT_SCHEMA,
+            'site_intelligence_context_receipt_schema'=>self::SITE_CONTEXT_RECEIPT_SCHEMA,'decision_dependency_graph_schema'=>self::DEPENDENCY_GRAPH_SCHEMA,'dependency_diagnostics_schema'=>self::DEPENDENCY_DIAGNOSTICS_SCHEMA,'change_impact_assessment_schema'=>self::CHANGE_IMPACT_SCHEMA,'recommendation_candidate_schema'=>self::RECOMMENDATION_CANDIDATE_SCHEMA,'recommendation_challenge_schema'=>self::RECOMMENDATION_CHALLENGE_SCHEMA,'recommendation_review_schema'=>self::RECOMMENDATION_REVIEW_SCHEMA,
             'decision_pack_count'=>count($this->decision_pack_catalog()),
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
@@ -1952,6 +1999,16 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'dependency_degree_implies_importance'=>false,
                 'change_impact_implies_invalidation'=>false,
                 'change_impact_changes_recommendation_automatically'=>false,
+                'recommendation_candidates'=>true,
+                'recommendation_challenges'=>true,
+                'human_recommendation_disposition'=>true,
+                'explicit_support_and_counterargument_links'=>true,
+                'open_challenge_override_requires_human_action'=>true,
+                'recommendation_candidate_implies_winner'=>false,
+                'recommendation_score_implies_approval'=>false,
+                'challenge_resolution_is_automatic'=>false,
+                'human_disposition_executes_decision'=>false,
+                'v2_8_0_dependency_graph_preserved'=>true,
                 'automatic_winner_selection'=>false,
                 'automatic_recommendation'=>false,
                 'connected_decision_intelligence_platform'=>true,
@@ -2091,6 +2148,13 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/decision-dependency-graph/impact', ['methods'=>'POST','callback'=>[$this,'rest_dependency_graph_action_v280'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-object/dependency-graph', ['methods'=>'POST','callback'=>[$this,'rest_dependency_graph_action_v280'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/dependency-graph', ['methods'=>'POST','callback'=>[$this,'rest_dependency_graph_action_v280'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/recommendation-review/template', ['methods'=>'GET','callback'=>[$this,'rest_recommendation_review_template_v290'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/recommendation-review/candidate', ['methods'=>'POST','callback'=>[$this,'rest_recommendation_review_action_v290'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/recommendation-review/challenge', ['methods'=>'POST','callback'=>[$this,'rest_recommendation_review_action_v290'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/recommendation-review/evaluate', ['methods'=>'POST','callback'=>[$this,'rest_recommendation_review_action_v290'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/recommendation-review/disposition', ['methods'=>'POST','callback'=>[$this,'rest_recommendation_review_action_v290'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/recommendation-review', ['methods'=>'POST','callback'=>[$this,'rest_recommendation_review_action_v290'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/recommendation-review', ['methods'=>'POST','callback'=>[$this,'rest_recommendation_review_action_v290'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/contracts', ['methods'=>'GET','callback'=>[$this,'rest_native_handoff_contracts_v260'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/template', ['methods'=>'GET','callback'=>[$this,'rest_native_handoff_template_v260'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/receive', ['methods'=>'POST','callback'=>[$this,'rest_native_handoff_action_v260'],'permission_callback'=>'__return_true']);

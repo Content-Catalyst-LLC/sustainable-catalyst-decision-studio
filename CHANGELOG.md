@@ -1,3 +1,10 @@
+## 2.9.0 — Recommendations, Review & Challenge Layer
+
+- Added explicit recommendation candidates and support/counterargument links.
+- Added first-class challenge records and open-challenge review gates.
+- Added human dispositions with actor/rationale and explicit override for accepting with open challenges.
+- Preserved v2.8 Decision Graph and all earlier release contracts.
+
 ## 2.8.0 — Decision Graph & Dependency Mapping
 
 - Added first-class Decision Dependency Graph, Dependency Diagnostics, and Change Impact Assessment contracts.

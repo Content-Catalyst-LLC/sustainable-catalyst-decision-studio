@@ -1,0 +1,20 @@
+{
+  "schema": "scds-recommendation-challenge/1.0",
+  "version": "2.9.0",
+  "candidate_id": "recommendation:ba0be5f4ac724ee7c420",
+  "challenge_type": "uncertainty",
+  "statement": "Demand uncertainty remains material.",
+  "target_node_ids": [
+    "uncertainty:u-1"
+  ],
+  "evidence_refs": [],
+  "status": "open",
+  "raised_by": "reviewer",
+  "raised_at": "2026-09-13T10:26:29.373746Z",
+  "resolution": "",
+  "resolved_by": "",
+  "resolved_at": "",
+  "automatic_disposition": false,
+  "challenge_id": "challenge:b07146c2efdc25d8caff",
+  "challenge_fingerprint": "522db7c947585b5f17944d8f22e7e2441446efc79c3e271a888e47c930c05c16"
+}
