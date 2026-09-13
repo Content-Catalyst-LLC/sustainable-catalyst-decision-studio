@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
- * Description: Lab + Workbench Native Handoffs for typed, provenance-preserving analytical exchange with the Unified Decision Object.
- * Version: 2.6.0
+ * Description: Site Intelligence Context Integration for provenance-aware real-world context in the Unified Decision Object.
+ * Version: 2.7.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,11 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '2.6.0';
-    const BUILD_FINGERPRINT = 'scds-v2.6.0-lab-workbench-native-handoffs';
-    const SOURCE_COMMIT = 'release-v2.6.0';
+    const VERSION = '2.7.0';
+    const BUILD_FINGERPRINT = 'scds-v2.7.0-site-intelligence-context-integration';
+    const SOURCE_COMMIT = 'release-v2.7.0';
     const RELEASE_DATE = '2026-09-13';
-    const DB_VERSION = '2.6.0';
+    const DB_VERSION = '2.7.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
     const MAX_PUBLIC_REQUEST_BYTES = 1048576;
@@ -79,6 +79,9 @@ class Sustainable_Catalyst_Decision_Studio {
     const COMPUTATION_HANDOFF_SCHEMA = 'scds-computation-handoff/1.0';
     const HANDOFF_RECEIPT_SCHEMA = 'scds-handoff-receipt/1.0';
     const ANALYSIS_REQUEST_SCHEMA = 'scds-analysis-request/1.0';
+    const SITE_CONTEXT_BUNDLE_SCHEMA = 'scds-site-intelligence-context-bundle/1.0';
+    const SITE_SIGNAL_SNAPSHOT_SCHEMA = 'scds-site-intelligence-signal-snapshot/1.0';
+    const SITE_CONTEXT_RECEIPT_SCHEMA = 'scds-site-intelligence-context-receipt/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -361,7 +364,7 @@ class Sustainable_Catalyst_Decision_Studio {
         ], $atts, 'sc_decision_studio');
 
         $mode = sanitize_key($atts['mode']);
-        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'packs', 'publication', 'outcomes', 'integration', 'hardening', 'connected', 'decision-object', 'evidence', 'tradeoffs', 'uncertainty', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
+        if (!in_array($mode, ['full', 'landing', 'demo', 'workflow', 'readiness', 'governance', 'room', 'packs', 'publication', 'outcomes', 'integration', 'hardening', 'connected', 'decision-object', 'evidence', 'tradeoffs', 'uncertainty', 'site-context', 'project-intake', 'scorecard', 'risk', 'scenario', 'handoff', 'packets', 'export', 'report', 'drawer', 'compact'], true)) {
             $mode = 'full';
         }
         $display = sanitize_key($atts['display'] ?: $mode);
@@ -378,6 +381,7 @@ class Sustainable_Catalyst_Decision_Studio {
         if ($mode === 'evidence') $start_tab = 'evidence';
         if ($mode === 'tradeoffs') $start_tab = 'tradeoffs';
         if ($mode === 'uncertainty') $start_tab = 'uncertainty';
+        if ($mode === 'site-context') $start_tab = 'site-context';
         $uid = 'scds-' . wp_generate_uuid4();
 
         wp_enqueue_style('scds-decision-studio');
@@ -516,6 +520,12 @@ class Sustainable_Catalyst_Decision_Studio {
             'restNativeHandoffReturnUrl' => esc_url_raw(rest_url('scds/v1/native-handoffs/return')),
             'restDecisionObjectNativeHandoffUrl' => esc_url_raw(rest_url('scds/v1/decision-object/native-handoff')),
             'restDecisionPacketNativeHandoffUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/native-handoff')),
+            'restSiteContextContractsUrl' => esc_url_raw(rest_url('scds/v1/site-intelligence-context/contracts')),
+            'restSiteContextTemplateUrl' => esc_url_raw(rest_url('scds/v1/site-intelligence-context/template')),
+            'restSiteContextBuildUrl' => esc_url_raw(rest_url('scds/v1/site-intelligence-context/build')),
+            'restSiteContextValidateUrl' => esc_url_raw(rest_url('scds/v1/site-intelligence-context/validate')),
+            'restDecisionObjectSiteContextUrl' => esc_url_raw(rest_url('scds/v1/decision-object/site-intelligence-context')),
+            'restDecisionPacketSiteContextUrl' => esc_url_raw(rest_url('scds/v1/decision-packet/site-intelligence-context')),
             'restModuleNavigationUrl' => esc_url_raw(rest_url('scds/v1/integrations/module-navigation')),
             'moduleNavigation' => $this->catalyst_module_navigation(),
             'moduleHandoffEnabled' => $settings['module_handoff_enabled'] === '1',
@@ -550,6 +560,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <button type="button" class="scds-tab is-active" data-scds-tab="intake">Intake</button>
                 <button type="button" class="scds-tab" data-scds-tab="decision-object">Decision Object</button>
                 <button type="button" class="scds-tab" data-scds-tab="evidence">Evidence &amp; Sources</button>
+                <button type="button" class="scds-tab" data-scds-tab="site-context">Site Intelligence Context</button>
                 <button type="button" class="scds-tab" data-scds-tab="tradeoffs">Tradeoff Matrix</button>
                 <button type="button" class="scds-tab" data-scds-tab="uncertainty">Uncertainty &amp; Confidence</button>
                 <button type="button" class="scds-tab" data-scds-tab="native-handoffs">Lab + Workbench Handoffs</button>
@@ -576,6 +587,7 @@ class Sustainable_Catalyst_Decision_Studio {
                 <?php $this->render_panel_intake($mode); ?>
                 <?php $this->render_panel_decision_object($mode); ?>
                 <?php $this->render_panel_evidence_v220($mode); ?>
+                <?php $this->render_panel_site_intelligence_context_v270($mode); ?>
                 <?php $this->render_panel_tradeoffs_v230($mode); ?>
                 <?php $this->render_panel_uncertainty_v240($mode); ?>
                 <?php $this->render_panel_native_handoffs_v260($mode); ?>
@@ -837,6 +849,33 @@ class Sustainable_Catalyst_Decision_Studio {
     private function stress_test_suite_build_local_v250($comparison,$scenario_set,$confidence,$config,$decision_id='') {
         if(!is_array($config))$config=[];$drop=(float)($config['max_allowed_score_drop']??15);$maxthr=(int)($config['max_allowed_threshold_violations']??0);$req=!isset($config['require_complete_matrix'])||!empty($config['require_complete_matrix']);$minc=(float)($config['minimum_process_confidence']??0);$smap=[];foreach((array)($scenario_set['scenarios']??[]) as $s)if(is_array($s))$smap[(string)($s['scenario_id']??'')]=$s;$tests=[];$fails=[];$oc=0;$tb=0;foreach((array)($comparison['scenario_results']??[]) as $r){if(!is_array($r))continue;$sid=(string)($r['scenario_id']??'');if(($smap[$sid]['kind']??'')!=='stress')continue;$d=[];foreach((array)($r['alternative_scores']??[]) as $a)if(is_array($a)&&$a['delta_vs_baseline']!==null)$d[]=(float)$a['delta_vs_baseline'];$worst=$d?min($d):0.0;$thr=(int)($r['threshold_violation_count']??0);$complete=!empty($r['complete']);$changed=!empty($r['ordering_changed_vs_baseline']);if($changed)$oc++;if($thr)$tb++;$pc=(float)($confidence['process_confidence_index']??0);$codes=[];if($worst<(-abs($drop)))$codes[]='score_drop_limit_exceeded';if($thr>$maxthr)$codes[]='threshold_violation_limit_exceeded';if($req&&!$complete)$codes[]='matrix_incomplete';if($pc<$minc)$codes[]='process_confidence_below_floor';foreach($codes as $c)$fails[]=['scenario_id'=>$sid,'failure_code'=>$c];$tests[]=['scenario_id'=>$sid,'name'=>$r['name']??$sid,'passed'=>!$codes,'worst_score_delta'=>round($worst,4),'threshold_violation_count'=>$thr,'matrix_complete'=>$complete,'ordering_changed_vs_baseline'=>$changed,'process_confidence_index'=>$pc,'failure_codes'=>$codes];}$out=$this->stress_test_suite_template_local_v250();$out['stress_test_suite_id']='stress-test-suite-'.substr(hash('sha256',wp_json_encode([$comparison['scenario_comparison_id']??'',$tests,$config])),0,16);$out['decision_id']=$decision_id;$out['created_at']=gmdate('c');$out['tests']=$tests;$out['failure_modes']=$fails;$out['diagnostics']=['test_count'=>count($tests),'passed_count'=>count(array_filter($tests,function($x){return !empty($x['passed']);})),'failed_count'=>count(array_filter($tests,function($x){return empty($x['passed']);})),'stress_scenario_count'=>count($tests),'ordering_change_count'=>$oc,'threshold_breach_count'=>$tb];$out['configuration']=['max_allowed_score_drop'=>$drop,'max_allowed_threshold_violations'=>$maxthr,'require_complete_matrix'=>$req,'minimum_process_confidence'=>$minc];return $out;
     }
+
+    private function site_context_template_local_v270() {
+        return ['schema'=>self::SITE_CONTEXT_BUNDLE_SCHEMA,'version'=>self::VERSION,'bundle_id'=>'','decision_id'=>'','captured_at'=>'','source'=>['product'=>'site-intelligence','name'=>'Site Intelligence','version'=>'','role'=>'real_world_context'],'review_state'=>'needs_review','snapshots'=>[],'provenance'=>[],'diagnostics'=>['signal_count'=>0],'bundle_fingerprint'=>'','boundary'=>'Site Intelligence owns observation and public-intelligence context. Decision Studio preserves source identity, geography, observation time, freshness, methodology, limitations, and provenance, but does not infer causality, scenario likelihood, approval, or recommendation from a signal.'];
+    }
+    private function site_context_hash_local_v270($value) { return hash('sha256', wp_json_encode($value, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)); }
+    private function site_context_snapshot_local_v270($signal,$source_version='',$fallback_geography=[],$scenario_refs=[]) {
+        if(!is_array($signal))$signal=[]; $source=is_array($signal['source']??null)?$signal['source']:[]; $sid=(string)($signal['signal_id']??($signal['id']??($signal['indicator_id']??''))); $fp=$this->site_context_hash_local_v270($signal); $geo=$signal['geography']??[]; if(empty($geo))$geo=$fallback_geography; $refs=$signal['scenario_refs']??$scenario_refs; if(!is_array($refs))$refs=[$refs]; $status=strtolower((string)($signal['freshness_state']??'')); if($status===''){$candidate=strtolower((string)($signal['status']??''));$status=in_array($candidate,['current','live','fresh','stale','expired','cached'],true)?$candidate:'unknown';}
+        return ['schema'=>self::SITE_SIGNAL_SNAPSHOT_SCHEMA,'version'=>self::VERSION,'snapshot_id'=>'site-snapshot:'.($sid?:substr($fp,0,12)).':'.substr($fp,0,16),'signal_id'=>$sid,'category'=>(string)($signal['category']??($signal['domain']??'unspecified')),'label'=>(string)($signal['label']??($signal['title']??($signal['indicator']??($sid?:'Site Intelligence signal')))),'value'=>$signal['value']??null,'unit'=>(string)($signal['unit']??''),'severity'=>(string)($signal['severity']??'informational'),'source'=>['name'=>(string)($signal['source_name']??($source['name']??'')),'short_name'=>(string)($signal['source_short_name']??($source['short_name']??'')),'url'=>(string)($signal['source_url']??($source['url']??'')),'type'=>(string)($signal['source_type']??($source['type']??'public-intelligence-source'))],'geography'=>$geo,'observed_at'=>(string)($signal['observed_at']??($signal['period']??'')),'updated_at'=>(string)($signal['updated_at']??''),'freshness_state'=>$status,'methodology'=>$signal['methodology']??($signal['methodology_notes']??[]),'limitations'=>is_array($signal['limitations']??null)?$signal['limitations']:(!empty($signal['limitation'])?[$signal['limitation']]:[]),'detail'=>(string)($signal['detail']??($signal['description']??'')),'destination_url'=>(string)($signal['destination_url']??($signal['href']??'')),'scenario_refs'=>array_values(array_unique(array_filter(array_map('strval',$refs)))),'source_product'=>['product'=>'site-intelligence','name'=>'Site Intelligence','version'=>$source_version,'role'=>'real_world_context'],'raw_payload'=>$signal,'signal_fingerprint'=>$fp,'boundary'=>'This snapshot preserves Site Intelligence context. It does not by itself establish causality, forecast probability, or recommend a decision.'];
+    }
+    private function site_context_build_local_v270($payload) {
+        $packet=is_array($payload['packet']??null)?$payload['packet']:[];$obj=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];$decision_id=(string)($obj['decision_id']??($packet['decision_packet_id']??''));$signals=is_array($payload['signals']??null)?$payload['signals']:[];$snaps=[];foreach($signals as $sig)if(is_array($sig))$snaps[]=$this->site_context_snapshot_local_v270($sig,(string)($payload['sourceVersion']??''),$payload['geography']??[],$payload['scenarioRefs']??[]);$captured=(string)($payload['capturedAt']??'');if($captured==='')$captured=gmdate('c');$diag=['signal_count'=>count($snaps),'source_identified_count'=>count(array_filter($snaps,fn($x)=>!empty($x['source']['name']))),'geography_identified_count'=>count(array_filter($snaps,fn($x)=>!empty($x['geography']))),'observation_time_identified_count'=>count(array_filter($snaps,fn($x)=>!empty($x['observed_at']))),'freshness_identified_count'=>count(array_filter($snaps,fn($x)=>($x['freshness_state']??'unknown')!=='unknown')),'stale_or_expired_count'=>count(array_filter($snaps,fn($x)=>in_array($x['freshness_state']??'',['stale','expired'],true))),'explicit_scenario_link_count'=>array_sum(array_map(fn($x)=>count($x['scenario_refs']??[]),$snaps))];$core=['decision_id'=>$decision_id,'captured_at'=>$captured,'source_version'=>(string)($payload['sourceVersion']??''),'snapshot_fingerprints'=>array_map(fn($x)=>$x['signal_fingerprint'],$snaps)];$b=['schema'=>self::SITE_CONTEXT_BUNDLE_SCHEMA,'version'=>self::VERSION,'bundle_id'=>'site-context:'.substr($this->site_context_hash_local_v270($core),0,20),'decision_id'=>$decision_id,'captured_at'=>$captured,'source'=>['product'=>'site-intelligence','name'=>'Site Intelligence','version'=>(string)($payload['sourceVersion']??''),'role'=>'real_world_context'],'review_state'=>(string)($payload['reviewState']??'needs_review'),'snapshots'=>$snaps,'provenance'=>is_array($payload['provenance']??null)?$payload['provenance']:[],'diagnostics'=>$diag,'boundary'=>'Site Intelligence owns observation and public-intelligence context. Decision Studio preserves source identity, geography, observation time, freshness, methodology, limitations, and provenance, but does not infer causality, scenario likelihood, approval, or recommendation from a signal.'];$copy=$b;$b['bundle_fingerprint']=$this->site_context_hash_local_v270($copy);return $b;
+    }
+    private function site_context_validate_local_v270($bundle) {
+        $errors=[];$warnings=[];if(($bundle['schema']??'')!==self::SITE_CONTEXT_BUNDLE_SCHEMA)$errors[]='context bundle schema is invalid';if(($bundle['source']['product']??'')!=='site-intelligence')$errors[]='source.product must be site-intelligence';foreach(($bundle['snapshots']??[]) as $i=>$snap){if(($snap['schema']??'')!==self::SITE_SIGNAL_SNAPSHOT_SCHEMA)$errors[]="snapshot $i schema is invalid";$expected=$this->site_context_hash_local_v270($snap['raw_payload']??[]);if(($snap['signal_fingerprint']??'')!==$expected)$errors[]="snapshot $i signal fingerprint does not match raw payload";if(empty($snap['source']['name']))$warnings[]="snapshot $i has no source name";if(empty($snap['observed_at']))$warnings[]="snapshot $i has no observation time";if(($snap['freshness_state']??'unknown')==='unknown')$warnings[]="snapshot $i has unknown freshness";} $copy=$bundle;unset($copy['bundle_fingerprint']);if(($bundle['bundle_fingerprint']??'')!==$this->site_context_hash_local_v270($copy))$errors[]='context bundle fingerprint does not match bundle contents';return ['valid'=>empty($errors),'schema'=>self::SITE_CONTEXT_BUNDLE_SCHEMA,'app_version'=>self::VERSION,'errors'=>$errors,'warnings'=>$warnings,'boundary'=>'Context validation checks structure and integrity, not truth or causality.'];
+    }
+    private function site_context_receipt_local_v270($bundle,$validation) { $core=['bundle_id'=>$bundle['bundle_id']??'','bundle_fingerprint'=>$bundle['bundle_fingerprint']??'','accepted'=>!empty($validation['valid']),'errors'=>$validation['errors']??[]];return ['schema'=>self::SITE_CONTEXT_RECEIPT_SCHEMA,'version'=>self::VERSION,'receipt_id'=>'site-context-receipt:'.substr($this->site_context_hash_local_v270($core),0,20),'created_at'=>gmdate('c'),'bundle_id'=>$bundle['bundle_id']??'','decision_id'=>$bundle['decision_id']??'','accepted'=>!empty($validation['valid']),'validation'=>$validation,'bundle_fingerprint'=>$bundle['bundle_fingerprint']??'','truth_verified'=>false,'causality_inferred'=>false,'recommendation_generated'=>false,'boundary'=>'Receipt confirms schema and fingerprint integrity only. It is not source verification, truth verification, causal inference, approval, or recommendation.']; }
+    public function rest_site_context_contracts_v270(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'contracts'=>['context_bundle_schema'=>self::SITE_CONTEXT_BUNDLE_SCHEMA,'signal_snapshot_schema'=>self::SITE_SIGNAL_SNAPSHOT_SCHEMA,'context_receipt_schema'=>self::SITE_CONTEXT_RECEIPT_SCHEMA,'source_product'=>'site-intelligence','boundary'=>'Site Intelligence context remains source-owned and does not imply causality or recommendation.']]);}
+    public function rest_site_context_template_v270(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'context_bundle'=>$this->site_context_template_local_v270()]);}
+    public function rest_site_context_action_v270(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);} $packet=is_array($payload['packet']??null)?$payload['packet']:[];$obj=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];if(!$obj)$obj=$this->decision_object_from_packet_local_v210($packet);$bundle=is_array($payload['contextBundle']??null)&&!empty($payload['contextBundle'])?$payload['contextBundle']:$this->site_context_build_local_v270($payload);$validation=$this->site_context_validate_local_v270($bundle);$receipt=$this->site_context_receipt_local_v270($bundle,$validation);$attach=strpos($route,'decision-object/site-intelligence-context')!==false||strpos($route,'decision-packet/site-intelligence-context')!==false;if($attach&&!empty($validation['valid'])){$obj['site_intelligence_context_bundles'][]=$bundle;$obj['site_intelligence_context_receipts'][]=$receipt;foreach(($bundle['snapshots']??[]) as $snap){$ctx=['context_id'=>$snap['snapshot_id']??'','source_product'=>'site-intelligence','signal_id'=>$snap['signal_id']??'','label'=>$snap['label']??'','category'=>$snap['category']??'','value'=>$snap['value']??null,'unit'=>$snap['unit']??'','source'=>$snap['source']??[],'geography'=>$snap['geography']??[],'observed_at'=>$snap['observed_at']??'','updated_at'=>$snap['updated_at']??'','freshness_state'=>$snap['freshness_state']??'unknown','methodology'=>$snap['methodology']??[],'limitations'=>$snap['limitations']??[],'signal_fingerprint'=>$snap['signal_fingerprint']??'','scenario_refs'=>$snap['scenario_refs']??[],'evidence_role'=>'contextual_evidence','causal_claim'=>false,'recommendation_effect'=>'none'];$obj['real_world_context'][]=$ctx;$obj['evidence'][]=$ctx;foreach(($snap['scenario_refs']??[]) as $ref)$obj['links'][]=['relationship'=>'explicit_site_context_for_scenario','scenario_ref'=>$ref,'context_id'=>$snap['snapshot_id']??'','signal_fingerprint'=>$snap['signal_fingerprint']??'','automatic_score_change'=>false];}$obj['links'][]=['relationship'=>'site_intelligence_context_bundle','bundle_id'=>$bundle['bundle_id']??'','bundle_fingerprint'=>$bundle['bundle_fingerprint']??'','signal_count'=>count($bundle['snapshots']??[])];$obj['provenance']['records'][]=['at'=>gmdate('c'),'action'=>'site_intelligence_context_attached','source_product'=>'site-intelligence','bundle_id'=>$bundle['bundle_id']??'','receipt_id'=>$receipt['receipt_id']??'']; if(strpos($route,'decision-packet/site-intelligence-context')!==false){$packet['site_intelligence_context_bundles'][]=$bundle;$packet['site_intelligence_context_receipts'][]=$receipt;$packet['live_evidence']=array_merge($packet['live_evidence']??[],$bundle['snapshots']??[]);$packet['decision_object']=$obj;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'context_bundle'=>$bundle,'validation'=>$validation,'receipt'=>$receipt,'decision_object'=>$obj,'decision_packet'=>$packet]);}}return rest_ensure_response(['ok'=>!empty($validation['valid']),'version'=>self::VERSION,'context_bundle'=>$bundle,'validation'=>$validation,'receipt'=>$receipt,'decision_object'=>$obj]);}
+    private function render_panel_site_intelligence_context_v270($mode) { ?>
+        <section class="scds-panel" data-scds-panel="site-context" aria-labelledby="scds-site-context-title">
+            <div class="scds-section-heading"><p class="scds-kicker">v2.7.0 · Site Intelligence Context Integration</p><h3 id="scds-site-context-title">Bring real-world context into the decision without turning signals into conclusions</h3><p>Capture Site Intelligence signals with source identity, geography, observation time, freshness, methodology, limitations, provenance, and explicit scenario relationships.</p></div>
+            <div class="scds-grid scds-grid-2"><label class="scds-field"><span>Site Intelligence version</span><input data-scds-v270-source-version value="4.40.0"></label><label class="scds-field"><span>Capture geography fallback</span><input data-scds-v270-geography value='{"scope":"global"}'></label><label class="scds-field scds-field-wide"><span>Signals JSON</span><textarea rows="14" data-scds-v270-signals-json>[{"signal_id":"weather.active-alerts","category":"climate_environment","label":"Active weather alerts","value":3,"unit":"alerts","source_name":"NOAA / National Weather Service","source_url":"https://www.weather.gov/","geography":{"country":"USA","region":"Missouri"},"observed_at":"2026-09-13T07:00:00Z","freshness_state":"live","methodology":{"method":"official alert feed"},"limitations":["Coverage depends on issuing authority and feed availability."],"scenario_refs":["scenario:weather-disruption"]}]</textarea></label></div>
+            <div class="scds-actions"><button type="button" class="scds-button scds-button-primary" data-scds-v270-build>Build Context Bundle</button><button type="button" class="scds-button" data-scds-v270-validate>Validate Bundle</button><button type="button" class="scds-button" data-scds-v270-attach>Attach to Decision Object</button><button type="button" class="scds-button" data-scds-v270-download>Download Context JSON</button></div>
+            <div class="scds-note"><strong>Interpretation boundary:</strong> context signals remain descriptive source observations. Scenario links are explicit relationships only; they do not change scores, infer likelihood, establish causality, or generate a recommendation.</div><div data-scds-v270-output aria-live="polite"></div>
+        </section>
+    <?php }
 
     private function native_handoff_template_local_v260() {
         return ['schema'=>self::ANALYSIS_HANDOFF_SCHEMA,'version'=>self::VERSION,'handoff_id'=>'','decision_id'=>'','created_at'=>'','source'=>['product'=>'research-lab','name'=>'Research Lab','version'=>'','role'=>'analysis'],'target'=>['product'=>'decision-studio','name'=>'Decision Studio','version'=>self::VERSION,'role'=>'choice'],'artifact'=>['artifact_id'=>'','artifact_type'=>'experiment-result','artifact_schema'=>'','payload'=>[],'fingerprint'=>''],'review_state'=>'needs_review','assumptions'=>[],'uncertainty'=>[],'provenance'=>[],'links'=>[],'request_id'=>'','boundary'=>'Native handoffs preserve source artifacts and lineage. Decision Studio does not execute Lab experiments or Workbench computations, silently reinterpret source results, or treat receipt as validation, approval, or recommendation.'];
@@ -1736,7 +1775,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     private function release_manifest() {
         return [
             'release'=>self::VERSION,
-            'release_name'=>'Lab + Workbench Native Handoffs',
+            'release_name'=>'Site Intelligence Context Integration',
             'release_date'=>self::RELEASE_DATE,
             'build_fingerprint'=>self::BUILD_FINGERPRINT,
             'source_commit'=>self::SOURCE_COMMIT,
@@ -1790,6 +1829,9 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'computation_handoff_schema'=>self::COMPUTATION_HANDOFF_SCHEMA,
             'handoff_receipt_schema'=>self::HANDOFF_RECEIPT_SCHEMA,
             'analysis_request_schema'=>self::ANALYSIS_REQUEST_SCHEMA,
+            'site_intelligence_context_bundle_schema'=>self::SITE_CONTEXT_BUNDLE_SCHEMA,
+            'site_intelligence_signal_snapshot_schema'=>self::SITE_SIGNAL_SNAPSHOT_SCHEMA,
+            'site_intelligence_context_receipt_schema'=>self::SITE_CONTEXT_RECEIPT_SCHEMA,
             'decision_pack_count'=>count($this->decision_pack_catalog()),
             'compatibility'=>[
                 'wordpress_plugin'=>self::VERSION,
@@ -1842,6 +1884,17 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
                 'deterministic_handoff_fingerprints'=>true,
                 'handoff_receipt_implies_validation'=>false,
                 'decision_studio_executes_external_analysis'=>false,
+                'site_intelligence_context_bundles'=>true,
+                'site_intelligence_source_identity_preserved'=>true,
+                'site_intelligence_geography_preserved'=>true,
+                'site_intelligence_observation_time_visible'=>true,
+                'site_intelligence_freshness_visible'=>true,
+                'site_intelligence_methodology_limitations_visible'=>true,
+                'explicit_scenario_context_links'=>true,
+                'site_intelligence_context_implies_causality'=>false,
+                'site_intelligence_context_implies_recommendation'=>false,
+                'site_intelligence_context_receipt_implies_truth_verification'=>false,
+                'decision_studio_rewrites_site_intelligence_observations'=>false,
                 'automatic_winner_selection'=>false,
                 'automatic_recommendation'=>false,
                 'connected_decision_intelligence_platform'=>true,
@@ -1969,6 +2022,12 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
         register_rest_route('scds/v1', '/stress-test-suite/run', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-object/scenario-stress', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/decision-packet/scenario-stress', ['methods'=>'POST','callback'=>[$this,'rest_scenario_stress_action_v250'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/site-intelligence-context/contracts', ['methods'=>'GET','callback'=>[$this,'rest_site_context_contracts_v270'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/site-intelligence-context/template', ['methods'=>'GET','callback'=>[$this,'rest_site_context_template_v270'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/site-intelligence-context/build', ['methods'=>'POST','callback'=>[$this,'rest_site_context_action_v270'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/site-intelligence-context/validate', ['methods'=>'POST','callback'=>[$this,'rest_site_context_action_v270'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-object/site-intelligence-context', ['methods'=>'POST','callback'=>[$this,'rest_site_context_action_v270'],'permission_callback'=>'__return_true']);
+        register_rest_route('scds/v1', '/decision-packet/site-intelligence-context', ['methods'=>'POST','callback'=>[$this,'rest_site_context_action_v270'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/contracts', ['methods'=>'GET','callback'=>[$this,'rest_native_handoff_contracts_v260'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/template', ['methods'=>'GET','callback'=>[$this,'rest_native_handoff_template_v260'],'permission_callback'=>'__return_true']);
         register_rest_route('scds/v1', '/native-handoffs/receive', ['methods'=>'POST','callback'=>[$this,'rest_native_handoff_action_v260'],'permission_callback'=>'__return_true']);
@@ -2334,7 +2393,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'publication_handoff_schema'=>self::PUBLICATION_HANDOFF_SCHEMA,
             'publication_redaction_schema'=>self::PUBLICATION_REDACTION_SCHEMA,'release'=>$this->release_manifest()]); }
     public function rest_release() { return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'release'=>$this->release_manifest()]); }
-    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220(),'criteria_set'=>$this->criteria_set_template_local_v230(),'alternatives_set'=>$this->alternatives_set_template_local_v230(),'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230(),'uncertainty_register'=>$this->uncertainty_register_template_local_v240(),'sensitivity_analysis'=>$this->sensitivity_analysis_template_local_v240(),'confidence_assessment'=>$this->confidence_assessment_template_local_v240(),'scenario_set'=>$this->scenario_set_template_local_v250(),'scenario_comparison_v250'=>$this->scenario_comparison_template_local_v250(),'stress_test_suite'=>$this->stress_test_suite_template_local_v250(),'native_handoff'=>$this->native_handoff_template_local_v260(),'analysis_request'=>$this->analysis_request_template_local_v260()]); }
+    public function rest_templates() { return rest_ensure_response(['scenario_templates'=>$this->scenario_templates(),'scenario_studio'=>$this->scenario_studio_template(),'scorecard'=>$this->scorecard_rows(),'workbench_tools'=>$this->workbench_tool_map(),'publication_studio'=>$this->publication_studio_template(),'outcome_monitoring'=>$this->outcome_monitoring_template(),'decision_object'=>$this->decision_object_template_local_v210(),'platform_context'=>$this->platform_context_template_local_v210(),'source_bundle'=>$this->source_bundle_template_local_v220(),'evidence_bundle'=>$this->evidence_bundle_template_local_v220(),'criteria_set'=>$this->criteria_set_template_local_v230(),'alternatives_set'=>$this->alternatives_set_template_local_v230(),'tradeoff_matrix'=>$this->tradeoff_matrix_template_local_v230(),'uncertainty_register'=>$this->uncertainty_register_template_local_v240(),'sensitivity_analysis'=>$this->sensitivity_analysis_template_local_v240(),'confidence_assessment'=>$this->confidence_assessment_template_local_v240(),'scenario_set'=>$this->scenario_set_template_local_v250(),'scenario_comparison_v250'=>$this->scenario_comparison_template_local_v250(),'stress_test_suite'=>$this->stress_test_suite_template_local_v250(),'native_handoff'=>$this->native_handoff_template_local_v260(),'analysis_request'=>$this->analysis_request_template_local_v260(),'site_intelligence_context'=>$this->site_context_template_local_v270()]); }
     public function rest_analyze(WP_REST_Request $request) { $inputs = $request->get_json_params(); if (!is_array($inputs)) $inputs = []; return rest_ensure_response(['ok'=>true,'source'=>'wordpress_deterministic_fallback','inputs'=>$inputs,'results'=>$this->analyze_inputs($inputs),'warnings'=>[$this->settings()['methodology_note']]]); }
 
     public function rest_backend_status() {

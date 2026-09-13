@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static release-integrity checks for Decision Studio v2.6.0."""
+"""Static release-integrity checks for Decision Studio v2.7.0."""
 from __future__ import annotations
 
 import json
@@ -7,9 +7,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "wordpress-plugin" / "sustainable-catalyst-decision-studio"
-VERSION = "2.6.0"
-BUILD = "scds-v2.6.0-lab-workbench-native-handoffs"
-SOURCE = "release-v2.6.0"
+VERSION = "2.7.0"
+BUILD = "scds-v2.7.0-site-intelligence-context-integration"
+SOURCE = "release-v2.7.0"
 PACKET = "scds-decision-packet/2.0"
 OBJECT = "scds-decision-object/1.0"
 CONTEXT = "scds-platform-context/1.0"
@@ -30,6 +30,9 @@ ANALYSIS_HANDOFF = "scds-analysis-handoff/1.0"
 COMPUTATION_HANDOFF = "scds-computation-handoff/1.0"
 HANDOFF_RECEIPT = "scds-handoff-receipt/1.0"
 ANALYSIS_REQUEST = "scds-analysis-request/1.0"
+SITE_CONTEXT = "scds-site-intelligence-context-bundle/1.0"
+SITE_SNAPSHOT = "scds-site-intelligence-signal-snapshot/1.0"
+SITE_RECEIPT = "scds-site-intelligence-context-receipt/1.0"
 PRODUCT_IDS = ["knowledge-library", "research-librarian", "site-intelligence", "workbench", "research-lab", "platform-core", "decision-studio"]
 
 
@@ -45,6 +48,7 @@ def load(path: Path):
 
 main = (ROOT / "backend/app/main.py").read_text()
 native = (ROOT / "backend/app/native_handoffs.py").read_text()
+site_context = (ROOT / "backend/app/site_intelligence_context.py").read_text()
 scenario = (ROOT / "backend/app/scenario_stress.py").read_text()
 uncertainty = (ROOT / "backend/app/uncertainty_confidence.py").read_text()
 tradeoff = (ROOT / "backend/app/tradeoff_matrix.py").read_text()
@@ -61,7 +65,7 @@ compose = (ROOT / "compose.yml").read_text()
 render = (ROOT / "backend/render.yaml").read_text()
 readme = (ROOT / "README.md").read_text()
 changelog = (ROOT / "CHANGELOG.md").read_text()
-doc = (ROOT / "docs/V260_LAB_WORKBENCH_NATIVE_HANDOFFS.md").read_text()
+doc = (ROOT / "docs/V270_SITE_INTELLIGENCE_CONTEXT_INTEGRATION.md").read_text()
 plugin_readme = (PLUGIN / "readme.txt").read_text()
 
 # Release identity.
@@ -69,8 +73,8 @@ require(f'APP_VERSION = "{VERSION}"' in main, "backend version")
 for text in [main, php, docker, compose, render]:
     require(BUILD in text, "build fingerprint parity")
     require(SOURCE in text, "source commit parity")
-require(" * Version: 2.6.0" in php and "const VERSION = '2.6.0';" in php, "plugin version")
-require("Stable tag: 2.6.0" in plugin_readme, "stable tag")
+require(" * Version: 2.7.0" in php and "const VERSION = '2.7.0';" in php, "plugin version")
+require("Stable tag: 2.7.0" in plugin_readme, "stable tag")
 
 # Schema lineage, including v2.6 native exchange.
 all_schemas = [
@@ -79,8 +83,9 @@ all_schemas = [
     UNCERTAINTY, SENSITIVITY, CONFIDENCE,
     SCENARIO_SET, SCENARIO_COMPARISON, STRESS_SUITE,
     ANALYSIS_HANDOFF, COMPUTATION_HANDOFF, HANDOFF_RECEIPT, ANALYSIS_REQUEST,
+    SITE_CONTEXT, SITE_SNAPSHOT, SITE_RECEIPT,
 ]
-combined = main + php + native + scenario + uncertainty + tradeoff + evidence + obj_model + doc
+combined = main + php + native + site_context + scenario + uncertainty + tradeoff + evidence + obj_model + doc
 for schema in all_schemas:
     require(schema in combined, f"schema parity/preservation {schema}")
 
@@ -96,6 +101,14 @@ routes = [
 ]
 for route in routes:
     require(route in main and route in php, f"route parity {route}")
+
+site_routes = [
+    "/site-intelligence-context/contracts", "/site-intelligence-context/template",
+    "/site-intelligence-context/build", "/site-intelligence-context/validate",
+    "/decision-object/site-intelligence-context", "/decision-packet/site-intelligence-context",
+]
+for route in site_routes:
+    require(route in main and route in php, f"site context route parity {route}")
 
 # Preserve v2.5 routes rather than replacing them.
 for route in [
@@ -127,12 +140,24 @@ for marker in [
     "restDecisionObjectNativeHandoffUrl", "restDecisionPacketNativeHandoffUrl",
 ]:
     require(marker in js + php, f"JS/WordPress binding {marker}")
+for marker in [
+    "Site Intelligence Context", "data-scds-v270-source-version", "data-scds-v270-geography",
+    "data-scds-v270-signals-json", "data-scds-v270-build", "data-scds-v270-validate",
+    "data-scds-v270-attach", "data-scds-v270-download", "Interpretation boundary:",
+]:
+    require(marker in php, f"Site context WordPress UI {marker}")
+for marker in [
+    "siteContextInputs", "siteContextHtml", "runSiteContext", "downloadSiteContext",
+    "restSiteContextContractsUrl", "restSiteContextTemplateUrl", "restSiteContextBuildUrl",
+    "restSiteContextValidateUrl", "restDecisionObjectSiteContextUrl", "restDecisionPacketSiteContextUrl",
+]:
+    require(marker in js + php, f"Site context JS/WordPress binding {marker}")
 
 # Root/plugin release metadata must agree.
-manifest = load(ROOT / "data/decision_studio_release_manifest_v2.6.0.json")
-pmanifest = load(PLUGIN / "data/release_manifest_v2.6.0.json")
-integrations = load(ROOT / "data/decision_studio_integrations_v2.6.0.json")
-pintegrations = load(PLUGIN / "data/decision_studio_integrations_v2.6.0.json")
+manifest = load(ROOT / "data/decision_studio_release_manifest_v2.7.0.json")
+pmanifest = load(PLUGIN / "data/release_manifest_v2.7.0.json")
+integrations = load(ROOT / "data/decision_studio_integrations_v2.7.0.json")
+pintegrations = load(PLUGIN / "data/decision_studio_integrations_v2.7.0.json")
 require(manifest == pmanifest, "manifest parity")
 require(integrations == pintegrations, "integration parity")
 require(manifest["release"] == VERSION, "manifest version")
@@ -160,6 +185,9 @@ expected_schema_map = {
     "computation_handoff": COMPUTATION_HANDOFF,
     "handoff_receipt": HANDOFF_RECEIPT,
     "analysis_request": ANALYSIS_REQUEST,
+    "site_intelligence_context_bundle": SITE_CONTEXT,
+    "site_intelligence_signal_snapshot": SITE_SNAPSHOT,
+    "site_intelligence_context_receipt": SITE_RECEIPT,
 }
 for key, value in expected_schema_map.items():
     require(schemas.get(key) == value, f"manifest schema {key}")
@@ -187,6 +215,21 @@ require(receipt_sample["execution"]["performed"] is False, "receipt does not exe
 require(request_sample["schema"] == ANALYSIS_REQUEST and request_sample["execution"]["performed_by_decision_studio"] is False, "analysis request execution boundary")
 require(len(request_sample["request_fingerprint"]) == 64, "analysis request fingerprint")
 
+for stem in [
+    "site_intelligence_context_bundle_contract", "site_intelligence_context_bundle_sample",
+    "site_intelligence_signal_snapshot_contract", "site_intelligence_signal_snapshot_sample",
+    "site_intelligence_context_receipt_contract", "site_intelligence_context_receipt_sample",
+]:
+    a = load(ROOT / f"data/{stem}_v2.7.0.json")
+    b = load(PLUGIN / f"data/{stem}_v2.7.0.json")
+    require(a == b, f"{stem} parity")
+site_bundle_sample = load(ROOT / "data/site_intelligence_context_bundle_sample_v2.7.0.json")
+site_snapshot_sample = load(ROOT / "data/site_intelligence_signal_snapshot_sample_v2.7.0.json")
+site_receipt_sample = load(ROOT / "data/site_intelligence_context_receipt_sample_v2.7.0.json")
+require(site_bundle_sample["schema"] == SITE_CONTEXT and len(site_bundle_sample["bundle_fingerprint"]) == 64, "site context bundle sample")
+require(site_snapshot_sample["schema"] == SITE_SNAPSHOT and len(site_snapshot_sample["signal_fingerprint"]) == 64, "site snapshot sample")
+require(site_receipt_sample["schema"] == SITE_RECEIPT and site_receipt_sample["truth_verified"] is False, "site context receipt sample")
+
 # Human-control and source-ownership boundaries.
 compat = manifest["compatibility"]
 for flag in [
@@ -194,18 +237,26 @@ for flag in [
     "source_artifact_payload_preserved", "deterministic_handoff_fingerprints",
     "v2_5_0_scenario_stress_preserved", "v2_4_0_uncertainty_confidence_preserved",
     "v2_3_1_tradeoff_matrix_preserved", "v2_3_0_energy_runtime_consumer_preserved",
+    "v2_6_0_native_handoffs_preserved", "site_intelligence_context_bundles",
+    "site_intelligence_source_identity_preserved", "site_intelligence_geography_preserved",
+    "site_intelligence_observation_time_visible", "site_intelligence_freshness_visible",
+    "site_intelligence_methodology_limitations_visible", "explicit_scenario_context_links",
 ]:
     require(compat.get(flag) is True, f"compatibility true: {flag}")
 for flag in [
     "handoff_receipt_implies_validation", "decision_studio_executes_external_analysis",
     "automatic_winner_selection", "automatic_recommendation", "automatic_truth_verification",
     "confidence_is_probability_of_correctness", "scenario_likelihood_inference", "stress_test_pass_implies_approval",
+    "site_intelligence_context_implies_causality", "site_intelligence_context_implies_recommendation",
+    "site_intelligence_context_receipt_implies_truth_verification", "decision_studio_rewrites_site_intelligence_observations",
 ]:
     require(compat.get(flag) is False, f"compatibility false: {flag}")
 require(compat.get("energy_runtime_consumer_version") == "2.3.0", "Energy consumer component version")
 require("Decision Studio does not execute Lab experiments" in native and "Workbench computations" in native, "source execution boundary")
 require("artifact fingerprint does not match payload" in native, "tamper detection")
 require("performed_by_decision_studio" in native, "request execution boundary")
+require("does not infer causality" in site_context and "recommendation" in site_context, "site context interpretation boundary")
+require("signal fingerprint does not match raw payload" in site_context, "site signal tamper detection")
 
 # Backend regression coverage for the new exchange lifecycle.
 for test_name in [
@@ -221,6 +272,17 @@ for test_name in [
     "test_v260_release_declares_native_handoffs_and_preserves_boundaries",
 ]:
     require(test_name in backend_tests, f"backend regression test {test_name}")
+for test_name in [
+    "test_v270_templates_expose_site_intelligence_context_contracts",
+    "test_v270_context_bundle_preserves_source_geography_time_freshness_and_raw_payload",
+    "test_v270_context_diagnostics_surface_missing_metadata_without_inventing_it",
+    "test_v270_explicit_scenario_links_do_not_change_scores_or_infer_likelihood",
+    "test_v270_context_bundle_rejects_tampered_signal_payload",
+    "test_v270_decision_object_attachment_preserves_context_and_receipt_boundaries",
+    "test_v270_decision_packet_projection_keeps_live_snapshots_and_decision_object",
+    "test_v270_release_declares_site_intelligence_context_and_human_control_boundaries",
+]:
+    require(test_name in backend_tests, f"v2.7 backend regression test {test_name}")
 
 # Energy v2.3.0 remains a distinct preserved component.
 for marker in ["CONSUMER_VERSION = '2.3.0'", "/v1/energy-runtime", "sc-energy-runtime-decision-studio-handoff/1.0"]:
@@ -231,11 +293,12 @@ require("'energy_systems_runtime_consumer'=>true" in php and "'energy_runtime_co
 require([x["id"] for x in integrations["platform_context"]] == PRODUCT_IDS, "platform context preserved")
 
 # Runtime/deployment identity.
-require("python:3.12-slim" in docker and "8089" in docker and "2.6.0" in docker, "Docker runtime identity")
-require("sustainable-catalyst-decision-studio:2.6.0" in compose and "sc-decision-studio" in compose and "sc-internal" in compose, "Contabo compose identity")
+require("python:3.12-slim" in docker and "8089" in docker and "2.7.0" in docker, "Docker runtime identity")
+require("sustainable-catalyst-decision-studio:2.7.0" in compose and "sc-decision-studio" in compose and "sc-internal" in compose, "Contabo compose identity")
 
 # Historical artifacts remain in the repository.
 for path in [
+    "data/decision_studio_release_manifest_v2.6.0.json", "data/analysis_handoff_contract_v2.6.0.json", "data/computation_handoff_contract_v2.6.0.json",
     "data/decision_studio_release_manifest_v2.5.0.json", "data/scenario_set_contract_v2.5.0.json", "data/stress_test_suite_contract_v2.5.0.json",
     "data/decision_studio_release_manifest_v2.4.0.json", "data/confidence_assessment_contract_v2.4.0.json",
     "data/decision_studio_release_manifest_v2.3.1.json", "data/tradeoff_matrix_contract_v2.3.1.json",
@@ -250,7 +313,8 @@ require("ordering_changed_vs_baseline" in scenario, "scenario ordering diagnosti
 require("failure_codes" in scenario, "stress failure diagnostics preserved")
 require("automatic_winner_selection" in main + php and "automatic_recommendation" in main + php, "human-control markers")
 require("Scenario Comparison & Stress Testing" in changelog + plugin_readme, "v2.5 documentation preserved")
-require("Lab + Workbench Native Handoffs" in readme + changelog + doc + plugin_readme, "v2.6 documentation")
+require("Lab + Workbench Native Handoffs" in readme + changelog + plugin_readme, "v2.6 documentation preserved")
+require("Site Intelligence Context Integration" in readme + changelog + doc + plugin_readme, "v2.7 documentation")
 
 # Every JSON file in the package must parse.
 json_files = [p for p in ROOT.rglob("*.json") if ".git" not in p.parts]
@@ -260,5 +324,5 @@ for path in json_files:
 print(
     f"Decision Studio v{VERSION} release-integrity checks passed. "
     f"Validated {len(json_files)} JSON files, {len(PRODUCT_IDS)} platform roles, "
-    "Lab/Workbench native handoff v1.0 contracts, v2.5 Scenario/Stress preservation, and Energy v2.3.0 preservation."
+    "Site Intelligence context v1.0 contracts, Lab/Workbench v2.6 preservation, v2.5 Scenario/Stress preservation, and Energy v2.3.0 preservation."
 )

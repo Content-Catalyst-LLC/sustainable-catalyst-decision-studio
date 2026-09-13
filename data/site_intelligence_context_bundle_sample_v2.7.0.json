@@ -1,0 +1,168 @@
+{
+  "schema": "scds-site-intelligence-context-bundle/1.0",
+  "version": "2.7.0",
+  "bundle_id": "site-context:b8ed440aff0248c5ae84",
+  "decision_id": "decision:sample-v270",
+  "captured_at": "2026-09-13T07:15:00Z",
+  "source": {
+    "product": "site-intelligence",
+    "name": "Site Intelligence",
+    "version": "4.40.0",
+    "role": "real_world_context"
+  },
+  "review_state": "reviewed",
+  "snapshots": [
+    {
+      "schema": "scds-site-intelligence-signal-snapshot/1.0",
+      "version": "2.7.0",
+      "snapshot_id": "site-snapshot:weather.active-alerts:f5d1403d465313aa",
+      "signal_id": "weather.active-alerts",
+      "category": "climate_environment",
+      "label": "Active weather alerts",
+      "value": 3,
+      "unit": "alerts",
+      "severity": "watch",
+      "source": {
+        "name": "NOAA / National Weather Service",
+        "short_name": "NWS",
+        "url": "https://www.weather.gov/",
+        "type": "public-intelligence-source"
+      },
+      "geography": {
+        "country": "USA",
+        "region": "Missouri"
+      },
+      "observed_at": "2026-09-13T07:00:00Z",
+      "updated_at": "2026-09-13T07:05:00Z",
+      "freshness_state": "live",
+      "methodology": {
+        "method": "official alert feed"
+      },
+      "limitations": [
+        "Alert coverage depends on issuing authority and current feed availability."
+      ],
+      "detail": "",
+      "destination_url": "",
+      "scenario_refs": [
+        "scenario:weather-disruption"
+      ],
+      "source_product": {
+        "product": "site-intelligence",
+        "name": "Site Intelligence",
+        "version": "4.40.0",
+        "role": "real_world_context"
+      },
+      "raw_payload": {
+        "signal_id": "weather.active-alerts",
+        "category": "climate_environment",
+        "label": "Active weather alerts",
+        "value": 3,
+        "unit": "alerts",
+        "severity": "watch",
+        "source_name": "NOAA / National Weather Service",
+        "source_short_name": "NWS",
+        "source_url": "https://www.weather.gov/",
+        "geography": {
+          "country": "USA",
+          "region": "Missouri"
+        },
+        "observed_at": "2026-09-13T07:00:00Z",
+        "updated_at": "2026-09-13T07:05:00Z",
+        "freshness_state": "live",
+        "methodology": {
+          "method": "official alert feed"
+        },
+        "limitations": [
+          "Alert coverage depends on issuing authority and current feed availability."
+        ],
+        "scenario_refs": [
+          "scenario:weather-disruption"
+        ]
+      },
+      "signal_fingerprint": "a2eb8b29c5da0f7c77eef7c91e4d8cae6f31008b4f9a0bb516608ae5cd16e591",
+      "boundary": "This snapshot preserves Site Intelligence context. It does not by itself establish causality, forecast probability, or recommend a decision."
+    },
+    {
+      "schema": "scds-site-intelligence-signal-snapshot/1.0",
+      "version": "2.7.0",
+      "snapshot_id": "site-snapshot:events.earthquakes-14d:7346cf7c939b0136",
+      "signal_id": "events.earthquakes-14d",
+      "category": "earth_systems",
+      "label": "M4.5+ earthquakes",
+      "value": 112,
+      "unit": "events in 14 days",
+      "severity": "informational",
+      "source": {
+        "name": "USGS Earthquake Hazards Program",
+        "short_name": "",
+        "url": "https://earthquake.usgs.gov/",
+        "type": "public-intelligence-source"
+      },
+      "geography": {
+        "scope": "global"
+      },
+      "observed_at": "2026-09-13T07:10:00Z",
+      "updated_at": "2026-09-13T07:12:00Z",
+      "freshness_state": "current",
+      "methodology": [],
+      "limitations": [
+        "Rolling-window count is descriptive context, not a forecast."
+      ],
+      "detail": "Verified event count in current rolling window.",
+      "destination_url": "",
+      "scenario_refs": [],
+      "source_product": {
+        "product": "site-intelligence",
+        "name": "Site Intelligence",
+        "version": "4.40.0",
+        "role": "real_world_context"
+      },
+      "raw_payload": {
+        "signal_id": "events.earthquakes-14d",
+        "category": "earth_systems",
+        "label": "M4.5+ earthquakes",
+        "value": 112,
+        "unit": "events in 14 days",
+        "source": {
+          "name": "USGS Earthquake Hazards Program",
+          "url": "https://earthquake.usgs.gov/"
+        },
+        "geography": {
+          "scope": "global"
+        },
+        "observed_at": "2026-09-13T07:10:00Z",
+        "updated_at": "2026-09-13T07:12:00Z",
+        "freshness_state": "current",
+        "detail": "Verified event count in current rolling window.",
+        "limitations": [
+          "Rolling-window count is descriptive context, not a forecast."
+        ]
+      },
+      "signal_fingerprint": "da47cd3037e11455659f757b3ff5b3b821427bbc90ab736fab21cbfe0f6da1a3",
+      "boundary": "This snapshot preserves Site Intelligence context. It does not by itself establish causality, forecast probability, or recommend a decision."
+    }
+  ],
+  "provenance": [
+    {
+      "source_product": "site-intelligence",
+      "capture": "sample"
+    }
+  ],
+  "diagnostics": {
+    "signal_count": 2,
+    "source_identified_count": 2,
+    "geography_identified_count": 2,
+    "observation_time_identified_count": 2,
+    "freshness_identified_count": 2,
+    "stale_or_expired_count": 0,
+    "explicit_scenario_link_count": 1,
+    "duplicate_signal_ids": [],
+    "missing_source_snapshot_ids": [],
+    "missing_geography_snapshot_ids": [],
+    "missing_observation_time_snapshot_ids": [],
+    "unknown_freshness_snapshot_ids": [],
+    "stale_or_expired_snapshot_ids": []
+  },
+  "boundary": "Site Intelligence owns observation and public-intelligence context. Decision Studio preserves source identity, geography, observation time, freshness, methodology, limitations, and provenance, but does not infer causality, scenario likelihood, approval, or recommendation from a signal.",
+  "bundle_fingerprint": "1148e21cfd5bfe9ec9a93a3e2f16eedc825c9beb7227516e256cb7422b05a8e8"
+}

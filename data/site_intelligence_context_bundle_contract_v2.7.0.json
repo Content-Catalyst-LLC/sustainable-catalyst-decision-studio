@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-site-intelligence-context-bundle-1.0.json",
+  "title": "SCDS Site Intelligence Context Bundle 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "bundle_id",
+    "decision_id",
+    "captured_at",
+    "source",
+    "snapshots",
+    "diagnostics",
+    "bundle_fingerprint",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-site-intelligence-context-bundle/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "snapshots": {
+      "type": "array"
+    },
+    "bundle_fingerprint": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64
+    }
+  },
+  "additionalProperties": true
+}

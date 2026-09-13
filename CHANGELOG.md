@@ -1,3 +1,12 @@
+## 2.7.0 — Site Intelligence Context Integration
+
+- Added first-class Site Intelligence context bundles and immutable signal snapshots.
+- Preserved source identity, geography, observation/update time, freshness, methodology, limitations, provenance, and raw source payloads.
+- Added deterministic SHA-256 signal/bundle fingerprints and tamper rejection.
+- Added explicit scenario-context links with no automatic score mutation or likelihood inference.
+- Added Decision Object and Decision Packet context projections plus outcome-review references.
+- Preserved v2.6.0 Lab + Workbench Native Handoffs, v2.5.0 Scenario/Stress, and Energy Runtime Consumer v2.3.0.
+
 # Changelog
 
 ## 2.6.0 — Lab + Workbench Native Handoffs

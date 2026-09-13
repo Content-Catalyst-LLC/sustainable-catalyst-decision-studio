@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-site-intelligence-signal-snapshot-1.0.json",
+  "title": "SCDS Site Intelligence Signal Snapshot 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "snapshot_id",
+    "source",
+    "geography",
+    "observed_at",
+    "freshness_state",
+    "raw_payload",
+    "signal_fingerprint",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-site-intelligence-signal-snapshot/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "signal_fingerprint": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,3 +1,28 @@
+# Sustainable Catalyst Decision Studio v2.7.0
+
+## Site Intelligence Context Integration
+
+Decision Studio v2.7.0 builds on the verified v2.6.0 Lab + Workbench Native Handoffs release and adds a first-class context bridge from Site Intelligence into the Unified Decision Object. Signals retain source identity, geography, observation time, freshness, methodology, limitations, provenance, exact source payloads, and deterministic fingerprints. Explicit scenario links remain descriptive relationships and never change scores automatically or infer likelihood.
+
+### v2.7.0 endpoints
+
+- `/site-intelligence-context/contracts`
+- `/site-intelligence-context/template`
+- `/site-intelligence-context/build`
+- `/site-intelligence-context/validate`
+- `/decision-object/site-intelligence-context`
+- `/decision-packet/site-intelligence-context`
+
+### v2.7.0 contracts
+
+- `scds-site-intelligence-context-bundle/1.0`
+- `scds-site-intelligence-signal-snapshot/1.0`
+- `scds-site-intelligence-context-receipt/1.0`
+
+**Boundary:** Site Intelligence owns observation/context. Decision Studio does not infer causality, scenario likelihood, approval, or recommendation from a signal.
+
+---
+
 # Sustainable Catalyst Decision Studio v2.6.0
 
 **Lab + Workbench Native Handoffs**

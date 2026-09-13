@@ -1,0 +1,37 @@
+{
+  "schema": "scds-site-intelligence-context-receipt/1.0",
+  "version": "2.7.0",
+  "receipt_id": "site-context-receipt:fb180240ddb725109c78",
+  "created_at": "2026-09-13T07:15:01Z",
+  "bundle_id": "site-context:b8ed440aff0248c5ae84",
+  "decision_id": "decision:sample-v270",
+  "accepted": true,
+  "validation": {
+    "valid": true,
+    "schema": "scds-site-intelligence-context-bundle/1.0",
+    "app_version": "2.7.0",
+    "errors": [],
+    "warnings": [],
+    "diagnostics": {
+      "signal_count": 2,
+      "source_identified_count": 2,
+      "geography_identified_count": 2,
+      "observation_time_identified_count": 2,
+      "freshness_identified_count": 2,
+      "stale_or_expired_count": 0,
+      "explicit_scenario_link_count": 1,
+      "duplicate_signal_ids": [],
+      "missing_source_snapshot_ids": [],
+      "missing_geography_snapshot_ids": [],
+      "missing_observation_time_snapshot_ids": [],
+      "unknown_freshness_snapshot_ids": [],
+      "stale_or_expired_snapshot_ids": []
+    },
+    "boundary": "Site Intelligence owns observation and public-intelligence context. Decision Studio preserves source identity, geography, observation time, freshness, methodology, limitations, and provenance, but does not infer causality, scenario likelihood, approval, or recommendation from a signal."
+  },
+  "bundle_fingerprint": "1148e21cfd5bfe9ec9a93a3e2f16eedc825c9beb7227516e256cb7422b05a8e8",
+  "truth_verified": false,
+  "causality_inferred": false,
+  "recommendation_generated": false,
+  "boundary": "Receipt confirms schema and fingerprint integrity only. It is not source verification, truth verification, causal inference, approval, or recommendation."
+}

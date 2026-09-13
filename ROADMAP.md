@@ -1,3 +1,7 @@
+## v2.7.0 — Site Intelligence Context Integration
+
+**Status: built for release.** Adds provenance-aware real-world context bundles from Site Intelligence while keeping observation ownership and human interpretation boundaries explicit.
+
 # Decision Studio Roadmap
 
 ## v2.6.0 — Lab + Workbench Native Handoffs

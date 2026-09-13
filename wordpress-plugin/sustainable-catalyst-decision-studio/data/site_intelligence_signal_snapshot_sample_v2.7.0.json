@@ -1,0 +1,70 @@
+{
+  "schema": "scds-site-intelligence-signal-snapshot/1.0",
+  "version": "2.7.0",
+  "snapshot_id": "site-snapshot:weather.active-alerts:f5d1403d465313aa",
+  "signal_id": "weather.active-alerts",
+  "category": "climate_environment",
+  "label": "Active weather alerts",
+  "value": 3,
+  "unit": "alerts",
+  "severity": "watch",
+  "source": {
+    "name": "NOAA / National Weather Service",
+    "short_name": "NWS",
+    "url": "https://www.weather.gov/",
+    "type": "public-intelligence-source"
+  },
+  "geography": {
+    "country": "USA",
+    "region": "Missouri"
+  },
+  "observed_at": "2026-09-13T07:00:00Z",
+  "updated_at": "2026-09-13T07:05:00Z",
+  "freshness_state": "live",
+  "methodology": {
+    "method": "official alert feed"
+  },
+  "limitations": [
+    "Alert coverage depends on issuing authority and current feed availability."
+  ],
+  "detail": "",
+  "destination_url": "",
+  "scenario_refs": [
+    "scenario:weather-disruption"
+  ],
+  "source_product": {
+    "product": "site-intelligence",
+    "name": "Site Intelligence",
+    "version": "4.40.0",
+    "role": "real_world_context"
+  },
+  "raw_payload": {
+    "signal_id": "weather.active-alerts",
+    "category": "climate_environment",
+    "label": "Active weather alerts",
+    "value": 3,
+    "unit": "alerts",
+    "severity": "watch",
+    "source_name": "NOAA / National Weather Service",
+    "source_short_name": "NWS",
+    "source_url": "https://www.weather.gov/",
+    "geography": {
+      "country": "USA",
+      "region": "Missouri"
+    },
+    "observed_at": "2026-09-13T07:00:00Z",
+    "updated_at": "2026-09-13T07:05:00Z",
+    "freshness_state": "live",
+    "methodology": {
+      "method": "official alert feed"
+    },
+    "limitations": [
+      "Alert coverage depends on issuing authority and current feed availability."
+    ],
+    "scenario_refs": [
+      "scenario:weather-disruption"
+    ]
+  },
+  "signal_fingerprint": "a2eb8b29c5da0f7c77eef7c91e4d8cae6f31008b4f9a0bb516608ae5cd16e591",
+  "boundary": "This snapshot preserves Site Intelligence context. It does not by itself establish causality, forecast probability, or recommend a decision."
+}

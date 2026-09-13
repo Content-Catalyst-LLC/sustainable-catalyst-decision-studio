@@ -4,14 +4,14 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.6.0
+Stable tag: 2.7.0
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
 
 == Description ==
 
-Decision Studio v2.6.0 adds first-class Research Lab analysis handoffs, Workbench computation handoffs, bounded analysis requests, deterministic fingerprints, and request/return lineage while preserving v2.5.0 scenario/stress analysis and earlier Decision Studio contracts.
+Decision Studio v2.7.0 adds first-class Site Intelligence context bundles and signal snapshots while preserving v2.6.0 Lab + Workbench native handoffs, v2.5.0 scenario/stress analysis, and earlier Decision Studio contracts.
 
 Process confidence summarizes documentation and analysis coverage. It is not a probability that an alternative or recommendation is correct. Sensitivity results do not automatically select a winner or create a recommendation.
 
@@ -33,6 +33,10 @@ Process confidence summarizes documentation and analysis coverage. It is not a p
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 2.7.0 =
+* Added Site Intelligence context bundles, immutable signal snapshots, freshness/geography/source diagnostics, explicit scenario-context links, and bounded context receipts.
+* Preserved Lab + Workbench native handoffs and earlier release contracts.
 
 = 2.6.0 =
 * Added Lab + Workbench Native Handoffs, analysis requests, deterministic fingerprints, receipts, and Decision Object lineage.

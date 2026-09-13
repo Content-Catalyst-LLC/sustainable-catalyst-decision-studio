@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sustainablecatalyst.com/schemas/scds-site-intelligence-context-receipt-1.0.json",
+  "title": "SCDS Site Intelligence Context Receipt 1.0",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "receipt_id",
+    "bundle_id",
+    "accepted",
+    "validation",
+    "truth_verified",
+    "causality_inferred",
+    "recommendation_generated",
+    "boundary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "scds-site-intelligence-context-receipt/1.0"
+    },
+    "version": {
+      "type": "string"
+    },
+    "accepted": {
+      "type": "boolean"
+    },
+    "truth_verified": {
+      "const": false
+    },
+    "causality_inferred": {
+      "const": false
+    },
+    "recommendation_generated": {
+      "const": false
+    }
+  },
+  "additionalProperties": true
+}

@@ -7,7 +7,7 @@ def test_health():
     r = client.get('/health')
     assert r.status_code == 200
     assert r.json()['ok'] is True
-    assert r.json()['version'] == '2.6.0'
+    assert r.json()['version'] == '2.7.0'
 
 def test_analyze_default():
     r = client.post('/analyze', json={})
@@ -68,7 +68,7 @@ def test_decision_packet_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['decision_packet']['packet_version'] == '2.6.0'
+    assert data['decision_packet']['packet_version'] == '2.7.0'
     assert 'decision_framing' in data['decision_packet']
     assert 'audit_and_provenance' in data['decision_packet']
 
@@ -161,7 +161,7 @@ def test_integrated_brief_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     assert 'brief' in data
     assert 'executive_summary' in data['brief']
     assert 'exports' in data
@@ -189,7 +189,7 @@ def test_review_status_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     assert len(data['sections']) >= 8
     assert any(s['id'] == 'finance' for s in data['sections'])
 
@@ -200,7 +200,7 @@ def test_brief_readiness_default():
     data = r.json()
     assert data['ok'] is True
     readiness = data['readiness']
-    assert readiness['readiness_version'] == '2.6.0'
+    assert readiness['readiness_version'] == '2.7.0'
     assert 0 <= readiness['readiness_percent'] <= 100
     assert 'sections' in readiness
     assert 'export_gate' in readiness
@@ -232,7 +232,7 @@ def test_scenario_comparison_default():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     comparison = data['scenario_comparison']
     assert comparison['scenario_count'] >= 4
     assert 'matrix' in comparison
@@ -263,7 +263,7 @@ def test_workbench_handoff_default():
     data = r.json()
     assert data['ok'] is True
     handoff = data['workbench_handoff']
-    assert handoff['handoff_version'] == '2.6.0'
+    assert handoff['handoff_version'] == '2.7.0'
     ids = [h['tool_id'] for h in handoff['recommended_handoffs']]
     assert 'economics-forecasting-and-scenario-tool' in ids
     assert any('sc_workbench' in h['shortcode'] for h in handoff['recommended_handoffs'])
@@ -273,7 +273,7 @@ def test_integrated_brief_includes_scenario_and_handoff():
     r = client.post('/integrated-brief', json={"inputs": {}, "packet": {}})
     assert r.status_code == 200
     data = r.json()
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     assert 'scenario_comparison' in data
     assert 'workbench_handoff' in data
     assert 'scenario_comparison_matrix' in data['brief']
@@ -286,7 +286,7 @@ def test_export_center_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['export_center']['export_center_version'] == '2.6.0'
+    assert data['export_center']['export_center_version'] == '2.7.0'
     assert any(e['id'] == 'packet_json' for e in data['export_center']['exports'])
 
 
@@ -296,7 +296,7 @@ def test_decision_packet_save_template():
     data = r.json()
     assert data['ok'] is True
     saved = data['saved_packet']
-    assert saved['packet_version'] == '2.6.0'
+    assert saved['packet_version'] == '2.7.0'
     assert saved['project_name'] == 'Saved packet test'
     assert 'readiness' in saved
     assert 'integrated_brief' in saved
@@ -308,7 +308,7 @@ def test_export_center_bundle_default():
     data = r.json()
     assert data['ok'] is True
     bundle = data['export_bundle']
-    assert bundle['bundle_version'] == '2.6.0'
+    assert bundle['bundle_version'] == '2.7.0'
     assert 'decision_packet_json' in bundle['exports']
     assert 'integrated_brief_markdown' in bundle['exports']
     assert 'audit_json' in bundle['exports']
@@ -321,8 +321,8 @@ def test_public_landing_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['version'] == '2.6.0'
-    assert data['landing']['page_version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
+    assert data['landing']['page_version'] == '2.7.0'
     assert 'Decision Studio' in data['landing']['headline']
     assert len(data['landing']['workflow']) == 7
     assert data['landing']['workflow'][0]['module'] == 'Knowledge Library'
@@ -334,7 +334,7 @@ def test_public_demo_template():
     assert r.status_code == 200
     data = r.json()
     assert data['ok'] is True
-    assert data['demo']['demo_version'] == '2.6.0'
+    assert data['demo']['demo_version'] == '2.7.0'
     assert len(data['demo']['demo_cards']) >= 4
     assert 'Knowledge Library to source' in data['demo']['public_copy']
     assert 'Decision Studio to decide' in data['demo']['public_copy']
@@ -344,8 +344,8 @@ def test_release_manifest_identity():
     response = client.get('/release')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '2.6.0'
-    assert data['release']['build_fingerprint'] == 'scds-v2.6.0-lab-workbench-native-handoffs'
+    assert data['version'] == '2.7.0'
+    assert data['release']['build_fingerprint'] == 'scds-v2.7.0-site-intelligence-context-integration'
     assert data['release']['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert data['release']['compatibility']['packet_schema_breaking_changes'] is False
 
@@ -358,7 +358,7 @@ def test_health_reports_cold_start_and_limits():
     assert data['cold_start_ready'] is True
     assert data['uptime_seconds'] >= 0
     assert data['limits']['max_request_bytes'] == 1048576
-    assert response.headers['x-scds-version'] == '2.6.0'
+    assert response.headers['x-scds-version'] == '2.7.0'
 
 
 def test_oversized_public_request_is_rejected():
@@ -558,7 +558,7 @@ def test_platform_handoff_template_has_new_packet_sections():
     r = client.get('/decision-packet/platform-handoffs')
     assert r.status_code == 200
     packet = r.json()['decision_packet']
-    assert packet['packet_version'] == '2.6.0'
+    assert packet['packet_version'] == '2.7.0'
     assert packet['artifact_schema'] == 'scds-platform-artifact/1.0'
     for key in ['evidence_registry', 'research_routes', 'live_evidence', 'experimental_evidence', 'platform_registry', 'integrity_checks']:
         assert key in packet
@@ -663,7 +663,7 @@ def test_review_history_detects_tampering():
 
 def test_governance_is_in_decision_packet_and_export_bundle():
     packet = client.get('/decision-packet/template').json()['decision_packet']
-    assert packet['packet_version'] == '2.6.0'
+    assert packet['packet_version'] == '2.7.0'
     assert packet['governance_schema'] == 'scds-decision-governance/1.0'
     assert packet['governance_center']['current_state'] == 'draft'
     governance = client.post('/governance/transition', json=complete_governance_payload()).json()['governance']
@@ -735,7 +735,7 @@ def test_scenario_studio_default_analysis():
     assert response.status_code == 200
     data = response.json()
     studio = data['scenario_studio']
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     assert studio['schema'] == 'scds-scenario-studio/1.0'
     assert studio['alternative_count'] == 5
     assert len(studio['weighted_ranking']) == 5
@@ -807,7 +807,7 @@ def test_scenario_studio_time_horizon_comparison():
 def test_scenario_studio_updates_decision_packet():
     response = client.post('/decision-packet/scenario-studio', json=advanced_scenario_payload())
     packet = response.json()['decision_packet']
-    assert packet['packet_version'] == '2.6.0'
+    assert packet['packet_version'] == '2.7.0'
     assert packet['scenario_studio_schema'] == 'scds-scenario-studio/1.0'
     assert packet['scenario_studio']['alternative_count'] == 3
     assert packet['sensitivity_analysis']['parameters']
@@ -932,14 +932,14 @@ def test_collaboration_contact_and_engagement_handoff():
     handoff = response.json()['contact_engagement_handoff']
     assert handoff['schema'] == 'sc-contact-engagement-handoff/1.0'
     assert handoff['private_workspace_required'] is True
-    assert handoff['source_version'] == '2.6.0'
+    assert handoff['source_version'] == '2.7.0'
 
 
 def test_collaboration_is_saved_and_exported_with_packet_schema_1_5():
     created = client.post('/collaboration/room', json=room_payload()).json()
     room = created['room']
     saved = client.post('/decision-packet/save-template', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['saved_packet']
-    assert saved['decision_packet']['packet_version'] == '2.6.0'
+    assert saved['decision_packet']['packet_version'] == '2.7.0'
     assert saved['decision_packet']['collaboration_room_schema'] == 'scds-collaborative-decision-room/1.0'
     assert saved['collaboration']['room_id'] == room['room_id']
     bundle = client.post('/export-center/bundle', json={'inputs': {}, 'packet': created['decision_packet'], 'collaboration': room}).json()['export_bundle']
@@ -1017,7 +1017,7 @@ def test_apply_decision_pack_updates_packet_schema_and_plans():
     data = response.json()
     packet = data['decision_packet']
     assert data['schema'] == 'scds-decision-pack-application/1.0'
-    assert packet['packet_version'] == '2.6.0'
+    assert packet['packet_version'] == '2.7.0'
     assert packet['decision_pack_schema'] == 'scds-institutional-decision-pack/1.0'
     assert packet['institutional_decision_pack']['pack_id'] == 'responsible-ai-governance'
     assert len(packet['criteria_registry']) == 6
@@ -1461,7 +1461,7 @@ def _complete_hardening_payload():
 
 def test_release_hardening_template():
     data = client.get('/release-hardening/template').json()
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     assert data['release_hardening']['schema'] == 'scds-release-readiness/1.0'
     assert 'offline_recovery' in data['release_hardening']['release_gates']
 
@@ -1577,7 +1577,7 @@ def _connected_complete_packet():
 
 def test_connected_platform_template_and_health_contracts():
     template = client.get('/connected-platform/template').json()
-    assert template['version'] == '2.6.0'
+    assert template['version'] == '2.7.0'
     assert template['connected_platform']['schema'] == 'scds-connected-decision-platform/2.0'
     assert len(template['connected_platform']['lifecycle']) == 12
     health = client.get('/health').json()
@@ -1667,8 +1667,8 @@ def test_decision_packet_connected_platform_is_additive():
 
 def test_release_manifest_declares_v2_connected_platform():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.6.0'
-    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
+    assert release['release'] == '2.7.0'
+    assert release['release_name'] == 'Site Intelligence Context Integration'
     assert release['decision_packet_schema'] == 'scds-decision-packet/2.0'
     assert release['connected_platform_schema'] == 'scds-connected-decision-platform/2.0'
     assert release['compatibility']['end_to_end_lifecycle_orchestration'] is True
@@ -1680,7 +1680,7 @@ def test_catalyst_module_navigation_repair():
     response = client.get('/integrations/module-navigation')
     assert response.status_code == 200
     data = response.json()
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     assert data['schema'] == 'scds-catalyst-module-navigation/1.0'
     assert data['handoff_schema'] == 'scds-catalyst-module-handoff/1.0'
     assert [item['id'] for item in data['modules']] == [
@@ -1699,7 +1699,7 @@ def test_decision_object_template_v210():
     assert response.status_code == 200
     data = response.json()
     obj = data['decision_object']
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     assert obj['schema'] == 'scds-decision-object/1.0'
     assert obj['platform_context']['schema'] == 'scds-platform-context/1.0'
     for key in ['question','objective','alternatives','criteria','constraints','assumptions','evidence','models','scenarios','uncertainties','stakeholders','tradeoffs','recommendation','confidence','counterarguments','provenance','decision','rationale','outcome_review']:
@@ -1784,8 +1784,8 @@ def test_decision_packet_decision_object_alias_v210():
 
 def test_release_declares_v210_decision_object_foundation():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.6.0'
-    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
+    assert release['release'] == '2.7.0'
+    assert release['release_name'] == 'Site Intelligence Context Integration'
     assert release['decision_object_schema'] == 'scds-decision-object/1.0'
     assert release['platform_context_schema'] == 'scds-platform-context/1.0'
     assert release['compatibility']['decision_packet_projection'] is True
@@ -1802,7 +1802,7 @@ def test_decision_packet_template_exposes_v210_object_slots():
 
 def test_source_bundle_template_v220():
     data = client.get('/source-bundle/template').json()
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     assert data['source_bundle']['schema'] == 'scds-source-bundle/1.0'
 
 
@@ -1890,8 +1890,8 @@ def test_evidence_bundle_merge_v220():
 
 def test_release_declares_v220_evidence_bundle_foundation():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.6.0'
-    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
+    assert release['release'] == '2.7.0'
+    assert release['release_name'] == 'Site Intelligence Context Integration'
     assert release['evidence_bundle_schema'] == 'scds-evidence-bundle/1.0'
     assert release['source_bundle_schema'] == 'scds-source-bundle/1.0'
     assert release['evidence_coverage_schema'] == 'scds-evidence-coverage/1.0'
@@ -1901,13 +1901,13 @@ def test_release_declares_v220_evidence_bundle_foundation():
 
 def test_criteria_template_v230():
     data = client.get('/criteria/template').json()
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     assert data['criteria_set']['schema'] == 'scds-criteria-set/1.0'
 
 
 def test_alternatives_template_v230():
     data = client.get('/alternatives/template').json()
-    assert data['version'] == '2.6.0'
+    assert data['version'] == '2.7.0'
     assert data['alternatives_set']['schema'] == 'scds-alternatives-set/1.0'
 
 
@@ -2013,8 +2013,8 @@ def test_decision_packet_tradeoff_matrix_projection_v230():
 
 def test_release_declares_v230_tradeoff_foundation():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.6.0'
-    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
+    assert release['release'] == '2.7.0'
+    assert release['release_name'] == 'Site Intelligence Context Integration'
     assert release['criteria_set_schema'] == 'scds-criteria-set/1.0'
     assert release['alternatives_set_schema'] == 'scds-alternatives-set/1.0'
     assert release['tradeoff_matrix_schema'] == 'scds-tradeoff-matrix/1.0'
@@ -2157,8 +2157,8 @@ def test_v240_decision_packet_projection_preserves_analysis():
 
 def test_release_declares_v240_uncertainty_sensitivity_confidence():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.6.0'
-    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
+    assert release['release'] == '2.7.0'
+    assert release['release_name'] == 'Site Intelligence Context Integration'
     assert release['uncertainty_register_schema'] == 'scds-uncertainty-register/1.0'
     assert release['sensitivity_analysis_schema'] == 'scds-sensitivity-analysis/1.0'
     assert release['confidence_assessment_schema'] == 'scds-confidence-assessment/1.0'
@@ -2255,8 +2255,8 @@ def test_v250_decision_packet_projection_preserves_scenario_analysis():
 
 def test_release_declares_v250_scenario_comparison_stress_testing():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.6.0'
-    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
+    assert release['release'] == '2.7.0'
+    assert release['release_name'] == 'Site Intelligence Context Integration'
     assert release['scenario_set_schema'] == 'scds-scenario-set/1.0'
     assert release['scenario_comparison_schema'] == 'scds-scenario-comparison/1.0'
     assert release['stress_test_suite_schema'] == 'scds-stress-test-suite/1.0'
@@ -2426,8 +2426,8 @@ def test_v260_return_can_link_back_to_analysis_request():
 
 def test_v260_release_declares_native_handoffs_and_preserves_boundaries():
     release = client.get('/release').json()['release']
-    assert release['release'] == '2.6.0'
-    assert release['release_name'] == 'Lab + Workbench Native Handoffs'
+    assert release['release'] == '2.7.0'
+    assert release['release_name'] == 'Site Intelligence Context Integration'
     assert release['analysis_handoff_schema'] == 'scds-analysis-handoff/1.0'
     assert release['computation_handoff_schema'] == 'scds-computation-handoff/1.0'
     assert release['handoff_receipt_schema'] == 'scds-handoff-receipt/1.0'
@@ -2441,3 +2441,158 @@ def test_v260_release_declares_native_handoffs_and_preserves_boundaries():
     assert compat['energy_systems_runtime_consumer'] is True
     assert compat['automatic_winner_selection'] is False
     assert compat['automatic_recommendation'] is False
+
+# ---------------------------------------------------------------------------
+# Decision Studio v2.7.0 — Site Intelligence Context Integration
+# ---------------------------------------------------------------------------
+
+def _v270_site_signals():
+    return [
+        {
+            'signal_id': 'weather.active-alerts',
+            'category': 'climate_environment',
+            'label': 'Active weather alerts',
+            'value': 3,
+            'unit': 'alerts',
+            'severity': 'watch',
+            'source_name': 'NOAA / National Weather Service',
+            'source_short_name': 'NWS',
+            'source_url': 'https://www.weather.gov/',
+            'geography': {'country': 'USA', 'region': 'Missouri'},
+            'observed_at': '2026-09-13T07:00:00Z',
+            'updated_at': '2026-09-13T07:05:00Z',
+            'freshness_state': 'live',
+            'methodology': {'method': 'official alert feed'},
+            'limitations': ['Alert coverage depends on issuing authority and current feed availability.'],
+            'scenario_refs': ['scenario:weather-disruption'],
+        },
+        {
+            'signal_id': 'events.earthquakes-14d',
+            'category': 'earth_systems',
+            'label': 'M4.5+ earthquakes',
+            'value': 112,
+            'unit': 'events in 14 days',
+            'source': {'name': 'USGS Earthquake Hazards Program', 'url': 'https://earthquake.usgs.gov/'},
+            'geography': {'scope': 'global'},
+            'observed_at': '2026-09-13T07:10:00Z',
+            'freshness_state': 'current',
+            'detail': 'Verified event count in current rolling window.',
+        },
+    ]
+
+
+def test_v270_templates_expose_site_intelligence_context_contracts():
+    contracts = client.get('/site-intelligence-context/contracts').json()['contracts']
+    template = client.get('/site-intelligence-context/template').json()['context_bundle']
+    assert contracts['context_bundle_schema'] == 'scds-site-intelligence-context-bundle/1.0'
+    assert contracts['signal_snapshot_schema'] == 'scds-site-intelligence-signal-snapshot/1.0'
+    assert contracts['context_receipt_schema'] == 'scds-site-intelligence-context-receipt/1.0'
+    assert template['schema'] == 'scds-site-intelligence-context-bundle/1.0'
+
+
+def test_v270_context_bundle_preserves_source_geography_time_freshness_and_raw_payload():
+    signals = _v270_site_signals()
+    data = client.post('/site-intelligence-context/build', json={
+        'decisionObject': {'schema':'scds-decision-object/1.0','decision_id':'decision:v270'},
+        'sourceVersion': '4.40.0',
+        'capturedAt': '2026-09-13T07:15:00Z',
+        'signals': signals,
+    }).json()
+    assert data['ok'] is True
+    bundle = data['context_bundle']
+    assert bundle['source']['product'] == 'site-intelligence'
+    assert bundle['source']['version'] == '4.40.0'
+    first = bundle['snapshots'][0]
+    assert first['source']['name'] == 'NOAA / National Weather Service'
+    assert first['geography']['region'] == 'Missouri'
+    assert first['observed_at'] == '2026-09-13T07:00:00Z'
+    assert first['freshness_state'] == 'live'
+    assert first['raw_payload'] == signals[0]
+    assert len(first['signal_fingerprint']) == 64
+    assert len(bundle['bundle_fingerprint']) == 64
+
+
+def test_v270_context_diagnostics_surface_missing_metadata_without_inventing_it():
+    data = client.post('/site-intelligence-context/build', json={
+        'signals': [{'signal_id':'sparse','label':'Sparse signal','value':1}],
+    }).json()
+    diag = data['context_bundle']['diagnostics']
+    assert diag['signal_count'] == 1
+    assert diag['source_identified_count'] == 0
+    assert diag['geography_identified_count'] == 0
+    assert diag['observation_time_identified_count'] == 0
+    assert diag['freshness_identified_count'] == 0
+    assert data['validation']['valid'] is True
+    assert data['validation']['warnings']
+
+
+def test_v270_explicit_scenario_links_do_not_change_scores_or_infer_likelihood():
+    data = client.post('/decision-object/site-intelligence-context', json={
+        'decisionObject': {
+            'schema':'scds-decision-object/1.0',
+            'decision_id':'decision:v270-links',
+            'scenarios':[{'scenario_id':'scenario:weather-disruption','name':'Weather disruption','score':73.2}],
+        },
+        'signals': [_v270_site_signals()[0]],
+    }).json()
+    obj = data['decision_object']
+    assert obj['scenarios'][0]['score'] == 73.2
+    link = [x for x in obj['links'] if x.get('relationship') == 'explicit_site_context_for_scenario'][0]
+    assert link['scenario_ref'] == 'scenario:weather-disruption'
+    assert link['automatic_score_change'] is False
+    assert obj['real_world_context'][0]['causal_claim'] is False
+    assert obj['real_world_context'][0]['recommendation_effect'] == 'none'
+
+
+def test_v270_context_bundle_rejects_tampered_signal_payload():
+    built = client.post('/site-intelligence-context/build', json={'signals': _v270_site_signals()}).json()['context_bundle']
+    built['snapshots'][0]['raw_payload']['value'] = 999
+    data = client.post('/site-intelligence-context/validate', json={'contextBundle': built}).json()
+    assert data['ok'] is False
+    assert any('signal fingerprint does not match raw payload' in x for x in data['validation']['errors'])
+
+
+def test_v270_decision_object_attachment_preserves_context_and_receipt_boundaries():
+    data = client.post('/decision-object/site-intelligence-context', json={
+        'decisionObject': {'schema':'scds-decision-object/1.0','decision_id':'decision:v270-attach','evidence':[]},
+        'sourceVersion': '4.40.0',
+        'signals': _v270_site_signals(),
+    }).json()
+    obj = data['decision_object']
+    assert obj['site_intelligence_context_bundles'][-1]['schema'] == 'scds-site-intelligence-context-bundle/1.0'
+    assert obj['site_intelligence_context_receipts'][-1]['truth_verified'] is False
+    assert len(obj['real_world_context']) == 2
+    assert obj['evidence'][-1]['evidence_role'] == 'contextual_evidence'
+    assert obj['provenance']['records'][-1]['action'] == 'site_intelligence_context_attached'
+
+
+def test_v270_decision_packet_projection_keeps_live_snapshots_and_decision_object():
+    data = client.post('/decision-packet/site-intelligence-context', json={
+        'packet': {'decision_packet_id':'packet:v270'},
+        'signals': _v270_site_signals(),
+    }).json()
+    packet = data['decision_packet']
+    assert packet['site_intelligence_context_bundles'][-1]['schema'] == 'scds-site-intelligence-context-bundle/1.0'
+    assert len(packet['live_evidence']) == 2
+    assert packet['decision_object']['site_intelligence_context_bundles'][-1]['source']['product'] == 'site-intelligence'
+
+
+def test_v270_release_declares_site_intelligence_context_and_human_control_boundaries():
+    release = client.get('/release').json()['release']
+    assert release['release'] == '2.7.0'
+    assert release['site_intelligence_context_bundle_schema'] == 'scds-site-intelligence-context-bundle/1.0'
+    assert release['site_intelligence_signal_snapshot_schema'] == 'scds-site-intelligence-signal-snapshot/1.0'
+    assert release['site_intelligence_context_receipt_schema'] == 'scds-site-intelligence-context-receipt/1.0'
+    compat = release['compatibility']
+    assert compat['site_intelligence_context_bundles'] is True
+    assert compat['site_intelligence_source_identity_preserved'] is True
+    assert compat['site_intelligence_geography_preserved'] is True
+    assert compat['site_intelligence_freshness_visible'] is True
+    assert compat['explicit_scenario_context_links'] is True
+    assert compat['site_intelligence_context_implies_causality'] is False
+    assert compat['site_intelligence_context_implies_recommendation'] is False
+    assert compat['site_intelligence_context_receipt_implies_truth_verification'] is False
+    assert compat['decision_studio_rewrites_site_intelligence_observations'] is False
+    assert compat['lab_native_handoffs'] is True
+    assert compat['workbench_native_handoffs'] is True
+    assert compat['energy_runtime_consumer_version'] == '2.3.0'
