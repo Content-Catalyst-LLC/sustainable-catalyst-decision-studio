@@ -11,11 +11,12 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from .models import Base
+from .contracts import REPOSITORY_SCHEMA
 
 PERSISTENCE_SCHEMA = "scds-postgresql-persistence/1.0"
 PERSISTENCE_CONTRACT_SCHEMA = "scds-persistence-authority-contract/1.0"
 EXPECTED_SCHEMA_REVISION = "0001_v330_pg_foundation"
-PERSISTENCE_AUTHORITY = "non-authoritative-foundation"
+PERSISTENCE_AUTHORITY = "python-postgresql"
 PERSISTENCE_TABLES = tuple(sorted(Base.metadata.tables.keys()))
 
 
@@ -28,7 +29,7 @@ def persistence_required() -> bool:
 
 
 def persistence_write_enabled() -> bool:
-    # v3.3 intentionally defaults false. v3.4 owns the authority cutover.
+    # v3.4 makes Python/PostgreSQL the live Decision Kernel persistence authority.
     return os.getenv("SCDS_PERSISTENCE_WRITE_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 
@@ -92,6 +93,7 @@ def database_status(url: str | None = None) -> dict[str, Any]:
         "schema": PERSISTENCE_SCHEMA,
         "contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "authority": PERSISTENCE_AUTHORITY,
+        "repository_schema": REPOSITORY_SCHEMA,
         "configured": bool(target),
         "required": required,
         "write_enabled": persistence_write_enabled() if url is None else False,
@@ -104,6 +106,7 @@ def database_status(url: str | None = None) -> dict[str, Any]:
         "host": location["host"],
         "database": location["database"],
         "error": None,
+        "authority_ready": (not required and not bool(target)),
     }
     if not target:
         return base
@@ -119,6 +122,7 @@ def database_status(url: str | None = None) -> dict[str, Any]:
             schema_revision=revision,
             schema_current=(revision == EXPECTED_SCHEMA_REVISION and set(PERSISTENCE_TABLES).issubset(existing)),
         )
+        base["authority_ready"] = bool(base["schema_current"] and (base["write_enabled"] or not required))
     except Exception as exc:  # health/status must never leak credentials
         message = str(exc).splitlines()[0]
         if target:
@@ -127,6 +131,7 @@ def database_status(url: str | None = None) -> dict[str, Any]:
         import re
         message = re.sub(r"(postgres(?:ql)?(?:\+\w+)?://)[^@\s]+@", r"\1<credentials-redacted>@", message)
         base["error"] = f"{type(exc).__name__}: {message[:240]}"
+    base.setdefault("authority_ready", bool((not required) or (base["connected"] and base["schema_current"] and base["write_enabled"])))
     return base
 
 
@@ -135,14 +140,18 @@ def database_contract() -> dict[str, Any]:
         "schema": PERSISTENCE_CONTRACT_SCHEMA,
         "persistence_schema": PERSISTENCE_SCHEMA,
         "authority": PERSISTENCE_AUTHORITY,
+        "repository_schema": REPOSITORY_SCHEMA,
         "principles": {
-            "postgresql_is_live_authority": False,
-            "wordpress_authority_changed": False,
-            "python_repository_authority_changed": False,
+            "postgresql_is_live_authority": True,
+            "python_repository_is_live_authority": True,
+            "wordpress_decision_object_authority_changed": True,
+            "wordpress_legacy_packet_storage_preserved": True,
             "schema_migration_present": True,
-            "writes_enabled_by_default": False,
-            "v3_4_authority_cutover_required": True,
+            "new_schema_migration_in_v3_4": False,
+            "writes_enabled_in_production": True,
+            "v3_4_authority_cutover_complete": True,
             "decision_kernel_contract_preserved": True,
+            "legacy_projection_reversible": True,
             "final_decision_authority": "human-governed",
         },
         "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
@@ -161,4 +170,6 @@ def database_schema_manifest() -> dict[str, Any]:
         "orm": "sqlalchemy-2",
         "driver": "psycopg-3",
         "authority": PERSISTENCE_AUTHORITY,
+        "repository_schema": REPOSITORY_SCHEMA,
+        "live_write_authority": True,
     }

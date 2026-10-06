@@ -214,9 +214,20 @@ from app.persistence import (
     PERSISTENCE_CONTRACT_SCHEMA,
     PERSISTENCE_SCHEMA,
     PERSISTENCE_TABLES,
+    REPOSITORY_SCHEMA,
+    DecisionCreate,
+    DecisionObjectImport,
+    DecisionObjectUpsert,
+    DecisionPatch,
+    ModuleBindingUpsert,
+    PersistenceRepository,
+    ProjectCreate,
+    SnapshotCreate,
     database_contract,
     database_schema_manifest,
     database_status,
+    persistence_write_enabled,
+    session_scope,
 )
 
 from app.recommendation_review import (
@@ -239,10 +250,10 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.3.1"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.3.1-postgresql-migration-revision-repair")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.3.1")
-RELEASE_DATE = "2026-10-05"
+APP_VERSION = "3.4.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.4.0-python-decision-repository-object-persistence")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.4.0")
+RELEASE_DATE = "2026-10-06"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
 MODULE_HANDOFF_SCHEMA = "scds-catalyst-module-handoff/1.0"
@@ -316,7 +327,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "PostgreSQL Migration Revision Repair",
+        "release_name": "Python Decision Repository & Object Persistence",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -392,6 +403,7 @@ def release_manifest() -> Dict[str, Any]:
         "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
         "persistence_schema": PERSISTENCE_SCHEMA,
         "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
+        "repository_schema": REPOSITORY_SCHEMA,
         "backend_architecture": {
             "decomposition_release": True,
             "decision_kernel_foundation": True,
@@ -400,19 +412,21 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 13,
-            "included_router_count": 14,
-            "route_count": 185,
-            "previous_route_count": 182,
+            "router_registry_count": 14,
+            "included_router_count": 15,
+            "route_count": 198,
+            "previous_route_count": 185,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
-            "database_migration": True,
+            "database_migration": False,
+            "persistence_schema_migration_preserved": True,
+            "repository_authority_migration": True,
             "postgresql_persistence_foundation": True,
-            "postgresql_live_authority": False,
+            "postgresql_live_authority": True,
             "persistence_authority": PERSISTENCE_AUTHORITY,
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
-            "wordpress_authority_change": False,
+            "wordpress_authority_change": True,
             "public_api_contract_breaking_changes": False,
         },
         "decision_kernel": {
@@ -422,20 +436,25 @@ def release_manifest() -> Dict[str, Any]:
             "kernel_objects": kernel_contracts()["kernel_objects"],
             "module_ids": [m["module_id"] for m in module_registry()["modules"]],
             "module_count": module_registry()["module_count"],
-            "database_migration": True,
-            "postgresql_live_authority": False,
-            "wordpress_authority_change": False,
+            "database_migration": False,
+            "postgresql_live_authority": True,
+            "python_repository_live_authority": True,
+            "wordpress_decision_object_authority_change": True,
+            "wordpress_legacy_packet_storage_preserved": True,
             "final_decision_authority": "human-governed",
         },
         "persistence": {
             "schema": PERSISTENCE_SCHEMA,
             "contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
+            "repository_schema": REPOSITORY_SCHEMA,
             "authority": PERSISTENCE_AUTHORITY,
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "table_count": len(PERSISTENCE_TABLES),
-            "postgresql_live_authority": False,
-            "writes_enabled_by_default": False,
-            "v3_4_authority_cutover_required": True,
+            "postgresql_live_authority": True,
+            "python_repository_live_authority": True,
+            "writes_enabled_in_production": True,
+            "v3_4_authority_cutover_complete": True,
+            "legacy_wordpress_packet_storage_preserved": True,
         },
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
@@ -4909,9 +4928,245 @@ def persistence_contract_endpoint():
     return {"ok": True, "version": APP_VERSION, "persistence_contract": database_contract()}
 
 
+def _repository_scope_error(request: Request, scope: str):
+    supplied = request.headers.get("x-scds-api-key", "").strip()
+    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
+    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
+        return None
+    super_key = os.getenv("SCDS_API_KEY", "").strip()
+    if supplied and super_key and secrets.compare_digest(supplied, super_key):
+        return None
+    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError:
+        catalog = {}
+    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
+    if "*" in scopes or scope in scopes or (scope == "repository:read" and "repository:write" in scopes):
+        return None
+    return JSONResponse(
+        status_code=403,
+        content={"ok": False, "version": APP_VERSION, "error": "repository_scope_required", "required_scope": scope},
+    )
+
+
+def _repository_gate(require_write: bool = False):
+    status = database_status()
+    ready = bool(status.get("configured") and status.get("connected") and status.get("schema_current"))
+    if require_write:
+        ready = ready and bool(status.get("write_enabled"))
+    if not ready:
+        return None, JSONResponse(
+            status_code=503,
+            content={
+                "ok": False,
+                "version": APP_VERSION,
+                "error": "repository_unavailable",
+                "require_write": require_write,
+                "persistence": status,
+            },
+        )
+    return status, None
+
+
+def repository_authority_endpoint():
+    status = database_status()
+    return {
+        "ok": bool((not status.get("required")) or status.get("authority_ready")),
+        "version": APP_VERSION,
+        "repository": {
+            "schema": REPOSITORY_SCHEMA,
+            "authority": PERSISTENCE_AUTHORITY,
+            "storage_authority": "python-postgresql",
+            "live_write_authority": True,
+            "write_enabled": bool(status.get("write_enabled")),
+            "legacy_wordpress_packet_storage": "compatibility-preserved",
+            "final_decision_authority": "human-governed",
+            "cutover_release": "3.4.0",
+        },
+        "persistence": status,
+    }
+
+
+def repository_create_project_endpoint(req: ProjectCreate, request: Request):
+    auth = _repository_scope_error(request, "repository:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    with session_scope() as session:
+        repo = PersistenceRepository(session)
+        row = repo.create_project(project_id=req.project_id, title=req.title, status=req.status, owner_ref=req.owner_ref, metadata=req.metadata)
+        return {"ok": True, "version": APP_VERSION, "project": repo.project_dict(row)}
+
+
+def repository_get_project_endpoint(project_id: str, request: Request):
+    auth = _repository_scope_error(request, "repository:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    with session_scope() as session:
+        repo = PersistenceRepository(session)
+        row = repo.get_project(project_id)
+        if not row:
+            return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": "project_not_found", "project_id": project_id})
+        return {"ok": True, "version": APP_VERSION, "project": repo.project_dict(row)}
+
+
+def repository_create_decision_endpoint(req: DecisionCreate, request: Request):
+    auth = _repository_scope_error(request, "repository:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            repo = PersistenceRepository(session)
+            row = repo.create_decision(decision_id=req.decision_id, project_id=req.project_id, decision_question=req.decision_question, lifecycle_state=req.lifecycle_state, metadata=req.metadata)
+            return {"ok": True, "version": APP_VERSION, "decision": repo.decision_dict(row)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=409, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def repository_list_decisions_endpoint(request: Request, project_id: str | None = None):
+    auth = _repository_scope_error(request, "repository:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    with session_scope() as session:
+        repo = PersistenceRepository(session)
+        rows = repo.list_decisions(project_id=project_id)
+        return {"ok": True, "version": APP_VERSION, "count": len(rows), "decisions": [repo.decision_dict(r) for r in rows]}
+
+
+def repository_get_decision_endpoint(decision_id: str, request: Request):
+    auth = _repository_scope_error(request, "repository:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    with session_scope() as session:
+        repo = PersistenceRepository(session)
+        row = repo.get_decision(decision_id)
+        if not row:
+            return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": "decision_not_found", "decision_id": decision_id})
+        return {"ok": True, "version": APP_VERSION, "decision": repo.decision_dict(row)}
+
+
+def repository_patch_decision_endpoint(decision_id: str, req: DecisionPatch, request: Request):
+    auth = _repository_scope_error(request, "repository:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    patch = req.model_dump(exclude_unset=True)
+    try:
+        with session_scope() as session:
+            repo = PersistenceRepository(session)
+            row = repo.update_decision(decision_id, patch)
+            if not row:
+                return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": "decision_not_found", "decision_id": decision_id})
+            return {"ok": True, "version": APP_VERSION, "decision": repo.decision_dict(row)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def repository_put_object_endpoint(decision_id: str, req: DecisionObjectUpsert, request: Request):
+    auth = _repository_scope_error(request, "repository:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            repo = PersistenceRepository(session)
+            row = repo.upsert_unified_decision_object(decision_id, payload=req.payload, schema_id=req.schema_id, object_id=req.object_id, provenance_ref=req.provenance_ref)
+            return {"ok": True, "version": APP_VERSION, "decision_object": repo.object_dict(row)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def repository_get_object_endpoint(decision_id: str, request: Request):
+    auth = _repository_scope_error(request, "repository:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    with session_scope() as session:
+        repo = PersistenceRepository(session)
+        row = repo.get_unified_decision_object(decision_id)
+        if not row:
+            return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": "decision_object_not_found", "decision_id": decision_id})
+        return {"ok": True, "version": APP_VERSION, "decision_object": repo.object_dict(row)}
+
+
+def repository_bind_module_endpoint(decision_id: str, module_id: str, req: ModuleBindingUpsert, request: Request):
+    auth = _repository_scope_error(request, "repository:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            repo = PersistenceRepository(session)
+            row = repo.bind_module(decision_id, module_id, enabled=req.enabled, configuration=req.configuration)
+            return {"ok": True, "version": APP_VERSION, "binding": {"id": row.id, "decision_id": row.decision_id, "module_id": row.module_id, "enabled": row.enabled, "configuration": row.configuration}}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def repository_create_snapshot_endpoint(decision_id: str, req: SnapshotCreate, request: Request):
+    auth = _repository_scope_error(request, "repository:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            repo = PersistenceRepository(session)
+            row = repo.create_snapshot(decision_id, payload=req.payload, snapshot_type=req.snapshot_type, snapshot_id=req.snapshot_id, provenance_ref=req.provenance_ref)
+            return {"ok": True, "version": APP_VERSION, "snapshot": repo.snapshot_dict(row)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def repository_get_snapshot_endpoint(decision_id: str, request: Request):
+    auth = _repository_scope_error(request, "repository:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    with session_scope() as session:
+        repo = PersistenceRepository(session)
+        row = repo.current_snapshot(decision_id)
+        if not row:
+            return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": "snapshot_not_found", "decision_id": decision_id})
+        return {"ok": True, "version": APP_VERSION, "snapshot": repo.snapshot_dict(row)}
+
+
+def repository_import_decision_object_endpoint(req: DecisionObjectImport, request: Request):
+    auth = _repository_scope_error(request, "repository:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    if not req.decision_object:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": "decision_object_required"})
+    with session_scope() as session:
+        repo = PersistenceRepository(session)
+        decision, obj, created = repo.import_decision_object(
+            req.decision_object,
+            project_id=req.project_id,
+            project_title=req.project_title,
+            owner_ref=req.owner_ref,
+            provenance_ref=req.provenance_ref,
+        )
+        return {
+            "ok": True,
+            "version": APP_VERSION,
+            "created": created,
+            "idempotent": True,
+            "decision": repo.decision_dict(decision),
+            "decision_object": repo.object_dict(obj),
+            "source_preserved": True,
+        }
+
+
 def health():
     persistence = database_status()
-    persistence_ready = (not persistence["required"]) or (persistence["connected"] and persistence["schema_current"])
+    persistence_ready = (not persistence["required"]) or bool(persistence.get("authority_ready"))
     return {
         "ok": bool(persistence_ready),
         "ready": bool(persistence_ready),
@@ -4976,6 +5231,7 @@ def health():
         "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
         "registered_decision_modules": module_registry()["module_count"],
         "persistence_schema": PERSISTENCE_SCHEMA,
+        "repository_schema": REPOSITORY_SCHEMA,
         "persistence_authority": PERSISTENCE_AUTHORITY,
         "persistence": persistence,
         "release": release_manifest(),

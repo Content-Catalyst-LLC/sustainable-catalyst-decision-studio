@@ -21,23 +21,23 @@ ROOT = Path(__file__).resolve().parents[2]
 client = TestClient(app)
 
 
-def test_v331_health_exposes_non_authoritative_persistence_foundation():
+def test_v331_migration_revision_remains_preserved_under_v340_authority():
     body = client.get('/health').json()
-    assert body['version'] == '3.3.1'
+    assert body['version'] == '3.4.0'
     assert body['persistence_schema'] == 'scds-postgresql-persistence/1.0'
-    assert body['persistence_authority'] == PERSISTENCE_AUTHORITY
-    assert body['release']['backend_architecture']['database_migration'] is True
-    assert body['release']['backend_architecture']['postgresql_live_authority'] is False
-    assert body['release']['backend_architecture']['wordpress_authority_change'] is False
-    assert body['release']['persistence']['v3_4_authority_cutover_required'] is True
+    assert body['persistence_authority'] == 'python-postgresql'
+    assert body['release']['backend_architecture']['database_migration'] is False
+    assert body['release']['backend_architecture']['postgresql_live_authority'] is True
+    assert body['release']['backend_architecture']['wordpress_authority_change'] is True
+    assert body['release']['persistence']['v3_4_authority_cutover_complete'] is True
 
 
-def test_persistence_contract_keeps_v33_non_authoritative():
+def test_persistence_contract_preserves_v331_schema_under_v340_authority():
     body = client.get('/persistence/contract').json()['persistence_contract']
-    assert body['authority'] == 'non-authoritative-foundation'
-    assert body['principles']['postgresql_is_live_authority'] is False
-    assert body['principles']['writes_enabled_by_default'] is False
-    assert body['principles']['v3_4_authority_cutover_required'] is True
+    assert body['authority'] == 'python-postgresql'
+    assert body['principles']['postgresql_is_live_authority'] is True
+    assert body['principles']['writes_enabled_in_production'] is True
+    assert body['principles']['v3_4_authority_cutover_complete'] is True
     assert body['principles']['final_decision_authority'] == 'human-governed'
     assert len(body['tables']) == 20
 
@@ -77,11 +77,12 @@ def test_initial_alembic_migration_creates_schema_and_revision(tmp_path):
     command.downgrade(cfg, 'base')
 
 
-def test_v331_route_inventory_preserves_v320_and_adds_persistence_routes():
-    current = json.loads((ROOT/'data/backend_route_inventory_v3.3.1.json').read_text())
-    previous = json.loads((ROOT/'data/backend_route_inventory_v3.2.0.json').read_text())
+def test_v340_route_inventory_preserves_v331_persistence_routes():
+    current = json.loads((ROOT/'data/backend_route_inventory_v3.4.0.json').read_text())
+    previous = json.loads((ROOT/'data/backend_route_inventory_v3.3.1.json').read_text())
     current_routes={(r['path'],r['method']) for routes in current['routers'].values() for r in routes}
     previous_routes={(r['path'],r['method']) for routes in previous['routers'].values() for r in routes}
     assert previous_routes <= current_routes
-    assert current['route_count'] == 185
+    assert current['route_count'] == 198
     assert len(current['routers']['persistence']) == 3
+    assert len(current['routers']['repository']) == 13

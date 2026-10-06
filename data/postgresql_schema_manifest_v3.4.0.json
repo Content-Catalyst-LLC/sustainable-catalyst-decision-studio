@@ -1,0 +1,40 @@
+{
+  "schema": "scds-postgresql-persistence/1.0",
+  "release": "3.4.0",
+  "revision": "0001_v330_pg_foundation",
+  "table_count": 20,
+  "tables": [
+    "alternatives",
+    "artifacts",
+    "assumptions",
+    "challenges",
+    "claims",
+    "criteria",
+    "criterion_values",
+    "decision_events",
+    "decision_module_bindings",
+    "decision_modules",
+    "decision_objects",
+    "decision_projects",
+    "decisions",
+    "evidence_links",
+    "recommendations",
+    "reviews",
+    "scenario_variables",
+    "scenarios",
+    "snapshots",
+    "uncertainty_models"
+  ],
+  "module_registry_seed": [
+    "canvas",
+    "finance",
+    "narrative-risk",
+    "global-impact"
+  ],
+  "migration_tool": "alembic",
+  "orm": "sqlalchemy-2",
+  "driver": "psycopg-3",
+  "authority": "python-postgresql",
+  "repository_schema": "scds-python-decision-repository/1.0",
+  "live_write_authority": true
+}

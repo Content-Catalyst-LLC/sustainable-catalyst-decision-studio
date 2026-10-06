@@ -1,0 +1,17 @@
+{
+  "schema": "scds-persistence-authority-contract/1.0",
+  "persistence_schema": "scds-postgresql-persistence/1.0",
+  "repository_schema": "scds-python-decision-repository/1.0",
+  "release": "3.4.0",
+  "authority": "python-postgresql",
+  "database_schema_migration": false,
+  "postgresql_live_authority": true,
+  "python_repository_live_authority": true,
+  "wordpress_decision_object_authority_changed": true,
+  "wordpress_legacy_packet_storage_preserved": true,
+  "writes_enabled_in_production": true,
+  "expected_schema_revision": "0001_v330_pg_foundation",
+  "v3_4_authority_cutover_complete": true,
+  "legacy_projection_reversible": true,
+  "final_decision_authority": "human-governed"
+}

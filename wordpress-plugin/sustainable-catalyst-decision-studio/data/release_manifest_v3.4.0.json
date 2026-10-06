@@ -1,0 +1,74 @@
+{
+  "release": "3.4.0",
+  "release_name": "Python Decision Repository & Object Persistence",
+  "release_date": "2026-10-06",
+  "build_fingerprint": "scds-v3.4.0-python-decision-repository-object-persistence",
+  "source_commit": "release-v3.4.0",
+  "backend": {
+    "application_composition": "app.main",
+    "service": "app.services.decision_service",
+    "router_package": "app.api.routes",
+    "route_count": 198,
+    "route_registry_count": 14,
+    "included_router_count": 15,
+    "legacy_route_count": 176,
+    "specialized_energy_runtime_routes": 2,
+    "previous_route_count": 185
+  },
+  "decision_kernel": {
+    "schema": "scds-decision-kernel/1.0",
+    "module_contract_schema": "scds-decision-module-contract/1.0",
+    "module_registry_schema": "scds-decision-module-registry/1.0",
+    "module_ids": [
+      "canvas",
+      "finance",
+      "narrative-risk",
+      "global-impact"
+    ],
+    "module_count": 4,
+    "storage_authority": "python-postgresql",
+    "final_decision_authority": "human-governed"
+  },
+  "repository": {
+    "schema": "scds-python-decision-repository/1.0",
+    "authority": "python-postgresql",
+    "live_write_authority": true,
+    "resources": [
+      "decision_projects",
+      "decisions",
+      "decision_objects",
+      "decision_module_bindings",
+      "snapshots",
+      "decision_events"
+    ],
+    "legacy_import": "idempotent",
+    "legacy_projection_reversible": true,
+    "legacy_wordpress_packet_storage": "compatibility-preserved",
+    "security": {
+      "read_scope": "repository:read",
+      "write_scope": "repository:write",
+      "dedicated_key_environment": "SCDS_REPOSITORY_API_KEY"
+    }
+  },
+  "persistence": {
+    "schema": "scds-postgresql-persistence/1.0",
+    "contract_schema": "scds-persistence-authority-contract/1.0",
+    "authority": "python-postgresql",
+    "expected_schema_revision": "0001_v330_pg_foundation",
+    "table_count": 20,
+    "migration_tool": "alembic",
+    "orm": "sqlalchemy-2",
+    "driver": "psycopg-3",
+    "postgresql_live_authority": true,
+    "writes_enabled_in_production": true
+  },
+  "migration": {
+    "database_schema": false,
+    "authority_cutover": true,
+    "wordpress_decision_object_authority": true,
+    "wordpress_legacy_packet_storage_preserved": true,
+    "python_repository_authority": true,
+    "schema_breaking_changes": false
+  },
+  "next_release": "3.5.0 \u2014 Canvas Python Domain Migration"
+}

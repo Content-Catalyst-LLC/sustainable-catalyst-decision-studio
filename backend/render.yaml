@@ -10,9 +10,9 @@ services:
       - key: PYTHON_VERSION
         value: 3.12.12
       - key: SCDS_BUILD_FINGERPRINT
-        value: scds-v3.3.1-postgresql-migration-revision-repair
+        value: scds-v3.4.0-python-decision-repository-object-persistence
       - key: SCDS_SOURCE_COMMIT
-        value: release-v3.3.1
+        value: release-v3.4.0
       - key: SCDS_MAX_REQUEST_BYTES
         value: 1048576
       - key: SCDS_PUBLIC_RATE_LIMIT
@@ -20,4 +20,4 @@ services:
       - key: SCDS_PERSISTENCE_REQUIRED
         value: "true"
       - key: SCDS_PERSISTENCE_WRITE_ENABLED
-        value: "false"
+        value: "true"

@@ -1,0 +1,32 @@
+{
+  "schema": "scds-python-decision-repository/1.0",
+  "release": "3.4.0",
+  "project": {
+    "id": "proj-example",
+    "title": "Grid modernization pathway"
+  },
+  "decision": {
+    "id": "decision-example",
+    "decision_question": "Which pathway best balances reliability, cost, emissions, and implementation risk?",
+    "lifecycle_state": "framing",
+    "final_decision_authority": "human-governed"
+  },
+  "decision_object": {
+    "schema": "scds-decision-object/1.0",
+    "decision_id": "decision-example",
+    "status": "draft",
+    "question": "Which pathway best balances reliability, cost, emissions, and implementation risk?",
+    "alternatives": [],
+    "criteria": []
+  },
+  "module_bindings": [
+    {
+      "module_id": "finance",
+      "enabled": true,
+      "configuration": {
+        "compute_authority": "workbench"
+      }
+    }
+  ],
+  "authority": "python-postgresql"
+}

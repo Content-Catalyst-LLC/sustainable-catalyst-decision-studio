@@ -1,0 +1,67 @@
+{
+  "schema": "scds-python-decision-repository/1.0",
+  "release": "3.4.0",
+  "authority": "python-postgresql",
+  "purpose": "Authoritative durable persistence for Decision Kernel project, decision, unified decision-object, module-binding, snapshot, and audit-event state.",
+  "resources": {
+    "projects": {
+      "table": "decision_projects",
+      "write_authority": true
+    },
+    "decisions": {
+      "table": "decisions",
+      "write_authority": true,
+      "final_decision_authority": "human-governed"
+    },
+    "decision_objects": {
+      "table": "decision_objects",
+      "object_type": "unified-decision-object",
+      "write_authority": true
+    },
+    "module_bindings": {
+      "table": "decision_module_bindings",
+      "write_authority": true
+    },
+    "snapshots": {
+      "table": "snapshots",
+      "write_authority": true
+    },
+    "audit_events": {
+      "table": "decision_events",
+      "append_on_repository_mutation": true
+    }
+  },
+  "endpoints": [
+    "GET /repository/authority",
+    "POST /repository/projects",
+    "GET /repository/projects/{project_id}",
+    "POST /repository/decisions",
+    "GET /repository/decisions",
+    "GET /repository/decisions/{decision_id}",
+    "PATCH /repository/decisions/{decision_id}",
+    "PUT /repository/decisions/{decision_id}/object",
+    "GET /repository/decisions/{decision_id}/object",
+    "PUT /repository/decisions/{decision_id}/modules/{module_id}",
+    "POST /repository/decisions/{decision_id}/snapshots",
+    "GET /repository/decisions/{decision_id}/snapshot",
+    "POST /repository/import/decision-object"
+  ],
+  "guarantees": {
+    "idempotent_legacy_object_import": true,
+    "legacy_source_representation_preserved": true,
+    "no_automatic_recommendation": true,
+    "no_automatic_approval": true,
+    "final_decision_authority": "human-governed",
+    "workbench_remains_finance_compute_authority": true,
+    "schema_breaking_changes": false
+  },
+  "security": {
+    "authority_endpoint_public": true,
+    "repository_data_requires_api_key": true,
+    "read_scope": "repository:read",
+    "write_scope": "repository:write",
+    "dedicated_key_environment": "SCDS_REPOSITORY_API_KEY",
+    "institutional_scoped_keys_supported": true,
+    "super_key_supported": true
+  }
+}

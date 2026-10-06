@@ -16,15 +16,15 @@ client = TestClient(app)
 
 def test_v320_release_identity_and_migration_boundary():
     health = client.get('/health').json()
-    assert health['version'] == '3.3.1'
+    assert health['version'] == '3.4.0'
     assert health['decision_kernel_schema'] == DECISION_KERNEL_SCHEMA
     assert health['registered_decision_modules'] == 4
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'PostgreSQL Migration Revision Repair'
-    assert release['build_fingerprint'] == 'scds-v3.3.1-postgresql-migration-revision-repair'
+    assert release['release_name'] == 'Python Decision Repository & Object Persistence'
+    assert release['build_fingerprint'] == 'scds-v3.4.0-python-decision-repository-object-persistence'
     assert release['decision_kernel']['module_count'] == 4
-    assert release['decision_kernel']['database_migration'] is True
-    assert release['decision_kernel']['wordpress_authority_change'] is False
+    assert release['decision_kernel']['database_migration'] is False
+    assert release['decision_kernel']['wordpress_decision_object_authority_change'] is True
     assert release['decision_kernel']['final_decision_authority'] == 'human-governed'
 
 

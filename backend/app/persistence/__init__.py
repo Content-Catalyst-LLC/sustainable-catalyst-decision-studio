@@ -1,9 +1,15 @@
-"""Decision Studio PostgreSQL persistence foundation (v3.3.1).
-
-The v3.3 layer is deliberately non-authoritative. It establishes schema,
-connectivity, migration, and repository contracts. Live decision ownership
-moves to Python/PostgreSQL in v3.4.0.
-"""
+"""Decision Studio authoritative Python/PostgreSQL persistence layer (v3.4.0)."""
+from .contracts import (
+    REPOSITORY_AUTHORITY,
+    REPOSITORY_SCHEMA,
+    DecisionCreate,
+    DecisionObjectImport,
+    DecisionObjectUpsert,
+    DecisionPatch,
+    ModuleBindingUpsert,
+    ProjectCreate,
+    SnapshotCreate,
+)
 from .database import (
     EXPECTED_SCHEMA_REVISION,
     PERSISTENCE_AUTHORITY,
@@ -13,7 +19,10 @@ from .database import (
     database_contract,
     database_schema_manifest,
     database_status,
+    persistence_write_enabled,
+    session_scope,
 )
+from .repository import PersistenceRepository
 
 __all__ = [
     "EXPECTED_SCHEMA_REVISION",
@@ -21,7 +30,19 @@ __all__ = [
     "PERSISTENCE_CONTRACT_SCHEMA",
     "PERSISTENCE_SCHEMA",
     "PERSISTENCE_TABLES",
+    "REPOSITORY_AUTHORITY",
+    "REPOSITORY_SCHEMA",
+    "ProjectCreate",
+    "DecisionCreate",
+    "DecisionPatch",
+    "DecisionObjectUpsert",
+    "ModuleBindingUpsert",
+    "SnapshotCreate",
+    "DecisionObjectImport",
+    "PersistenceRepository",
     "database_contract",
     "database_schema_manifest",
     "database_status",
+    "persistence_write_enabled",
+    "session_scope",
 ]

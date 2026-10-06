@@ -1,3 +1,14 @@
+# v3.4.0 — Python Decision Repository & Object Persistence (2026-10-06)
+
+- Promoted Python/PostgreSQL from a non-authoritative foundation to the live Decision Kernel persistence authority.
+- Added authoritative repository APIs for projects, decisions, unified Decision Objects, module bindings, snapshots, and repository authority inspection.
+- Added append-on-mutation Decision Event records for repository audit lineage.
+- Added idempotent legacy Decision Object import that preserves the source representation and keeps packet projection reversible.
+- Reused the certified v3.3.1 PostgreSQL schema and Alembic revision `0001_v330_pg_foundation`; v3.4.0 adds no schema migration.
+- Production readiness now requires PostgreSQL connectivity, the current schema revision, and write authority enabled.
+- WordPress Decision Object storage is no longer canonical, but legacy WordPress packet/collaboration storage remains available for compatibility until later migration phases.
+- Final decision, recommendation disposition, and approval authority remain human-governed.
+
 # v3.3.1 — PostgreSQL Migration Revision Repair (2026-10-06)
 
 - Shortened the Alembic revision identifier to `0001_v330_pg_foundation`, fitting Alembic's default `VARCHAR(32)` version column.

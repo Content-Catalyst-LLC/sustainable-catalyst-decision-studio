@@ -13,6 +13,7 @@ from app.api.routes.context_handoffs import router as context_handoffs_router
 from app.api.routes.recommendations import router as recommendations_router
 from app.api.routes.decision_kernel import router as decision_kernel_router
 from app.api.routes.persistence import router as persistence_router
+from app.api.routes.repository import router as repository_router
 
 api_router = APIRouter()
 api_router.include_router(energy_runtime_consumer_router)
@@ -30,3 +31,4 @@ api_router.include_router(context_handoffs_router)
 api_router.include_router(recommendations_router)
 api_router.include_router(decision_kernel_router)
 api_router.include_router(persistence_router)
+api_router.include_router(repository_router)

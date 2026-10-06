@@ -1,0 +1,41 @@
+DECISION STUDIO v3.4.0 — PYTHON DECISION REPOSITORY & OBJECT PERSISTENCE
+
+1. Put sustainable-catalyst-decision-studio-v3.4.0-repository.zip in ~/Downloads.
+
+2. Apply/test/push/tag/package on macOS:
+
+cd ~/Downloads
+rm -rf scds-v3.4.0-python-repository
+unzip -q sustainable-catalyst-decision-studio-v3.4.0-repository.zip -d scds-v3.4.0-python-repository
+cd scds-v3.4.0-python-repository/sustainable-catalyst-decision-studio
+chmod +x APPLY_AND_PUSH_DECISION_STUDIO_V340.sh
+./APPLY_AND_PUSH_DECISION_STUDIO_V340.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+3. Confirm Git state:
+
+cd ~/Downloads/sustainable-catalyst-decision-studio
+git status --short
+git log -1 --oneline
+git tag --points-at HEAD
+
+4. Deploy backend + authority cutover from macOS:
+
+cd ~/Downloads
+chmod +x deploy_decision_studio_v3_4_0_from_macos.sh upgrade_decision_studio_backend_v3_4_0_contabo.sh
+./deploy_decision_studio_v3_4_0_from_macos.sh
+
+5. Public verification:
+
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/persistence/status | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/repository/authority | python3 -m json.tool
+
+Expected v3.4 authority state:
+- version = 3.4.0
+- repository_schema = scds-python-decision-repository/1.0
+- persistence.authority = python-postgresql
+- persistence.write_enabled = true
+- persistence.authority_ready = true
+- schema_revision = 0001_v330_pg_foundation
+- table_count = 20
+- final decision authority = human-governed
