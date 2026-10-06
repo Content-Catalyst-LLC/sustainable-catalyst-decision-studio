@@ -1,0 +1,88 @@
+Decision Studio v3.1.0 — Backend Service Decomposition
+
+1. APPLY THE RELEASE REPOSITORY CONTENT TO YOUR LOCAL GIT CHECKOUT
+===============================================================
+After extracting the provided v3.1.0 repository bundle, copy/merge its contents into:
+
+  ~/Downloads/sustainable-catalyst-decision-studio
+
+Then:
+
+cd ~/Downloads/sustainable-catalyst-decision-studio
+
+git status --short
+
+2. LOCAL CERTIFICATION
+======================
+python3 -m compileall -q backend/app backend/tests
+
+cd backend
+PYTHONPATH=. python3 -m pytest -q
+cd ..
+
+python3 scripts/test_release.py
+php -l wordpress-plugin/sustainable-catalyst-decision-studio/sustainable-catalyst-decision-studio.php
+bash -n deploy/contabo/upgrade_decision_studio_backend_v3_1_0_contabo.sh
+bash -n deploy/contabo/deploy_decision_studio_v3_1_0_from_macos.sh
+
+3. BUILD DISTRIBUTABLES
+=======================
+rm -rf /tmp/scds-v310-dist
+mkdir -p /tmp/scds-v310-dist
+PYTHON_BIN=python3 bash scripts/build_release.sh /tmp/scds-v310-dist
+
+cp /tmp/scds-v310-dist/* ~/Downloads/
+cp deploy/contabo/upgrade_decision_studio_backend_v3_1_0_contabo.sh ~/Downloads/
+cp deploy/contabo/deploy_decision_studio_v3_1_0_from_macos.sh ~/Downloads/
+chmod +x ~/Downloads/upgrade_decision_studio_backend_v3_1_0_contabo.sh
+chmod +x ~/Downloads/deploy_decision_studio_v3_1_0_from_macos.sh
+
+4. COMMIT AND PUSH
+==================
+git add -A
+git commit -m "Decision Studio v3.1.0 — Backend Service Decomposition"
+git tag -a v3.1.0 -m "Decision Studio v3.1.0 — Backend Service Decomposition"
+git push origin main
+git push origin v3.1.0
+
+5. WORDPRESS PLUGIN
+===================
+The plugin metadata is v3.1.0, but there is NO database migration in this release.
+DB_VERSION intentionally remains 3.0.0.
+
+Install/replace with:
+
+  ~/Downloads/sustainable-catalyst-decision-studio-plugin-v3.1.0.zip
+
+6. DEPLOY THE VPS BACKEND
+=========================
+cd ~/Downloads
+./deploy_decision_studio_v3_1_0_from_macos.sh
+
+The existing deploy script targets the established Decision Studio runtime:
+  /opt/sustainable-catalyst/decision-studio
+container:
+  sc-decision-studio
+local port:
+  8089
+public API:
+  https://decision-studio-api.sustainablecatalyst.com
+
+7. VERIFY PRODUCTION
+====================
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/release | python3 -m json.tool
+
+EXPECTED
+========
+version: 3.1.0
+build_fingerprint: scds-v3.1.0-backend-service-decomposition
+release_name: Backend Service Decomposition
+backend_architecture.decomposition_release: true
+backend_architecture.route_count: 176
+backend_architecture.database_migration: false
+backend_architecture.wordpress_authority_change: false
+
+NEXT BUILD
+==========
+v3.2.0 — Decision Kernel & Module Contract Foundation

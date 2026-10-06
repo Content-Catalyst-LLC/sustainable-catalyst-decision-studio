@@ -1,0 +1,23 @@
+{
+  "release": "3.1.0",
+  "release_name": "Backend Service Decomposition",
+  "release_date": "2026-10-05",
+  "build_fingerprint": "scds-v3.1.0-backend-service-decomposition",
+  "source_commit": "release-v3.1.0",
+  "backend": {
+    "application_composition": "app.main",
+    "service": "app.services.decision_service",
+    "router_package": "app.api.routes",
+    "route_count": 176,
+    "route_registry_count": 11,
+    "included_router_count": 12,
+    "legacy_route_count": 174,
+    "specialized_energy_runtime_routes": 2
+  },
+  "migration": {
+    "database": false,
+    "wordpress_authority": false,
+    "schema_breaking_changes": false
+  },
+  "next_release": "3.2.0 \u2014 Decision Kernel & Module Contract Foundation"
+}

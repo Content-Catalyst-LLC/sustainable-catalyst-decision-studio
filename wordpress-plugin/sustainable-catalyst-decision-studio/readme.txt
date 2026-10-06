@@ -4,7 +4,7 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 3.0.0
+Stable tag: 3.1.0
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
@@ -33,6 +33,13 @@ Process confidence summarizes documentation and analysis coverage. It is not a p
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 3.1.0 =
+* Backend Service Decomposition foundation.
+* FastAPI application composition separated from 11 bounded route registries.
+* Existing backend behavior retained behind a service boundary.
+* No WordPress database migration; DB version remains 3.0.0.
+* Adds certified v3.1.0 backend route inventory and architecture tests.
 
 = 3.0.0 =
 * Connected Decision Intelligence: eight-stage lifecycle readiness, bounded cross-product route planning, lineage visibility, and human-controlled progression.

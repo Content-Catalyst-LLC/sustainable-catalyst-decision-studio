@@ -1,3 +1,12 @@
+# v3.1.0 — Backend Service Decomposition (2026-10-05)
+
+- Decomposed FastAPI application composition from endpoint registration.
+- Added 11 bounded API router modules with a certified route inventory.
+- Moved preserved application behavior behind `app.services.decision_service`.
+- Kept WordPress persistence and database schema unchanged.
+- Added v3.1.0 architecture/regression certification tests.
+- Establishes the backend boundary required for v3.2.0 Decision Kernel & Module Contract Foundation.
+
 # Decision Studio Changelog
 
 ## 3.0.0 — Connected Decision Intelligence

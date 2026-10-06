@@ -1,3 +1,12 @@
+
+## Decision Studio modernization line (v3.1+)
+
+- **v3.1.0 — Backend Service Decomposition** — current foundation release.
+- **v3.2.0 — Decision Kernel & Module Contract Foundation** — next.
+- **v3.3.0 — PostgreSQL Persistence Foundation**.
+- **v3.4.0 — Python Decision Repository & Object Persistence**.
+- **v3.5.0–v3.8.0** — Canvas, Finance, Narrative Risk, and Global Impact Catalyst Python domain migrations.
+
 ## v2.8.0 — Decision Graph & Dependency Mapping
 
 **Status: built for release.** Adds inspectable decision dependencies, orphan/cycle/unresolved-reference diagnostics, and review-only change-impact tracing while preserving non-causal and human-control boundaries.

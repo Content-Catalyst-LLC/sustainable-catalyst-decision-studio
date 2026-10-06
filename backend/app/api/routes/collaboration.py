@@ -1,0 +1,27 @@
+from fastapi import APIRouter
+from app.services import decision_service as svc
+
+router = APIRouter(tags=["collaboration"])
+
+router.add_api_route('/collaboration/roles', svc.collaboration_roles_endpoint, methods=['GET'], name='collaboration_roles_endpoint')
+router.add_api_route('/collaboration/template', svc.collaboration_template_endpoint, methods=['GET'], name='collaboration_template_endpoint')
+router.add_api_route('/collaboration/room', svc.collaboration_room_endpoint, methods=['POST'], name='collaboration_room_endpoint')
+router.add_api_route('/collaboration/action', svc.collaboration_action_endpoint, methods=['POST'], name='collaboration_action_endpoint')
+router.add_api_route('/collaboration/comment', svc.collaboration_comment_endpoint, methods=['POST'], name='collaboration_comment_endpoint')
+router.add_api_route('/collaboration/change-request', svc.collaboration_change_request_endpoint, methods=['POST'], name='collaboration_change_request_endpoint')
+router.add_api_route('/collaboration/snapshot', svc.collaboration_snapshot_endpoint, methods=['POST'], name='collaboration_snapshot_endpoint')
+router.add_api_route('/collaboration/share', svc.collaboration_share_endpoint, methods=['POST'], name='collaboration_share_endpoint')
+router.add_api_route('/collaboration/contact-handoff', svc.collaboration_contact_handoff_endpoint, methods=['POST'], name='collaboration_contact_handoff_endpoint')
+router.add_api_route('/decision-packet/collaboration', svc.decision_packet_collaboration_endpoint, methods=['POST'], name='decision_packet_collaboration_endpoint')
+router.add_api_route('/publication-studio/template', svc.publication_studio_template_endpoint, methods=['GET'], name='publication_studio_template_endpoint')
+router.add_api_route('/publication-studio/generate', svc.publication_studio_generate_endpoint, methods=['POST'], name='publication_studio_generate_endpoint')
+router.add_api_route('/publication-studio/redact', svc.publication_studio_redact_endpoint, methods=['POST'], name='publication_studio_redact_endpoint')
+router.add_api_route('/publication-studio/handoff', svc.publication_studio_handoff_endpoint, methods=['POST'], name='publication_studio_handoff_endpoint')
+router.add_api_route('/decision-packet/publication', svc.decision_packet_publication_endpoint, methods=['POST'], name='decision_packet_publication_endpoint')
+router.add_api_route('/outcomes/template', svc.outcomes_template_endpoint, methods=['GET'], name='outcomes_template_endpoint')
+router.add_api_route('/outcomes/evaluate', svc.outcomes_evaluate_endpoint, methods=['POST'], name='outcomes_evaluate_endpoint')
+router.add_api_route('/outcomes/record-observation', svc.outcomes_record_observation_endpoint, methods=['POST'], name='outcomes_record_observation_endpoint')
+router.add_api_route('/outcomes/reassess', svc.outcomes_reassess_endpoint, methods=['POST'], name='outcomes_reassess_endpoint')
+router.add_api_route('/outcomes/amend', svc.outcomes_amend_endpoint, methods=['POST'], name='outcomes_amend_endpoint')
+router.add_api_route('/outcomes/retire', svc.outcomes_retire_endpoint, methods=['POST'], name='outcomes_retire_endpoint')
+router.add_api_route('/decision-packet/outcomes', svc.decision_packet_outcomes_endpoint, methods=['POST'], name='decision_packet_outcomes_endpoint')
