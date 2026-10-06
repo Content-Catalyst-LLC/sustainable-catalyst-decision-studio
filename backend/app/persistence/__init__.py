@@ -1,4 +1,4 @@
-"""Decision Studio PostgreSQL persistence foundation (v3.3.0).
+"""Decision Studio PostgreSQL persistence foundation (v3.3.1).
 
 The v3.3 layer is deliberately non-authoritative. It establishes schema,
 connectivity, migration, and repository contracts. Live decision ownership

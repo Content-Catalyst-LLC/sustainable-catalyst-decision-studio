@@ -1,6 +1,6 @@
-"""Decision Studio v3.3.0 PostgreSQL persistence foundation.
+"""Decision Studio v3.3.1 PostgreSQL migration revision repair.
 
-Revision ID: 0001_v330_postgresql_persistence_foundation
+Revision ID: 0001_v330_pg_foundation
 Revises: None
 """
 from __future__ import annotations
@@ -8,7 +8,7 @@ from __future__ import annotations
 from alembic import op
 import sqlalchemy as sa
 
-revision = "0001_v330_postgresql_persistence_foundation"
+revision = "0001_v330_pg_foundation"
 down_revision = None
 branch_labels = None
 depends_on = None

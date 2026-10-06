@@ -1,0 +1,50 @@
+{
+  "release": "3.3.1",
+  "release_name": "PostgreSQL Migration Revision Repair",
+  "release_date": "2026-10-06",
+  "build_fingerprint": "scds-v3.3.1-postgresql-migration-revision-repair",
+  "source_commit": "release-v3.3.1",
+  "backend": {
+    "application_composition": "app.main",
+    "service": "app.services.decision_service",
+    "router_package": "app.api.routes",
+    "route_count": 185,
+    "route_registry_count": 13,
+    "included_router_count": 14,
+    "legacy_route_count": 176,
+    "specialized_energy_runtime_routes": 2,
+    "previous_route_count": 182
+  },
+  "decision_kernel": {
+    "schema": "scds-decision-kernel/1.0",
+    "module_contract_schema": "scds-decision-module-contract/1.0",
+    "module_registry_schema": "scds-decision-module-registry/1.0",
+    "module_ids": [
+      "canvas",
+      "finance",
+      "narrative-risk",
+      "global-impact"
+    ],
+    "module_count": 4,
+    "final_decision_authority": "human-governed"
+  },
+  "persistence": {
+    "schema": "scds-postgresql-persistence/1.0",
+    "contract_schema": "scds-persistence-authority-contract/1.0",
+    "authority": "non-authoritative-foundation",
+    "expected_schema_revision": "0001_v330_pg_foundation",
+    "table_count": 20,
+    "migration_tool": "alembic",
+    "orm": "sqlalchemy-2",
+    "driver": "psycopg-3",
+    "postgresql_live_authority": false,
+    "writes_enabled_by_default": false
+  },
+  "migration": {
+    "database": true,
+    "wordpress_authority": false,
+    "python_repository_authority": false,
+    "schema_breaking_changes": false
+  },
+  "next_release": "3.4.0 \u2014 Python Decision Repository & Object Persistence"
+}

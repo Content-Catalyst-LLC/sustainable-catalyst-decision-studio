@@ -1,3 +1,10 @@
+# v3.3.1 — PostgreSQL Migration Revision Repair (2026-10-06)
+
+- Shortened the Alembic revision identifier to `0001_v330_pg_foundation`, fitting Alembic's default `VARCHAR(32)` version column.
+- Added a regression test enforcing revision identifiers <= 32 characters.
+- Preserved the 20-table PostgreSQL schema, four seeded module contracts, and non-authoritative persistence boundary.
+- Production authority cutover remains deferred to v3.4.0.
+
 # v3.3.0 — PostgreSQL Persistence Foundation (2026-10-05)
 
 - Added PostgreSQL 16 persistence infrastructure, SQLAlchemy 2 models, Psycopg 3 connectivity, and Alembic schema migration revision `0001_v330_postgresql_persistence_foundation`.

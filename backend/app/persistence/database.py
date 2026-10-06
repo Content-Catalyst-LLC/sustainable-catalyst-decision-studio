@@ -14,7 +14,7 @@ from .models import Base
 
 PERSISTENCE_SCHEMA = "scds-postgresql-persistence/1.0"
 PERSISTENCE_CONTRACT_SCHEMA = "scds-persistence-authority-contract/1.0"
-EXPECTED_SCHEMA_REVISION = "0001_v330_postgresql_persistence_foundation"
+EXPECTED_SCHEMA_REVISION = "0001_v330_pg_foundation"
 PERSISTENCE_AUTHORITY = "non-authoritative-foundation"
 PERSISTENCE_TABLES = tuple(sorted(Base.metadata.tables.keys()))
 

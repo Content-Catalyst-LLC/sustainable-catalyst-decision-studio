@@ -1,0 +1,39 @@
+DECISION STUDIO v3.3.1 — POSTGRESQL MIGRATION REVISION REPAIR
+
+MAC — APPLY / TEST / PUSH / TAG
+
+cd ~/Downloads
+rm -rf scds-v3.3.1-postgresql-repair
+unzip -q sustainable-catalyst-decision-studio-v3.3.1-repository.zip -d scds-v3.3.1-postgresql-repair
+cd scds-v3.3.1-postgresql-repair/sustainable-catalyst-decision-studio
+chmod +x APPLY_AND_PUSH_DECISION_STUDIO_V331.sh
+./APPLY_AND_PUSH_DECISION_STUDIO_V331.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+VERIFY GIT
+
+cd ~/Downloads/sustainable-catalyst-decision-studio
+git status --short
+git log -1 --oneline
+git tag --points-at HEAD
+
+MAC — DEPLOY TO CONTABO
+
+cd ~/Downloads
+chmod +x deploy_decision_studio_v3_3_1_from_macos.sh upgrade_decision_studio_backend_v3_3_1_contabo.sh
+./deploy_decision_studio_v3_3_1_from_macos.sh
+
+PUBLIC VERIFY
+
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/persistence/status | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/persistence/schema | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/persistence/contract | python3 -m json.tool
+
+EXPECTED ALEMBIC REVISION
+0001_v330_pg_foundation
+
+EXPECTED AUTHORITY
+non-authoritative-foundation
+writes_enabled: false
+PostgreSQL live authority: false
+v3.4 authority cutover required: true

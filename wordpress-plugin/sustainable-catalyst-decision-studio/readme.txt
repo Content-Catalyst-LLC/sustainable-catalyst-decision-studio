@@ -4,7 +4,7 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 3.3.0
+Stable tag: 3.3.1
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
@@ -114,6 +114,9 @@ Process confidence summarizes documentation and analysis coverage. It is not a p
 * Added named-human tamper-evident lifecycle transitions.
 * Added Decision Packet schema 2.0 and WordPress database version 2.1.0.
 * Preserved all v1.x capabilities and compatibility surfaces.
+
+= 3.3.1 =
+* Repair Alembic revision identifier length for PostgreSQL production migration; persistence remains non-authoritative.
 
 = 3.3.0 =
 * Added PostgreSQL persistence foundation with Alembic schema migration and SQLAlchemy repository contracts.

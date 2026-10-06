@@ -239,9 +239,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.3.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.3.0-postgresql-persistence-foundation")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.3.0")
+APP_VERSION = "3.3.1"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.3.1-postgresql-migration-revision-repair")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.3.1")
 RELEASE_DATE = "2026-10-05"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -316,7 +316,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "PostgreSQL Persistence Foundation",
+        "release_name": "PostgreSQL Migration Revision Repair",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,

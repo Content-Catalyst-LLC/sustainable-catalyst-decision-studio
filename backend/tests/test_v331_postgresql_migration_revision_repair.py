@@ -21,9 +21,9 @@ ROOT = Path(__file__).resolve().parents[2]
 client = TestClient(app)
 
 
-def test_v330_health_exposes_non_authoritative_persistence_foundation():
+def test_v331_health_exposes_non_authoritative_persistence_foundation():
     body = client.get('/health').json()
-    assert body['version'] == '3.3.0'
+    assert body['version'] == '3.3.1'
     assert body['persistence_schema'] == 'scds-postgresql-persistence/1.0'
     assert body['persistence_authority'] == PERSISTENCE_AUTHORITY
     assert body['release']['backend_architecture']['database_migration'] is True
@@ -56,8 +56,13 @@ def test_persistence_schema_manifest_has_expected_domain_tables():
     assert schema['module_registry_seed'] == ['canvas','finance','narrative-risk','global-impact']
 
 
+def test_alembic_revision_identifier_fits_default_version_column():
+    # Alembic's default version_num column is VARCHAR(32). This guards the production failure fixed in v3.3.1.
+    assert len(EXPECTED_SCHEMA_REVISION) <= 32
+
+
 def test_initial_alembic_migration_creates_schema_and_revision(tmp_path):
-    db = tmp_path/'v330.sqlite3'
+    db = tmp_path/'v331.sqlite3'
     url = f'sqlite:///{db}'
     cfg = Config(str(ROOT/'backend/alembic.ini'))
     cfg.set_main_option('script_location', str(ROOT/'backend/migrations'))
@@ -72,8 +77,8 @@ def test_initial_alembic_migration_creates_schema_and_revision(tmp_path):
     command.downgrade(cfg, 'base')
 
 
-def test_v330_route_inventory_preserves_v320_and_adds_persistence_routes():
-    current = json.loads((ROOT/'data/backend_route_inventory_v3.3.0.json').read_text())
+def test_v331_route_inventory_preserves_v320_and_adds_persistence_routes():
+    current = json.loads((ROOT/'data/backend_route_inventory_v3.3.1.json').read_text())
     previous = json.loads((ROOT/'data/backend_route_inventory_v3.2.0.json').read_text())
     current_routes={(r['path'],r['method']) for routes in current['routers'].values() for r in routes}
     previous_routes={(r['path'],r['method']) for routes in previous['routers'].values() for r in routes}

@@ -1,0 +1,14 @@
+{
+  "schema": "scds-persistence-authority-contract/1.0",
+  "persistence_schema": "scds-postgresql-persistence/1.0",
+  "release": "3.3.1",
+  "authority": "non-authoritative-foundation",
+  "database_migration": true,
+  "postgresql_live_authority": false,
+  "python_repository_authority_changed": false,
+  "wordpress_authority_changed": false,
+  "writes_enabled_by_default": false,
+  "expected_schema_revision": "0001_v330_pg_foundation",
+  "v3_4_authority_cutover_required": true,
+  "final_decision_authority": "human-governed"
+}
