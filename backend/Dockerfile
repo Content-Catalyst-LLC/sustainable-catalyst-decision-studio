@@ -3,21 +3,25 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PORT=8089 \
-    SCDS_BUILD_FINGERPRINT=scds-v3.2.0-decision-kernel-module-contract-foundation \
-    SCDS_SOURCE_COMMIT=release-v3.2.0 \
+    SCDS_BUILD_FINGERPRINT=scds-v3.3.0-postgresql-persistence-foundation \
+    SCDS_SOURCE_COMMIT=release-v3.3.0 \
     SCDS_MAX_REQUEST_BYTES=1048576 \
     SCDS_PUBLIC_RATE_LIMIT=60 \
-    SCDS_RATE_WINDOW_SECONDS=60
+    SCDS_RATE_WINDOW_SECONDS=60 \
+    SCDS_PERSISTENCE_REQUIRED=false \
+    SCDS_PERSISTENCE_WRITE_ENABLED=false
 
 WORKDIR /app
 
 COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+COPY alembic.ini ./alembic.ini
+COPY migrations ./migrations
 COPY app ./app
 
 EXPOSE 8089
 
 HEALTHCHECK --interval=20s --timeout=5s --start-period=10s --retries=6 \
-  CMD python -c "import json,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8089/health', timeout=3)); raise SystemExit(0 if d.get('ok') and d.get('version') == '3.2.0' else 1)"
+  CMD python -c "import json,urllib.request; d=json.load(urllib.request.urlopen('http://127.0.0.1:8089/health', timeout=3)); raise SystemExit(0 if d.get('ok') and d.get('version') == '3.3.0' else 1)"
 
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]

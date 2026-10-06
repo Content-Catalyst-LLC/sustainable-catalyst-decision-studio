@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="3.2.0"
+VERSION="3.3.0"
 OUT="${1:-$ROOT/dist}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 PLUGIN_DIR="$ROOT/wordpress-plugin/sustainable-catalyst-decision-studio"
@@ -9,8 +9,8 @@ mkdir -p "$OUT"
 rm -f "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip" "$OUT/sustainable-catalyst-decision-studio-backend-v${VERSION}.zip"
 (
   cd "$ROOT/backend"
-  "$PYTHON_BIN" -m compileall -q app tests
-  "$PYTHON_BIN" -m pytest -q
+  "$PYTHON_BIN" -m compileall -q app tests migrations
+  PYTHONPATH=. "$PYTHON_BIN" -m pytest -q
 )
 "$PYTHON_BIN" "$ROOT/scripts/test_release.py"
 php -l "$PLUGIN_DIR/sustainable-catalyst-decision-studio.php"
@@ -19,16 +19,21 @@ find "$ROOT" -type d \( -name '__pycache__' -o -name '.pytest_cache' \) -prune -
 find "$ROOT" -type f -name '*.pyc' -delete
 (
   cd "$ROOT/wordpress-plugin"
-  zip -qr "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" sustainable-catalyst-decision-studio -x '*/__pycache__/*' '*.pyc' '*/.DS_Store'
+  zip -qr "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" sustainable-catalyst-decision-studio -x '*/__pycache__/*' '*.pyc' '*/.DS_Store' '*/.venv*/*'
 )
-REPO_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-repository-v320.XXXXXX")"
+REPO_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-repository-v330.XXXXXX")"
 mkdir -p "$REPO_STAGE/sustainable-catalyst-decision-studio"
-rsync -a --exclude='.git/' --exclude='__pycache__/' --exclude='.pytest_cache/' --exclude='*.pyc' --exclude='dist/' --exclude='.DS_Store' "$ROOT/" "$REPO_STAGE/sustainable-catalyst-decision-studio/"
+rsync -a --exclude='.git/' --exclude='__pycache__/' --exclude='.pytest_cache/' --exclude='*.pyc' --exclude='dist/' --exclude='.DS_Store' --exclude='.venv/' --exclude='.venv-*/' --exclude='*.venv/' --include='.env.persistence-v330.example' --exclude='.env' --exclude='.env.*' "$ROOT/" "$REPO_STAGE/sustainable-catalyst-decision-studio/"
 (cd "$REPO_STAGE" && zip -qr "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip" sustainable-catalyst-decision-studio)
 rm -rf "$REPO_STAGE"
-BACKEND_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-backend-v320.XXXXXX")"
+BACKEND_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-backend-v330.XXXXXX")"
 trap 'rm -rf "$BACKEND_STAGE"' EXIT
-mkdir -p "$BACKEND_STAGE/sustainable-catalyst-decision-studio-backend-v${VERSION}/backend"
-rsync -a --exclude='__pycache__/' --exclude='.pytest_cache/' --exclude='*.pyc' --exclude='.env' --exclude='.env.*' "$ROOT/backend/" "$BACKEND_STAGE/sustainable-catalyst-decision-studio-backend-v${VERSION}/backend/"
+BASE="$BACKEND_STAGE/sustainable-catalyst-decision-studio-backend-v${VERSION}"
+mkdir -p "$BASE/backend"
+rsync -a --exclude='__pycache__/' --exclude='.pytest_cache/' --exclude='*.pyc' --exclude='.env' --exclude='.env.*' --exclude='.venv/' --exclude='.venv-*/' "$ROOT/backend/" "$BASE/backend/"
+cp "$ROOT/compose.yml" "$BASE/compose.v3.3.0.yml"
+cp "$ROOT/.env.persistence-v330.example" "$BASE/.env.persistence-v330.example"
 (cd "$BACKEND_STAGE" && zip -qr "$OUT/sustainable-catalyst-decision-studio-backend-v${VERSION}.zip" "sustainable-catalyst-decision-studio-backend-v${VERSION}")
+rm -rf "$BACKEND_STAGE"
+trap - EXIT
 printf 'Built:\n%s\n%s\n%s\n' "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip" "$OUT/sustainable-catalyst-decision-studio-backend-v${VERSION}.zip"

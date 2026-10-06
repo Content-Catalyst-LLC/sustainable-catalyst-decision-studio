@@ -208,6 +208,17 @@ from app.decision_kernel import (
     validate_module_contract,
 )
 
+from app.persistence import (
+    EXPECTED_SCHEMA_REVISION,
+    PERSISTENCE_AUTHORITY,
+    PERSISTENCE_CONTRACT_SCHEMA,
+    PERSISTENCE_SCHEMA,
+    PERSISTENCE_TABLES,
+    database_contract,
+    database_schema_manifest,
+    database_status,
+)
+
 from app.recommendation_review import (
     RECOMMENDATION_CANDIDATE_SCHEMA,
     RECOMMENDATION_CHALLENGE_SCHEMA,
@@ -228,9 +239,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.2.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.2.0-decision-kernel-module-contract-foundation")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.2.0")
+APP_VERSION = "3.3.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.3.0-postgresql-persistence-foundation")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.3.0")
 RELEASE_DATE = "2026-10-05"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -305,7 +316,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Decision Kernel & Module Contract Foundation",
+        "release_name": "PostgreSQL Persistence Foundation",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -379,6 +390,8 @@ def release_manifest() -> Dict[str, Any]:
         "decision_kernel_schema": DECISION_KERNEL_SCHEMA,
         "decision_module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
         "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
+        "persistence_schema": PERSISTENCE_SCHEMA,
+        "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "backend_architecture": {
             "decomposition_release": True,
             "decision_kernel_foundation": True,
@@ -387,12 +400,18 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 12,
-            "included_router_count": 13,
-            "route_count": 182,
+            "router_registry_count": 13,
+            "included_router_count": 14,
+            "route_count": 185,
+            "previous_route_count": 182,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
-            "database_migration": False,
+            "database_migration": True,
+            "postgresql_persistence_foundation": True,
+            "postgresql_live_authority": False,
+            "persistence_authority": PERSISTENCE_AUTHORITY,
+            "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
+            "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": False,
             "public_api_contract_breaking_changes": False,
         },
@@ -403,9 +422,20 @@ def release_manifest() -> Dict[str, Any]:
             "kernel_objects": kernel_contracts()["kernel_objects"],
             "module_ids": [m["module_id"] for m in module_registry()["modules"]],
             "module_count": module_registry()["module_count"],
-            "database_migration": False,
+            "database_migration": True,
+            "postgresql_live_authority": False,
             "wordpress_authority_change": False,
             "final_decision_authority": "human-governed",
+        },
+        "persistence": {
+            "schema": PERSISTENCE_SCHEMA,
+            "contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
+            "authority": PERSISTENCE_AUTHORITY,
+            "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
+            "table_count": len(PERSISTENCE_TABLES),
+            "postgresql_live_authority": False,
+            "writes_enabled_by_default": False,
+            "v3_4_authority_cutover_required": True,
         },
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
@@ -4866,11 +4896,26 @@ def decision_module_validate_endpoint(module_id: str, req: ModuleContractRequest
     return {"version": APP_VERSION, **result}
 
 
+def persistence_status_endpoint():
+    status = database_status()
+    return {"ok": (not status["required"] or (status["connected"] and status["schema_current"])), "version": APP_VERSION, "persistence": status}
+
+
+def persistence_schema_endpoint():
+    return {"ok": True, "version": APP_VERSION, "persistence_schema": database_schema_manifest()}
+
+
+def persistence_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "persistence_contract": database_contract()}
+
+
 def health():
+    persistence = database_status()
+    persistence_ready = (not persistence["required"]) or (persistence["connected"] and persistence["schema_current"])
     return {
-        "ok": True,
-        "ready": True,
-        "cold_start_ready": True,
+        "ok": bool(persistence_ready),
+        "ready": bool(persistence_ready),
+        "cold_start_ready": bool(persistence_ready),
         "version": APP_VERSION,
         "service": "sustainable-catalyst-decision-studio",
         "build_fingerprint": BUILD_FINGERPRINT,
@@ -4930,6 +4975,9 @@ def health():
         "decision_module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
         "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
         "registered_decision_modules": module_registry()["module_count"],
+        "persistence_schema": PERSISTENCE_SCHEMA,
+        "persistence_authority": PERSISTENCE_AUTHORITY,
+        "persistence": persistence,
         "release": release_manifest(),
     }
 

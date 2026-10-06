@@ -1,3 +1,13 @@
+# v3.3.0 — PostgreSQL Persistence Foundation (2026-10-05)
+
+- Added PostgreSQL 16 persistence infrastructure, SQLAlchemy 2 models, Psycopg 3 connectivity, and Alembic schema migration revision `0001_v330_postgresql_persistence_foundation`.
+- Added 20 persistence tables for projects, decisions, shared Decision Kernel objects, module bindings, evidence/claims, scenarios, uncertainty, recommendations/review, events, artifacts, and snapshots.
+- Added a non-authoritative Python repository seam and persistence status/schema/contract API surfaces.
+- Added production PostgreSQL provisioning, guarded migration, module-registry seeding, backup, and health verification to the Contabo deployment workflow.
+- PostgreSQL is intentionally **not** the live Decision Studio authority in v3.3.0; live object ownership moves in v3.4.0.
+- WordPress authority remains unchanged and WordPress `DB_VERSION` remains `3.0.0`.
+- Hardened `.gitignore` and release packaging against committed local virtual environments.
+
 # v3.2.0 — Decision Kernel & Module Contract Foundation (2026-10-05)
 
 - Added the shared Decision Kernel contract for decision identity, lifecycle, shared analytical objects, artifact references, and provenance references.

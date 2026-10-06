@@ -1,0 +1,77 @@
+DECISION STUDIO v3.3.0 — POSTGRESQL PERSISTENCE FOUNDATION
+==========================================================
+
+MAC — APPLY / VALIDATE / PUSH / TAG / PACKAGE
+---------------------------------------------
+cd ~/Downloads
+
+rm -rf scds-v3.3.0-postgresql-persistence
+
+unzip -q \
+  sustainable-catalyst-decision-studio-v3.3.0-repository.zip \
+  -d scds-v3.3.0-postgresql-persistence
+
+cd scds-v3.3.0-postgresql-persistence/sustainable-catalyst-decision-studio
+
+chmod +x APPLY_AND_PUSH_DECISION_STUDIO_V330.sh
+
+./APPLY_AND_PUSH_DECISION_STUDIO_V330.sh \
+  "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+VERIFY GIT
+----------
+cd ~/Downloads/sustainable-catalyst-decision-studio
+
+git status --short
+git log -1 --oneline
+git tag --points-at HEAD
+
+Expected tag: v3.3.0
+
+MAC — DEPLOY BACKEND + POSTGRESQL TO CONTABO
+--------------------------------------------
+cd ~/Downloads
+
+chmod +x \
+  deploy_decision_studio_v3_3_0_from_macos.sh \
+  upgrade_decision_studio_backend_v3_3_0_contabo.sh
+
+./deploy_decision_studio_v3_3_0_from_macos.sh
+
+PUBLIC VERIFICATION
+-------------------
+curl -fsS \
+  https://decision-studio-api.sustainablecatalyst.com/health \
+  | python3 -m json.tool
+
+curl -fsS \
+  https://decision-studio-api.sustainablecatalyst.com/persistence/status \
+  | python3 -m json.tool
+
+curl -fsS \
+  https://decision-studio-api.sustainablecatalyst.com/persistence/schema \
+  | python3 -m json.tool
+
+curl -fsS \
+  https://decision-studio-api.sustainablecatalyst.com/persistence/contract \
+  | python3 -m json.tool
+
+EXPECTED PRODUCTION STATE
+-------------------------
+version = 3.3.0
+build_fingerprint = scds-v3.3.0-postgresql-persistence-foundation
+persistence.connected = true
+persistence.schema_current = true
+persistence.schema_revision = 0001_v330_postgresql_persistence_foundation
+persistence.table_count = 20
+persistence.authority = non-authoritative-foundation
+persistence.write_enabled = false
+release.backend_architecture.database_migration = true
+release.backend_architecture.postgresql_live_authority = false
+release.backend_architecture.wordpress_authority_change = false
+
+IMPORTANT
+---------
+v3.3.0 provisions and migrates PostgreSQL but does NOT move live Decision Studio
+object authority. Do not enable SCDS_PERSISTENCE_WRITE_ENABLED in v3.3.0.
+The live authority cutover belongs to v3.4.0.

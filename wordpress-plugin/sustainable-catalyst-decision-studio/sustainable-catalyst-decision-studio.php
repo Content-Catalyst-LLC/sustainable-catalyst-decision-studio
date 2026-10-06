@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Connected Decision Intelligence unifies the eight-stage decision lifecycle, readiness, cross-product routing, lineage, and human-controlled progression across the Sustainable Catalyst platform.
- * Version: 3.2.0
+ * Version: 3.3.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,10 +12,10 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '3.2.0';
-    const BUILD_FINGERPRINT = 'scds-v3.2.0-decision-kernel-module-contract-foundation';
-    const SOURCE_COMMIT = 'release-v3.2.0';
-    const RELEASE_DATE = '2026-09-13';
+    const VERSION = '3.3.0';
+    const BUILD_FINGERPRINT = 'scds-v3.3.0-postgresql-persistence-foundation';
+    const SOURCE_COMMIT = 'release-v3.3.0';
+    const RELEASE_DATE = '2026-10-05';
     const DB_VERSION = '3.0.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';

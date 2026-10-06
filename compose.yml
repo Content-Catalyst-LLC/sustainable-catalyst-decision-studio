@@ -1,21 +1,49 @@
 services:
+  decision-studio-postgres:
+    image: postgres:16-alpine
+    container_name: sc-decision-studio-postgres
+    restart: unless-stopped
+    env_file:
+      - .env.persistence-v330
+    volumes:
+      - decision-studio-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - sc-internal
+
   decision-studio:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: sustainable-catalyst-decision-studio:3.2.0
+    image: sustainable-catalyst-decision-studio:3.3.0
     container_name: sc-decision-studio
     restart: unless-stopped
+    env_file:
+      - .env.persistence-v330
     environment:
       PORT: 8089
-      SCDS_BUILD_FINGERPRINT: scds-v3.2.0-decision-kernel-module-contract-foundation
-      SCDS_SOURCE_COMMIT: release-v3.2.0
+      SCDS_BUILD_FINGERPRINT: scds-v3.3.0-postgresql-persistence-foundation
+      SCDS_SOURCE_COMMIT: release-v3.3.0
       SCDS_MAX_REQUEST_BYTES: 1048576
       SCDS_PUBLIC_RATE_LIMIT: 60
+      SCDS_PERSISTENCE_REQUIRED: "true"
+      SCDS_PERSISTENCE_WRITE_ENABLED: "false"
+    depends_on:
+      decision-studio-postgres:
+        condition: service_healthy
     ports:
       - "127.0.0.1:8089:8089"
     networks:
       - sc-internal
+
+volumes:
+  decision-studio-postgres-data:
+    name: sc-decision-studio-postgres-data
 
 networks:
   sc-internal:
