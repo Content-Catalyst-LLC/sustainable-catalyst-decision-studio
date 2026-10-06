@@ -1,0 +1,50 @@
+{
+  "module_id": "canvas",
+  "display_name": "Canvas",
+  "domain": "general-decision-architecture",
+  "purpose": "General structured decision framing, comparison, review, and outcome architecture.",
+  "module_contract_schema": "scds-decision-module-contract/1.0",
+  "kernel_contract_schema": "scds-decision-kernel/1.0",
+  "status": "foundation",
+  "extends_kernel_objects": [
+    "decision",
+    "alternative",
+    "criterion",
+    "evidence_ref",
+    "assumption",
+    "scenario",
+    "recommendation",
+    "review",
+    "outcome"
+  ],
+  "capabilities": [
+    "decision-framing",
+    "objectives-and-constraints",
+    "stakeholder-mapping",
+    "criteria-and-alternatives",
+    "evidence-and-assumptions",
+    "scenario-structure",
+    "tradeoff-analysis",
+    "recommendation-review",
+    "outcome-recording"
+  ],
+  "providers": {
+    "evidence": [
+      "knowledge-library",
+      "research-librarian"
+    ],
+    "compute": [
+      "workbench",
+      "workspace",
+      "research-lab"
+    ],
+    "context": [
+      "site-intelligence"
+    ]
+  },
+  "boundaries": [
+    "does-not-own-shared-decision-identity",
+    "does-not-auto-select-a-winner",
+    "does-not-bypass-human-review"
+  ]
+}

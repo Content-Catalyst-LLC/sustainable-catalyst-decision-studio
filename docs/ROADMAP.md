@@ -1,9 +1,9 @@
 
 ## Decision Studio modernization line (v3.1+)
 
-- **v3.1.0 — Backend Service Decomposition** — current foundation release.
-- **v3.2.0 — Decision Kernel & Module Contract Foundation** — next.
-- **v3.3.0 — PostgreSQL Persistence Foundation**.
+- **v3.1.0 — Backend Service Decomposition** — built.
+- **v3.2.0 — Decision Kernel & Module Contract Foundation** — current release; Canvas, Finance, Narrative Risk, and Global Impact Catalyst are registered first-class modules over one shared kernel.
+- **v3.3.0 — PostgreSQL Persistence Foundation** — next.
 - **v3.4.0 — Python Decision Repository & Object Persistence**.
 - **v3.5.0–v3.8.0** — Canvas, Finance, Narrative Risk, and Global Impact Catalyst Python domain migrations.
 

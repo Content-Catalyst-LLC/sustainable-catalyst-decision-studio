@@ -1,0 +1,206 @@
+{
+  "schema": "scds-decision-module-registry/1.0",
+  "kernel_schema": "scds-decision-kernel/1.0",
+  "module_contract_schema": "scds-decision-module-contract/1.0",
+  "module_count": 4,
+  "modules": [
+    {
+      "module_id": "canvas",
+      "display_name": "Canvas",
+      "domain": "general-decision-architecture",
+      "purpose": "General structured decision framing, comparison, review, and outcome architecture.",
+      "module_contract_schema": "scds-decision-module-contract/1.0",
+      "kernel_contract_schema": "scds-decision-kernel/1.0",
+      "status": "foundation",
+      "extends_kernel_objects": [
+        "decision",
+        "alternative",
+        "criterion",
+        "evidence_ref",
+        "assumption",
+        "scenario",
+        "recommendation",
+        "review",
+        "outcome"
+      ],
+      "capabilities": [
+        "decision-framing",
+        "objectives-and-constraints",
+        "stakeholder-mapping",
+        "criteria-and-alternatives",
+        "evidence-and-assumptions",
+        "scenario-structure",
+        "tradeoff-analysis",
+        "recommendation-review",
+        "outcome-recording"
+      ],
+      "providers": {
+        "evidence": [
+          "knowledge-library",
+          "research-librarian"
+        ],
+        "compute": [
+          "workbench",
+          "workspace",
+          "research-lab"
+        ],
+        "context": [
+          "site-intelligence"
+        ]
+      },
+      "boundaries": [
+        "does-not-own-shared-decision-identity",
+        "does-not-auto-select-a-winner",
+        "does-not-bypass-human-review"
+      ]
+    },
+    {
+      "module_id": "finance",
+      "display_name": "Finance",
+      "domain": "financial-and-economic-decision-analysis",
+      "purpose": "Financial assumptions, cash-flow, valuation, cost-benefit, capital, and financial-risk decision context.",
+      "module_contract_schema": "scds-decision-module-contract/1.0",
+      "kernel_contract_schema": "scds-decision-kernel/1.0",
+      "status": "foundation",
+      "extends_kernel_objects": [
+        "decision",
+        "alternative",
+        "criterion",
+        "assumption",
+        "scenario",
+        "artifact_ref",
+        "provenance_ref",
+        "recommendation"
+      ],
+      "capabilities": [
+        "financial-assumptions",
+        "cash-flow-model-reference",
+        "valuation-reference",
+        "cost-and-revenue-objects",
+        "capital-and-discounting",
+        "financial-risk",
+        "financial-scenarios",
+        "financial-sensitivity",
+        "cost-benefit-analysis"
+      ],
+      "providers": {
+        "compute_authority": "workbench",
+        "datasets": [
+          "workspace",
+          "knowledge-library"
+        ],
+        "research": [
+          "research-librarian",
+          "research-lab"
+        ]
+      },
+      "boundaries": [
+        "decision-studio-does-not-duplicate-workbench-calculation-runtime",
+        "model-output-is-not-automatic-recommendation",
+        "financial-score-is-not-final-decision-authority"
+      ]
+    },
+    {
+      "module_id": "global-impact",
+      "display_name": "Global Impact Catalyst",
+      "domain": "sustainability-global-impact-and-development-analysis",
+      "purpose": "Environmental, social, economic, carbon, resource, SDG, geographic, and distributional impact decision context.",
+      "module_contract_schema": "scds-decision-module-contract/1.0",
+      "kernel_contract_schema": "scds-decision-kernel/1.0",
+      "status": "foundation",
+      "extends_kernel_objects": [
+        "decision",
+        "alternative",
+        "criterion",
+        "evidence_ref",
+        "assumption",
+        "scenario",
+        "artifact_ref",
+        "provenance_ref",
+        "outcome"
+      ],
+      "capabilities": [
+        "impact-objectives",
+        "indicators-and-targets",
+        "impact-boundaries",
+        "impact-stakeholders",
+        "impact-pathways",
+        "environmental-impact",
+        "social-impact",
+        "economic-impact",
+        "sdg-alignment",
+        "carbon-impact",
+        "resource-impact",
+        "distributional-impact",
+        "impact-scenarios"
+      ],
+      "providers": {
+        "evidence": [
+          "knowledge-library",
+          "research-librarian"
+        ],
+        "compute": [
+          "workbench",
+          "workspace",
+          "research-lab"
+        ],
+        "spatial_and_live_context": [
+          "site-intelligence"
+        ]
+      },
+      "boundaries": [
+        "sdg-alignment-is-not-proof-of-impact",
+        "modeled-impact-is-not-observed-outcome",
+        "distributional-judgments-remain-explicit-and-reviewable"
+      ]
+    },
+    {
+      "module_id": "narrative-risk",
+      "display_name": "Narrative Risk",
+      "domain": "qualitative-narrative-and-emerging-risk-analysis",
+      "purpose": "Claims, risk drivers, signals, actors, exposures, impacts, scenarios, mitigations, and competing narratives.",
+      "module_contract_schema": "scds-decision-module-contract/1.0",
+      "kernel_contract_schema": "scds-decision-kernel/1.0",
+      "status": "foundation",
+      "extends_kernel_objects": [
+        "decision",
+        "evidence_ref",
+        "assumption",
+        "scenario",
+        "challenge",
+        "artifact_ref",
+        "provenance_ref",
+        "outcome"
+      ],
+      "capabilities": [
+        "risk-narratives",
+        "risk-claims",
+        "risk-drivers-and-signals",
+        "risk-events-and-actors",
+        "exposure-and-impact",
+        "likelihood-context",
+        "risk-scenarios",
+        "mitigations",
+        "competing-narratives",
+        "contradiction-tracing"
+      ],
+      "providers": {
+        "evidence": [
+          "knowledge-library",
+          "research-librarian"
+        ],
+        "graphs": [
+          "platform-core"
+        ],
+        "context": [
+          "site-intelligence"
+        ]
+      },
+      "boundaries": [
+        "narrative-is-not-treated-as-fact-without-evidence",
+        "risk-likelihood-must-preserve-uncertainty",
+        "does-not-auto-escalate-or-execute-actions"
+      ]
+    }
+  ]
+}

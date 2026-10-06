@@ -6,14 +6,13 @@ from app.services import decision_service as service
 
 ROOT = Path(__file__).resolve().parents[2]
 
-def test_v310_release_identity():
+def test_v310_decomposition_preserved_under_current_release():
     client = TestClient(app)
     health = client.get("/health")
     assert health.status_code == 200
-    assert health.json()["version"] == "3.1.0"
+    assert health.json()["version"] == "3.2.0"
     release = client.get("/release").json()["release"]
-    assert release["release_name"] == "Backend Service Decomposition"
-    assert release["build_fingerprint"] == "scds-v3.1.0-backend-service-decomposition"
+    assert release["backend_architecture"]["decomposition_release"] is True
     assert release["backend_architecture"]["database_migration"] is False
     assert release["backend_architecture"]["wordpress_authority_change"] is False
 
@@ -38,5 +37,5 @@ def test_routes_match_certified_inventory():
 def test_router_modules_are_decomposed():
     route_dir = ROOT / "backend/app/api/routes"
     modules = sorted(p for p in route_dir.glob("*.py") if p.name != "__init__.py")
-    assert len(modules) == 11
-    assert service.APP_VERSION == "3.1.0"
+    assert len(modules) >= 11
+    assert service.APP_VERSION == "3.2.0"

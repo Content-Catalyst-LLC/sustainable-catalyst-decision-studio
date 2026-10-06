@@ -1,0 +1,54 @@
+{
+  "module_id": "global-impact",
+  "display_name": "Global Impact Catalyst",
+  "domain": "sustainability-global-impact-and-development-analysis",
+  "purpose": "Environmental, social, economic, carbon, resource, SDG, geographic, and distributional impact decision context.",
+  "module_contract_schema": "scds-decision-module-contract/1.0",
+  "kernel_contract_schema": "scds-decision-kernel/1.0",
+  "status": "foundation",
+  "extends_kernel_objects": [
+    "decision",
+    "alternative",
+    "criterion",
+    "evidence_ref",
+    "assumption",
+    "scenario",
+    "artifact_ref",
+    "provenance_ref",
+    "outcome"
+  ],
+  "capabilities": [
+    "impact-objectives",
+    "indicators-and-targets",
+    "impact-boundaries",
+    "impact-stakeholders",
+    "impact-pathways",
+    "environmental-impact",
+    "social-impact",
+    "economic-impact",
+    "sdg-alignment",
+    "carbon-impact",
+    "resource-impact",
+    "distributional-impact",
+    "impact-scenarios"
+  ],
+  "providers": {
+    "evidence": [
+      "knowledge-library",
+      "research-librarian"
+    ],
+    "compute": [
+      "workbench",
+      "workspace",
+      "research-lab"
+    ],
+    "spatial_and_live_context": [
+      "site-intelligence"
+    ]
+  },
+  "boundaries": [
+    "sdg-alignment-is-not-proof-of-impact",
+    "modeled-impact-is-not-observed-outcome",
+    "distributional-judgments-remain-explicit-and-reviewable"
+  ]
+}

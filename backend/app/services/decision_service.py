@@ -194,6 +194,20 @@ from app.connected_decision_intelligence import (
     attach_connected_intelligence,
 )
 
+from app.decision_kernel import (
+    DECISION_KERNEL_SCHEMA,
+    DECISION_MODULE_CONTRACT_SCHEMA,
+    DECISION_MODULE_REGISTRY_SCHEMA,
+    DecisionKernelRequest,
+    ModuleContractRequest,
+    kernel_contracts,
+    decision_kernel_template,
+    module_registry,
+    module_contract,
+    validate_decision_kernel,
+    validate_module_contract,
+)
+
 from app.recommendation_review import (
     RECOMMENDATION_CANDIDATE_SCHEMA,
     RECOMMENDATION_CHALLENGE_SCHEMA,
@@ -214,9 +228,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.1.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.1.0-backend-service-decomposition")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.1.0")
+APP_VERSION = "3.2.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.2.0-decision-kernel-module-contract-foundation")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.2.0")
 RELEASE_DATE = "2026-10-05"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -291,7 +305,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Backend Service Decomposition",
+        "release_name": "Decision Kernel & Module Contract Foundation",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -362,19 +376,36 @@ def release_manifest() -> Dict[str, Any]:
         "decision_lifecycle_state_schema": DECISION_LIFECYCLE_STATE_SCHEMA,
         "decision_readiness_matrix_schema": DECISION_READINESS_MATRIX_SCHEMA,
         "cross_product_route_plan_schema": CROSS_PRODUCT_ROUTE_PLAN_SCHEMA,
+        "decision_kernel_schema": DECISION_KERNEL_SCHEMA,
+        "decision_module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
+        "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
         "backend_architecture": {
             "decomposition_release": True,
+            "decision_kernel_foundation": True,
+            "module_contract_foundation": True,
+            "registered_decision_modules": 4,
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 11,
-            "included_router_count": 12,
-            "route_count": 176,
-            "legacy_route_count": 174,
+            "router_registry_count": 12,
+            "included_router_count": 13,
+            "route_count": 182,
+            "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
             "database_migration": False,
             "wordpress_authority_change": False,
             "public_api_contract_breaking_changes": False,
+        },
+        "decision_kernel": {
+            "schema": DECISION_KERNEL_SCHEMA,
+            "module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
+            "module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
+            "kernel_objects": kernel_contracts()["kernel_objects"],
+            "module_ids": [m["module_id"] for m in module_registry()["modules"]],
+            "module_count": module_registry()["module_count"],
+            "database_migration": False,
+            "wordpress_authority_change": False,
+            "final_decision_authority": "human-governed",
         },
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
@@ -4804,6 +4835,37 @@ def generate_brief(req: BriefRequest) -> Dict[str, Any]:
         fallback["ai_status"] = status
         return fallback
 
+def decision_kernel_contracts_endpoint():
+    return {"ok": True, "version": APP_VERSION, "contracts": kernel_contracts()}
+
+
+def decision_kernel_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "kernel": decision_kernel_template()}
+
+
+def decision_kernel_validate_endpoint(req: DecisionKernelRequest):
+    result = validate_decision_kernel(req.kernel, strict=req.strict)
+    return {"version": APP_VERSION, **result}
+
+
+def decision_modules_endpoint():
+    return {"ok": True, "version": APP_VERSION, "registry": module_registry()}
+
+
+def decision_module_endpoint(module_id: str):
+    contract = module_contract(module_id)
+    if not contract:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": "unknown_module", "module_id": module_id})
+    return {"ok": True, "version": APP_VERSION, "contract": contract}
+
+
+def decision_module_validate_endpoint(module_id: str, req: ModuleContractRequest):
+    result = validate_module_contract(module_id, req.contract, strict=req.strict)
+    if not result["ok"] and result.get("errors") == ["unknown_module"]:
+        return JSONResponse(status_code=404, content={"version": APP_VERSION, **result})
+    return {"version": APP_VERSION, **result}
+
+
 def health():
     return {
         "ok": True,
@@ -4864,6 +4926,10 @@ def health():
         "decision_dependency_graph_schema": DEPENDENCY_GRAPH_SCHEMA,
         "dependency_diagnostics_schema": DEPENDENCY_DIAGNOSTICS_SCHEMA,
         "change_impact_assessment_schema": CHANGE_IMPACT_SCHEMA,
+        "decision_kernel_schema": DECISION_KERNEL_SCHEMA,
+        "decision_module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
+        "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
+        "registered_decision_modules": module_registry()["module_count"],
         "release": release_manifest(),
     }
 

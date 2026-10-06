@@ -1,0 +1,46 @@
+{
+  "module_id": "finance",
+  "display_name": "Finance",
+  "domain": "financial-and-economic-decision-analysis",
+  "purpose": "Financial assumptions, cash-flow, valuation, cost-benefit, capital, and financial-risk decision context.",
+  "module_contract_schema": "scds-decision-module-contract/1.0",
+  "kernel_contract_schema": "scds-decision-kernel/1.0",
+  "status": "foundation",
+  "extends_kernel_objects": [
+    "decision",
+    "alternative",
+    "criterion",
+    "assumption",
+    "scenario",
+    "artifact_ref",
+    "provenance_ref",
+    "recommendation"
+  ],
+  "capabilities": [
+    "financial-assumptions",
+    "cash-flow-model-reference",
+    "valuation-reference",
+    "cost-and-revenue-objects",
+    "capital-and-discounting",
+    "financial-risk",
+    "financial-scenarios",
+    "financial-sensitivity",
+    "cost-benefit-analysis"
+  ],
+  "providers": {
+    "compute_authority": "workbench",
+    "datasets": [
+      "workspace",
+      "knowledge-library"
+    ],
+    "research": [
+      "research-librarian",
+      "research-lab"
+    ]
+  },
+  "boundaries": [
+    "decision-studio-does-not-duplicate-workbench-calculation-runtime",
+    "model-output-is-not-automatic-recommendation",
+    "financial-score-is-not-final-decision-authority"
+  ]
+}

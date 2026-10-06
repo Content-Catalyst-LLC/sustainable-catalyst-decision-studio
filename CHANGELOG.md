@@ -1,3 +1,12 @@
+# v3.2.0 — Decision Kernel & Module Contract Foundation (2026-10-05)
+
+- Added the shared Decision Kernel contract for decision identity, lifecycle, shared analytical objects, artifact references, and provenance references.
+- Registered Canvas, Finance, Narrative Risk, and Global Impact Catalyst as first-class Decision Studio modules.
+- Added module-contract validation that prevents modules from forking kernel object identity or overriding human-governed final decision authority.
+- Declared Workbench as the Finance module compute authority rather than duplicating financial calculation runtimes inside Decision Studio.
+- Added six Decision Kernel/module API routes and v3.2 route-inventory certification while preserving every v3.1 route.
+- No database migration and no WordPress authority change; DB_VERSION remains 3.0.0.
+
 # v3.1.0 — Backend Service Decomposition (2026-10-05)
 
 - Decomposed FastAPI application composition from endpoint registration.

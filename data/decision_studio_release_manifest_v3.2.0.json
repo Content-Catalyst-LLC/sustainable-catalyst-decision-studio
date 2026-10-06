@@ -1,0 +1,36 @@
+{
+  "release": "3.2.0",
+  "release_name": "Decision Kernel & Module Contract Foundation",
+  "release_date": "2026-10-05",
+  "build_fingerprint": "scds-v3.2.0-decision-kernel-module-contract-foundation",
+  "source_commit": "release-v3.2.0",
+  "backend": {
+    "application_composition": "app.main",
+    "service": "app.services.decision_service",
+    "router_package": "app.api.routes",
+    "route_count": 182,
+    "route_registry_count": 12,
+    "included_router_count": 13,
+    "legacy_route_count": 176,
+    "specialized_energy_runtime_routes": 2
+  },
+  "decision_kernel": {
+    "schema": "scds-decision-kernel/1.0",
+    "module_contract_schema": "scds-decision-module-contract/1.0",
+    "module_registry_schema": "scds-decision-module-registry/1.0",
+    "module_ids": [
+      "canvas",
+      "finance",
+      "narrative-risk",
+      "global-impact"
+    ],
+    "module_count": 4,
+    "final_decision_authority": "human-governed"
+  },
+  "migration": {
+    "database": false,
+    "wordpress_authority": false,
+    "schema_breaking_changes": false
+  },
+  "next_release": "3.3.0 \u2014 PostgreSQL Persistence Foundation"
+}

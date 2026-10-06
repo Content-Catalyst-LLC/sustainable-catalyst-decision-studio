@@ -1,0 +1,59 @@
+{
+  "schema": "scds-decision-kernel/1.0",
+  "kernel_version": "1.0",
+  "decision": {
+    "decision_id": "example-001",
+    "decision_question": "Which governed option should advance?",
+    "title": "Cross-module example",
+    "status": "draft"
+  },
+  "module_bindings": [
+    {
+      "module_id": "canvas",
+      "module_contract_schema": "scds-decision-module-contract/1.0",
+      "enabled": true,
+      "configuration": {}
+    },
+    {
+      "module_id": "finance",
+      "module_contract_schema": "scds-decision-module-contract/1.0",
+      "enabled": true,
+      "configuration": {}
+    },
+    {
+      "module_id": "global-impact",
+      "module_contract_schema": "scds-decision-module-contract/1.0",
+      "enabled": true,
+      "configuration": {}
+    }
+  ],
+  "shared_objects": {
+    "alternative": [],
+    "criterion": [],
+    "evidence_ref": [],
+    "assumption": [],
+    "scenario": [],
+    "recommendation": [],
+    "review": [],
+    "challenge": [],
+    "outcome": [],
+    "artifact_ref": [],
+    "provenance_ref": []
+  },
+  "authorities": {
+    "decision_identity": "decision-studio-kernel",
+    "decision_lifecycle": "decision-studio-kernel",
+    "module_registration": "decision-studio-kernel",
+    "evidence_identity_and_provenance": "platform-core",
+    "calculation_execution": "workbench",
+    "research_experiment_execution": "research-lab",
+    "dataset_and_notebook_execution": "workspace",
+    "live_context_observation": "site-intelligence",
+    "final_decision_authority": "human-governed"
+  },
+  "provenance": {
+    "created_by": "sample",
+    "created_at": "2026-10-05T00:00:00Z",
+    "source_artifacts": []
+  }
+}

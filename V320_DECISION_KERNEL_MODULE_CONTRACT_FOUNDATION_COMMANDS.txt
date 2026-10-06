@@ -1,0 +1,21 @@
+Decision Studio v3.2.0 — Decision Kernel & Module Contract Foundation
+
+MAC — APPLY / TEST / PUSH
+
+cd ~/Downloads
+rm -rf scds-v3.2.0-decision-kernel
+unzip -q sustainable-catalyst-decision-studio-v3.2.0-repository.zip -d scds-v3.2.0-decision-kernel
+cd scds-v3.2.0-decision-kernel/sustainable-catalyst-decision-studio
+
+chmod +x APPLY_AND_PUSH_DECISION_STUDIO_V320.sh
+./APPLY_AND_PUSH_DECISION_STUDIO_V320.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+MAC — DEPLOY BACKEND TO CONTABO
+cd ~/Downloads
+chmod +x deploy_decision_studio_v3_2_0_from_macos.sh
+./deploy_decision_studio_v3_2_0_from_macos.sh
+
+VERIFY
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/release | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-modules | python3 -m json.tool

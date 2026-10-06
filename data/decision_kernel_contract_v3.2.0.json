@@ -1,0 +1,38 @@
+{
+  "schema": "scds-decision-kernel/1.0",
+  "kernel_version": "1.0",
+  "kernel_objects": [
+    "decision",
+    "alternative",
+    "criterion",
+    "evidence_ref",
+    "assumption",
+    "scenario",
+    "recommendation",
+    "review",
+    "challenge",
+    "outcome",
+    "artifact_ref",
+    "provenance_ref"
+  ],
+  "authorities": {
+    "decision_identity": "decision-studio-kernel",
+    "decision_lifecycle": "decision-studio-kernel",
+    "module_registration": "decision-studio-kernel",
+    "evidence_identity_and_provenance": "platform-core",
+    "calculation_execution": "workbench",
+    "research_experiment_execution": "research-lab",
+    "dataset_and_notebook_execution": "workspace",
+    "live_context_observation": "site-intelligence",
+    "final_decision_authority": "human-governed"
+  },
+  "principles": {
+    "kernel_owns_shared_decision_identity": true,
+    "modules_extend_kernel_objects_not_fork_them": true,
+    "module_outputs_are_provenance_bearing_artifacts": true,
+    "cross_module_evidence_references_are_shared": true,
+    "compute_runtime_is_delegated_to_domain_runtimes": true,
+    "ai_or_model_output_is_not_final_decision_authority": true,
+    "final_decision_authority_is_human_governed": true
+  }
+}

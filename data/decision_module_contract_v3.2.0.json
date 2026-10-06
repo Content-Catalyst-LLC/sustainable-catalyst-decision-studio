@@ -1,0 +1,20 @@
+{
+  "schema": "scds-decision-module-contract/1.0",
+  "kernel_schema": "scds-decision-kernel/1.0",
+  "required_fields": [
+    "module_id",
+    "display_name",
+    "domain",
+    "purpose",
+    "extends_kernel_objects",
+    "capabilities",
+    "providers",
+    "boundaries"
+  ],
+  "rules": [
+    "module-extends-kernel-does-not-fork-shared-object-identity",
+    "module-output-is-artifact-with-provenance",
+    "module-cannot-override-human-governed-final-decision-authority",
+    "compute-authority-may-be-delegated"
+  ]
+}

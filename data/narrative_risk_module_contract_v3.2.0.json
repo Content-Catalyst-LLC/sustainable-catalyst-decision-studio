@@ -1,0 +1,48 @@
+{
+  "module_id": "narrative-risk",
+  "display_name": "Narrative Risk",
+  "domain": "qualitative-narrative-and-emerging-risk-analysis",
+  "purpose": "Claims, risk drivers, signals, actors, exposures, impacts, scenarios, mitigations, and competing narratives.",
+  "module_contract_schema": "scds-decision-module-contract/1.0",
+  "kernel_contract_schema": "scds-decision-kernel/1.0",
+  "status": "foundation",
+  "extends_kernel_objects": [
+    "decision",
+    "evidence_ref",
+    "assumption",
+    "scenario",
+    "challenge",
+    "artifact_ref",
+    "provenance_ref",
+    "outcome"
+  ],
+  "capabilities": [
+    "risk-narratives",
+    "risk-claims",
+    "risk-drivers-and-signals",
+    "risk-events-and-actors",
+    "exposure-and-impact",
+    "likelihood-context",
+    "risk-scenarios",
+    "mitigations",
+    "competing-narratives",
+    "contradiction-tracing"
+  ],
+  "providers": {
+    "evidence": [
+      "knowledge-library",
+      "research-librarian"
+    ],
+    "graphs": [
+      "platform-core"
+    ],
+    "context": [
+      "site-intelligence"
+    ]
+  },
+  "boundaries": [
+    "narrative-is-not-treated-as-fact-without-evidence",
+    "risk-likelihood-must-preserve-uncertainty",
+    "does-not-auto-escalate-or-execute-actions"
+  ]
+}
