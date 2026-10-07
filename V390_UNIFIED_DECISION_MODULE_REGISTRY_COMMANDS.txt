@@ -1,0 +1,31 @@
+DECISION STUDIO v3.9.0 — UNIFIED DECISION MODULE REGISTRY
+
+MAC APPLY / TEST / PUSH
+
+cd ~/Downloads
+rm -rf scds-v3.9.0-unified-module-registry
+unzip -q sustainable-catalyst-decision-studio-v3.9.0-repository.zip -d scds-v3.9.0-unified-module-registry
+cd scds-v3.9.0-unified-module-registry/sustainable-catalyst-decision-studio
+chmod +x APPLY_AND_PUSH_DECISION_STUDIO_V390.sh
+./APPLY_AND_PUSH_DECISION_STUDIO_V390.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+VERIFY GIT
+
+cd ~/Downloads/sustainable-catalyst-decision-studio
+git status --short
+git log -1 --oneline
+git tag --points-at HEAD
+
+DEPLOY BACKEND FROM MAC
+
+cd ~/Downloads
+chmod +x deploy_decision_studio_v3_9_0_from_macos.sh upgrade_decision_studio_backend_v3_9_0_contabo.sh
+./deploy_decision_studio_v3_9_0_from_macos.sh
+
+PUBLIC VERIFY
+
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-module-registry | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-module-registry/readiness | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-module-registry/providers | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-module-registry/capabilities | python3 -m json.tool

@@ -244,6 +244,18 @@ from app.domains.narrative_risk import (
     narrative_risk_domain_template,
 )
 
+
+from app.unified_module_registry import (
+    UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
+    UnifiedRegistryValidateRequest,
+    capability_index as unified_capability_index,
+    provider_index as unified_provider_index,
+    registry_readiness as unified_registry_readiness,
+    unified_module_entry,
+    unified_modules,
+    unified_registry,
+    validate_unified_registry,
+)
 from app.domains.global_impact import (
     GLOBAL_IMPACT_DOMAIN_SCHEMA,
     GlobalImpactClaimsReplace,
@@ -298,9 +310,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.8.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.8.0-global-impact-catalyst-python-domain-migration")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.8.0")
+APP_VERSION = "3.9.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.9.0-unified-decision-module-registry")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.9.0")
 RELEASE_DATE = "2026-10-06"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -375,7 +387,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Global Impact Catalyst Python Domain Migration",
+        "release_name": "Unified Decision Module Registry",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -449,6 +461,7 @@ def release_manifest() -> Dict[str, Any]:
         "decision_kernel_schema": DECISION_KERNEL_SCHEMA,
         "decision_module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
         "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
+        "unified_decision_module_registry_schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
         "persistence_schema": PERSISTENCE_SCHEMA,
         "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
@@ -464,10 +477,10 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 18,
-            "included_router_count": 19,
-            "route_count": 242,
-            "previous_route_count": 231,
+            "router_registry_count": 19,
+            "included_router_count": 20,
+            "route_count": 249,
+            "previous_route_count": 242,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
             "database_migration": False,
@@ -476,14 +489,18 @@ def release_manifest() -> Dict[str, Any]:
             "canvas_python_domain_migration": False,
             "finance_python_domain_migration": False,
             "narrative_risk_python_domain_migration": False,
-            "global_impact_python_domain_migration": True,
+            "global_impact_python_domain_migration": False,
+            "unified_decision_module_registry": True,
+            "unified_registry_schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
+            "unified_registry_canonical": True,
+            "legacy_module_registry_endpoints_preserved": True,
             "postgresql_persistence_foundation": True,
             "postgresql_live_authority": True,
             "persistence_authority": PERSISTENCE_AUTHORITY,
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": True,
-            "new_wordpress_authority_change_in_v3_8": False,
+            "new_wordpress_authority_change_in_v3_9": False,
             "canvas_wordpress_domain_authority_changed": True,
             "finance_wordpress_domain_authority_changed": True,
             "narrative_risk_wordpress_domain_authority_changed": True,
@@ -494,6 +511,8 @@ def release_manifest() -> Dict[str, Any]:
             "schema": DECISION_KERNEL_SCHEMA,
             "module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
             "module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
+            "unified_module_registry_schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
+            "unified_module_registry_canonical": True,
             "kernel_objects": kernel_contracts()["kernel_objects"],
             "module_ids": [m["module_id"] for m in module_registry()["modules"]],
             "module_count": module_registry()["module_count"],
@@ -513,6 +532,20 @@ def release_manifest() -> Dict[str, Any]:
             "global_impact_domain_schema": GLOBAL_IMPACT_DOMAIN_SCHEMA,
             "global_impact_python_domain_authoritative": True,
             "global_impact_compute_authority": "workbench",
+        },
+        "unified_module_registry": {
+            "schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
+            "canonical": True,
+            "registry_authority": "decision-studio-kernel",
+            "module_count": 4,
+            "all_modules_authoritative": True,
+            "legacy_decision_modules_endpoints_preserved": True,
+            "provider_index": True,
+            "capability_index": True,
+            "readiness_endpoint": True,
+            "validation_endpoint": True,
+            "database_migration": False,
+            "final_decision_authority": "human-governed",
         },
         "persistence": {
             "schema": PERSISTENCE_SCHEMA,
@@ -732,6 +765,9 @@ def release_manifest() -> Dict[str, Any]:
             "global_impact_legacy_adapter_preserved": True,
             "global_impact_compute_authority_workbench": True,
             "finance_compute_authority_workbench": True,
+            "unified_decision_module_registry": True,
+            "unified_module_registry_canonical": True,
+            "legacy_decision_modules_endpoints_preserved": True,
             "backend_service_decomposition": True,
             "route_contracts_preserved_v3_0_0": True,
             "no_database_migration_v3_1_0": True,
@@ -5055,6 +5091,39 @@ def decision_module_validate_endpoint(module_id: str, req: ModuleContractRequest
     return {"version": APP_VERSION, **result}
 
 
+def unified_module_registry_endpoint():
+    persistence = database_status()
+    return {"ok": True, "version": APP_VERSION, "registry": unified_registry(persistence)}
+
+
+def unified_module_registry_modules_endpoint():
+    modules = unified_modules()
+    return {"ok": True, "version": APP_VERSION, "schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA, "count": len(modules), "modules": modules}
+
+
+def unified_module_registry_module_endpoint(module_id: str):
+    module = unified_module_entry(module_id)
+    if not module:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": "unknown_module", "module_id": module_id})
+    return {"ok": True, "version": APP_VERSION, "schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA, "module": module}
+
+
+def unified_module_registry_capabilities_endpoint():
+    return {"ok": True, "version": APP_VERSION, "capability_index": unified_capability_index()}
+
+
+def unified_module_registry_providers_endpoint():
+    return {"ok": True, "version": APP_VERSION, "provider_index": unified_provider_index()}
+
+
+def unified_module_registry_readiness_endpoint():
+    return {"ok": True, "version": APP_VERSION, "readiness": unified_registry_readiness(database_status())}
+
+
+def unified_module_registry_validate_endpoint(req: UnifiedRegistryValidateRequest):
+    return {"version": APP_VERSION, **validate_unified_registry(req.registry, strict=req.strict)}
+
+
 def persistence_status_endpoint():
     status = database_status()
     return {"ok": (not status["required"] or (status["connected"] and status["schema_current"])), "version": APP_VERSION, "persistence": status}
@@ -5978,6 +6047,7 @@ def health():
         "decision_kernel_schema": DECISION_KERNEL_SCHEMA,
         "decision_module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
         "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
+        "unified_decision_module_registry_schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
         "registered_decision_modules": module_registry()["module_count"],
         "persistence_schema": PERSISTENCE_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,

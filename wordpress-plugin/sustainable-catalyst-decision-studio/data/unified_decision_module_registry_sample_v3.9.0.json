@@ -1,0 +1,25 @@
+{
+  "schema": "scds-unified-decision-module-registry/1.0",
+  "version": "1.0",
+  "module_count": 4,
+  "module_ids": [
+    "canvas",
+    "finance",
+    "narrative-risk",
+    "global-impact"
+  ],
+  "all_modules_authoritative": true,
+  "storage_authority": "python-postgresql",
+  "compute_authorities": {
+    "finance": "workbench",
+    "global-impact": "workbench"
+  },
+  "final_decision_authority": "human-governed",
+  "legacy_decision_modules_endpoints_preserved": true,
+  "example_query": {
+    "capability": "sdg-alignment",
+    "resolved_modules": [
+      "global-impact"
+    ]
+  }
+}

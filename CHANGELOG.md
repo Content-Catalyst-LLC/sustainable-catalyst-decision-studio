@@ -1,3 +1,11 @@
+
+## 3.9.0 — Unified Decision Module Registry
+
+- Added canonical unified registry for Canvas, Finance, Narrative Risk, and Global Impact Catalyst.
+- Added provider, capability, readiness, module-detail, and registry-validation surfaces.
+- Preserved all four Python/PostgreSQL authoritative domains and legacy module contract endpoints.
+- No database schema migration; Workbench compute boundaries and human final-decision authority preserved.
+
 # Changelog
 
 ## v3.8.0 — Global Impact Catalyst Python Domain Migration

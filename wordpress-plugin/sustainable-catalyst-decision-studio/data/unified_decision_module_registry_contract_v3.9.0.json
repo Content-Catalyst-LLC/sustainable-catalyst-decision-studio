@@ -1,0 +1,827 @@
+{
+  "schema": "scds-unified-decision-module-registry/1.0",
+  "version": "1.0",
+  "registry_role": "canonical-module-discovery-and-readiness-control-plane",
+  "registry_authority": "decision-studio-kernel",
+  "kernel_schema": "scds-decision-kernel/1.0",
+  "module_contract_schema": "scds-decision-module-contract/1.0",
+  "legacy_registry_schema": "scds-decision-module-registry/1.0",
+  "module_count": 4,
+  "module_ids": [
+    "canvas",
+    "finance",
+    "narrative-risk",
+    "global-impact"
+  ],
+  "modules": [
+    {
+      "module_id": "canvas",
+      "display_name": "Canvas",
+      "domain": "general-decision-architecture",
+      "purpose": "General structured decision framing, comparison, review, and outcome architecture.",
+      "status": "python-domain-authoritative",
+      "route_prefix": "/canvas",
+      "schemas": {
+        "kernel": "scds-decision-kernel/1.0",
+        "module_contract": "scds-decision-module-contract/1.0",
+        "legacy_registry": "scds-decision-module-registry/1.0",
+        "domain": "scds-canvas-domain/1.0",
+        "repository": "scds-python-decision-repository/1.0"
+      },
+      "authority": {
+        "registration": "decision-studio-kernel",
+        "storage": "python-postgresql",
+        "compute": null,
+        "final_decision": "human-governed"
+      },
+      "extends_kernel_objects": [
+        "decision",
+        "alternative",
+        "criterion",
+        "evidence_ref",
+        "assumption",
+        "scenario",
+        "recommendation",
+        "review",
+        "outcome"
+      ],
+      "capabilities": [
+        "decision-framing",
+        "objectives-and-constraints",
+        "stakeholder-mapping",
+        "criteria-and-alternatives",
+        "evidence-and-assumptions",
+        "scenario-structure",
+        "tradeoff-analysis",
+        "recommendation-review",
+        "outcome-recording"
+      ],
+      "providers": {
+        "persistence_authority": "python-postgresql",
+        "evidence": [
+          "knowledge-library",
+          "research-librarian"
+        ],
+        "compute": [
+          "workbench",
+          "workspace",
+          "research-lab"
+        ],
+        "context": [
+          "site-intelligence"
+        ]
+      },
+      "normalized_postgresql_tables": [
+        "alternatives",
+        "criteria",
+        "assumptions",
+        "decision_objects",
+        "decision_module_bindings",
+        "decision_events"
+      ],
+      "security": {
+        "read_scope": "canvas:read",
+        "write_scope": "canvas:write",
+        "repository_key_also_authorized": true
+      },
+      "compatibility": {
+        "legacy_catalyst_canvas_import": true,
+        "legacy_wordpress_source_preserved": true,
+        "typed_platform_artifact_adapter_preserved": true,
+        "decision_packet_projection_preserved": true
+      },
+      "boundaries": {
+        "shared_decision_identity_owned_by_kernel": true,
+        "final_decision_authority": "human-governed",
+        "automatic_winner_selection": false,
+        "automatic_recommendation": false,
+        "automatic_approval": false,
+        "finance_compute_authority_unchanged": "workbench"
+      },
+      "endpoints": {
+        "domain_contract": "/canvas/contract",
+        "legacy_module_contract": "/decision-modules/canvas",
+        "unified_registry_entry": "/decision-module-registry/modules/canvas"
+      }
+    },
+    {
+      "module_id": "finance",
+      "display_name": "Finance",
+      "domain": "financial-and-economic-decision-analysis",
+      "purpose": "Financial assumptions, cash-flow, valuation, cost-benefit, capital, and financial-risk decision context.",
+      "status": "python-domain-authoritative",
+      "route_prefix": "/finance",
+      "schemas": {
+        "kernel": "scds-decision-kernel/1.0",
+        "module_contract": "scds-decision-module-contract/1.0",
+        "legacy_registry": "scds-decision-module-registry/1.0",
+        "domain": "scds-finance-domain/1.0",
+        "repository": "scds-python-decision-repository/1.0"
+      },
+      "authority": {
+        "registration": "decision-studio-kernel",
+        "storage": "python-postgresql",
+        "compute": "workbench",
+        "final_decision": "human-governed"
+      },
+      "extends_kernel_objects": [
+        "decision",
+        "alternative",
+        "criterion",
+        "assumption",
+        "scenario",
+        "artifact_ref",
+        "provenance_ref",
+        "recommendation"
+      ],
+      "capabilities": [
+        "financial-assumptions",
+        "cash-flow-model-reference",
+        "valuation-reference",
+        "cost-and-revenue-objects",
+        "capital-and-discounting",
+        "financial-risk",
+        "financial-scenarios",
+        "financial-sensitivity",
+        "cost-benefit-analysis"
+      ],
+      "providers": {
+        "persistence_authority": "python-postgresql",
+        "compute_authority": "workbench",
+        "datasets": [
+          "workspace",
+          "knowledge-library"
+        ],
+        "research": [
+          "research-librarian",
+          "research-lab"
+        ]
+      },
+      "normalized_postgresql_tables": [
+        "assumptions",
+        "scenarios",
+        "scenario_variables",
+        "uncertainty_models",
+        "artifacts",
+        "decision_objects",
+        "decision_module_bindings",
+        "decision_events"
+      ],
+      "security": {
+        "read_scope": "finance:read",
+        "write_scope": "finance:write",
+        "repository_key_also_authorized": true
+      },
+      "compatibility": {
+        "legacy_catalyst_finance_import": true,
+        "legacy_wordpress_source_preserved": true,
+        "typed_platform_artifact_adapter_preserved": true,
+        "decision_packet_projection_preserved": true,
+        "workbench_handoff_contract_preserved": true
+      },
+      "boundaries": {
+        "shared_decision_identity_owned_by_kernel": true,
+        "workbench_is_compute_authority": true,
+        "decision_studio_executes_financial_models": false,
+        "model_output_is_automatic_recommendation": false,
+        "financial_score_is_final_decision_authority": false,
+        "automatic_approval": false,
+        "final_decision_authority": "human-governed"
+      },
+      "endpoints": {
+        "domain_contract": "/finance/contract",
+        "legacy_module_contract": "/decision-modules/finance",
+        "unified_registry_entry": "/decision-module-registry/modules/finance"
+      }
+    },
+    {
+      "module_id": "narrative-risk",
+      "display_name": "Narrative Risk",
+      "domain": "qualitative-narrative-and-emerging-risk-analysis",
+      "purpose": "Claims, risk drivers, signals, actors, exposures, impacts, scenarios, mitigations, and competing narratives.",
+      "status": "python-domain-authoritative",
+      "route_prefix": "/narrative-risk",
+      "schemas": {
+        "kernel": "scds-decision-kernel/1.0",
+        "module_contract": "scds-decision-module-contract/1.0",
+        "legacy_registry": "scds-decision-module-registry/1.0",
+        "domain": "scds-narrative-risk-domain/1.0",
+        "repository": "scds-python-decision-repository/1.0"
+      },
+      "authority": {
+        "registration": "decision-studio-kernel",
+        "storage": "python-postgresql",
+        "compute": null,
+        "final_decision": "human-governed"
+      },
+      "extends_kernel_objects": [
+        "decision",
+        "evidence_ref",
+        "assumption",
+        "scenario",
+        "challenge",
+        "artifact_ref",
+        "provenance_ref",
+        "outcome"
+      ],
+      "capabilities": [
+        "risk-narratives",
+        "risk-claims",
+        "risk-drivers-and-signals",
+        "risk-events-and-actors",
+        "exposure-and-impact",
+        "likelihood-context",
+        "risk-scenarios",
+        "mitigations",
+        "competing-narratives",
+        "contradiction-tracing"
+      ],
+      "providers": {
+        "persistence_authority": "python-postgresql",
+        "evidence": [
+          "knowledge-library",
+          "research-librarian"
+        ],
+        "graphs": [
+          "platform-core"
+        ],
+        "context": [
+          "site-intelligence"
+        ],
+        "research": [
+          "research-lab"
+        ]
+      },
+      "normalized_postgresql_tables": [
+        "claims",
+        "evidence_links",
+        "artifacts",
+        "decision_objects",
+        "decision_module_bindings",
+        "decision_events"
+      ],
+      "security": {
+        "read_scope": "narrative-risk:read",
+        "write_scope": "narrative-risk:write",
+        "repository_key_also_authorized": true
+      },
+      "compatibility": {
+        "legacy_narrative_risk_import": true,
+        "legacy_wordpress_source_preserved": true,
+        "typed_platform_artifact_adapter_preserved": true,
+        "decision_packet_projection_preserved": true
+      },
+      "boundaries": {
+        "shared_decision_identity_owned_by_kernel": true,
+        "claim_is_not_fact_without_evidence": true,
+        "signal_is_not_causality": true,
+        "narrative_is_not_truth_verification": true,
+        "risk_likelihood_preserves_uncertainty": true,
+        "automatic_truth_verification": false,
+        "automatic_causality_inference": false,
+        "automatic_recommendation": false,
+        "automatic_escalation_or_action": false,
+        "final_decision_authority": "human-governed"
+      },
+      "endpoints": {
+        "domain_contract": "/narrative-risk/contract",
+        "legacy_module_contract": "/decision-modules/narrative-risk",
+        "unified_registry_entry": "/decision-module-registry/modules/narrative-risk"
+      }
+    },
+    {
+      "module_id": "global-impact",
+      "display_name": "Global Impact Catalyst",
+      "domain": "sustainability-global-impact-and-development-analysis",
+      "purpose": "Environmental, social, economic, carbon, resource, SDG, geographic, and distributional impact decision context.",
+      "status": "python-domain-authoritative",
+      "route_prefix": "/global-impact",
+      "schemas": {
+        "kernel": "scds-decision-kernel/1.0",
+        "module_contract": "scds-decision-module-contract/1.0",
+        "legacy_registry": "scds-decision-module-registry/1.0",
+        "domain": "scds-global-impact-domain/1.0",
+        "repository": "scds-python-decision-repository/1.0"
+      },
+      "authority": {
+        "registration": "decision-studio-kernel",
+        "storage": "python-postgresql",
+        "compute": "workbench",
+        "final_decision": "human-governed"
+      },
+      "extends_kernel_objects": [
+        "decision",
+        "alternative",
+        "criterion",
+        "evidence_ref",
+        "assumption",
+        "scenario",
+        "artifact_ref",
+        "provenance_ref",
+        "outcome"
+      ],
+      "capabilities": [
+        "impact-objectives",
+        "indicators-and-targets",
+        "impact-boundaries",
+        "impact-stakeholders",
+        "impact-pathways",
+        "environmental-impact",
+        "social-impact",
+        "economic-impact",
+        "sdg-alignment",
+        "carbon-impact",
+        "resource-impact",
+        "distributional-impact",
+        "impact-scenarios"
+      ],
+      "providers": {
+        "persistence_authority": "python-postgresql",
+        "compute_authority": "workbench",
+        "evidence": [
+          "knowledge-library",
+          "research-librarian"
+        ],
+        "datasets": [
+          "workspace",
+          "knowledge-library"
+        ],
+        "research": [
+          "research-lab"
+        ],
+        "spatial_and_live_context": [
+          "site-intelligence"
+        ]
+      },
+      "normalized_postgresql_tables": [
+        "claims",
+        "evidence_links",
+        "artifacts",
+        "decision_objects",
+        "decision_module_bindings",
+        "decision_events"
+      ],
+      "security": {
+        "read_scope": "global-impact:read",
+        "write_scope": "global-impact:write",
+        "repository_key_also_authorized": true
+      },
+      "compatibility": {
+        "legacy_global_impact_import": true,
+        "legacy_wordpress_source_preserved": true,
+        "typed_platform_artifact_adapter_preserved": true,
+        "decision_packet_projection_preserved": true,
+        "workbench_handoff_contract_preserved": true
+      },
+      "boundaries": {
+        "shared_decision_identity_owned_by_kernel": true,
+        "sdg_alignment_is_not_proof_of_impact": true,
+        "modeled_impact_is_not_observed_outcome": true,
+        "indicator_change_is_not_causal_attribution": true,
+        "distributional_judgments_remain_explicit_and_reviewable": true,
+        "workbench_is_compute_authority": true,
+        "decision_studio_executes_impact_models": false,
+        "automatic_impact_verification": false,
+        "automatic_sustainability_rating": false,
+        "automatic_recommendation": false,
+        "automatic_approval": false,
+        "final_decision_authority": "human-governed"
+      },
+      "endpoints": {
+        "domain_contract": "/global-impact/contract",
+        "legacy_module_contract": "/decision-modules/global-impact",
+        "unified_registry_entry": "/decision-module-registry/modules/global-impact"
+      }
+    }
+  ],
+  "capability_index": {
+    "schema": "scds-unified-decision-module-registry/1.0",
+    "capability_count": 41,
+    "capabilities": [
+      {
+        "capability": "capital-and-discounting",
+        "modules": [
+          "finance"
+        ]
+      },
+      {
+        "capability": "carbon-impact",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "cash-flow-model-reference",
+        "modules": [
+          "finance"
+        ]
+      },
+      {
+        "capability": "competing-narratives",
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "capability": "contradiction-tracing",
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "capability": "cost-and-revenue-objects",
+        "modules": [
+          "finance"
+        ]
+      },
+      {
+        "capability": "cost-benefit-analysis",
+        "modules": [
+          "finance"
+        ]
+      },
+      {
+        "capability": "criteria-and-alternatives",
+        "modules": [
+          "canvas"
+        ]
+      },
+      {
+        "capability": "decision-framing",
+        "modules": [
+          "canvas"
+        ]
+      },
+      {
+        "capability": "distributional-impact",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "economic-impact",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "environmental-impact",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "evidence-and-assumptions",
+        "modules": [
+          "canvas"
+        ]
+      },
+      {
+        "capability": "exposure-and-impact",
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "capability": "financial-assumptions",
+        "modules": [
+          "finance"
+        ]
+      },
+      {
+        "capability": "financial-risk",
+        "modules": [
+          "finance"
+        ]
+      },
+      {
+        "capability": "financial-scenarios",
+        "modules": [
+          "finance"
+        ]
+      },
+      {
+        "capability": "financial-sensitivity",
+        "modules": [
+          "finance"
+        ]
+      },
+      {
+        "capability": "impact-boundaries",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "impact-objectives",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "impact-pathways",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "impact-scenarios",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "impact-stakeholders",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "indicators-and-targets",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "likelihood-context",
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "capability": "mitigations",
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "capability": "objectives-and-constraints",
+        "modules": [
+          "canvas"
+        ]
+      },
+      {
+        "capability": "outcome-recording",
+        "modules": [
+          "canvas"
+        ]
+      },
+      {
+        "capability": "recommendation-review",
+        "modules": [
+          "canvas"
+        ]
+      },
+      {
+        "capability": "resource-impact",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "risk-claims",
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "capability": "risk-drivers-and-signals",
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "capability": "risk-events-and-actors",
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "capability": "risk-narratives",
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "capability": "risk-scenarios",
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "capability": "scenario-structure",
+        "modules": [
+          "canvas"
+        ]
+      },
+      {
+        "capability": "sdg-alignment",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "social-impact",
+        "modules": [
+          "global-impact"
+        ]
+      },
+      {
+        "capability": "stakeholder-mapping",
+        "modules": [
+          "canvas"
+        ]
+      },
+      {
+        "capability": "tradeoff-analysis",
+        "modules": [
+          "canvas"
+        ]
+      },
+      {
+        "capability": "valuation-reference",
+        "modules": [
+          "finance"
+        ]
+      }
+    ]
+  },
+  "provider_index": {
+    "schema": "scds-unified-decision-module-registry/1.0",
+    "provider_count": 8,
+    "providers": [
+      {
+        "provider": "knowledge-library",
+        "roles": [
+          "datasets",
+          "evidence"
+        ],
+        "modules": [
+          "canvas",
+          "finance",
+          "global-impact",
+          "narrative-risk"
+        ]
+      },
+      {
+        "provider": "platform-core",
+        "roles": [
+          "graphs"
+        ],
+        "modules": [
+          "narrative-risk"
+        ]
+      },
+      {
+        "provider": "python-postgresql",
+        "roles": [
+          "persistence_authority"
+        ],
+        "modules": [
+          "canvas",
+          "finance",
+          "global-impact",
+          "narrative-risk"
+        ]
+      },
+      {
+        "provider": "research-lab",
+        "roles": [
+          "compute",
+          "research"
+        ],
+        "modules": [
+          "canvas",
+          "finance",
+          "global-impact",
+          "narrative-risk"
+        ]
+      },
+      {
+        "provider": "research-librarian",
+        "roles": [
+          "evidence",
+          "research"
+        ],
+        "modules": [
+          "canvas",
+          "finance",
+          "global-impact",
+          "narrative-risk"
+        ]
+      },
+      {
+        "provider": "site-intelligence",
+        "roles": [
+          "context",
+          "spatial_and_live_context"
+        ],
+        "modules": [
+          "canvas",
+          "global-impact",
+          "narrative-risk"
+        ]
+      },
+      {
+        "provider": "workbench",
+        "roles": [
+          "compute",
+          "compute_authority"
+        ],
+        "modules": [
+          "canvas",
+          "finance",
+          "global-impact"
+        ]
+      },
+      {
+        "provider": "workspace",
+        "roles": [
+          "compute",
+          "datasets"
+        ],
+        "modules": [
+          "canvas",
+          "finance",
+          "global-impact"
+        ]
+      }
+    ]
+  },
+  "readiness": {
+    "schema": "scds-unified-decision-module-registry/1.0",
+    "ready": true,
+    "module_count": 4,
+    "authoritative_module_count": 4,
+    "all_modules_authoritative": true,
+    "persistence_ready": null,
+    "storage_authority": "python-postgresql",
+    "compute_authorities": {
+      "finance": "workbench",
+      "global-impact": "workbench"
+    },
+    "final_decision_authority": "human-governed",
+    "modules": [
+      {
+        "module_id": "canvas",
+        "status": "python-domain-authoritative",
+        "domain_schema": "scds-canvas-domain/1.0",
+        "storage_authority": "python-postgresql",
+        "compute_authority": null,
+        "read_scope": "canvas:read",
+        "write_scope": "canvas:write",
+        "ready": true
+      },
+      {
+        "module_id": "finance",
+        "status": "python-domain-authoritative",
+        "domain_schema": "scds-finance-domain/1.0",
+        "storage_authority": "python-postgresql",
+        "compute_authority": "workbench",
+        "read_scope": "finance:read",
+        "write_scope": "finance:write",
+        "ready": true
+      },
+      {
+        "module_id": "narrative-risk",
+        "status": "python-domain-authoritative",
+        "domain_schema": "scds-narrative-risk-domain/1.0",
+        "storage_authority": "python-postgresql",
+        "compute_authority": null,
+        "read_scope": "narrative-risk:read",
+        "write_scope": "narrative-risk:write",
+        "ready": true
+      },
+      {
+        "module_id": "global-impact",
+        "status": "python-domain-authoritative",
+        "domain_schema": "scds-global-impact-domain/1.0",
+        "storage_authority": "python-postgresql",
+        "compute_authority": "workbench",
+        "read_scope": "global-impact:read",
+        "write_scope": "global-impact:write",
+        "ready": true
+      }
+    ]
+  },
+  "compatibility": {
+    "legacy_decision_modules_endpoints_preserved": true,
+    "legacy_registry_module_count": 4,
+    "legacy_registry_module_ids": [
+      "canvas",
+      "finance",
+      "global-impact",
+      "narrative-risk"
+    ],
+    "domain_contract_endpoints_preserved": true,
+    "public_api_breaking_change": false
+  },
+  "governance": {
+    "registry_does_not_execute_domain_computation": true,
+    "registry_does_not_change_module_storage_authority": true,
+    "registry_does_not_infer_truth_or_causality": true,
+    "registry_does_not_auto_recommend": true,
+    "registry_does_not_auto_approve": true,
+    "final_decision_authority": "human-governed"
+  }
+}

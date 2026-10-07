@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Connected Decision Intelligence unifies the eight-stage decision lifecycle, readiness, cross-product routing, lineage, and human-controlled progression across the Sustainable Catalyst platform.
- * Version: 3.8.0
+ * Version: 3.9.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,9 +12,9 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '3.8.0';
-    const BUILD_FINGERPRINT = 'scds-v3.8.0-global-impact-catalyst-python-domain-migration';
-    const SOURCE_COMMIT = 'release-v3.8.0';
+    const VERSION = '3.9.0';
+    const BUILD_FINGERPRINT = 'scds-v3.9.0-unified-decision-module-registry';
+    const SOURCE_COMMIT = 'release-v3.9.0';
     const RELEASE_DATE = '2026-10-06';
     const DB_VERSION = '3.0.0';
     const DB_VERSION_OPTION = 'scds_db_version';
@@ -92,6 +92,7 @@ class Sustainable_Catalyst_Decision_Studio {
     const DECISION_LIFECYCLE_STATE_SCHEMA = 'scds-decision-lifecycle-state/1.0';
     const DECISION_READINESS_MATRIX_SCHEMA = 'scds-decision-readiness-matrix/1.0';
     const CROSS_PRODUCT_ROUTE_PLAN_SCHEMA = 'scds-cross-product-route-plan/1.0';
+    const UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA = 'scds-unified-decision-module-registry/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);

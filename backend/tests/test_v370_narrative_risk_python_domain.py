@@ -55,14 +55,14 @@ def _decision(monkeypatch, tmp_path, decision_id='dec-v370'):
 
 def test_v370_narrative_risk_contract_and_release_boundary():
     health = client.get('/health').json()
-    assert health['version'] == '3.8.0'
+    assert health['version'] == '3.9.0'
     assert health['narrative_risk_domain_schema'] == NARRATIVE_RISK_DOMAIN_SCHEMA
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Global Impact Catalyst Python Domain Migration'
-    assert release['build_fingerprint'] == 'scds-v3.8.0-global-impact-catalyst-python-domain-migration'
+    assert release['release_name'] == 'Unified Decision Module Registry'
+    assert release['build_fingerprint'] == 'scds-v3.9.0-unified-decision-module-registry'
     assert release['backend_architecture']['database_migration'] is False
     assert release['backend_architecture']['narrative_risk_python_domain_migration'] is False
-    assert release['backend_architecture']['global_impact_python_domain_migration'] is True
+    assert release['backend_architecture']['global_impact_python_domain_migration'] is False
     assert release['backend_architecture']['finance_python_domain_migration'] is False
     assert release['narrative_risk']['status'] == 'python-domain-authoritative'
     assert release['narrative_risk']['automatic_truth_verification'] is False

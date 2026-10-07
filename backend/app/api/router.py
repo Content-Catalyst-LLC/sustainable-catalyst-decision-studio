@@ -18,6 +18,7 @@ from app.api.routes.canvas import router as canvas_router
 from app.api.routes.finance import router as finance_router
 from app.api.routes.narrative_risk import router as narrative_risk_router
 from app.api.routes.global_impact import router as global_impact_router
+from app.api.routes.module_registry import router as module_registry_router
 
 api_router = APIRouter()
 api_router.include_router(energy_runtime_consumer_router)
@@ -40,3 +41,4 @@ api_router.include_router(canvas_router)
 api_router.include_router(finance_router)
 api_router.include_router(narrative_risk_router)
 api_router.include_router(global_impact_router)
+api_router.include_router(module_registry_router)
