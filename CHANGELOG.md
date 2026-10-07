@@ -439,3 +439,10 @@
 ## 1.0.0
 - Renamed and upgraded the earlier sustainability platform prototype into Sustainable Catalyst Decision Studio.
 - Added modular shortcodes, admin dashboards, validation dashboard, export center, report templates, and backend-ready REST routes.
+
+
+## 3.10.0 — Cross-Module Decision Composition
+
+- Added governed composition across Canvas, Finance, Narrative Risk, and Global Impact.
+- Added seven composition API routes, explicit cross-module links, module ownership projection, fingerprints, staleness diagnostics, and explicit refresh.
+- Preserved the 20-table PostgreSQL schema, v3.9 Unified Module Registry, Workbench compute boundaries, and human final-decision authority.

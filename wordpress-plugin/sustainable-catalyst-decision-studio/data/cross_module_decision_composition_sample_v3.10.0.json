@@ -1,0 +1,48 @@
+{
+  "schema": "scds-cross-module-decision-composition/1.0",
+  "version": "1.0",
+  "decision_id": "dec-sample",
+  "title": "Sample cross-module composition",
+  "purpose": "Demonstrate explicit governed composition.",
+  "selected_modules": [
+    "canvas",
+    "finance",
+    "narrative-risk",
+    "global-impact"
+  ],
+  "cross_module_links": [
+    {
+      "relation": "tradeoff",
+      "source_module": "finance",
+      "source_ref": "workbench:valuation-1",
+      "target_module": "global-impact",
+      "target_ref": "indicator:lifecycle-carbon",
+      "note": "Human review required; neither metric dominates automatically."
+    },
+    {
+      "relation": "risk-context",
+      "source_module": "narrative-risk",
+      "source_ref": "claim:supply-risk",
+      "target_module": "canvas",
+      "target_ref": "alternative:pathway-a",
+      "note": "Explicit contextual link; no causal inference."
+    }
+  ],
+  "boundaries": {
+    "shared_decision_identity_owned_by_kernel": true,
+    "module_objects_retain_domain_ownership": true,
+    "composition_links_are_explicit_not_inferred": true,
+    "composition_does_not_merge_contradictory_claims": true,
+    "composition_does_not_infer_causality": true,
+    "composition_does_not_execute_domain_models": true,
+    "composition_does_not_auto_select_winner": true,
+    "composition_does_not_auto_recommend": true,
+    "composition_does_not_auto_approve": true
+  },
+  "authorities": {
+    "storage": "python-postgresql",
+    "finance_compute": "workbench",
+    "global_impact_compute": "workbench",
+    "final_decision": "human-governed"
+  }
+}

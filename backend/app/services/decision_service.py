@@ -256,6 +256,15 @@ from app.unified_module_registry import (
     unified_registry,
     validate_unified_registry,
 )
+from app.cross_module_composition import (
+    CROSS_MODULE_COMPOSITION_SCHEMA,
+    CompositionUpsertRequest,
+    CompositionValidateRequest,
+    CrossModuleCompositionRepository,
+    composition_contract,
+    composition_template,
+    validate_composition_document,
+)
 from app.domains.global_impact import (
     GLOBAL_IMPACT_DOMAIN_SCHEMA,
     GlobalImpactClaimsReplace,
@@ -310,9 +319,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.9.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.9.0-unified-decision-module-registry")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.9.0")
+APP_VERSION = "3.10.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.10.0-cross-module-decision-composition")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.10.0")
 RELEASE_DATE = "2026-10-06"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -387,7 +396,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Unified Decision Module Registry",
+        "release_name": "Cross-Module Decision Composition",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -462,6 +471,7 @@ def release_manifest() -> Dict[str, Any]:
         "decision_module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
         "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
         "unified_decision_module_registry_schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
+        "cross_module_decision_composition_schema": CROSS_MODULE_COMPOSITION_SCHEMA,
         "persistence_schema": PERSISTENCE_SCHEMA,
         "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
@@ -477,10 +487,10 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 19,
-            "included_router_count": 20,
-            "route_count": 249,
-            "previous_route_count": 242,
+            "router_registry_count": 20,
+            "included_router_count": 21,
+            "route_count": 256,
+            "previous_route_count": 249,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
             "database_migration": False,
@@ -494,13 +504,20 @@ def release_manifest() -> Dict[str, Any]:
             "unified_registry_schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
             "unified_registry_canonical": True,
             "legacy_module_registry_endpoints_preserved": True,
+            "cross_module_decision_composition": True,
+            "composition_schema": CROSS_MODULE_COMPOSITION_SCHEMA,
+            "composition_schema_migration": False,
+            "composition_infers_truth": False,
+            "composition_infers_causality": False,
+            "composition_auto_recommends": False,
+            "composition_auto_approves": False,
             "postgresql_persistence_foundation": True,
             "postgresql_live_authority": True,
             "persistence_authority": PERSISTENCE_AUTHORITY,
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": True,
-            "new_wordpress_authority_change_in_v3_9": False,
+            "new_wordpress_authority_change_in_v3_10": False,
             "canvas_wordpress_domain_authority_changed": True,
             "finance_wordpress_domain_authority_changed": True,
             "narrative_risk_wordpress_domain_authority_changed": True,
@@ -545,6 +562,24 @@ def release_manifest() -> Dict[str, Any]:
             "readiness_endpoint": True,
             "validation_endpoint": True,
             "database_migration": False,
+            "final_decision_authority": "human-governed",
+        },
+        "cross_module_composition": {
+            "schema": CROSS_MODULE_COMPOSITION_SCHEMA,
+            "registry_schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
+            "canonical_modules": 4,
+            "minimum_modules": 2,
+            "storage_authority": "python-postgresql",
+            "explicit_links_only": True,
+            "module_ownership_preserved": True,
+            "module_fingerprints": True,
+            "staleness_diagnostics": True,
+            "database_migration": False,
+            "composition_infers_truth": False,
+            "composition_infers_causality": False,
+            "composition_auto_selects_winner": False,
+            "composition_auto_recommends": False,
+            "composition_auto_approves": False,
             "final_decision_authority": "human-governed",
         },
         "persistence": {
@@ -768,6 +803,13 @@ def release_manifest() -> Dict[str, Any]:
             "unified_decision_module_registry": True,
             "unified_module_registry_canonical": True,
             "legacy_decision_modules_endpoints_preserved": True,
+            "cross_module_decision_composition": True,
+            "composition_schema": CROSS_MODULE_COMPOSITION_SCHEMA,
+            "composition_schema_migration": False,
+            "composition_infers_truth": False,
+            "composition_infers_causality": False,
+            "composition_auto_recommends": False,
+            "composition_auto_approves": False,
             "backend_service_decomposition": True,
             "route_contracts_preserved_v3_0_0": True,
             "no_database_migration_v3_1_0": True,
@@ -5124,6 +5166,95 @@ def unified_module_registry_validate_endpoint(req: UnifiedRegistryValidateReques
     return {"version": APP_VERSION, **validate_unified_registry(req.registry, strict=req.strict)}
 
 
+def _composition_scope_error(request: Request, scope: str):
+    supplied = request.headers.get("x-scds-api-key", "").strip()
+    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
+    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
+        return None
+    super_key = os.getenv("SCDS_API_KEY", "").strip()
+    if supplied and super_key and secrets.compare_digest(supplied, super_key):
+        return None
+    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError:
+        catalog = {}
+    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
+    if "*" in scopes or scope in scopes or (scope == "composition:read" and ("composition:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "composition:write" and "repository:write" in scopes):
+        return None
+    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "composition_scope_required", "required_scope": scope})
+
+
+def composition_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "composition_contract": composition_contract()}
+
+
+def composition_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "composition": composition_template()}
+
+
+def composition_validate_endpoint(req: CompositionValidateRequest):
+    return {"version": APP_VERSION, **validate_composition_document(req.composition, strict=req.strict)}
+
+
+def composition_get_endpoint(decision_id: str, request: Request):
+    auth = _composition_scope_error(request, "composition:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            composition = CrossModuleCompositionRepository(session).get(decision_id)
+            if composition is None:
+                return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": "composition_not_found", "decision_id": decision_id})
+            return {"ok": True, "version": APP_VERSION, "composition": composition}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+
+
+def composition_put_endpoint(decision_id: str, req: CompositionUpsertRequest, request: Request):
+    auth = _composition_scope_error(request, "composition:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            composition = CrossModuleCompositionRepository(session).upsert(decision_id, req)
+            return {"ok": True, "version": APP_VERSION, "composition": composition}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def composition_refresh_endpoint(decision_id: str, request: Request):
+    auth = _composition_scope_error(request, "composition:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            composition = CrossModuleCompositionRepository(session).refresh(decision_id)
+            return {"ok": True, "version": APP_VERSION, "composition": composition, "refreshed": True}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def composition_diagnostics_endpoint(decision_id: str, request: Request):
+    auth = _composition_scope_error(request, "composition:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            diagnostics = CrossModuleCompositionRepository(session).diagnostics(decision_id)
+            return {"ok": True, "version": APP_VERSION, "diagnostics": diagnostics}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+
+
 def persistence_status_endpoint():
     status = database_status()
     return {"ok": (not status["required"] or (status["connected"] and status["schema_current"])), "version": APP_VERSION, "persistence": status}
@@ -6048,6 +6179,7 @@ def health():
         "decision_module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
         "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
         "unified_decision_module_registry_schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
+        "cross_module_decision_composition_schema": CROSS_MODULE_COMPOSITION_SCHEMA,
         "registered_decision_modules": module_registry()["module_count"],
         "persistence_schema": PERSISTENCE_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,

@@ -46,3 +46,11 @@
 - Decision Studio orchestrates criteria, alternatives, tradeoffs, governance, approval, publication, implementation, monitoring, reassessment, and accountability.
 - Connected routes are structured handoffs and do not claim external acceptance or execution.
 - Automated assessment never replaces human approval, professional judgment, required assurance, security review, or accessibility testing.
+
+
+## v3.10.0 — Cross-Module Decision Composition
+
+- Compose two or more authoritative Decision Studio modules under one shared Decision Kernel identity.
+- Preserve module ownership, explicit cross-module links, Workbench compute authority, provenance, and human final-decision authority.
+- Store compositions in the existing Python/PostgreSQL repository with no schema migration.
+- Next: v3.11.0 — Module Artifact & Provenance Standard.

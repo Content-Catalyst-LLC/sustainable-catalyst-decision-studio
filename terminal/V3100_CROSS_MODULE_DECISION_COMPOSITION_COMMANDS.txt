@@ -1,0 +1,35 @@
+DECISION STUDIO v3.10.0 — CROSS-MODULE DECISION COMPOSITION
+
+1) APPLY / TEST / PUSH ON MAC
+
+cd ~/Downloads
+rm -rf scds-v3.10.0-cross-module-composition
+unzip -q sustainable-catalyst-decision-studio-v3.10.0-repository.zip -d scds-v3.10.0-cross-module-composition
+cd scds-v3.10.0-cross-module-composition/sustainable-catalyst-decision-studio
+chmod +x APPLY_AND_PUSH_DECISION_STUDIO_V3100.sh
+./APPLY_AND_PUSH_DECISION_STUDIO_V3100.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+2) VERIFY GIT
+
+cd ~/Downloads/sustainable-catalyst-decision-studio
+git status --short
+git log -1 --oneline
+git tag --points-at HEAD
+
+3) DEPLOY BACKEND FROM MAC
+
+cd ~/Downloads
+chmod +x deploy_decision_studio_v3_10_0_from_macos.sh upgrade_decision_studio_backend_v3_10_0_contabo.sh
+./deploy_decision_studio_v3_10_0_from_macos.sh
+
+4) VERIFY PUBLIC BACKEND
+
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-composition/contract | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-module-registry/readiness | python3 -m json.tool
+
+Expected production version: 3.10.0
+Expected composition schema: scds-cross-module-decision-composition/1.0
+Expected Alembic revision: 0001_v330_pg_foundation
+Expected persistence tables: 20
+Expected final decision authority: human-governed

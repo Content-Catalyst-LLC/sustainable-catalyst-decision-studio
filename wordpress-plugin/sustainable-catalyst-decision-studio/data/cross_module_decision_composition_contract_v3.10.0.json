@@ -1,0 +1,49 @@
+{
+  "schema": "scds-cross-module-decision-composition/1.0",
+  "version": "1.0",
+  "registry_schema": "scds-unified-decision-module-registry/1.0",
+  "role": "governed-cross-module-decision-composition",
+  "canonical_modules": [
+    "canvas",
+    "finance",
+    "narrative-risk",
+    "global-impact"
+  ],
+  "minimum_modules": 2,
+  "storage_authority": "python-postgresql",
+  "final_decision_authority": "human-governed",
+  "principles": {
+    "shared_decision_identity_owned_by_kernel": true,
+    "module_objects_retain_domain_ownership": true,
+    "composition_links_are_explicit_not_inferred": true,
+    "composition_does_not_merge_contradictory_claims": true,
+    "composition_does_not_infer_causality": true,
+    "composition_does_not_execute_domain_models": true,
+    "composition_does_not_auto_select_winner": true,
+    "composition_does_not_auto_recommend": true,
+    "composition_does_not_auto_approve": true
+  },
+  "compute_authorities": {
+    "finance": "workbench",
+    "global-impact": "workbench"
+  },
+  "security": {
+    "read_scope": "composition:read",
+    "write_scope": "composition:write",
+    "repository_key_also_authorized": true
+  },
+  "persistence": {
+    "table": "decision_objects",
+    "object_type": "cross-module-decision-composition",
+    "schema_migration_required": false
+  },
+  "routes": [
+    "GET /decision-composition/contract",
+    "GET /decision-composition/template",
+    "POST /decision-composition/validate",
+    "GET /decision-composition/decisions/{decision_id}",
+    "PUT /decision-composition/decisions/{decision_id}",
+    "POST /decision-composition/decisions/{decision_id}/refresh",
+    "GET /decision-composition/decisions/{decision_id}/diagnostics"
+  ]
+}

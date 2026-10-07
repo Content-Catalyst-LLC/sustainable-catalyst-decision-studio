@@ -20,15 +20,15 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: sustainable-catalyst-decision-studio:3.9.0
+    image: sustainable-catalyst-decision-studio:3.10.0
     container_name: sc-decision-studio
     restart: unless-stopped
     env_file:
       - .env.persistence-v330
     environment:
       PORT: 8089
-      SCDS_BUILD_FINGERPRINT: scds-v3.9.0-unified-decision-module-registry
-      SCDS_SOURCE_COMMIT: release-v3.9.0
+      SCDS_BUILD_FINGERPRINT: scds-v3.10.0-cross-module-decision-composition
+      SCDS_SOURCE_COMMIT: release-v3.10.0
       SCDS_MAX_REQUEST_BYTES: 1048576
       SCDS_PUBLIC_RATE_LIMIT: 60
       SCDS_PERSISTENCE_REQUIRED: "true"

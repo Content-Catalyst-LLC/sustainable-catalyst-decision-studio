@@ -40,3 +40,11 @@ Status: built. Typed source-owned handoffs, bounded analysis/computation request
 - Explicit stress gates and failure modes
 - Unified Decision Object attachment
 - No scenario likelihood inference, automatic winner selection, or automatic recommendation
+
+
+## v3.10.0 — Cross-Module Decision Composition
+
+- Compose two or more authoritative Decision Studio modules under one shared Decision Kernel identity.
+- Preserve module ownership, explicit cross-module links, Workbench compute authority, provenance, and human final-decision authority.
+- Store compositions in the existing Python/PostgreSQL repository with no schema migration.
+- Next: v3.11.0 — Module Artifact & Provenance Standard.

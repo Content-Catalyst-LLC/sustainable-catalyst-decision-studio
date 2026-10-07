@@ -4,7 +4,7 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 3.9.0
+Stable tag: 3.10.0
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
@@ -34,11 +34,11 @@ Process confidence summarizes documentation and analysis coverage. It is not a p
 
 == Changelog ==
 
-= 3.9.0 =
-* Adds the canonical Unified Decision Module Registry for Canvas, Finance, Narrative Risk, and Global Impact Catalyst.
-* Aggregates module schemas, authority state, providers, capabilities, security scopes, compatibility, and readiness without changing module ownership.
-* Preserves legacy /decision-modules and all domain contract endpoints; no PostgreSQL schema migration.
-* All four domains remain Python/PostgreSQL authoritative; Workbench retains Finance and Global Impact compute authority; final decision authority remains human-governed.
+= 3.10.0 =
+* Adds governed Cross-Module Decision Composition across Canvas, Finance, Narrative Risk, and Global Impact Catalyst.
+* Preserves module-owned objects while projecting shared Kernel objects with explicit cross-module links, fingerprints, staleness diagnostics, and explicit refresh.
+* Stores compositions in the existing decision_objects table; no PostgreSQL schema migration and no new authority cutover.
+* Workbench retains Finance and Global Impact compute authority; composition never infers truth/causality, auto-selects a winner, recommends, approves, or bypasses human review.
 
 = 3.5.0 =
 * Migrates Canvas to an authoritative Python/PostgreSQL domain over the shared Decision Kernel.
