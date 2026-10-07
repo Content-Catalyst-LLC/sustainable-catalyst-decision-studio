@@ -1,0 +1,62 @@
+{
+  "schema": "scds-narrative-risk-domain/1.0",
+  "version": "1.0",
+  "decision_id": "dec-sample-narrative-risk",
+  "risk_context": {
+    "scope": "emerging-risk"
+  },
+  "actors": [
+    {
+      "id": "actor-1",
+      "name": "Supplier network"
+    }
+  ],
+  "exposures": [
+    {
+      "id": "exposure-1",
+      "type": "operational-and-reputational"
+    }
+  ],
+  "narratives": [
+    {
+      "id": "narrative-1",
+      "label": "Supply disruption may persist"
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-1",
+      "text": "Supplier concentration may increase disruption exposure.",
+      "kind": "risk-hypothesis",
+      "epistemic_status": "unresolved"
+    }
+  ],
+  "signals": [
+    {
+      "id": "signal-1",
+      "label": "Extended outage report",
+      "signal_type": "operational",
+      "source_ref": "site-intelligence:signal:sample"
+    }
+  ],
+  "evidence_links": [
+    {
+      "id": "link-1",
+      "claim_id": "claim-1",
+      "evidence_ref": "library:evidence:sample",
+      "relation": "supports"
+    }
+  ],
+  "watch_conditions": [
+    {
+      "id": "watch-1",
+      "condition": "Outage exceeds 48 hours"
+    }
+  ],
+  "boundaries": {
+    "automatic_truth_verification": false,
+    "automatic_causality_inference": false,
+    "automatic_recommendation": false,
+    "automatic_escalation_or_action": false
+  }
+}

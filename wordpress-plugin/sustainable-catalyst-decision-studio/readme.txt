@@ -4,7 +4,7 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 3.6.0
+Stable tag: 3.7.0
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.

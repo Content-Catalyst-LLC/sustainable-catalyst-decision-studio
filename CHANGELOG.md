@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.7.0 — Narrative Risk Python Domain Migration
+
+- Migrated Narrative Risk domain state to authoritative Python/PostgreSQL persistence.
+- Normalized claims/risk hypotheses into `claims`, evidence relationships into `evidence_links`, and signals into `artifacts`.
+- Preserved actors, exposures, competing narratives, watch conditions, mitigations, and provenance in the canonical Narrative Risk decision object.
+- Added scoped Narrative Risk APIs and source-preserving legacy import.
+- Added explicit domain ownership and cross-domain isolation so Narrative Risk signal replacement cannot delete Finance Workbench receipts.
+- Preserved Canvas and Finance domain authority and Workbench Finance compute authority.
+- Preserved the 20-table schema and Alembic revision `0001_v330_pg_foundation`; no database schema migration.
+- Explicitly prohibits automatic truth verification, causality inference, recommendation, escalation, or action; final decisions remain human-governed.
+
 ## v3.6.0 — Finance Python Domain Migration
 
 - Migrated Finance domain state to authoritative Python/PostgreSQL persistence.

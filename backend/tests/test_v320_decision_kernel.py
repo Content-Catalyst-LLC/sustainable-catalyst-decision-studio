@@ -16,12 +16,12 @@ client = TestClient(app)
 
 def test_v320_release_identity_and_migration_boundary():
     health = client.get('/health').json()
-    assert health['version'] == '3.6.0'
+    assert health['version'] == '3.7.0'
     assert health['decision_kernel_schema'] == DECISION_KERNEL_SCHEMA
     assert health['registered_decision_modules'] == 4
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Finance Python Domain Migration'
-    assert release['build_fingerprint'] == 'scds-v3.6.0-finance-python-domain-migration'
+    assert release['release_name'] == 'Narrative Risk Python Domain Migration'
+    assert release['build_fingerprint'] == 'scds-v3.7.0-narrative-risk-python-domain-migration'
     assert release['decision_kernel']['module_count'] == 4
     assert release['decision_kernel']['database_migration'] is False
     assert release['decision_kernel']['wordpress_decision_object_authority_change'] is True

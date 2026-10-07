@@ -232,6 +232,18 @@ from app.domains.finance import (
     finance_domain_template,
 )
 
+from app.domains.narrative_risk import (
+    NARRATIVE_RISK_DOMAIN_SCHEMA,
+    NarrativeRiskClaimsReplace,
+    NarrativeRiskDomainRepository,
+    NarrativeRiskEvidenceLinksReplace,
+    NarrativeRiskLegacyImport,
+    NarrativeRiskSignalsReplace,
+    NarrativeRiskStateUpsert,
+    narrative_risk_domain_contract,
+    narrative_risk_domain_template,
+)
+
 from app.persistence import (
     EXPECTED_SCHEMA_REVISION,
     PERSISTENCE_AUTHORITY,
@@ -274,9 +286,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.6.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.6.0-finance-python-domain-migration")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.6.0")
+APP_VERSION = "3.7.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.7.0-narrative-risk-python-domain-migration")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.7.0")
 RELEASE_DATE = "2026-10-06"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -351,7 +363,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Finance Python Domain Migration",
+        "release_name": "Narrative Risk Python Domain Migration",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -430,6 +442,7 @@ def release_manifest() -> Dict[str, Any]:
         "repository_schema": REPOSITORY_SCHEMA,
         "canvas_domain_schema": CANVAS_DOMAIN_SCHEMA,
         "finance_domain_schema": FINANCE_DOMAIN_SCHEMA,
+        "narrative_risk_domain_schema": NARRATIVE_RISK_DOMAIN_SCHEMA,
         "backend_architecture": {
             "decomposition_release": True,
             "decision_kernel_foundation": True,
@@ -438,26 +451,28 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 16,
-            "included_router_count": 17,
-            "route_count": 220,
-            "previous_route_count": 209,
+            "router_registry_count": 17,
+            "included_router_count": 18,
+            "route_count": 231,
+            "previous_route_count": 220,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
             "database_migration": False,
             "persistence_schema_migration_preserved": True,
             "repository_authority_migration": False,
             "canvas_python_domain_migration": False,
-            "finance_python_domain_migration": True,
+            "finance_python_domain_migration": False,
+            "narrative_risk_python_domain_migration": True,
             "postgresql_persistence_foundation": True,
             "postgresql_live_authority": True,
             "persistence_authority": PERSISTENCE_AUTHORITY,
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": True,
-            "new_wordpress_authority_change_in_v3_6": False,
+            "new_wordpress_authority_change_in_v3_7": False,
             "canvas_wordpress_domain_authority_changed": True,
             "finance_wordpress_domain_authority_changed": True,
+            "narrative_risk_wordpress_domain_authority_changed": True,
             "public_api_contract_breaking_changes": False,
         },
         "decision_kernel": {
@@ -478,6 +493,8 @@ def release_manifest() -> Dict[str, Any]:
             "finance_domain_schema": FINANCE_DOMAIN_SCHEMA,
             "finance_python_domain_authoritative": True,
             "finance_compute_authority": "workbench",
+            "narrative_risk_domain_schema": NARRATIVE_RISK_DOMAIN_SCHEMA,
+            "narrative_risk_python_domain_authoritative": True,
         },
         "persistence": {
             "schema": PERSISTENCE_SCHEMA,
@@ -516,6 +533,20 @@ def release_manifest() -> Dict[str, Any]:
             "decision_studio_executes_financial_models": False,
             "automatic_recommendation": False,
             "financial_score_is_final_decision_authority": False,
+            "final_decision_authority": "human-governed",
+        },
+        "narrative_risk": {
+            "schema": NARRATIVE_RISK_DOMAIN_SCHEMA,
+            "module_id": "narrative-risk",
+            "status": "python-domain-authoritative",
+            "storage_authority": "python-postgresql",
+            "normalized_tables": ["claims", "evidence_links", "artifacts", "decision_objects", "decision_module_bindings", "decision_events"],
+            "legacy_narrative_risk_import": True,
+            "legacy_wordpress_source_preserved": True,
+            "automatic_truth_verification": False,
+            "automatic_causality_inference": False,
+            "automatic_recommendation": False,
+            "automatic_escalation_or_action": False,
             "final_decision_authority": "human-governed",
         },
         "compatibility": {
@@ -658,6 +689,8 @@ def release_manifest() -> Dict[str, Any]:
             "canvas_legacy_adapter_preserved": True,
             "finance_python_domain_migration": True,
             "finance_legacy_adapter_preserved": True,
+            "narrative_risk_python_domain_migration": True,
+            "narrative_risk_legacy_adapter_preserved": True,
             "finance_compute_authority_workbench": True,
             "backend_service_decomposition": True,
             "route_contracts_preserved_v3_0_0": True,
@@ -5535,6 +5568,158 @@ def finance_legacy_import_endpoint(req: FinanceLegacyImport, request: Request):
     except ValueError as exc:
         return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
 
+def _narrative_risk_scope_error(request: Request, scope: str):
+    supplied = request.headers.get("x-scds-api-key", "").strip()
+    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
+    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
+        return None
+    super_key = os.getenv("SCDS_API_KEY", "").strip()
+    if supplied and super_key and secrets.compare_digest(supplied, super_key):
+        return None
+    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError:
+        catalog = {}
+    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
+    if "*" in scopes or scope in scopes or (scope == "narrative-risk:read" and ("narrative-risk:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "narrative-risk:write" and "repository:write" in scopes):
+        return None
+    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "narrative_risk_scope_required", "required_scope": scope})
+
+
+def narrative_risk_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "narrative_risk_contract": narrative_risk_domain_contract()}
+
+
+def narrative_risk_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "narrative_risk": narrative_risk_domain_template()}
+
+
+def narrative_risk_get_endpoint(decision_id: str, request: Request):
+    auth = _narrative_risk_scope_error(request, "narrative-risk:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "narrative_risk": NarrativeRiskDomainRepository(session).get_narrative_risk(decision_id)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+
+
+def narrative_risk_put_endpoint(decision_id: str, req: NarrativeRiskStateUpsert, request: Request):
+    auth = _narrative_risk_scope_error(request, "narrative-risk:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "narrative_risk": NarrativeRiskDomainRepository(session).upsert_narrative_risk(decision_id, req)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def narrative_risk_claims_get_endpoint(decision_id: str, request: Request):
+    auth = _narrative_risk_scope_error(request, "narrative-risk:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = NarrativeRiskDomainRepository(session).list_claims(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "claims": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def narrative_risk_claims_put_endpoint(decision_id: str, req: NarrativeRiskClaimsReplace, request: Request):
+    auth = _narrative_risk_scope_error(request, "narrative-risk:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = NarrativeRiskDomainRepository(session).replace_claims(decision_id, req.claims)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "claims": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def narrative_risk_signals_get_endpoint(decision_id: str, request: Request):
+    auth = _narrative_risk_scope_error(request, "narrative-risk:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = NarrativeRiskDomainRepository(session).list_signals(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "signals": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def narrative_risk_signals_put_endpoint(decision_id: str, req: NarrativeRiskSignalsReplace, request: Request):
+    auth = _narrative_risk_scope_error(request, "narrative-risk:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = NarrativeRiskDomainRepository(session).replace_signals(decision_id, req.signals)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "signals": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def narrative_risk_evidence_links_get_endpoint(decision_id: str, request: Request):
+    auth = _narrative_risk_scope_error(request, "narrative-risk:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = NarrativeRiskDomainRepository(session).list_evidence_links(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "evidence_links": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def narrative_risk_evidence_links_put_endpoint(decision_id: str, req: NarrativeRiskEvidenceLinksReplace, request: Request):
+    auth = _narrative_risk_scope_error(request, "narrative-risk:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = NarrativeRiskDomainRepository(session).replace_evidence_links(decision_id, req.evidence_links)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "evidence_links": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def narrative_risk_legacy_import_endpoint(req: NarrativeRiskLegacyImport, request: Request):
+    auth = _narrative_risk_scope_error(request, "narrative-risk:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            state, created = NarrativeRiskDomainRepository(session).import_legacy(req)
+            return {"ok": True, "version": APP_VERSION, "created": created, "source_preserved": True, "narrative_risk": state}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
 def health():
     persistence = database_status()
     persistence_ready = (not persistence["required"]) or bool(persistence.get("authority_ready"))
@@ -5605,6 +5790,7 @@ def health():
         "repository_schema": REPOSITORY_SCHEMA,
         "canvas_domain_schema": CANVAS_DOMAIN_SCHEMA,
         "finance_domain_schema": FINANCE_DOMAIN_SCHEMA,
+        "narrative_risk_domain_schema": NARRATIVE_RISK_DOMAIN_SCHEMA,
         "persistence_authority": PERSISTENCE_AUTHORITY,
         "persistence": persistence,
         "release": release_manifest(),

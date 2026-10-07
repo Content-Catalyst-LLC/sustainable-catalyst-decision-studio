@@ -55,13 +55,14 @@ def _decision(monkeypatch, tmp_path, decision_id='dec-v350'):
 
 def test_v350_canvas_contract_and_release_boundary():
     health = client.get('/health').json()
-    assert health['version'] == '3.6.0'
+    assert health['version'] == '3.7.0'
     assert health['canvas_domain_schema'] == CANVAS_DOMAIN_SCHEMA
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Finance Python Domain Migration'
-    assert release['build_fingerprint'] == 'scds-v3.6.0-finance-python-domain-migration'
+    assert release['release_name'] == 'Narrative Risk Python Domain Migration'
+    assert release['build_fingerprint'] == 'scds-v3.7.0-narrative-risk-python-domain-migration'
     assert release['backend_architecture']['database_migration'] is False
-    assert release['backend_architecture']['finance_python_domain_migration'] is True
+    assert release['backend_architecture']['finance_python_domain_migration'] is False
+    assert release['backend_architecture']['narrative_risk_python_domain_migration'] is True
     assert release['decision_kernel']['canvas_python_domain_authoritative'] is True
     assert release['canvas']['status'] == 'python-domain-authoritative'
     assert release['canvas']['final_decision_authority'] == 'human-governed'

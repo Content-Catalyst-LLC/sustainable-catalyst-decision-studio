@@ -102,7 +102,9 @@ MODULE_REGISTRY: Dict[str, Dict[str, Any]] = {
         "purpose": "Claims, risk drivers, signals, actors, exposures, impacts, scenarios, mitigations, and competing narratives.",
         "module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
         "kernel_contract_schema": DECISION_KERNEL_SCHEMA,
-        "status": "foundation",
+        "status": "python-domain-authoritative",
+        "domain_schema": "scds-narrative-risk-domain/1.0",
+        "storage_authority": "python-postgresql",
         "extends_kernel_objects": ["decision", "evidence_ref", "assumption", "scenario", "challenge", "artifact_ref", "provenance_ref", "outcome"],
         "capabilities": [
             "risk-narratives", "risk-claims", "risk-drivers-and-signals", "risk-events-and-actors",
@@ -110,14 +112,20 @@ MODULE_REGISTRY: Dict[str, Dict[str, Any]] = {
             "competing-narratives", "contradiction-tracing",
         ],
         "providers": {
+            "persistence_authority": "python-postgresql",
             "evidence": ["knowledge-library", "research-librarian"],
             "graphs": ["platform-core"],
             "context": ["site-intelligence"],
+            "research": ["research-lab"],
         },
         "boundaries": [
             "narrative-is-not-treated-as-fact-without-evidence",
+            "signal-does-not-imply-causality",
             "risk-likelihood-must-preserve-uncertainty",
+            "does-not-auto-verify-truth",
+            "does-not-auto-recommend",
             "does-not-auto-escalate-or-execute-actions",
+            "does-not-bypass-human-review",
         ],
     },
     "global-impact": {

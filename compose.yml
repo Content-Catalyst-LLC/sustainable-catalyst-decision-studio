@@ -20,15 +20,15 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: sustainable-catalyst-decision-studio:3.6.0
+    image: sustainable-catalyst-decision-studio:3.7.0
     container_name: sc-decision-studio
     restart: unless-stopped
     env_file:
       - .env.persistence-v330
     environment:
       PORT: 8089
-      SCDS_BUILD_FINGERPRINT: scds-v3.6.0-finance-python-domain-migration
-      SCDS_SOURCE_COMMIT: release-v3.6.0
+      SCDS_BUILD_FINGERPRINT: scds-v3.7.0-narrative-risk-python-domain-migration
+      SCDS_SOURCE_COMMIT: release-v3.7.0
       SCDS_MAX_REQUEST_BYTES: 1048576
       SCDS_PUBLIC_RATE_LIMIT: 60
       SCDS_PERSISTENCE_REQUIRED: "true"

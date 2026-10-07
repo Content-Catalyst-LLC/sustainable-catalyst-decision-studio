@@ -1,0 +1,81 @@
+{
+  "schema": "scds-narrative-risk-domain/1.0",
+  "version": "1.0",
+  "module_id": "narrative-risk",
+  "display_name": "Narrative Risk",
+  "status": "python-domain-authoritative",
+  "storage_authority": "python-postgresql",
+  "kernel_contract_schema": "scds-decision-kernel/1.0",
+  "repository_schema": "scds-python-decision-repository/1.0",
+  "owns": [
+    "risk-context",
+    "claims-and-risk-hypotheses",
+    "signals-and-indicators",
+    "actors-and-stakeholders",
+    "exposures-and-impacts",
+    "competing-narratives",
+    "evidence-relationships",
+    "watch-conditions",
+    "mitigation-context",
+    "risk-provenance"
+  ],
+  "normalized_postgresql_tables": [
+    "claims",
+    "evidence_links",
+    "artifacts",
+    "decision_objects",
+    "decision_module_bindings",
+    "decision_events"
+  ],
+  "providers": {
+    "evidence": [
+      "knowledge-library",
+      "research-librarian"
+    ],
+    "graph_and_entity_context": [
+      "platform-core"
+    ],
+    "live_context": [
+      "site-intelligence"
+    ],
+    "research": [
+      "research-lab"
+    ]
+  },
+  "security": {
+    "read_scope": "narrative-risk:read",
+    "write_scope": "narrative-risk:write",
+    "repository_key_also_authorized": true
+  },
+  "compatibility": {
+    "legacy_narrative_risk_import": true,
+    "legacy_wordpress_source_preserved": true,
+    "typed_platform_artifact_adapter_preserved": true,
+    "decision_packet_projection_preserved": true
+  },
+  "boundaries": {
+    "shared_decision_identity_owned_by_kernel": true,
+    "claim_is_not_fact_without_evidence": true,
+    "signal_is_not_causality": true,
+    "narrative_is_not_truth_verification": true,
+    "risk_likelihood_preserves_uncertainty": true,
+    "automatic_truth_verification": false,
+    "automatic_causality_inference": false,
+    "automatic_recommendation": false,
+    "automatic_escalation_or_action": false,
+    "final_decision_authority": "human-governed"
+  },
+  "endpoints": [
+    "GET /narrative-risk/contract",
+    "GET /narrative-risk/template",
+    "GET /narrative-risk/decisions/{decision_id}",
+    "PUT /narrative-risk/decisions/{decision_id}",
+    "GET /narrative-risk/decisions/{decision_id}/claims",
+    "PUT /narrative-risk/decisions/{decision_id}/claims",
+    "GET /narrative-risk/decisions/{decision_id}/signals",
+    "PUT /narrative-risk/decisions/{decision_id}/signals",
+    "GET /narrative-risk/decisions/{decision_id}/evidence-links",
+    "PUT /narrative-risk/decisions/{decision_id}/evidence-links",
+    "POST /narrative-risk/import/legacy"
+  ]
+}
