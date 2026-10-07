@@ -1,5 +1,12 @@
 # Decision Studio v3.13.0 — Collaboration & Decision Room Python Persistence
 
+## 3.14.0 — Global Authentication & Authorization Integration
+- Adds global bearer identity validation, institutional identity propagation, scoped authorization, and service credentials.
+- Enforces authenticated Decision Room membership and derives room actor identity/role from the authenticated principal.
+- Retains legacy API keys as compatibility credentials without allowing downgrade after an invalid bearer token.
+- Preserves PostgreSQL revision `0002_v3130_collaboration` and all 26 tables; no database migration.
+
+
 - Canonical Decision Room persistence moved to Python/PostgreSQL.
 - Added six collaboration tables and Alembic revision `0002_v3130_collaboration`.
 - Legacy WordPress collaboration projections preserved for compatibility.

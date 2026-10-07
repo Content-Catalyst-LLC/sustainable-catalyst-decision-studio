@@ -23,6 +23,7 @@ from app.api.routes.composition import router as composition_router
 from app.api.routes.module_artifacts import router as module_artifacts_router
 from app.api.routes.module_interoperability import router as module_interoperability_router
 from app.api.routes.decision_rooms import router as decision_rooms_router
+from app.api.routes.auth import router as auth_router
 
 api_router = APIRouter()
 api_router.include_router(energy_runtime_consumer_router)
@@ -50,3 +51,4 @@ api_router.include_router(composition_router)
 api_router.include_router(module_artifacts_router)
 api_router.include_router(module_interoperability_router)
 api_router.include_router(decision_rooms_router)
+api_router.include_router(auth_router)

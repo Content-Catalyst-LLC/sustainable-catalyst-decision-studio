@@ -1,0 +1,31 @@
+DECISION STUDIO v3.14.0 — GLOBAL AUTHENTICATION & AUTHORIZATION INTEGRATION
+
+1) APPLY / TEST / PUSH / TAG
+
+cd ~/Downloads
+rm -rf scds-v3.14.0-global-auth
+unzip -q sustainable-catalyst-decision-studio-v3.14.0-repository.zip -d scds-v3.14.0-global-auth
+cd scds-v3.14.0-global-auth/sustainable-catalyst-decision-studio
+chmod +x APPLY_AND_PUSH_DECISION_STUDIO_V3140.sh
+./APPLY_AND_PUSH_DECISION_STUDIO_V3140.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+2) VERIFY GIT
+
+cd ~/Downloads/sustainable-catalyst-decision-studio
+git status --short
+git log -1 --oneline
+git tag --points-at HEAD
+
+3) DEPLOY BACKEND
+
+cd ~/Downloads
+chmod +x deploy_decision_studio_v3_14_0_from_macos.sh upgrade_decision_studio_backend_v3_14_0_contabo.sh
+./deploy_decision_studio_v3_14_0_from_macos.sh
+
+4) PUBLIC VERIFY
+
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/auth/contract | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/auth/readiness | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-rooms/contract | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-module-registry/readiness | python3 -m json.tool

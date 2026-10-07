@@ -1,0 +1,78 @@
+{
+  "schema": "scds-global-authentication-authorization/1.0",
+  "principal_schema": "scds-authenticated-principal/1.0",
+  "authorization_decision_schema": "scds-authorization-decision/1.0",
+  "version": "1.0",
+  "role": "decision-studio-relying-party-global-authentication-and-authorization",
+  "authentication_authority": "sustainable-catalyst-global-auth",
+  "authorization_enforcement": "decision-studio-resource-and-room-policy",
+  "credential_precedence": [
+    "authorization-bearer",
+    "x-scds-service-key",
+    "x-scds-api-key-compatibility"
+  ],
+  "primary_user_authentication": "bearer-jwt-hs256",
+  "service_authentication": "x-scds-service-key",
+  "legacy_api_key_status": "compatibility-only",
+  "identity_claims": [
+    "sub",
+    "institution_id",
+    "roles",
+    "scopes",
+    "session_id",
+    "email",
+    "name"
+  ],
+  "token_validation": {
+    "signature": "HS256",
+    "issuer_required": true,
+    "audience_required": true,
+    "expiration_required": true,
+    "subject_required": true,
+    "downgrade_fallback_after_invalid_bearer": false
+  },
+  "principles": {
+    "decision_studio_does_not_issue_user_credentials": true,
+    "global_identity_is_not_duplicated_in_decision_studio": true,
+    "institution_identity_is_propagated": true,
+    "authorization_is_scope_and_resource_based": true,
+    "decision_room_membership_is_enforced_for_user_principals": true,
+    "request_body_cannot_impersonate_authenticated_room_actor": true,
+    "service_credentials_are_distinct_from_user_sessions": true,
+    "legacy_api_keys_are_not_primary_authentication": true,
+    "authentication_does_not_imply_decision_approval": true,
+    "final_decision_authority_is_human_governed": true
+  },
+  "canonical_scopes": [
+    "repository:read",
+    "repository:write",
+    "canvas:read",
+    "canvas:write",
+    "finance:read",
+    "finance:write",
+    "narrative-risk:read",
+    "narrative-risk:write",
+    "global-impact:read",
+    "global-impact:write",
+    "composition:read",
+    "composition:write",
+    "artifacts:read",
+    "artifacts:write",
+    "interoperability:read",
+    "interoperability:write",
+    "rooms:read",
+    "rooms:write",
+    "rooms:import",
+    "auth:inspect"
+  ],
+  "final_decision_authority": "human-governed",
+  "schema_migration_required": false,
+  "release": "3.14.0",
+  "integration": {
+    "user_identity": "global-bearer-jwt",
+    "institution_identity": "institution_id claim",
+    "service_identity": "x-scds-service-key",
+    "legacy_credentials": "x-scds-api-key compatibility",
+    "decision_room_authorization": "scope + persisted membership/role"
+  }
+}

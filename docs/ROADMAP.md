@@ -1,4 +1,9 @@
 
+### v3.14.0 — Global Authentication & Authorization Integration — BUILT
+Global bearer identity, institutional identity propagation, scoped resource authorization, service credentials, Decision Room membership enforcement, and legacy API-key compatibility. No database migration; v3.13 schema remains authoritative.
+
+**Next:** v3.15.0 — Decision Event Store & Immutable Audit Ledger.
+
 ## v3.12.0 — Module Interoperability & Shared Evidence
 - Canonical `scds-module-interoperability/1.0` contract.
 - Shared evidence by stable reference across Canvas, Finance, Narrative Risk, and Global Impact.

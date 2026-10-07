@@ -20,19 +20,21 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: sustainable-catalyst-decision-studio:3.13.0
+    image: sustainable-catalyst-decision-studio:3.14.0
     container_name: sc-decision-studio
     restart: unless-stopped
     env_file:
       - .env.persistence-v330
     environment:
       PORT: 8089
-      SCDS_BUILD_FINGERPRINT: scds-v3.13.0-collaboration-decision-room-python-persistence
-      SCDS_SOURCE_COMMIT: release-v3.13.0
+      SCDS_BUILD_FINGERPRINT: scds-v3.14.0-global-authentication-authorization-integration
+      SCDS_SOURCE_COMMIT: release-v3.14.0
       SCDS_MAX_REQUEST_BYTES: 1048576
       SCDS_PUBLIC_RATE_LIMIT: 60
       SCDS_PERSISTENCE_REQUIRED: "true"
       SCDS_PERSISTENCE_WRITE_ENABLED: "true"
+      SCDS_GLOBAL_AUTH_ISSUER: ${SCDS_GLOBAL_AUTH_ISSUER:-sustainable-catalyst-auth}
+      SCDS_GLOBAL_AUTH_AUDIENCE: ${SCDS_GLOBAL_AUTH_AUDIENCE:-decision-studio}
     depends_on:
       decision-studio-postgres:
         condition: service_healthy

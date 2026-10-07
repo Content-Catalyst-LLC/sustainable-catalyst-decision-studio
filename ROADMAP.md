@@ -1,3 +1,8 @@
+
+### v3.14.0 — Global Authentication & Authorization Integration — BUILT
+Global bearer identity, institutional identity propagation, scoped resource authorization, service credentials, Decision Room membership enforcement, and legacy API-key compatibility. No database migration; v3.13 schema remains authoritative.
+
+**Next:** v3.15.0 — Decision Event Store & Immutable Audit Ledger.
 # Current release: v3.13.0 — Collaboration & Decision Room Python Persistence
 
 

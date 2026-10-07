@@ -4,7 +4,7 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 3.13.0
+Stable tag: 3.14.0
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
@@ -33,6 +33,12 @@ Process confidence summarizes documentation and analysis coverage. It is not a p
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 3.14.0 =
+* Global Authentication & Authorization Integration makes Sustainable Catalyst global bearer identity the primary user-authentication model for Decision Studio.
+* Adds shared user/institution identity propagation, resource scopes, service credentials, Decision Room membership enforcement, and authenticated actor anti-spoofing.
+* Existing X-SCDS-API-Key credentials remain available as a compatibility path, but are no longer the primary authentication model.
+* Preserves the v3.13 PostgreSQL schema at 26 tables / 0002_v3130_collaboration; no new database migration.
 
 = 3.13.0 =
 * Collaboration & Decision Room Python Persistence moves canonical room state from WordPress to Python/PostgreSQL.

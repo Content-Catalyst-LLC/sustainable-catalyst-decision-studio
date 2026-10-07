@@ -73,12 +73,12 @@ def _seed_four_domains():
 
 def test_v3100_release_identity_and_composition_schema():
     health = client.get('/health').json()
-    assert health['version'] == '3.13.0'
+    assert health['version'] == '3.14.0'
     assert health['cross_module_decision_composition_schema'] == CROSS_MODULE_COMPOSITION_SCHEMA
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Collaboration & Decision Room Python Persistence'
-    assert release['build_fingerprint'] == 'scds-v3.13.0-collaboration-decision-room-python-persistence'
-    assert release['backend_architecture']['database_migration'] is True
+    assert release['release_name'] == 'Global Authentication & Authorization Integration'
+    assert release['build_fingerprint'] == 'scds-v3.14.0-global-authentication-authorization-integration'
+    assert release['backend_architecture']['database_migration'] is False
     assert release['backend_architecture']['cross_module_decision_composition'] is True
     assert release['backend_architecture']['composition_infers_truth'] is False
     assert release['backend_architecture']['composition_auto_recommends'] is False

@@ -55,12 +55,12 @@ def _decision(monkeypatch, tmp_path, decision_id='dec-v370'):
 
 def test_v370_narrative_risk_contract_and_release_boundary():
     health = client.get('/health').json()
-    assert health['version'] == '3.13.0'
+    assert health['version'] == '3.14.0'
     assert health['narrative_risk_domain_schema'] == NARRATIVE_RISK_DOMAIN_SCHEMA
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Collaboration & Decision Room Python Persistence'
-    assert release['build_fingerprint'] == 'scds-v3.13.0-collaboration-decision-room-python-persistence'
-    assert release['backend_architecture']['database_migration'] is True
+    assert release['release_name'] == 'Global Authentication & Authorization Integration'
+    assert release['build_fingerprint'] == 'scds-v3.14.0-global-authentication-authorization-integration'
+    assert release['backend_architecture']['database_migration'] is False
     assert release['backend_architecture']['narrative_risk_python_domain_migration'] is False
     assert release['backend_architecture']['global_impact_python_domain_migration'] is False
     assert release['backend_architecture']['finance_python_domain_migration'] is False

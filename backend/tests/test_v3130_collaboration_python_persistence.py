@@ -127,7 +127,7 @@ def test_api_contract_and_auth():
     client=TestClient(app)
     c=client.get('/decision-rooms/contract')
     assert c.status_code == 200
-    assert c.json()['version'] == '3.13.0'
+    assert c.json()['version'] == '3.14.0'
     assert c.json()['decision_room_contract']['schema'] == DECISION_ROOM_SCHEMA
     denied=client.get('/decision-rooms/does-not-exist')
     assert denied.status_code == 403

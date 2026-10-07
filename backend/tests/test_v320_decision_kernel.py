@@ -16,14 +16,14 @@ client = TestClient(app)
 
 def test_v320_release_identity_and_migration_boundary():
     health = client.get('/health').json()
-    assert health['version'] == '3.13.0'
+    assert health['version'] == '3.14.0'
     assert health['decision_kernel_schema'] == DECISION_KERNEL_SCHEMA
     assert health['registered_decision_modules'] == 4
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Collaboration & Decision Room Python Persistence'
-    assert release['build_fingerprint'] == 'scds-v3.13.0-collaboration-decision-room-python-persistence'
+    assert release['release_name'] == 'Global Authentication & Authorization Integration'
+    assert release['build_fingerprint'] == 'scds-v3.14.0-global-authentication-authorization-integration'
     assert release['decision_kernel']['module_count'] == 4
-    assert release['decision_kernel']['database_migration'] is True
+    assert release['decision_kernel']['database_migration'] is False
     assert release['decision_kernel']['wordpress_decision_object_authority_change'] is True
     assert release['decision_kernel']['final_decision_authority'] == 'human-governed'
 

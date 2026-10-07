@@ -65,7 +65,7 @@ def decision_room_contract() -> dict[str, Any]:
         "role": "authoritative-python-postgresql-collaboration-and-decision-room-persistence",
         "storage_authority": "python-postgresql",
         "collaboration_authority": "decision-studio-kernel",
-        "authentication_authority": "global-authentication-layer-planned-v3.14",
+        "authentication_authority": "sustainable-catalyst-global-auth",
         "final_decision_authority": "human-governed",
         "tables": [
             "decision_rooms",
@@ -88,11 +88,16 @@ def decision_room_contract() -> dict[str, Any]:
             "ai_cannot_impersonate_participant": True,
             "ai_cannot_approve_or_sign": True,
             "room_activity_does_not_imply_decision_approval": True,
+            "authenticated_user_membership_is_enforced": True,
+            "request_body_actor_fields_cannot_override_authenticated_identity": True,
         },
         "security": {
             "read_scope": "rooms:read",
             "write_scope": "rooms:write",
             "repository_key_also_authorized": True,
+            "global_bearer_primary": True,
+            "service_credentials_supported": True,
+            "legacy_api_key_compatibility": True,
         },
     }
 

@@ -292,6 +292,7 @@ from app.decision_rooms import (
     DECISION_ROOM_EVENT_SCHEMA,
     DECISION_ROOM_PERSISTENCE_SCHEMA,
     DecisionRoomRepository,
+    ROLE_PERMISSIONS,
     DecisionRoomUpsertRequest,
     DecisionRoomPatchRequest,
     DecisionRoomValidateRequest,
@@ -307,6 +308,18 @@ from app.decision_rooms import (
     decision_room_template as persisted_decision_room_template,
     validate_decision_room,
 )
+from app.global_auth import (
+    GLOBAL_AUTH_SCHEMA,
+    AUTHENTICATED_PRINCIPAL_SCHEMA,
+    AUTHORIZATION_DECISION_SCHEMA,
+    CANONICAL_SCOPES,
+    AuthPrincipal,
+    authenticate_request,
+    authorize_request,
+    global_auth_contract,
+    global_auth_readiness,
+)
+
 from app.domains.global_impact import (
     GLOBAL_IMPACT_DOMAIN_SCHEMA,
     GlobalImpactClaimsReplace,
@@ -361,9 +374,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.13.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.13.0-collaboration-decision-room-python-persistence")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.13.0")
+APP_VERSION = "3.14.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.14.0-global-authentication-authorization-integration")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.14.0")
 RELEASE_DATE = "2026-10-07"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -438,7 +451,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Collaboration & Decision Room Python Persistence",
+        "release_name": "Global Authentication & Authorization Integration",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -521,6 +534,9 @@ def release_manifest() -> Dict[str, Any]:
         "decision_room_python_persistence_schema": DECISION_ROOM_PERSISTENCE_SCHEMA,
         "decision_room_schema_v2": DECISION_ROOM_SCHEMA,
         "decision_room_event_schema_v2": DECISION_ROOM_EVENT_SCHEMA,
+        "global_auth_schema": GLOBAL_AUTH_SCHEMA,
+        "authenticated_principal_schema": AUTHENTICATED_PRINCIPAL_SCHEMA,
+        "authorization_decision_schema": AUTHORIZATION_DECISION_SCHEMA,
         "persistence_schema": PERSISTENCE_SCHEMA,
         "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
@@ -536,15 +552,22 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 23,
-            "included_router_count": 24,
-            "route_count": 293,
-            "previous_route_count": 272,
+            "router_registry_count": 24,
+            "included_router_count": 25,
+            "route_count": 300,
+            "previous_route_count": 293,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
-            "database_migration": True,
-            "persistence_schema_migration_preserved": False,
-            "collaboration_room_python_persistence_migration": True,
+            "database_migration": False,
+            "persistence_schema_migration_preserved": True,
+            "collaboration_room_python_persistence_migration": False,
+            "collaboration_room_python_persistence_preserved": True,
+            "global_authentication_authorization_integration": True,
+            "global_auth_primary_user_credential": "bearer-jwt-hs256",
+            "global_auth_service_credentials": True,
+            "legacy_api_key_compatibility": True,
+            "decision_room_membership_enforcement": True,
+            "authenticated_actor_spoofing_prevented": True,
             "collaboration_tables_added": 6,
             "legacy_collaboration_endpoints_preserved": True,
             "wordpress_canonical_room_persistence": False,
@@ -593,7 +616,7 @@ def release_manifest() -> Dict[str, Any]:
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": True,
-            "new_wordpress_authority_change_in_v3_13": True,
+            "new_wordpress_authority_change_in_v3_13": False,
             "canvas_wordpress_domain_authority_changed": True,
             "finance_wordpress_domain_authority_changed": True,
             "narrative_risk_wordpress_domain_authority_changed": True,
@@ -609,7 +632,7 @@ def release_manifest() -> Dict[str, Any]:
             "kernel_objects": kernel_contracts()["kernel_objects"],
             "module_ids": [m["module_id"] for m in module_registry()["modules"]],
             "module_count": module_registry()["module_count"],
-            "database_migration": True,
+            "database_migration": False,
             "postgresql_live_authority": True,
             "python_repository_live_authority": True,
             "wordpress_decision_object_authority_change": True,
@@ -721,9 +744,27 @@ def release_manifest() -> Dict[str, Any]:
             "hash_chained_room_events": True,
             "share_tokens_stored_as_hashes_only": True,
             "human_comments_and_change_requests": True,
+            "authentication_authority": "sustainable-catalyst-global-auth",
+            "authenticated_user_membership_enforced": True,
+            "request_body_actor_spoofing_prevented": True,
             "ai_can_impersonate_participant": False,
             "ai_can_approve_or_sign": False,
             "room_activity_implies_decision_approval": False,
+            "final_decision_authority": "human-governed",
+        },
+        "global_authentication_authorization": {
+            "schema": GLOBAL_AUTH_SCHEMA,
+            "principal_schema": AUTHENTICATED_PRINCIPAL_SCHEMA,
+            "authorization_decision_schema": AUTHORIZATION_DECISION_SCHEMA,
+            "authentication_authority": "sustainable-catalyst-global-auth",
+            "decision_studio_role": "relying-party-and-resource-authorization-enforcer",
+            "primary_user_authentication": "bearer-jwt-hs256",
+            "service_authentication": "x-scds-service-key",
+            "legacy_api_key_status": "compatibility-only",
+            "institution_identity_propagated": True,
+            "decision_room_membership_enforced": True,
+            "authenticated_actor_spoofing_prevented": True,
+            "database_migration": False,
             "final_decision_authority": "human-governed",
         },
         "persistence": {
@@ -834,6 +875,11 @@ def release_manifest() -> Dict[str, Any]:
             "decision_registry": True,
             "public_api_embeds_institutional_integration": True,
             "scoped_api_keys": True,
+            "global_bearer_authentication": True,
+            "global_service_authentication": True,
+            "institution_identity_propagation": True,
+            "decision_room_membership_authorization": True,
+            "legacy_api_key_compatibility": True,
             "public_safe_dossiers": True,
             "embeddable_readiness_and_scenarios": True,
             "signed_export_manifests": True,
@@ -5318,24 +5364,77 @@ def unified_module_registry_validate_endpoint(req: UnifiedRegistryValidateReques
     return {"version": APP_VERSION, **validate_unified_registry(req.registry, strict=req.strict)}
 
 
-def _composition_scope_error(request: Request, scope: str):
-    supplied = request.headers.get("x-scds-api-key", "").strip()
-    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
-    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
-        return None
-    super_key = os.getenv("SCDS_API_KEY", "").strip()
-    if supplied and super_key and secrets.compare_digest(supplied, super_key):
-        return None
-    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
-    try:
-        catalog = json.loads(raw)
-    except json.JSONDecodeError:
-        catalog = {}
-    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
-    if "*" in scopes or scope in scopes or (scope == "composition:read" and ("composition:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "composition:write" and "repository:write" in scopes):
-        return None
-    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "composition_scope_required", "required_scope": scope})
 
+def _global_scope_error(request: Request, scope: str, error_code: str):
+    decision = authorize_request(request, scope, allow_legacy=True)
+    if decision.allowed and decision.principal:
+        request.state.scds_principal = decision.principal
+        return None
+    content = {
+        "ok": False, "version": APP_VERSION, "error": error_code,
+        "required_scope": scope, "auth_error": decision.error,
+        "global_auth_schema": GLOBAL_AUTH_SCHEMA,
+    }
+    status_code = 403 if decision.error == "authentication_required" else decision.status_code
+    return JSONResponse(status_code=status_code, content=content)
+
+
+def _request_principal(request: Request) -> AuthPrincipal | None:
+    principal = getattr(request.state, "scds_principal", None)
+    if principal is not None:
+        return principal
+    decision = authenticate_request(request, allow_legacy=True)
+    if decision.allowed and decision.principal:
+        request.state.scds_principal = decision.principal
+        return decision.principal
+    return None
+
+
+def _room_user_access(repo: DecisionRoomRepository, room_id: str, principal: AuthPrincipal, permission: str | None = None):
+    room = repo.get(room_id)
+    # Service principals are governed by scopes; user principals also require resource membership.
+    if principal.principal_type != "user":
+        return {"allowed": True, "role": "service", "permissions": ["service-scope-authorized"], "room": room}
+    room_institution = str((room.get("metadata") or {}).get("institution_id") or "").strip() or None
+    if room_institution and principal.institution_id != room_institution and "decision-studio:admin" not in principal.scopes and "*" not in principal.scopes:
+        return {"allowed": False, "reason": "institution_mismatch", "role": None, "permissions": [], "room": room}
+    role = "owner" if room.get("owner_ref") == principal.principal_id else None
+    if role is None:
+        for member in repo.members(room_id):
+            if member.get("status") != "active":
+                continue
+            if member.get("user_ref") == principal.principal_id or (not member.get("user_ref") and principal.email and member.get("email") == principal.email):
+                role = str(member.get("role") or "observer")
+                break
+    if role is None:
+        return {"allowed": False, "reason": "decision_room_membership_required", "role": None, "permissions": [], "room": room}
+    permissions = list(ROLE_PERMISSIONS.get(role, []))
+    if permission and permission not in permissions:
+        return {"allowed": False, "reason": "decision_room_role_permission_required", "role": role, "permissions": permissions, "room": room}
+    return {"allowed": True, "reason": None, "role": role, "permissions": permissions, "room": room}
+
+
+def _decision_room_authorization(request: Request, scope: str, *, room_id: str | None = None, permission: str | None = None):
+    auth = _global_scope_error(request, scope, "decision_room_scope_required")
+    if auth:
+        return None, None, auth
+    principal = _request_principal(request)
+    if principal is None:
+        return None, None, JSONResponse(status_code=401, content={"ok": False, "version": APP_VERSION, "error": "authentication_required"})
+    if room_id is None:
+        return principal, None, None
+    try:
+        with session_scope() as session:
+            access = _room_user_access(DecisionRoomRepository(session, app_version=APP_VERSION), room_id, principal, permission)
+    except LookupError as exc:
+        return principal, None, _decision_room_error(exc)
+    if not access["allowed"]:
+        return principal, access, JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": access["reason"], "room_id": room_id, "role": access.get("role"), "required_permission": permission})
+    return principal, access, None
+
+
+def _composition_scope_error(request: Request, scope: str):
+    return _global_scope_error(request, scope, "composition_scope_required")
 
 def composition_contract_endpoint():
     return {"ok": True, "version": APP_VERSION, "composition_contract": composition_contract()}
@@ -5408,23 +5507,7 @@ def composition_diagnostics_endpoint(decision_id: str, request: Request):
 
 
 def _module_artifact_scope_error(request: Request, scope: str):
-    supplied = request.headers.get("x-scds-api-key", "").strip()
-    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
-    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
-        return None
-    super_key = os.getenv("SCDS_API_KEY", "").strip()
-    if supplied and super_key and secrets.compare_digest(supplied, super_key):
-        return None
-    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
-    try:
-        catalog = json.loads(raw)
-    except json.JSONDecodeError:
-        catalog = {}
-    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
-    if "*" in scopes or scope in scopes or (scope == "artifacts:read" and ("artifacts:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "artifacts:write" and "repository:write" in scopes):
-        return None
-    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "module_artifact_scope_required", "required_scope": scope})
-
+    return _global_scope_error(request, scope, "module_artifact_scope_required")
 
 def module_artifact_contract_endpoint():
     return {"ok": True, "version": APP_VERSION, "module_artifact_contract": module_artifact_contract()}
@@ -5508,23 +5591,7 @@ def module_artifact_lineage_endpoint(decision_id: str, artifact_id: str, request
 
 
 def _module_interoperability_scope_error(request: Request, scope: str):
-    supplied = request.headers.get("x-scds-api-key", "").strip()
-    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
-    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
-        return None
-    super_key = os.getenv("SCDS_API_KEY", "").strip()
-    if supplied and super_key and secrets.compare_digest(supplied, super_key):
-        return None
-    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
-    try:
-        catalog = json.loads(raw)
-    except json.JSONDecodeError:
-        catalog = {}
-    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
-    if "*" in scopes or scope in scopes or (scope == "interoperability:read" and ("interoperability:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "interoperability:write" and "repository:write" in scopes):
-        return None
-    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "module_interoperability_scope_required", "required_scope": scope})
-
+    return _global_scope_error(request, scope, "module_interoperability_scope_required")
 
 def module_interoperability_contract_endpoint():
     return {"ok": True, "version": APP_VERSION, "module_interoperability_contract": module_interoperability_contract()}
@@ -5608,23 +5675,7 @@ def module_interoperability_diagnostics_endpoint(decision_id: str, request: Requ
 
 
 def _decision_room_scope_error(request: Request, scope: str):
-    supplied = request.headers.get("x-scds-api-key", "").strip()
-    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
-    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
-        return None
-    super_key = os.getenv("SCDS_API_KEY", "").strip()
-    if supplied and super_key and secrets.compare_digest(supplied, super_key):
-        return None
-    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
-    try:
-        catalog = json.loads(raw)
-    except json.JSONDecodeError:
-        catalog = {}
-    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
-    if "*" in scopes or scope in scopes or (scope == "rooms:read" and ("rooms:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "rooms:write" and "repository:write" in scopes):
-        return None
-    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "decision_room_scope_required", "required_scope": scope})
-
+    return _global_scope_error(request, scope, "decision_room_scope_required")
 
 def _decision_room_error(exc: Exception):
     if isinstance(exc, LookupError):
@@ -5646,14 +5697,45 @@ def decision_rooms_validate_endpoint(req: DecisionRoomValidateRequest):
     return {"version": APP_VERSION, **validate_decision_room(req.room, strict=req.strict)}
 
 
+def _room_access_error(access: dict[str, Any], room_id: str, permission: str | None = None):
+    if access.get("allowed"):
+        return None
+    return JSONResponse(status_code=403, content={
+        "ok": False, "version": APP_VERSION, "error": access.get("reason") or "decision_room_access_denied",
+        "room_id": room_id, "role": access.get("role"), "required_permission": permission,
+    })
+
+
 def decision_rooms_create_endpoint(decision_id: str, req: DecisionRoomUpsertRequest, request: Request):
     auth = _decision_room_scope_error(request, "rooms:write")
     if auth: return auth
+    principal = _request_principal(request)
     _, error = _repository_gate(require_write=True)
     if error: return error
     try:
         with session_scope() as session:
-            room = DecisionRoomRepository(session, app_version=APP_VERSION).upsert_for_decision(decision_id, req)
+            repo = DecisionRoomRepository(session, app_version=APP_VERSION)
+            try:
+                existing = repo.get_by_decision(decision_id)
+            except LookupError:
+                existing = None
+            actor_role = req.actor_role
+            if principal and principal.principal_type == "user":
+                if existing:
+                    access = _room_user_access(repo, existing["room_id"], principal, "manage_room")
+                    denied = _room_access_error(access, existing["room_id"], "manage_room")
+                    if denied: return denied
+                    actor_role = access["role"]
+                else:
+                    actor_role = "owner"
+                metadata = dict(req.metadata or {})
+                if principal.institution_id:
+                    current = metadata.get("institution_id")
+                    if current and current != principal.institution_id:
+                        return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "institution_mismatch"})
+                    metadata["institution_id"] = principal.institution_id
+                req = req.model_copy(update={"owner_ref": principal.principal_id, "actor_ref": principal.principal_id, "actor_role": actor_role, "metadata": metadata})
+            room = repo.upsert_for_decision(decision_id, req)
             return {"ok": True, "version": APP_VERSION, "decision_room": room}
     except (LookupError, ValueError, PermissionError) as exc:
         return _decision_room_error(exc)
@@ -5662,12 +5744,17 @@ def decision_rooms_create_endpoint(decision_id: str, req: DecisionRoomUpsertRequ
 def decision_rooms_get_by_decision_endpoint(decision_id: str, request: Request):
     auth = _decision_room_scope_error(request, "rooms:read")
     if auth: return auth
+    principal = _request_principal(request)
     _, error = _repository_gate()
     if error: return error
     try:
         with session_scope() as session:
-            room = DecisionRoomRepository(session, app_version=APP_VERSION).get_by_decision(decision_id)
-            return {"ok": True, "version": APP_VERSION, "decision_room": room}
+            repo=DecisionRoomRepository(session, app_version=APP_VERSION)
+            room = repo.get_by_decision(decision_id)
+            access=_room_user_access(repo, room["room_id"], principal)
+            denied=_room_access_error(access, room["room_id"])
+            if denied: return denied
+            return {"ok": True, "version": APP_VERSION, "decision_room": room, "access_role": access["role"]}
     except LookupError as exc:
         return _decision_room_error(exc)
 
@@ -5675,11 +5762,15 @@ def decision_rooms_get_by_decision_endpoint(decision_id: str, request: Request):
 def decision_rooms_get_endpoint(room_id: str, request: Request):
     auth = _decision_room_scope_error(request, "rooms:read")
     if auth: return auth
+    principal = _request_principal(request)
     _, error = _repository_gate()
     if error: return error
     try:
         with session_scope() as session:
-            return {"ok": True, "version": APP_VERSION, "decision_room": DecisionRoomRepository(session, app_version=APP_VERSION).get(room_id)}
+            repo=DecisionRoomRepository(session, app_version=APP_VERSION); access=_room_user_access(repo, room_id, principal)
+            denied=_room_access_error(access, room_id)
+            if denied: return denied
+            return {"ok": True, "version": APP_VERSION, "decision_room": repo.get(room_id), "access_role": access["role"]}
     except LookupError as exc:
         return _decision_room_error(exc)
 
@@ -5687,11 +5778,17 @@ def decision_rooms_get_endpoint(room_id: str, request: Request):
 def decision_rooms_patch_endpoint(room_id: str, req: DecisionRoomPatchRequest, request: Request):
     auth = _decision_room_scope_error(request, "rooms:write")
     if auth: return auth
+    principal = _request_principal(request)
     _, error = _repository_gate(require_write=True)
     if error: return error
     try:
         with session_scope() as session:
-            return {"ok": True, "version": APP_VERSION, "decision_room": DecisionRoomRepository(session, app_version=APP_VERSION).patch(room_id, req)}
+            repo=DecisionRoomRepository(session, app_version=APP_VERSION); access=_room_user_access(repo, room_id, principal, "manage_room")
+            denied=_room_access_error(access, room_id, "manage_room")
+            if denied: return denied
+            if principal.principal_type == "user":
+                req=req.model_copy(update={"actor_ref": principal.principal_id, "actor_role": access["role"], "owner_ref": None})
+            return {"ok": True, "version": APP_VERSION, "decision_room": repo.patch(room_id, req)}
     except (LookupError, ValueError, PermissionError) as exc:
         return _decision_room_error(exc)
 
@@ -5699,155 +5796,202 @@ def decision_rooms_patch_endpoint(room_id: str, req: DecisionRoomPatchRequest, r
 def decision_rooms_members_endpoint(room_id: str, request: Request):
     auth = _decision_room_scope_error(request, "rooms:read")
     if auth: return auth
-    _, error = _repository_gate()
+    principal=_request_principal(request); _, error=_repository_gate()
     if error: return error
     try:
         with session_scope() as session:
-            items=DecisionRoomRepository(session, app_version=APP_VERSION).members(room_id); return {"ok": True, "version": APP_VERSION, "count": len(items), "members": items}
-    except LookupError as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session, app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal)
+            denied=_room_access_error(access,room_id)
+            if denied:return denied
+            items=repo.members(room_id); return {"ok":True,"version":APP_VERSION,"count":len(items),"members":items}
+    except LookupError as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_add_member_endpoint(room_id: str, req: RoomMemberCreateRequest, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:write")
-    if auth: return auth
-    _, error = _repository_gate(require_write=True)
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:write")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate(require_write=True)
+    if error:return error
     try:
         with session_scope() as session:
-            return {"ok": True, "version": APP_VERSION, "member": DecisionRoomRepository(session, app_version=APP_VERSION).add_member(room_id, req)}
-    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal,"manage_members")
+            denied=_room_access_error(access,room_id,"manage_members")
+            if denied:return denied
+            if principal.principal_type=="user": req=req.model_copy(update={"actor_ref":principal.principal_id,"actor_role":access["role"],"invited_by":principal.principal_id})
+            return {"ok":True,"version":APP_VERSION,"member":repo.add_member(room_id,req)}
+    except (LookupError,ValueError,PermissionError) as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_comments_endpoint(room_id: str, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:read")
-    if auth: return auth
-    _, error = _repository_gate()
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:read")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate()
+    if error:return error
     try:
         with session_scope() as session:
-            items=DecisionRoomRepository(session, app_version=APP_VERSION).comments(room_id); return {"ok": True, "version": APP_VERSION, "count": len(items), "comments": items}
-    except LookupError as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal)
+            denied=_room_access_error(access,room_id)
+            if denied:return denied
+            items=repo.comments(room_id); return {"ok":True,"version":APP_VERSION,"count":len(items),"comments":items}
+    except LookupError as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_add_comment_endpoint(room_id: str, req: RoomCommentCreateRequest, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:write")
-    if auth: return auth
-    _, error = _repository_gate(require_write=True)
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:write")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate(require_write=True)
+    if error:return error
     try:
         with session_scope() as session:
-            return {"ok": True, "version": APP_VERSION, "comment": DecisionRoomRepository(session, app_version=APP_VERSION).add_comment(room_id, req)}
-    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal,"comment")
+            denied=_room_access_error(access,room_id,"comment")
+            if denied:return denied
+            if principal.principal_type=="user": req=req.model_copy(update={"author_ref":principal.principal_id,"author_role":access["role"]})
+            return {"ok":True,"version":APP_VERSION,"comment":repo.add_comment(room_id,req)}
+    except (LookupError,ValueError,PermissionError) as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_patch_comment_endpoint(room_id: str, comment_id: str, req: RoomCommentPatchRequest, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:write")
-    if auth: return auth
-    _, error = _repository_gate(require_write=True)
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:write")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate(require_write=True)
+    if error:return error
     try:
         with session_scope() as session:
-            return {"ok": True, "version": APP_VERSION, "comment": DecisionRoomRepository(session, app_version=APP_VERSION).patch_comment(room_id, comment_id, req)}
-    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal,"resolve")
+            denied=_room_access_error(access,room_id,"resolve")
+            if denied:return denied
+            if principal.principal_type=="user": req=req.model_copy(update={"resolved_by":principal.principal_id,"actor_role":access["role"]})
+            return {"ok":True,"version":APP_VERSION,"comment":repo.patch_comment(room_id,comment_id,req)}
+    except (LookupError,ValueError,PermissionError) as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_change_requests_endpoint(room_id: str, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:read")
-    if auth: return auth
-    _, error = _repository_gate()
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:read")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate()
+    if error:return error
     try:
         with session_scope() as session:
-            items=DecisionRoomRepository(session, app_version=APP_VERSION).change_requests(room_id); return {"ok": True, "version": APP_VERSION, "count": len(items), "change_requests": items}
-    except LookupError as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal)
+            denied=_room_access_error(access,room_id)
+            if denied:return denied
+            items=repo.change_requests(room_id); return {"ok":True,"version":APP_VERSION,"count":len(items),"change_requests":items}
+    except LookupError as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_add_change_request_endpoint(room_id: str, req: RoomChangeRequestCreate, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:write")
-    if auth: return auth
-    _, error = _repository_gate(require_write=True)
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:write")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate(require_write=True)
+    if error:return error
     try:
         with session_scope() as session:
-            return {"ok": True, "version": APP_VERSION, "change_request": DecisionRoomRepository(session, app_version=APP_VERSION).add_change_request(room_id, req)}
-    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal,"request_change")
+            denied=_room_access_error(access,room_id,"request_change")
+            if denied:return denied
+            if principal.principal_type=="user": req=req.model_copy(update={"requested_by":principal.principal_id,"requester_role":access["role"]})
+            return {"ok":True,"version":APP_VERSION,"change_request":repo.add_change_request(room_id,req)}
+    except (LookupError,ValueError,PermissionError) as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_patch_change_request_endpoint(room_id: str, change_request_id: str, req: RoomChangeRequestPatch, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:write")
-    if auth: return auth
-    _, error = _repository_gate(require_write=True)
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:write")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate(require_write=True)
+    if error:return error
     try:
         with session_scope() as session:
-            return {"ok": True, "version": APP_VERSION, "change_request": DecisionRoomRepository(session, app_version=APP_VERSION).patch_change_request(room_id, change_request_id, req)}
-    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal,"resolve")
+            denied=_room_access_error(access,room_id,"resolve")
+            if denied:return denied
+            if principal.principal_type=="user": req=req.model_copy(update={"resolved_by":principal.principal_id,"actor_role":access["role"]})
+            return {"ok":True,"version":APP_VERSION,"change_request":repo.patch_change_request(room_id,change_request_id,req)}
+    except (LookupError,ValueError,PermissionError) as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_snapshots_endpoint(room_id: str, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:read")
-    if auth: return auth
-    _, error = _repository_gate()
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:read")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate()
+    if error:return error
     try:
         with session_scope() as session:
-            items=DecisionRoomRepository(session, app_version=APP_VERSION).snapshots(room_id); return {"ok": True, "version": APP_VERSION, "count": len(items), "snapshots": items}
-    except LookupError as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal)
+            denied=_room_access_error(access,room_id)
+            if denied:return denied
+            items=repo.snapshots(room_id); return {"ok":True,"version":APP_VERSION,"count":len(items),"snapshots":items}
+    except LookupError as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_create_snapshot_endpoint(room_id: str, req: RoomSnapshotCreateRequest, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:write")
-    if auth: return auth
-    _, error = _repository_gate(require_write=True)
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:write")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate(require_write=True)
+    if error:return error
     try:
         with session_scope() as session:
-            return {"ok": True, "version": APP_VERSION, "snapshot": DecisionRoomRepository(session, app_version=APP_VERSION).create_snapshot(room_id, req)}
-    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal,"snapshot")
+            denied=_room_access_error(access,room_id,"snapshot")
+            if denied:return denied
+            if principal.principal_type=="user": req=req.model_copy(update={"actor_ref":principal.principal_id,"actor_role":access["role"]})
+            return {"ok":True,"version":APP_VERSION,"snapshot":repo.create_snapshot(room_id,req)}
+    except (LookupError,ValueError,PermissionError) as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_share_grants_endpoint(room_id: str, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:read")
-    if auth: return auth
-    _, error = _repository_gate()
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:read")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate()
+    if error:return error
     try:
         with session_scope() as session:
-            items=DecisionRoomRepository(session, app_version=APP_VERSION).share_grants(room_id); return {"ok": True, "version": APP_VERSION, "count": len(items), "share_grants": items}
-    except LookupError as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal)
+            denied=_room_access_error(access,room_id)
+            if denied:return denied
+            items=repo.share_grants(room_id); return {"ok":True,"version":APP_VERSION,"count":len(items),"share_grants":items}
+    except LookupError as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_create_share_grant_endpoint(room_id: str, req: RoomShareGrantCreateRequest, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:write")
-    if auth: return auth
-    _, error = _repository_gate(require_write=True)
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:write")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate(require_write=True)
+    if error:return error
     try:
         with session_scope() as session:
-            grant, token=DecisionRoomRepository(session, app_version=APP_VERSION).create_share_grant(room_id, req); return {"ok": True, "version": APP_VERSION, "share_grant": grant, "share_token_once": token}
-    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal,"share")
+            denied=_room_access_error(access,room_id,"share")
+            if denied:return denied
+            if principal.principal_type=="user": req=req.model_copy(update={"actor_ref":principal.principal_id,"actor_role":access["role"]})
+            grant,token=repo.create_share_grant(room_id,req); return {"ok":True,"version":APP_VERSION,"share_grant":grant,"share_token_once":token}
+    except (LookupError,ValueError,PermissionError) as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_events_endpoint(room_id: str, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:read")
-    if auth: return auth
-    _, error = _repository_gate()
-    if error: return error
+    auth=_decision_room_scope_error(request,"rooms:read")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate()
+    if error:return error
     try:
         with session_scope() as session:
-            return {"ok": True, "version": APP_VERSION, **DecisionRoomRepository(session, app_version=APP_VERSION).events(room_id)}
-    except LookupError as exc: return _decision_room_error(exc)
+            repo=DecisionRoomRepository(session,app_version=APP_VERSION); access=_room_user_access(repo,room_id,principal)
+            denied=_room_access_error(access,room_id)
+            if denied:return denied
+            return {"ok":True,"version":APP_VERSION,**repo.events(room_id)}
+    except LookupError as exc:return _decision_room_error(exc)
 
 
 def decision_rooms_import_endpoint(req: DecisionRoomImportRequest, request: Request):
-    auth = _decision_room_scope_error(request, "rooms:write")
-    if auth: return auth
-    _, error = _repository_gate(require_write=True)
-    if error: return error
+    auth=_global_scope_error(request,"rooms:import","decision_room_import_scope_required")
+    if auth:return auth
+    principal=_request_principal(request); _,error=_repository_gate(require_write=True)
+    if error:return error
     try:
+        if principal and principal.principal_type=="user": req=req.model_copy(update={"actor_ref":principal.principal_id})
         with session_scope() as session:
-            return {"ok": True, "version": APP_VERSION, **DecisionRoomRepository(session, app_version=APP_VERSION).import_legacy(req)}
-    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+            return {"ok":True,"version":APP_VERSION,**DecisionRoomRepository(session,app_version=APP_VERSION).import_legacy(req)}
+    except (LookupError,ValueError,PermissionError) as exc:return _decision_room_error(exc)
 
 
 def persistence_status_endpoint():
@@ -5864,26 +6008,7 @@ def persistence_contract_endpoint():
 
 
 def _repository_scope_error(request: Request, scope: str):
-    supplied = request.headers.get("x-scds-api-key", "").strip()
-    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
-    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
-        return None
-    super_key = os.getenv("SCDS_API_KEY", "").strip()
-    if supplied and super_key and secrets.compare_digest(supplied, super_key):
-        return None
-    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
-    try:
-        catalog = json.loads(raw)
-    except json.JSONDecodeError:
-        catalog = {}
-    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
-    if "*" in scopes or scope in scopes or (scope == "repository:read" and "repository:write" in scopes):
-        return None
-    return JSONResponse(
-        status_code=403,
-        content={"ok": False, "version": APP_VERSION, "error": "repository_scope_required", "required_scope": scope},
-    )
-
+    return _global_scope_error(request, scope, "repository_scope_required")
 
 def _repository_gate(require_write: bool = False):
     status = database_status()
@@ -6101,23 +6226,7 @@ def repository_import_decision_object_endpoint(req: DecisionObjectImport, reques
 
 
 def _canvas_scope_error(request: Request, scope: str):
-    supplied = request.headers.get("x-scds-api-key", "").strip()
-    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
-    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
-        return None
-    super_key = os.getenv("SCDS_API_KEY", "").strip()
-    if supplied and super_key and secrets.compare_digest(supplied, super_key):
-        return None
-    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
-    try:
-        catalog = json.loads(raw)
-    except json.JSONDecodeError:
-        catalog = {}
-    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
-    if "*" in scopes or scope in scopes or (scope == "canvas:read" and ("canvas:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "canvas:write" and "repository:write" in scopes):
-        return None
-    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "canvas_scope_required", "required_scope": scope})
-
+    return _global_scope_error(request, scope, "canvas_scope_required")
 
 def canvas_contract_endpoint():
     return {"ok": True, "version": APP_VERSION, "canvas_contract": canvas_domain_contract()}
@@ -6255,23 +6364,7 @@ def canvas_legacy_import_endpoint(req: CanvasLegacyImport, request: Request):
 
 
 def _finance_scope_error(request: Request, scope: str):
-    supplied = request.headers.get("x-scds-api-key", "").strip()
-    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
-    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
-        return None
-    super_key = os.getenv("SCDS_API_KEY", "").strip()
-    if supplied and super_key and secrets.compare_digest(supplied, super_key):
-        return None
-    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
-    try:
-        catalog = json.loads(raw)
-    except json.JSONDecodeError:
-        catalog = {}
-    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
-    if "*" in scopes or scope in scopes or (scope == "finance:read" and ("finance:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "finance:write" and "repository:write" in scopes):
-        return None
-    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "finance_scope_required", "required_scope": scope})
-
+    return _global_scope_error(request, scope, "finance_scope_required")
 
 def finance_contract_endpoint():
     return {"ok": True, "version": APP_VERSION, "finance_contract": finance_domain_contract()}
@@ -6404,23 +6497,7 @@ def finance_legacy_import_endpoint(req: FinanceLegacyImport, request: Request):
         return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
 
 def _narrative_risk_scope_error(request: Request, scope: str):
-    supplied = request.headers.get("x-scds-api-key", "").strip()
-    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
-    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
-        return None
-    super_key = os.getenv("SCDS_API_KEY", "").strip()
-    if supplied and super_key and secrets.compare_digest(supplied, super_key):
-        return None
-    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
-    try:
-        catalog = json.loads(raw)
-    except json.JSONDecodeError:
-        catalog = {}
-    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
-    if "*" in scopes or scope in scopes or (scope == "narrative-risk:read" and ("narrative-risk:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "narrative-risk:write" and "repository:write" in scopes):
-        return None
-    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "narrative_risk_scope_required", "required_scope": scope})
-
+    return _global_scope_error(request, scope, "narrative_risk_scope_required")
 
 def narrative_risk_contract_endpoint():
     return {"ok": True, "version": APP_VERSION, "narrative_risk_contract": narrative_risk_domain_contract()}
@@ -6557,23 +6634,7 @@ def narrative_risk_legacy_import_endpoint(req: NarrativeRiskLegacyImport, reques
 
 
 def _global_impact_scope_error(request: Request, scope: str):
-    supplied = request.headers.get("x-scds-api-key", "").strip()
-    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
-    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
-        return None
-    super_key = os.getenv("SCDS_API_KEY", "").strip()
-    if supplied and super_key and secrets.compare_digest(supplied, super_key):
-        return None
-    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
-    try:
-        catalog = json.loads(raw)
-    except json.JSONDecodeError:
-        catalog = {}
-    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
-    if "*" in scopes or scope in scopes or (scope == "global-impact:read" and ("global-impact:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "global-impact:write" and "repository:write" in scopes):
-        return None
-    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "global_impact_scope_required", "required_scope": scope})
-
+    return _global_scope_error(request, scope, "global_impact_scope_required")
 
 def global_impact_contract_endpoint():
     return {"ok": True, "version": APP_VERSION, "global_impact_contract": global_impact_domain_contract()}
@@ -6708,6 +6769,62 @@ def global_impact_legacy_import_endpoint(req: GlobalImpactLegacyImport, request:
         return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
 
 
+
+class GlobalAuthAuthorizeRequest(BaseModel):
+    required_scope: str = Field(min_length=1, max_length=128)
+
+
+def global_auth_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "global_auth_contract": global_auth_contract()}
+
+
+def global_auth_configuration_endpoint():
+    return {"ok": True, "version": APP_VERSION, "configuration": global_auth_readiness()}
+
+
+def global_auth_readiness_endpoint():
+    readiness = global_auth_readiness()
+    return {"ok": True, "version": APP_VERSION, "ready": readiness["global_auth_integration_ready"], "readiness": readiness}
+
+
+def global_auth_scopes_endpoint():
+    return {"ok": True, "version": APP_VERSION, "global_auth_schema": GLOBAL_AUTH_SCHEMA, "scopes": list(CANONICAL_SCOPES)}
+
+
+def global_auth_whoami_endpoint(request: Request):
+    decision = authenticate_request(request, allow_legacy=True)
+    if not decision.allowed or not decision.principal:
+        return JSONResponse(status_code=decision.status_code, content={"ok": False, "version": APP_VERSION, "error": decision.error, "global_auth_schema": GLOBAL_AUTH_SCHEMA})
+    request.state.scds_principal = decision.principal
+    return {"ok": True, "version": APP_VERSION, "principal": decision.principal.public_dict()}
+
+
+def global_auth_authorize_endpoint(req: GlobalAuthAuthorizeRequest, request: Request):
+    decision = authorize_request(request, req.required_scope, allow_legacy=True)
+    if decision.principal:
+        request.state.scds_principal = decision.principal
+    payload = decision.public_dict()
+    payload.update({"ok": decision.allowed, "version": APP_VERSION})
+    if not decision.allowed:
+        return JSONResponse(status_code=decision.status_code, content=payload)
+    return payload
+
+
+def global_auth_room_access_endpoint(room_id: str, request: Request):
+    auth = _global_scope_error(request, "rooms:read", "decision_room_scope_required")
+    if auth:
+        return auth
+    principal = _request_principal(request)
+    try:
+        with session_scope() as session:
+            access = _room_user_access(DecisionRoomRepository(session, app_version=APP_VERSION), room_id, principal)
+    except LookupError as exc:
+        return _decision_room_error(exc)
+    if not access["allowed"]:
+        return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": access["reason"], "room_id": room_id})
+    return {"ok": True, "version": APP_VERSION, "room_id": room_id, "principal": principal.public_dict(), "role": access["role"], "permissions": access["permissions"], "membership_enforced": principal.principal_type == "user"}
+
+
 def health():
     persistence = database_status()
     persistence_ready = (not persistence["required"]) or bool(persistence.get("authority_ready"))
@@ -6782,6 +6899,10 @@ def health():
         "decision_room_python_persistence_schema": DECISION_ROOM_PERSISTENCE_SCHEMA,
         "decision_room_schema_v2": DECISION_ROOM_SCHEMA,
         "decision_room_event_schema_v2": DECISION_ROOM_EVENT_SCHEMA,
+        "global_auth_schema": GLOBAL_AUTH_SCHEMA,
+        "authenticated_principal_schema": AUTHENTICATED_PRINCIPAL_SCHEMA,
+        "authorization_decision_schema": AUTHORIZATION_DECISION_SCHEMA,
+        "global_auth": global_auth_readiness(),
         "registered_decision_modules": module_registry()["module_count"],
         "persistence_schema": PERSISTENCE_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,

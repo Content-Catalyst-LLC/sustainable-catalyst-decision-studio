@@ -23,10 +23,10 @@ client = TestClient(app)
 
 def test_v331_migration_revision_remains_preserved_under_v340_authority():
     body = client.get('/health').json()
-    assert body['version'] == '3.13.0'
+    assert body['version'] == '3.14.0'
     assert body['persistence_schema'] == 'scds-postgresql-persistence/1.0'
     assert body['persistence_authority'] == 'python-postgresql'
-    assert body['release']['backend_architecture']['database_migration'] is True
+    assert body['release']['backend_architecture']['database_migration'] is False
     assert body['release']['backend_architecture']['postgresql_live_authority'] is True
     assert body['release']['backend_architecture']['wordpress_authority_change'] is True
     assert body['release']['persistence']['v3_4_authority_cutover_complete'] is True

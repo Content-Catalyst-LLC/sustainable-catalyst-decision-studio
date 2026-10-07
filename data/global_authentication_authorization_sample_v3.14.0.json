@@ -1,0 +1,23 @@
+{
+  "schema": "scds-authenticated-principal/1.0",
+  "principal_id": "user:example",
+  "principal_type": "user",
+  "institution_id": "institution:example",
+  "roles": [
+    "researcher"
+  ],
+  "scopes": [
+    "canvas:read",
+    "rooms:read",
+    "rooms:write"
+  ],
+  "session_id": "session:example",
+  "auth_method": "global-bearer-jwt",
+  "legacy_compatibility": false,
+  "authorization_example": {
+    "schema": "scds-authorization-decision/1.0",
+    "required_scope": "rooms:write",
+    "allowed": true,
+    "resource_policy": "decision-room-membership-and-role"
+  }
+}
