@@ -8,8 +8,9 @@
 - **v3.4.0 — Python Decision Repository & Object Persistence** — built; Python/PostgreSQL becomes authoritative for Decision Kernel project, decision, unified object, module-binding, snapshot, and audit-event persistence while final decisions remain human-governed.
 - **v3.5.0 — Canvas Python Domain Migration** — built; Canvas framing, alternatives, criteria, assumptions, stakeholder context, and success measures are now authoritative in Python/PostgreSQL over the shared Decision Kernel.
 - **v3.6.0 — Finance Python Domain Migration** — built; Finance domain state is authoritative in Python/PostgreSQL while Workbench remains calculation authority.
-- **v3.7.0 — Narrative Risk Python Domain Migration** — current release; claims, evidence relationships, signals, actors, exposures, and competing narratives are authoritative in Python/PostgreSQL with explicit epistemic boundaries.
-- **v3.8.0 — Global Impact Catalyst Python Domain Migration** — next.
+- **v3.7.0 — Narrative Risk Python Domain Migration** — built; claims, evidence relationships, signals, actors, exposures, and competing narratives are authoritative in Python/PostgreSQL with explicit epistemic boundaries.
+- **v3.8.0 — Global Impact Catalyst Python Domain Migration** — current release; impact claims, evidence links, indicators, SDG/carbon/resource/distributional context, and provenance are authoritative in Python/PostgreSQL while Workbench remains compute authority.
+- **v3.9.0 — Unified Decision Module Registry** — next.
 
 # Sustainable Catalyst Decision Studio Roadmap
 

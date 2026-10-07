@@ -1,0 +1,111 @@
+{
+  "schema": "scds-global-impact-domain/1.0",
+  "version": "1.0",
+  "decision_id": "dec-sample-global-impact",
+  "impact_context": {
+    "scope": "regional-transition",
+    "geography": "example-region"
+  },
+  "impact_objectives": [
+    {
+      "id": "obj-1",
+      "label": "Reduce lifecycle emissions while preserving affordability"
+    }
+  ],
+  "impact_boundaries": {
+    "system_boundary": "decision-defined",
+    "time_horizon": "2035"
+  },
+  "stakeholders": [
+    {
+      "id": "st-1",
+      "name": "Affected communities"
+    }
+  ],
+  "impact_pathways": [
+    {
+      "id": "path-1",
+      "from": "intervention",
+      "to": "outcome",
+      "status": "hypothesis"
+    }
+  ],
+  "environmental_impacts": [
+    {
+      "id": "env-1",
+      "dimension": "climate"
+    }
+  ],
+  "social_impacts": [
+    {
+      "id": "soc-1",
+      "dimension": "access"
+    }
+  ],
+  "economic_impacts": [
+    {
+      "id": "econ-1",
+      "dimension": "affordability"
+    }
+  ],
+  "sdg_alignments": [
+    {
+      "sdg": "SDG 7",
+      "alignment": "contextual",
+      "proof_of_impact": false
+    }
+  ],
+  "carbon_context": {
+    "accounting_boundary": "decision-defined"
+  },
+  "resource_impacts": [
+    {
+      "id": "res-1",
+      "resource": "water"
+    }
+  ],
+  "distributional_impacts": [
+    {
+      "id": "dist-1",
+      "group": "low-income households",
+      "judgment": "review-required"
+    }
+  ],
+  "impact_claims": [
+    {
+      "id": "claim-1",
+      "text": "The intervention may reduce lifecycle emissions.",
+      "epistemic_status": "unresolved",
+      "impact_dimension": "environmental"
+    }
+  ],
+  "indicators": [
+    {
+      "id": "ind-1",
+      "label": "Lifecycle GHG intensity",
+      "unit": "kgCO2e/unit",
+      "baseline": 100,
+      "target": 60,
+      "observed": false
+    }
+  ],
+  "evidence_links": [
+    {
+      "id": "link-1",
+      "claim_id": "claim-1",
+      "evidence_ref": "library:evidence:impact-1",
+      "relation": "supports"
+    }
+  ],
+  "provenance": {
+    "source": "sample",
+    "legacy_source_preserved": true,
+    "records": []
+  },
+  "boundaries": {
+    "automatic_impact_verification": false,
+    "automatic_sustainability_rating": false,
+    "automatic_recommendation": false,
+    "automatic_approval": false
+  }
+}

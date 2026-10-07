@@ -244,6 +244,18 @@ from app.domains.narrative_risk import (
     narrative_risk_domain_template,
 )
 
+from app.domains.global_impact import (
+    GLOBAL_IMPACT_DOMAIN_SCHEMA,
+    GlobalImpactClaimsReplace,
+    GlobalImpactDomainRepository,
+    GlobalImpactEvidenceLinksReplace,
+    GlobalImpactIndicatorsReplace,
+    GlobalImpactLegacyImport,
+    GlobalImpactStateUpsert,
+    global_impact_domain_contract,
+    global_impact_domain_template,
+)
+
 from app.persistence import (
     EXPECTED_SCHEMA_REVISION,
     PERSISTENCE_AUTHORITY,
@@ -286,9 +298,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.7.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.7.0-narrative-risk-python-domain-migration")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.7.0")
+APP_VERSION = "3.8.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.8.0-global-impact-catalyst-python-domain-migration")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.8.0")
 RELEASE_DATE = "2026-10-06"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -363,7 +375,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Narrative Risk Python Domain Migration",
+        "release_name": "Global Impact Catalyst Python Domain Migration",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -443,6 +455,7 @@ def release_manifest() -> Dict[str, Any]:
         "canvas_domain_schema": CANVAS_DOMAIN_SCHEMA,
         "finance_domain_schema": FINANCE_DOMAIN_SCHEMA,
         "narrative_risk_domain_schema": NARRATIVE_RISK_DOMAIN_SCHEMA,
+        "global_impact_domain_schema": GLOBAL_IMPACT_DOMAIN_SCHEMA,
         "backend_architecture": {
             "decomposition_release": True,
             "decision_kernel_foundation": True,
@@ -451,10 +464,10 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 17,
-            "included_router_count": 18,
-            "route_count": 231,
-            "previous_route_count": 220,
+            "router_registry_count": 18,
+            "included_router_count": 19,
+            "route_count": 242,
+            "previous_route_count": 231,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
             "database_migration": False,
@@ -462,17 +475,19 @@ def release_manifest() -> Dict[str, Any]:
             "repository_authority_migration": False,
             "canvas_python_domain_migration": False,
             "finance_python_domain_migration": False,
-            "narrative_risk_python_domain_migration": True,
+            "narrative_risk_python_domain_migration": False,
+            "global_impact_python_domain_migration": True,
             "postgresql_persistence_foundation": True,
             "postgresql_live_authority": True,
             "persistence_authority": PERSISTENCE_AUTHORITY,
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": True,
-            "new_wordpress_authority_change_in_v3_7": False,
+            "new_wordpress_authority_change_in_v3_8": False,
             "canvas_wordpress_domain_authority_changed": True,
             "finance_wordpress_domain_authority_changed": True,
             "narrative_risk_wordpress_domain_authority_changed": True,
+            "global_impact_wordpress_domain_authority_changed": True,
             "public_api_contract_breaking_changes": False,
         },
         "decision_kernel": {
@@ -495,6 +510,9 @@ def release_manifest() -> Dict[str, Any]:
             "finance_compute_authority": "workbench",
             "narrative_risk_domain_schema": NARRATIVE_RISK_DOMAIN_SCHEMA,
             "narrative_risk_python_domain_authoritative": True,
+            "global_impact_domain_schema": GLOBAL_IMPACT_DOMAIN_SCHEMA,
+            "global_impact_python_domain_authoritative": True,
+            "global_impact_compute_authority": "workbench",
         },
         "persistence": {
             "schema": PERSISTENCE_SCHEMA,
@@ -547,6 +565,25 @@ def release_manifest() -> Dict[str, Any]:
             "automatic_causality_inference": False,
             "automatic_recommendation": False,
             "automatic_escalation_or_action": False,
+            "final_decision_authority": "human-governed",
+        },
+        "global_impact": {
+            "schema": GLOBAL_IMPACT_DOMAIN_SCHEMA,
+            "module_id": "global-impact",
+            "status": "python-domain-authoritative",
+            "storage_authority": "python-postgresql",
+            "compute_authority": "workbench",
+            "normalized_tables": ["claims", "evidence_links", "artifacts", "decision_objects", "decision_module_bindings", "decision_events"],
+            "legacy_global_impact_import": True,
+            "legacy_wordpress_source_preserved": True,
+            "sdg_alignment_is_not_proof_of_impact": True,
+            "modeled_impact_is_not_observed_outcome": True,
+            "indicator_change_is_not_causal_attribution": True,
+            "decision_studio_executes_impact_models": False,
+            "automatic_impact_verification": False,
+            "automatic_sustainability_rating": False,
+            "automatic_recommendation": False,
+            "automatic_approval": False,
             "final_decision_authority": "human-governed",
         },
         "compatibility": {
@@ -691,6 +728,9 @@ def release_manifest() -> Dict[str, Any]:
             "finance_legacy_adapter_preserved": True,
             "narrative_risk_python_domain_migration": True,
             "narrative_risk_legacy_adapter_preserved": True,
+            "global_impact_python_domain_migration": True,
+            "global_impact_legacy_adapter_preserved": True,
+            "global_impact_compute_authority_workbench": True,
             "finance_compute_authority_workbench": True,
             "backend_service_decomposition": True,
             "route_contracts_preserved_v3_0_0": True,
@@ -5720,6 +5760,159 @@ def narrative_risk_legacy_import_endpoint(req: NarrativeRiskLegacyImport, reques
         return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
 
 
+
+def _global_impact_scope_error(request: Request, scope: str):
+    supplied = request.headers.get("x-scds-api-key", "").strip()
+    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
+    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
+        return None
+    super_key = os.getenv("SCDS_API_KEY", "").strip()
+    if supplied and super_key and secrets.compare_digest(supplied, super_key):
+        return None
+    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError:
+        catalog = {}
+    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
+    if "*" in scopes or scope in scopes or (scope == "global-impact:read" and ("global-impact:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "global-impact:write" and "repository:write" in scopes):
+        return None
+    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "global_impact_scope_required", "required_scope": scope})
+
+
+def global_impact_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "global_impact_contract": global_impact_domain_contract()}
+
+
+def global_impact_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "global_impact": global_impact_domain_template()}
+
+
+def global_impact_get_endpoint(decision_id: str, request: Request):
+    auth = _global_impact_scope_error(request, "global-impact:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "global_impact": GlobalImpactDomainRepository(session).get_global_impact(decision_id)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+
+
+def global_impact_put_endpoint(decision_id: str, req: GlobalImpactStateUpsert, request: Request):
+    auth = _global_impact_scope_error(request, "global-impact:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "global_impact": GlobalImpactDomainRepository(session).upsert_global_impact(decision_id, req)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def global_impact_claims_get_endpoint(decision_id: str, request: Request):
+    auth = _global_impact_scope_error(request, "global-impact:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = GlobalImpactDomainRepository(session).list_impact_claims(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "impact_claims": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def global_impact_claims_put_endpoint(decision_id: str, req: GlobalImpactClaimsReplace, request: Request):
+    auth = _global_impact_scope_error(request, "global-impact:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = GlobalImpactDomainRepository(session).replace_impact_claims(decision_id, req.impact_claims)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "impact_claims": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def global_impact_indicators_get_endpoint(decision_id: str, request: Request):
+    auth = _global_impact_scope_error(request, "global-impact:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = GlobalImpactDomainRepository(session).list_indicators(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "indicators": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def global_impact_indicators_put_endpoint(decision_id: str, req: GlobalImpactIndicatorsReplace, request: Request):
+    auth = _global_impact_scope_error(request, "global-impact:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = GlobalImpactDomainRepository(session).replace_indicators(decision_id, req.indicators)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "indicators": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def global_impact_evidence_links_get_endpoint(decision_id: str, request: Request):
+    auth = _global_impact_scope_error(request, "global-impact:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = GlobalImpactDomainRepository(session).list_evidence_links(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "evidence_links": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def global_impact_evidence_links_put_endpoint(decision_id: str, req: GlobalImpactEvidenceLinksReplace, request: Request):
+    auth = _global_impact_scope_error(request, "global-impact:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = GlobalImpactDomainRepository(session).replace_evidence_links(decision_id, req.evidence_links)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "evidence_links": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def global_impact_legacy_import_endpoint(req: GlobalImpactLegacyImport, request: Request):
+    auth = _global_impact_scope_error(request, "global-impact:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            state, created = GlobalImpactDomainRepository(session).import_legacy(req)
+            return {"ok": True, "version": APP_VERSION, "created": created, "source_preserved": True, "global_impact": state}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
 def health():
     persistence = database_status()
     persistence_ready = (not persistence["required"]) or bool(persistence.get("authority_ready"))
@@ -5791,6 +5984,7 @@ def health():
         "canvas_domain_schema": CANVAS_DOMAIN_SCHEMA,
         "finance_domain_schema": FINANCE_DOMAIN_SCHEMA,
         "narrative_risk_domain_schema": NARRATIVE_RISK_DOMAIN_SCHEMA,
+        "global_impact_domain_schema": GLOBAL_IMPACT_DOMAIN_SCHEMA,
         "persistence_authority": PERSISTENCE_AUTHORITY,
         "persistence": persistence,
         "release": release_manifest(),

@@ -64,14 +64,15 @@ def _decision(monkeypatch, tmp_path, decision_id='dec-v360'):
 
 def test_v360_finance_contract_and_release_boundary():
     health = client.get('/health').json()
-    assert health['version'] == '3.7.0'
+    assert health['version'] == '3.8.0'
     assert health['finance_domain_schema'] == FINANCE_DOMAIN_SCHEMA
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Narrative Risk Python Domain Migration'
-    assert release['build_fingerprint'] == 'scds-v3.7.0-narrative-risk-python-domain-migration'
+    assert release['release_name'] == 'Global Impact Catalyst Python Domain Migration'
+    assert release['build_fingerprint'] == 'scds-v3.8.0-global-impact-catalyst-python-domain-migration'
     assert release['backend_architecture']['database_migration'] is False
     assert release['backend_architecture']['finance_python_domain_migration'] is False
-    assert release['backend_architecture']['narrative_risk_python_domain_migration'] is True
+    assert release['backend_architecture']['narrative_risk_python_domain_migration'] is False
+    assert release['backend_architecture']['global_impact_python_domain_migration'] is True
     assert release['backend_architecture']['canvas_python_domain_migration'] is False
     assert release['finance']['status'] == 'python-domain-authoritative'
     assert release['finance']['compute_authority'] == 'workbench'

@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.8.0 — Global Impact Catalyst Python Domain Migration
+
+- Migrated Global Impact Catalyst domain state to authoritative Python/PostgreSQL persistence.
+- Normalized impact claims into `claims`, evidence relationships into `evidence_links`, and impact indicators into `artifacts`.
+- Preserved impact objectives/boundaries, stakeholders, pathways, environmental/social/economic context, SDG alignment, carbon/resource context, distributional impacts, and provenance in the canonical Global Impact decision object.
+- Added scoped Global Impact APIs and source-preserving legacy import.
+- Added explicit domain ownership so Global Impact indicator replacement cannot delete Finance Workbench receipts or Narrative Risk signals.
+- Preserved Canvas, Finance, and Narrative Risk domain authority; Workbench remains compute authority for Finance and Global Impact calculations.
+- Preserved the 20-table schema and Alembic revision `0001_v330_pg_foundation`; no database schema migration.
+- Explicitly states that SDG alignment is not proof of impact, modeled impact is not observed outcome, indicator change is not causal attribution, and final decisions remain human-governed.
+
 ## v3.7.0 — Narrative Risk Python Domain Migration
 
 - Migrated Narrative Risk domain state to authoritative Python/PostgreSQL persistence.

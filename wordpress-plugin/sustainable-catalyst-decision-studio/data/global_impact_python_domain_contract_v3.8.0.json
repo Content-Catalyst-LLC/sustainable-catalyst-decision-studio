@@ -1,0 +1,102 @@
+{
+  "schema": "scds-global-impact-domain/1.0",
+  "version": "1.0",
+  "module_id": "global-impact",
+  "display_name": "Global Impact Catalyst",
+  "status": "python-domain-authoritative",
+  "storage_authority": "python-postgresql",
+  "compute_authority": "workbench",
+  "kernel_contract_schema": "scds-decision-kernel/1.0",
+  "repository_schema": "scds-python-decision-repository/1.0",
+  "owns": [
+    "impact-context",
+    "impact-objectives-and-boundaries",
+    "impact-stakeholders",
+    "impact-pathways",
+    "environmental-impact-context",
+    "social-impact-context",
+    "economic-impact-context",
+    "sdg-alignment",
+    "carbon-impact-context",
+    "resource-impact-context",
+    "distributional-impact-context",
+    "impact-claims",
+    "impact-indicators-and-targets",
+    "impact-provenance"
+  ],
+  "shared_kernel_objects": [
+    "decision",
+    "alternative",
+    "criterion",
+    "evidence_ref",
+    "assumption",
+    "scenario",
+    "artifact_ref",
+    "provenance_ref",
+    "outcome"
+  ],
+  "normalized_postgresql_tables": [
+    "claims",
+    "evidence_links",
+    "artifacts",
+    "decision_objects",
+    "decision_module_bindings",
+    "decision_events"
+  ],
+  "providers": {
+    "compute_authority": "workbench",
+    "evidence": [
+      "knowledge-library",
+      "research-librarian"
+    ],
+    "spatial_and_live_context": [
+      "site-intelligence"
+    ],
+    "datasets": [
+      "workspace",
+      "knowledge-library"
+    ],
+    "research": [
+      "research-lab"
+    ]
+  },
+  "compatibility": {
+    "legacy_global_impact_import": true,
+    "legacy_wordpress_source_preserved": true,
+    "typed_platform_artifact_adapter_preserved": true,
+    "decision_packet_projection_preserved": true,
+    "workbench_handoff_contract_preserved": true
+  },
+  "boundaries": {
+    "shared_decision_identity_owned_by_kernel": true,
+    "sdg_alignment_is_not_proof_of_impact": true,
+    "modeled_impact_is_not_observed_outcome": true,
+    "indicator_change_is_not_causal_attribution": true,
+    "distributional_judgments_remain_explicit_and_reviewable": true,
+    "workbench_is_compute_authority": true,
+    "decision_studio_executes_impact_models": false,
+    "automatic_impact_verification": false,
+    "automatic_sustainability_rating": false,
+    "automatic_recommendation": false,
+    "automatic_approval": false,
+    "final_decision_authority": "human-governed"
+  },
+  "security": {
+    "read_scope": "global-impact:read",
+    "write_scope": "global-impact:write",
+    "repository_key_also_authorized": true
+  },
+  "endpoints": [
+    "GET /global-impact/contract",
+    "GET /global-impact/template",
+    "GET /global-impact/decisions/{decision_id}",
+    "PUT /global-impact/decisions/{decision_id}",
+    "GET /global-impact/decisions/{decision_id}/impact-claims",
+    "PUT /global-impact/decisions/{decision_id}/impact-claims",
+    "GET /global-impact/decisions/{decision_id}/indicators",
+    "PUT /global-impact/decisions/{decision_id}/indicators",
+    "GET /global-impact/decisions/{decision_id}/evidence-links",
+    "PUT /global-impact/decisions/{decision_id}/evidence-links",
+    "POST /global-impact/import/legacy"
+  ]
+}
