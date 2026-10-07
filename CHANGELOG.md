@@ -1,3 +1,10 @@
+# Decision Studio v3.13.0 — Collaboration & Decision Room Python Persistence
+
+- Canonical Decision Room persistence moved to Python/PostgreSQL.
+- Added six collaboration tables and Alembic revision `0002_v3130_collaboration`.
+- Legacy WordPress collaboration projections preserved for compatibility.
+- Hash-chained room events, hashed share tokens, persisted members/comments/change requests, and existing snapshot-table reuse.
+
 
 ## v3.12.0 — Module Interoperability & Shared Evidence
 - Canonical `scds-module-interoperability/1.0` contract.

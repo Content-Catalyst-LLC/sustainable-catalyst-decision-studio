@@ -212,6 +212,99 @@ class Artifact(Base, TimestampMixin):
     metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
 
 
+class DecisionRoom(Base, TimestampMixin):
+    __tablename__ = "decision_rooms"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    decision_id: Mapped[str] = mapped_column(ForeignKey("decisions.id", ondelete="CASCADE"), index=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    visibility: Mapped[str] = mapped_column(String(64), nullable=False, default="private")
+    status: Mapped[str] = mapped_column(String(64), nullable=False, default="active")
+    owner_ref: Mapped[str | None] = mapped_column(String(255))
+    room_schema: Mapped[str] = mapped_column(String(255), nullable=False, default="scds-collaborative-decision-room/2.0")
+    locked_snapshot_id: Mapped[str | None] = mapped_column(String(64))
+    head_event_hash: Mapped[str] = mapped_column(String(64), nullable=False, default="GENESIS")
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    __table_args__ = (UniqueConstraint("decision_id", name="uq_decision_room_decision"),)
+
+
+class DecisionRoomMember(Base, TimestampMixin):
+    __tablename__ = "decision_room_members"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    room_id: Mapped[str] = mapped_column(ForeignKey("decision_rooms.id", ondelete="CASCADE"), index=True, nullable=False)
+    user_ref: Mapped[str | None] = mapped_column(String(255), index=True)
+    email: Mapped[str | None] = mapped_column(String(320), index=True)
+    name: Mapped[str] = mapped_column(String(300), nullable=False)
+    role: Mapped[str] = mapped_column(String(64), nullable=False, default="observer")
+    status: Mapped[str] = mapped_column(String(64), nullable=False, default="active")
+    invited_by: Mapped[str | None] = mapped_column(String(255))
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+
+
+class DecisionRoomComment(Base, TimestampMixin):
+    __tablename__ = "decision_room_comments"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    room_id: Mapped[str] = mapped_column(ForeignKey("decision_rooms.id", ondelete="CASCADE"), index=True, nullable=False)
+    author_ref: Mapped[str | None] = mapped_column(String(255), index=True)
+    author_role: Mapped[str] = mapped_column(String(64), nullable=False, default="observer")
+    target_type: Mapped[str] = mapped_column(String(96), nullable=False, default="decision")
+    target_id: Mapped[str | None] = mapped_column(String(255))
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    visibility: Mapped[str] = mapped_column(String(64), nullable=False, default="room")
+    status: Mapped[str] = mapped_column(String(64), nullable=False, default="open")
+    parent_comment_id: Mapped[str | None] = mapped_column(String(64))
+    resolved_by: Mapped[str | None] = mapped_column(String(255))
+    resolution: Mapped[str | None] = mapped_column(Text)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+
+
+class DecisionRoomChangeRequest(Base, TimestampMixin):
+    __tablename__ = "decision_room_change_requests"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    room_id: Mapped[str] = mapped_column(ForeignKey("decision_rooms.id", ondelete="CASCADE"), index=True, nullable=False)
+    requested_by: Mapped[str | None] = mapped_column(String(255), index=True)
+    requester_role: Mapped[str] = mapped_column(String(64), nullable=False, default="reviewer")
+    target_type: Mapped[str] = mapped_column(String(96), nullable=False, default="decision")
+    target_id: Mapped[str | None] = mapped_column(String(255))
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String(64), nullable=False, default="open")
+    packet_patch: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    resolved_by: Mapped[str | None] = mapped_column(String(255))
+    resolution: Mapped[str | None] = mapped_column(Text)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+
+
+class DecisionRoomShareGrant(Base, TimestampMixin):
+    __tablename__ = "decision_room_share_grants"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    room_id: Mapped[str] = mapped_column(ForeignKey("decision_rooms.id", ondelete="CASCADE"), index=True, nullable=False)
+    member_id: Mapped[str | None] = mapped_column(ForeignKey("decision_room_members.id", ondelete="SET NULL"), index=True)
+    role: Mapped[str] = mapped_column(String(64), nullable=False, default="observer")
+    status: Mapped[str] = mapped_column(String(64), nullable=False, default="active")
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    token_hint: Mapped[str | None] = mapped_column(String(32))
+    created_by: Mapped[str | None] = mapped_column(String(255))
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+
+
+class DecisionRoomEvent(Base):
+    __tablename__ = "decision_room_events"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    room_id: Mapped[str] = mapped_column(ForeignKey("decision_rooms.id", ondelete="CASCADE"), index=True, nullable=False)
+    decision_id: Mapped[str] = mapped_column(ForeignKey("decisions.id", ondelete="CASCADE"), index=True, nullable=False)
+    sequence_no: Mapped[int] = mapped_column(Integer, nullable=False)
+    event_type: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    actor_ref: Mapped[str | None] = mapped_column(String(255))
+    actor_role: Mapped[str | None] = mapped_column(String(64))
+    target_type: Mapped[str] = mapped_column(String(96), nullable=False, default="room")
+    target_id: Mapped[str | None] = mapped_column(String(255))
+    event_payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    previous_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    event_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False, index=True)
+    __table_args__ = (UniqueConstraint("room_id", "sequence_no", name="uq_decision_room_event_sequence"),)
+
+
 class Snapshot(Base):
     __tablename__ = "snapshots"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)

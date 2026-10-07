@@ -91,7 +91,7 @@ def test_api_contract_and_auth():
     client = TestClient(app)
     c = client.get('/module-artifacts/contract')
     assert c.status_code == 200
-    assert c.json()['version'] == '3.12.0'
+    assert c.json()['version'] == '3.13.0'
     assert c.json()['module_artifact_contract']['schema'] == MODULE_ARTIFACT_SCHEMA
     denied = client.get('/module-artifacts/decisions/does-not-exist')
     assert denied.status_code == 403

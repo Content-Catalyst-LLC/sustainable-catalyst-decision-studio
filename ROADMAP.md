@@ -1,3 +1,5 @@
+# Current release: v3.13.0 — Collaboration & Decision Room Python Persistence
+
 
 ## Decision Studio modernization line (v3.1+)
 
@@ -12,8 +14,10 @@
 - **v3.8.0 — Global Impact Catalyst Python Domain Migration** — built; impact claims, evidence links, indicators, SDG/carbon/resource/distributional context, and provenance are authoritative in Python/PostgreSQL while Workbench remains compute authority.
 - **v3.9.0 — Unified Decision Module Registry** — built.
 - **v3.10.0 — Cross-Module Decision Composition** — built.
-- **v3.11.0 — Module Artifact & Provenance Standard** — current build.
-- **v3.12.0 — Module Interoperability & Shared Evidence** — next.
+- **v3.11.0 — Module Artifact & Provenance Standard** — built.
+- **v3.12.0 — Module Interoperability & Shared Evidence** — built.
+- **v3.13.0 — Collaboration & Decision Room Python Persistence** — current build.
+- **v3.14.0 — Global Authentication & Authorization Integration** — next.
 
 ## v2.8.0 — Decision Graph & Dependency Mapping
 
@@ -60,4 +64,20 @@ Status: built. Typed source-owned handoffs, bounded analysis/computation request
 - Existing `artifacts` + `decision_events` persistence; no new schema migration.
 - Platform Core retains evidence identity/source provenance; Workbench retains Finance/Impact computation; final decisions remain human-governed.
 
-Next: **v3.12.0 — Module Interoperability & Shared Evidence**.
+Next: **v3.14.0 — Global Authentication & Authorization Integration**.
+
+
+## v3.12.0 — Module Interoperability & Shared Evidence
+
+- Stable-reference evidence reuse across authoritative modules without payload duplication or ownership transfer.
+- Explicit consumer-module relationships, contradiction annotations, and relation-disagreement diagnostics.
+- Reuses `decision_objects` and `evidence_links`; Alembic remains `0001_v330_pg_foundation`.
+
+## v3.13.0 — Collaboration & Decision Room Python Persistence
+
+- Canonical room state, membership, comments, change requests, share grants, and room events move to Python/PostgreSQL.
+- Adds six collaboration tables; reuses existing snapshots for room snapshots.
+- Alembic advances to `0002_v3130_collaboration`; persistence table count becomes 26.
+- Legacy WordPress collaboration remains a compatibility projection; final authority remains human-governed.
+
+Next: **v3.14.0 — Global Authentication & Authorization Integration**.

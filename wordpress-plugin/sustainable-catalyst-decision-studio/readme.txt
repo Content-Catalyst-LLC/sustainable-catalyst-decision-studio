@@ -4,7 +4,7 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 3.12.0
+Stable tag: 3.13.0
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
@@ -33,6 +33,12 @@ Process confidence summarizes documentation and analysis coverage. It is not a p
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 3.13.0 =
+* Collaboration & Decision Room Python Persistence moves canonical room state from WordPress to Python/PostgreSQL.
+* Adds six PostgreSQL collaboration tables for rooms, members, comments, change requests, share grants, and hash-chained room events; existing snapshots are reused for room snapshots.
+* Legacy WordPress collaboration endpoints and room projections remain compatibility surfaces, but are no longer canonical persistence.
+* Share tokens are stored only as SHA-256 hashes; comments/change requests remain human records; AI cannot impersonate, approve, or sign.
 
 = 3.12.0 =
 * Module Interoperability & Shared Evidence: reuse evidence across Canvas, Finance, Narrative Risk, and Global Impact by stable reference without duplicating payloads or transferring ownership.

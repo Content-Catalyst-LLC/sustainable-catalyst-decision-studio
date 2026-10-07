@@ -287,6 +287,26 @@ from app.module_interoperability import (
     module_interoperability_template,
     validate_module_interoperability,
 )
+from app.decision_rooms import (
+    DECISION_ROOM_SCHEMA,
+    DECISION_ROOM_EVENT_SCHEMA,
+    DECISION_ROOM_PERSISTENCE_SCHEMA,
+    DecisionRoomRepository,
+    DecisionRoomUpsertRequest,
+    DecisionRoomPatchRequest,
+    DecisionRoomValidateRequest,
+    DecisionRoomImportRequest,
+    RoomMemberCreateRequest,
+    RoomCommentCreateRequest,
+    RoomCommentPatchRequest,
+    RoomChangeRequestCreate,
+    RoomChangeRequestPatch,
+    RoomSnapshotCreateRequest,
+    RoomShareGrantCreateRequest,
+    decision_room_contract,
+    decision_room_template as persisted_decision_room_template,
+    validate_decision_room,
+)
 from app.domains.global_impact import (
     GLOBAL_IMPACT_DOMAIN_SCHEMA,
     GlobalImpactClaimsReplace,
@@ -341,9 +361,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.12.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.12.0-module-interoperability-shared-evidence")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.12.0")
+APP_VERSION = "3.13.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.13.0-collaboration-decision-room-python-persistence")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.13.0")
 RELEASE_DATE = "2026-10-07"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -418,7 +438,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Module Interoperability & Shared Evidence",
+        "release_name": "Collaboration & Decision Room Python Persistence",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -498,6 +518,9 @@ def release_manifest() -> Dict[str, Any]:
         "module_provenance_schema": MODULE_PROVENANCE_SCHEMA,
         "module_interoperability_schema": MODULE_INTEROPERABILITY_SCHEMA,
         "shared_evidence_schema": SHARED_EVIDENCE_SCHEMA,
+        "decision_room_python_persistence_schema": DECISION_ROOM_PERSISTENCE_SCHEMA,
+        "decision_room_schema_v2": DECISION_ROOM_SCHEMA,
+        "decision_room_event_schema_v2": DECISION_ROOM_EVENT_SCHEMA,
         "persistence_schema": PERSISTENCE_SCHEMA,
         "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
@@ -513,14 +536,19 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 22,
-            "included_router_count": 23,
-            "route_count": 272,
-            "previous_route_count": 264,
+            "router_registry_count": 23,
+            "included_router_count": 24,
+            "route_count": 293,
+            "previous_route_count": 272,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
-            "database_migration": False,
-            "persistence_schema_migration_preserved": True,
+            "database_migration": True,
+            "persistence_schema_migration_preserved": False,
+            "collaboration_room_python_persistence_migration": True,
+            "collaboration_tables_added": 6,
+            "legacy_collaboration_endpoints_preserved": True,
+            "wordpress_canonical_room_persistence": False,
+            "python_postgresql_canonical_room_persistence": True,
             "repository_authority_migration": False,
             "canvas_python_domain_migration": False,
             "finance_python_domain_migration": False,
@@ -565,7 +593,7 @@ def release_manifest() -> Dict[str, Any]:
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": True,
-            "new_wordpress_authority_change_in_v3_12": False,
+            "new_wordpress_authority_change_in_v3_13": True,
             "canvas_wordpress_domain_authority_changed": True,
             "finance_wordpress_domain_authority_changed": True,
             "narrative_risk_wordpress_domain_authority_changed": True,
@@ -581,7 +609,7 @@ def release_manifest() -> Dict[str, Any]:
             "kernel_objects": kernel_contracts()["kernel_objects"],
             "module_ids": [m["module_id"] for m in module_registry()["modules"]],
             "module_count": module_registry()["module_count"],
-            "database_migration": False,
+            "database_migration": True,
             "postgresql_live_authority": True,
             "python_repository_live_authority": True,
             "wordpress_decision_object_authority_change": True,
@@ -673,6 +701,31 @@ def release_manifest() -> Dict[str, Any]:
             "evidence_reuse_implies_recommendation": False,
             "final_decision_authority": "human-governed",
         },
+        "collaboration_decision_rooms": {
+            "schema": DECISION_ROOM_SCHEMA,
+            "event_schema": DECISION_ROOM_EVENT_SCHEMA,
+            "persistence_schema": DECISION_ROOM_PERSISTENCE_SCHEMA,
+            "status": "python-postgresql-authoritative",
+            "storage_authority": "python-postgresql",
+            "canonical_tables": [
+                "decision_rooms",
+                "decision_room_members",
+                "decision_room_comments",
+                "decision_room_change_requests",
+                "decision_room_share_grants",
+                "decision_room_events",
+                "snapshots"
+            ],
+            "legacy_wordpress_room_projection_preserved": True,
+            "wordpress_canonical_room_persistence": False,
+            "hash_chained_room_events": True,
+            "share_tokens_stored_as_hashes_only": True,
+            "human_comments_and_change_requests": True,
+            "ai_can_impersonate_participant": False,
+            "ai_can_approve_or_sign": False,
+            "room_activity_implies_decision_approval": False,
+            "final_decision_authority": "human-governed",
+        },
         "persistence": {
             "schema": PERSISTENCE_SCHEMA,
             "contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
@@ -760,7 +813,9 @@ def release_manifest() -> Dict[str, Any]:
             "multi_variable_sensitivity": True,
             "threshold_break_even_analysis": True,
             "collaborative_decision_rooms": True,
-            "wordpress_canonical_room_persistence": True,
+            "wordpress_canonical_room_persistence": False,
+            "python_postgresql_canonical_room_persistence": True,
+            "legacy_wordpress_room_projection_preserved": True,
             "private_room_sharing": True,
             "locked_approved_versions": True,
             "institutional_domain_decision_packs": True,
@@ -2935,9 +2990,10 @@ def collaborative_room_template() -> Dict[str, Any]:
         "locked_version": {},
         "contact_engagement_handoffs": [],
         "limits": {"members": 200, "comments": 2000, "change_requests": 500, "snapshots": 100, "activity_events": 5000},
-        "canonical_persistence": "wordpress",
+        "canonical_persistence": "python-postgresql",
+        "legacy_wordpress_projection": "compatibility-preserved",
         "warnings": [
-            "Decision Rooms are private collaboration records; WordPress authentication and authorization remain authoritative.",
+            "Decision Rooms are private collaboration records; Python/PostgreSQL is the canonical persistence authority. Legacy WordPress room projections remain compatibility surfaces.",
             "Comments and approvals are human records. AI cannot approve, sign, certify, or impersonate a reviewer.",
             "Approved snapshots remain locked until an authorized human explicitly reopens the version with a reason.",
         ],
@@ -5551,6 +5607,249 @@ def module_interoperability_diagnostics_endpoint(decision_id: str, request: Requ
         return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
 
 
+def _decision_room_scope_error(request: Request, scope: str):
+    supplied = request.headers.get("x-scds-api-key", "").strip()
+    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
+    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
+        return None
+    super_key = os.getenv("SCDS_API_KEY", "").strip()
+    if supplied and super_key and secrets.compare_digest(supplied, super_key):
+        return None
+    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError:
+        catalog = {}
+    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
+    if "*" in scopes or scope in scopes or (scope == "rooms:read" and ("rooms:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "rooms:write" and "repository:write" in scopes):
+        return None
+    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "decision_room_scope_required", "required_scope": scope})
+
+
+def _decision_room_error(exc: Exception):
+    if isinstance(exc, LookupError):
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    if isinstance(exc, PermissionError):
+        return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def decision_rooms_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "decision_room_contract": decision_room_contract()}
+
+
+def decision_rooms_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "decision_room": persisted_decision_room_template()}
+
+
+def decision_rooms_validate_endpoint(req: DecisionRoomValidateRequest):
+    return {"version": APP_VERSION, **validate_decision_room(req.room, strict=req.strict)}
+
+
+def decision_rooms_create_endpoint(decision_id: str, req: DecisionRoomUpsertRequest, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            room = DecisionRoomRepository(session, app_version=APP_VERSION).upsert_for_decision(decision_id, req)
+            return {"ok": True, "version": APP_VERSION, "decision_room": room}
+    except (LookupError, ValueError, PermissionError) as exc:
+        return _decision_room_error(exc)
+
+
+def decision_rooms_get_by_decision_endpoint(decision_id: str, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            room = DecisionRoomRepository(session, app_version=APP_VERSION).get_by_decision(decision_id)
+            return {"ok": True, "version": APP_VERSION, "decision_room": room}
+    except LookupError as exc:
+        return _decision_room_error(exc)
+
+
+def decision_rooms_get_endpoint(room_id: str, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "decision_room": DecisionRoomRepository(session, app_version=APP_VERSION).get(room_id)}
+    except LookupError as exc:
+        return _decision_room_error(exc)
+
+
+def decision_rooms_patch_endpoint(room_id: str, req: DecisionRoomPatchRequest, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "decision_room": DecisionRoomRepository(session, app_version=APP_VERSION).patch(room_id, req)}
+    except (LookupError, ValueError, PermissionError) as exc:
+        return _decision_room_error(exc)
+
+
+def decision_rooms_members_endpoint(room_id: str, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items=DecisionRoomRepository(session, app_version=APP_VERSION).members(room_id); return {"ok": True, "version": APP_VERSION, "count": len(items), "members": items}
+    except LookupError as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_add_member_endpoint(room_id: str, req: RoomMemberCreateRequest, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "member": DecisionRoomRepository(session, app_version=APP_VERSION).add_member(room_id, req)}
+    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_comments_endpoint(room_id: str, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items=DecisionRoomRepository(session, app_version=APP_VERSION).comments(room_id); return {"ok": True, "version": APP_VERSION, "count": len(items), "comments": items}
+    except LookupError as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_add_comment_endpoint(room_id: str, req: RoomCommentCreateRequest, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "comment": DecisionRoomRepository(session, app_version=APP_VERSION).add_comment(room_id, req)}
+    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_patch_comment_endpoint(room_id: str, comment_id: str, req: RoomCommentPatchRequest, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "comment": DecisionRoomRepository(session, app_version=APP_VERSION).patch_comment(room_id, comment_id, req)}
+    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_change_requests_endpoint(room_id: str, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items=DecisionRoomRepository(session, app_version=APP_VERSION).change_requests(room_id); return {"ok": True, "version": APP_VERSION, "count": len(items), "change_requests": items}
+    except LookupError as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_add_change_request_endpoint(room_id: str, req: RoomChangeRequestCreate, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "change_request": DecisionRoomRepository(session, app_version=APP_VERSION).add_change_request(room_id, req)}
+    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_patch_change_request_endpoint(room_id: str, change_request_id: str, req: RoomChangeRequestPatch, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "change_request": DecisionRoomRepository(session, app_version=APP_VERSION).patch_change_request(room_id, change_request_id, req)}
+    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_snapshots_endpoint(room_id: str, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items=DecisionRoomRepository(session, app_version=APP_VERSION).snapshots(room_id); return {"ok": True, "version": APP_VERSION, "count": len(items), "snapshots": items}
+    except LookupError as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_create_snapshot_endpoint(room_id: str, req: RoomSnapshotCreateRequest, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "snapshot": DecisionRoomRepository(session, app_version=APP_VERSION).create_snapshot(room_id, req)}
+    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_share_grants_endpoint(room_id: str, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items=DecisionRoomRepository(session, app_version=APP_VERSION).share_grants(room_id); return {"ok": True, "version": APP_VERSION, "count": len(items), "share_grants": items}
+    except LookupError as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_create_share_grant_endpoint(room_id: str, req: RoomShareGrantCreateRequest, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            grant, token=DecisionRoomRepository(session, app_version=APP_VERSION).create_share_grant(room_id, req); return {"ok": True, "version": APP_VERSION, "share_grant": grant, "share_token_once": token}
+    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_events_endpoint(room_id: str, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, **DecisionRoomRepository(session, app_version=APP_VERSION).events(room_id)}
+    except LookupError as exc: return _decision_room_error(exc)
+
+
+def decision_rooms_import_endpoint(req: DecisionRoomImportRequest, request: Request):
+    auth = _decision_room_scope_error(request, "rooms:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, **DecisionRoomRepository(session, app_version=APP_VERSION).import_legacy(req)}
+    except (LookupError, ValueError, PermissionError) as exc: return _decision_room_error(exc)
+
+
 def persistence_status_endpoint():
     status = database_status()
     return {"ok": (not status["required"] or (status["connected"] and status["schema_current"])), "version": APP_VERSION, "persistence": status}
@@ -6480,6 +6779,9 @@ def health():
         "module_provenance_schema": MODULE_PROVENANCE_SCHEMA,
         "module_interoperability_schema": MODULE_INTEROPERABILITY_SCHEMA,
         "shared_evidence_schema": SHARED_EVIDENCE_SCHEMA,
+        "decision_room_python_persistence_schema": DECISION_ROOM_PERSISTENCE_SCHEMA,
+        "decision_room_schema_v2": DECISION_ROOM_SCHEMA,
+        "decision_room_event_schema_v2": DECISION_ROOM_EVENT_SCHEMA,
         "registered_decision_modules": module_registry()["module_count"],
         "persistence_schema": PERSISTENCE_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,

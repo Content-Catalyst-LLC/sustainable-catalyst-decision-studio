@@ -23,10 +23,10 @@ client = TestClient(app)
 
 def test_v331_migration_revision_remains_preserved_under_v340_authority():
     body = client.get('/health').json()
-    assert body['version'] == '3.12.0'
+    assert body['version'] == '3.13.0'
     assert body['persistence_schema'] == 'scds-postgresql-persistence/1.0'
     assert body['persistence_authority'] == 'python-postgresql'
-    assert body['release']['backend_architecture']['database_migration'] is False
+    assert body['release']['backend_architecture']['database_migration'] is True
     assert body['release']['backend_architecture']['postgresql_live_authority'] is True
     assert body['release']['backend_architecture']['wordpress_authority_change'] is True
     assert body['release']['persistence']['v3_4_authority_cutover_complete'] is True
@@ -39,7 +39,7 @@ def test_persistence_contract_preserves_v331_schema_under_v340_authority():
     assert body['principles']['writes_enabled_in_production'] is True
     assert body['principles']['v3_4_authority_cutover_complete'] is True
     assert body['principles']['final_decision_authority'] == 'human-governed'
-    assert len(body['tables']) == 20
+    assert len(body['tables']) == 26
 
 
 def test_persistence_schema_manifest_has_expected_domain_tables():
@@ -49,9 +49,11 @@ def test_persistence_schema_manifest_has_expected_domain_tables():
         'alternatives','criteria','criterion_values','assumptions','claims','evidence_links','scenarios',
         'scenario_variables','uncertainty_models','recommendations','reviews','challenges','decision_events',
         'artifacts','snapshots',
+        'decision_rooms','decision_room_members','decision_room_comments','decision_room_change_requests',
+        'decision_room_share_grants','decision_room_events',
     }
     assert schema['revision'] == EXPECTED_SCHEMA_REVISION
-    assert schema['table_count'] == 20
+    assert schema['table_count'] == 26
     assert set(schema['tables']) == expected == set(PERSISTENCE_TABLES)
     assert schema['module_registry_seed'] == ['canvas','finance','narrative-risk','global-impact']
 

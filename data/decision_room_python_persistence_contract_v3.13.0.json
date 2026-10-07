@@ -1,0 +1,44 @@
+{
+  "schema": "scds-collaborative-decision-room/2.0",
+  "event_schema": "scds-collaboration-event/2.0",
+  "persistence_schema": "scds-decision-room-python-persistence/1.0",
+  "version": "2.0",
+  "role": "authoritative-python-postgresql-collaboration-and-decision-room-persistence",
+  "storage_authority": "python-postgresql",
+  "collaboration_authority": "decision-studio-kernel",
+  "authentication_authority": "global-authentication-layer-planned-v3.14",
+  "final_decision_authority": "human-governed",
+  "tables": [
+    "decision_rooms",
+    "decision_room_members",
+    "decision_room_comments",
+    "decision_room_change_requests",
+    "decision_room_share_grants",
+    "decision_room_events",
+    "snapshots"
+  ],
+  "principles": {
+    "wordpress_is_not_canonical_room_persistence": true,
+    "legacy_wordpress_room_projection_is_preserved": true,
+    "room_membership_and_roles_are_persisted": true,
+    "comments_are_human_records": true,
+    "change_requests_are_human_records": true,
+    "room_events_are_hash_chained": true,
+    "share_tokens_are_stored_only_as_sha256_hashes": true,
+    "room_snapshots_use_existing_snapshot_table": true,
+    "ai_cannot_impersonate_participant": true,
+    "ai_cannot_approve_or_sign": true,
+    "room_activity_does_not_imply_decision_approval": true
+  },
+  "security": {
+    "read_scope": "rooms:read",
+    "write_scope": "rooms:write",
+    "repository_key_also_authorized": true
+  },
+  "migration": {
+    "revision": "0002_v3130_collaboration",
+    "down_revision": "0001_v330_pg_foundation",
+    "tables_added": 6,
+    "total_tables": 26
+  }
+}

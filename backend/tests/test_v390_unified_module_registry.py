@@ -32,12 +32,12 @@ def _db(monkeypatch, tmp_path):
 
 def test_v390_release_and_health_publish_unified_registry_schema():
     health = client.get('/health').json()
-    assert health['version'] == '3.12.0'
+    assert health['version'] == '3.13.0'
     assert health['unified_decision_module_registry_schema'] == UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Module Interoperability & Shared Evidence'
-    assert release['build_fingerprint'] == 'scds-v3.12.0-module-interoperability-shared-evidence'
-    assert release['backend_architecture']['database_migration'] is False
+    assert release['release_name'] == 'Collaboration & Decision Room Python Persistence'
+    assert release['build_fingerprint'] == 'scds-v3.13.0-collaboration-decision-room-python-persistence'
+    assert release['backend_architecture']['database_migration'] is True
     assert release['backend_architecture']['unified_decision_module_registry'] is True
     assert release['backend_architecture']['unified_registry_canonical'] is True
     assert release['backend_architecture']['legacy_module_registry_endpoints_preserved'] is True
@@ -150,4 +150,4 @@ def test_v390_route_inventory_preserves_v380_and_adds_registry_routes():
 
 
 def test_v390_schema_revision_is_unchanged():
-    assert EXPECTED_SCHEMA_REVISION == '0001_v330_pg_foundation'
+    assert EXPECTED_SCHEMA_REVISION == '0002_v3130_collaboration'

@@ -4,15 +4,15 @@ import json
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='3.12.0'
-NAME='Module Interoperability & Shared Evidence'
-BUILD='scds-v3.12.0-module-interoperability-shared-evidence'
-SOURCE='release-v3.12.0'
-REVISION='0001_v330_pg_foundation'
-INTEROP='scds-module-interoperability/1.0'
-SHARED='scds-shared-evidence-reference/1.0'
-ART='scds-module-artifact/1.0'
-PROV='scds-module-provenance/1.0'
+VERSION='3.13.0'
+NAME='Collaboration & Decision Room Python Persistence'
+BUILD='scds-v3.13.0-collaboration-decision-room-python-persistence'
+SOURCE='release-v3.13.0'
+PREV_REV='0001_v330_pg_foundation'
+REVISION='0002_v3130_collaboration'
+ROOM='scds-collaborative-decision-room/2.0'
+EVENT='scds-collaboration-event/2.0'
+PERSIST='scds-decision-room-python-persistence/1.0'
 
 def text(p): return (ROOT/p).read_text()
 def load(p): return json.loads(text(p))
@@ -20,63 +20,62 @@ def req(c,m):
     if not c: raise SystemExit(f'FAIL: {m}')
 
 service=text('backend/app/services/decision_service.py')
-interop=text('backend/app/module_interoperability.py')
-routes=text('backend/app/api/routes/module_interoperability.py')
+rooms=text('backend/app/decision_rooms.py')
+routes=text('backend/app/api/routes/decision_rooms.py')
 router=text('backend/app/api/router.py')
 models=text('backend/app/persistence/models.py')
-migration=text('backend/migrations/versions/0001_v330_pg_foundation.py')
+mig1=text('backend/migrations/versions/0001_v330_pg_foundation.py')
+mig2=text('backend/migrations/versions/0002_v3130_collaboration.py')
 persistence=text('backend/app/persistence/database.py')
 php=text('wordpress-plugin/sustainable-catalyst-decision-studio/sustainable-catalyst-decision-studio.php')
 readme=text('wordpress-plugin/sustainable-catalyst-decision-studio/readme.txt')
 compose=text('compose.yml'); docker=text('backend/Dockerfile'); render=text('backend/render.yaml')
-inv=load('data/backend_route_inventory_v3.12.0.json')
-prev=load('data/backend_route_inventory_v3.11.0.json')
-manifest=load('data/decision_studio_release_manifest_v3.12.0.json')
-pmanifest=load('wordpress-plugin/sustainable-catalyst-decision-studio/data/release_manifest_v3.12.0.json')
-contract=load('data/module_interoperability_shared_evidence_contract_v3.12.0.json')
-pc=load('data/postgresql_persistence_contract_v3.12.0.json')
-schema=load('data/postgresql_schema_manifest_v3.12.0.json')
+inv=load('data/backend_route_inventory_v3.13.0.json')
+prev=load('data/backend_route_inventory_v3.12.0.json')
+manifest=load('data/decision_studio_release_manifest_v3.13.0.json')
+pmanifest=load('wordpress-plugin/sustainable-catalyst-decision-studio/data/release_manifest_v3.13.0.json')
+contract=load('data/decision_room_python_persistence_contract_v3.13.0.json')
+pc=load('data/postgresql_persistence_contract_v3.13.0.json')
+schema=load('data/postgresql_schema_manifest_v3.13.0.json')
 
 req(f'APP_VERSION = "{VERSION}"' in service,'backend version')
 req(NAME in service and BUILD in service and SOURCE in service,'backend identity')
-req(INTEROP in interop and SHARED in interop,'interoperability schemas')
-req('evidence_payload_is_not_duplicated' in interop and 'owner_module_is_preserved' in interop,'sharing boundaries')
-req('contradictions_are_visible_not_silently_reconciled' in interop and 'relationship-disagreement-not-truth-adjudication' in interop,'contradiction visibility')
-req('ModuleInteroperabilityRepository' in interop and 'INTEROPERABILITY_OBJECT_TYPE' in interop,'interoperability repository')
-req('DecisionObject' in interop and 'EvidenceLink' in interop,'existing persistence tables reused')
-req('from app.api.routes.module_interoperability import router as module_interoperability_router' in router and 'include_router(module_interoperability_router)' in router,'interoperability router included')
-for path in ['/module-interoperability/contract','/module-interoperability/template','/module-interoperability/validate','/module-interoperability/decisions/{decision_id}','/module-interoperability/decisions/{decision_id}/share','/module-interoperability/decisions/{decision_id}/evidence/{evidence_ref:path}','/module-interoperability/decisions/{decision_id}/diagnostics']:
-    req(repr(path) in routes,f'missing interoperability route {path}')
-req(inv['release']==VERSION and inv['route_count']==272,'route inventory identity/count')
-req(len(inv['routers'])==23 and len(inv['routers']['module_interoperability'])==8,'router inventory')
-old={(r['path'],r['method']) for rs in prev['routers'].values() for r in rs}; new={(r['path'],r['method']) for rs in inv['routers'].values() for r in rs}; req(old<=new,'v3.11 routes preserved')
+req(ROOM in rooms and EVENT in rooms and PERSIST in rooms,'room schemas')
+req('DecisionRoomRepository' in rooms and 'room_events_are_hash_chained' in rooms,'room repository/contract')
+req('token_hash' in rooms and 'secrets.token_urlsafe' in rooms,'hashed share tokens')
+req('legacy_wordpress_source_preserved' in rooms and 'import_legacy' in rooms,'legacy source-preserving import')
+req('from app.api.routes.decision_rooms import router as decision_rooms_router' in router and 'include_router(decision_rooms_router)' in router,'room router included')
+req(inv['release']==VERSION and inv['route_count']==293,'route inventory identity/count')
+req(len(inv['routers'])==24 and len(inv['routers']['decision_rooms'])==21,'router inventory')
+old={(r['path'],r['method']) for rs in prev['routers'].values() for r in rs}; new={(r['path'],r['method']) for rs in inv['routers'].values() for r in rs}; req(old<=new,'v3.12 routes preserved')
 req(manifest==pmanifest,'manifest parity')
 req(manifest['release']==VERSION and manifest['release_name']==NAME and manifest['build_fingerprint']==BUILD and manifest['source_commit']==SOURCE,'manifest identity')
-req(manifest['backend']['route_count']==272 and manifest['backend']['route_registry_count']==22 and manifest['backend']['included_router_count']==23,'manifest backend counts')
-mi=manifest['module_interoperability']; req(mi['schema']==INTEROP and mi['shared_evidence_schema']==SHARED,'manifest interoperability schemas')
-req(mi['shared_by_reference'] and mi['payload_duplicated'] is False and mi['owner_module_preserved'],'shared evidence guarantees')
-req(mi['contradiction_visibility'] and mi['contradictions_auto_resolved'] is False,'contradiction boundaries')
-req(mi['boundaries']['evidence_reuse_implies_truth'] is False and mi['boundaries']['evidence_reuse_implies_causality'] is False,'epistemic boundaries')
-req(manifest['next_release'].startswith('3.13.0'),'next release')
-req(contract['schema']==INTEROP and contract['shared_evidence_schema']==SHARED,'contract identity')
-req(contract['persistence']['document_table']=='decision_objects' and contract['persistence']['usage_edge_table']=='evidence_links' and contract['persistence']['schema_migration_required'] is False,'persistence reuse')
-req(schema['revision']==REVISION and schema['table_count']==20 and schema['module_interoperability_schema_migration'] is False and schema['shared_evidence_schema_migration'] is False,'schema unchanged')
-req(pc['new_schema_migration_in_v3_12'] is False and pc['module_interoperability_shared_evidence'] is True and pc['shared_evidence_payload_duplication'] is False,'persistence contract')
+req(manifest['backend']['route_count']==293 and manifest['backend']['route_registry_count']==23 and manifest['backend']['included_router_count']==24,'manifest backend counts')
+dr=manifest['decision_room_python_persistence']; req(dr['schema']==PERSIST and dr['room_schema']==ROOM and dr['event_schema']==EVENT,'room manifest schemas')
+req(dr['schema_revision']==REVISION and dr['previous_schema_revision']==PREV_REV and len(dr['tables_added'])==6,'room migration manifest')
+req(dr['wordpress_canonical_room_persistence'] is False and dr['legacy_wordpress_projection_preserved'] is True,'WordPress room authority cutover')
+req(manifest['next_release'].startswith('3.14.0'),'next release')
+req(contract['schema']==ROOM and contract['persistence_schema']==PERSIST and contract['migration']['revision']==REVISION,'contract identity/migration')
+req(contract['principles']['share_tokens_are_stored_only_as_sha256_hashes'] is True and contract['principles']['ai_cannot_approve_or_sign'] is True,'room security/governance')
+req(schema['revision']==REVISION and schema['previous_revision']==PREV_REV and schema['table_count']==26 and schema['collaboration_schema_migration'] is True,'schema migrated')
+req(len(schema['collaboration_tables'])==6 and schema['snapshots_reused_for_rooms'] is True,'collaboration table manifest')
+req(pc['expected_schema_revision']==REVISION and pc['new_schema_migration_in_v3_13'] is True and pc['table_count']==26,'persistence contract migration')
 for table in schema['tables']:
     req(f'__tablename__ = "{table}"' in models,f'model missing {table}')
-    req(f'"{table}"' in migration,f'migration missing {table}')
-req(REVISION in migration and REVISION in persistence and len(REVISION)<=32,'alembic revision')
-req(' * Version: 3.12.0' in php and "const VERSION = '3.12.0';" in php,'plugin metadata')
+for table in schema['collaboration_tables']:
+    req(f'"{table}"' in mig2,f'v3.13 migration missing {table}')
+req(f'revision = "{REVISION}"' in mig2 and f'down_revision = "{PREV_REV}"' in mig2 and len(REVISION)<=32,'alembic v3.13 revision chain')
+req(PREV_REV in mig1 and REVISION in persistence,'alembic history/current revision')
+req(' * Version: 3.13.0' in php and "const VERSION = '3.13.0';" in php,'plugin metadata')
 req("const DB_VERSION = '3.0.0';" in php,'WordPress DB unchanged')
-req(f"const MODULE_INTEROPERABILITY_SCHEMA = '{INTEROP}';" in php and f"const SHARED_EVIDENCE_SCHEMA = '{SHARED}';" in php,'plugin interoperability constants')
-req('Stable tag: 3.12.0' in readme,'plugin stable tag')
+req(f"const DECISION_ROOM_V2_SCHEMA = '{ROOM}';" in php and f"const DECISION_ROOM_PERSISTENCE_SCHEMA = '{PERSIST}';" in php,'plugin room constants')
+req('Stable tag: 3.13.0' in readme,'plugin stable tag')
 req(BUILD in php and SOURCE in php and BUILD in compose and SOURCE in compose and BUILD in docker and SOURCE in docker and BUILD in render and SOURCE in render,'release identity propagation')
-req('sustainable-catalyst-decision-studio:3.12.0' in compose,'compose image')
-req("d.get('version') == '3.12.0'" in docker,'docker health version')
-for p in ['backend/app/module_artifact_provenance.py','backend/app/cross_module_composition.py','backend/app/unified_module_registry.py','backend/app/domains/canvas.py','backend/app/domains/finance.py','backend/app/domains/narrative_risk.py','backend/app/domains/global_impact.py','data/backend_route_inventory_v3.11.0.json']:
+req('sustainable-catalyst-decision-studio:3.13.0' in compose,'compose image')
+req("d.get('version') == '3.13.0'" in docker,'docker health version')
+for p in ['backend/app/module_interoperability.py','backend/app/module_artifact_provenance.py','backend/app/cross_module_composition.py','backend/app/unified_module_registry.py','data/backend_route_inventory_v3.12.0.json']:
     req((ROOT/p).exists(),f'preserved {p}')
-req(ART in text('backend/app/module_artifact_provenance.py') and PROV in text('backend/app/module_artifact_provenance.py'),'v3.11 artifact standard preserved')
 req('.venv-*/' in text('.gitignore') and '.venv/' in text('.gitignore'),'venv ignore')
 jsons=[p for p in ROOT.rglob('*.json') if '.git' not in p.parts]
 for p in jsons: json.loads(p.read_text())
-print(f'Decision Studio v{VERSION} release-integrity checks passed: Module Interoperability & Shared Evidence, 8 interoperability routes, reference-only evidence reuse, ownership preservation, provenance continuity, contradiction visibility without truth adjudication, v3.11 immutable artifact/provenance standard preserved, 20 persistence tables on preserved Alembic revision {REVISION}, 22 route registries, 272 certified API routes, four authoritative modules preserved, Workbench compute boundaries preserved, human-governed final decision authority, and {len(jsons)} JSON files validated.')
+print(f'Decision Studio v{VERSION} release-integrity checks passed: authoritative Collaboration & Decision Room Python Persistence, 21 decision-room routes, 6 new collaboration tables plus existing room snapshots, hash-chained room events, SHA-256-only share-token storage, source-preserving legacy WordPress room import, 26 persistence tables on Alembic revision {REVISION}, 23 route registries, 293 certified API routes, v3.12 shared evidence + v3.11 artifact provenance + v3.10 composition preserved, human-governed final decision authority, and {len(jsons)} JSON files validated.')
