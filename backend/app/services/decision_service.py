@@ -276,6 +276,17 @@ from app.module_artifact_provenance import (
     module_artifact_template,
     validate_module_artifact,
 )
+from app.module_interoperability import (
+    MODULE_INTEROPERABILITY_SCHEMA,
+    SHARED_EVIDENCE_SCHEMA,
+    ModuleInteroperabilityRepository,
+    ModuleInteroperabilityUpsertRequest,
+    ModuleInteroperabilityValidateRequest,
+    SharedEvidenceShareRequest,
+    module_interoperability_contract,
+    module_interoperability_template,
+    validate_module_interoperability,
+)
 from app.domains.global_impact import (
     GLOBAL_IMPACT_DOMAIN_SCHEMA,
     GlobalImpactClaimsReplace,
@@ -330,9 +341,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.11.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.11.0-module-artifact-provenance-standard")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.11.0")
+APP_VERSION = "3.12.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.12.0-module-interoperability-shared-evidence")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.12.0")
 RELEASE_DATE = "2026-10-07"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -407,7 +418,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Module Artifact & Provenance Standard",
+        "release_name": "Module Interoperability & Shared Evidence",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -485,6 +496,8 @@ def release_manifest() -> Dict[str, Any]:
         "cross_module_decision_composition_schema": CROSS_MODULE_COMPOSITION_SCHEMA,
         "module_artifact_schema": MODULE_ARTIFACT_SCHEMA,
         "module_provenance_schema": MODULE_PROVENANCE_SCHEMA,
+        "module_interoperability_schema": MODULE_INTEROPERABILITY_SCHEMA,
+        "shared_evidence_schema": SHARED_EVIDENCE_SCHEMA,
         "persistence_schema": PERSISTENCE_SCHEMA,
         "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
@@ -500,10 +513,10 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 21,
-            "included_router_count": 22,
-            "route_count": 264,
-            "previous_route_count": 256,
+            "router_registry_count": 22,
+            "included_router_count": 23,
+            "route_count": 272,
+            "previous_route_count": 264,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
             "database_migration": False,
@@ -524,6 +537,23 @@ def release_manifest() -> Dict[str, Any]:
             "module_provenance_schema": MODULE_PROVENANCE_SCHEMA,
             "artifact_revisions_immutable": True,
             "artifact_schema_migration": False,
+            "module_interoperability_shared_evidence": True,
+            "module_interoperability_schema": MODULE_INTEROPERABILITY_SCHEMA,
+            "shared_evidence_schema": SHARED_EVIDENCE_SCHEMA,
+            "shared_evidence_by_reference": True,
+            "shared_evidence_payload_duplication": False,
+            "shared_evidence_ownership_transfer": False,
+            "contradiction_visibility": True,
+            "contradictions_auto_resolved": False,
+            "interoperability_schema_migration": False,
+            "module_interoperability_shared_evidence": True,
+            "module_interoperability_schema": MODULE_INTEROPERABILITY_SCHEMA,
+            "shared_evidence_schema": SHARED_EVIDENCE_SCHEMA,
+            "shared_evidence_by_reference": True,
+            "shared_evidence_payload_duplication": False,
+            "shared_evidence_ownership_transfer": False,
+            "contradiction_visibility": True,
+            "interoperability_schema_migration": False,
             "composition_schema_migration": False,
             "composition_infers_truth": False,
             "composition_infers_causality": False,
@@ -535,7 +565,7 @@ def release_manifest() -> Dict[str, Any]:
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": True,
-            "new_wordpress_authority_change_in_v3_11": False,
+            "new_wordpress_authority_change_in_v3_12": False,
             "canvas_wordpress_domain_authority_changed": True,
             "finance_wordpress_domain_authority_changed": True,
             "narrative_risk_wordpress_domain_authority_changed": True,
@@ -567,6 +597,8 @@ def release_manifest() -> Dict[str, Any]:
             "global_impact_domain_schema": GLOBAL_IMPACT_DOMAIN_SCHEMA,
             "global_impact_python_domain_authoritative": True,
             "global_impact_compute_authority": "workbench",
+            "module_interoperability_schema": MODULE_INTEROPERABILITY_SCHEMA,
+            "shared_evidence_schema": SHARED_EVIDENCE_SCHEMA,
         },
         "unified_module_registry": {
             "schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
@@ -619,6 +651,26 @@ def release_manifest() -> Dict[str, Any]:
             "provenance_implies_causality": False,
             "artifact_implies_recommendation": False,
             "artifact_implies_approval": False,
+            "final_decision_authority": "human-governed",
+        },
+        "module_interoperability": {
+            "schema": MODULE_INTEROPERABILITY_SCHEMA,
+            "shared_evidence_schema": SHARED_EVIDENCE_SCHEMA,
+            "canonical_modules": 4,
+            "storage_authority": "python-postgresql",
+            "evidence_identity_and_source_provenance_authority": "platform-core",
+            "document_table": "decision_objects",
+            "usage_edge_table": "evidence_links",
+            "shared_by_reference": True,
+            "payload_duplicated": False,
+            "owner_module_preserved": True,
+            "consumer_modules_explicit": True,
+            "contradiction_visibility": True,
+            "contradictions_auto_resolved": False,
+            "database_migration": False,
+            "evidence_reuse_implies_truth": False,
+            "evidence_reuse_implies_causality": False,
+            "evidence_reuse_implies_recommendation": False,
             "final_decision_authority": "human-governed",
         },
         "persistence": {
@@ -5399,6 +5451,106 @@ def module_artifact_lineage_endpoint(decision_id: str, artifact_id: str, request
         return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
 
 
+def _module_interoperability_scope_error(request: Request, scope: str):
+    supplied = request.headers.get("x-scds-api-key", "").strip()
+    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
+    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
+        return None
+    super_key = os.getenv("SCDS_API_KEY", "").strip()
+    if supplied and super_key and secrets.compare_digest(supplied, super_key):
+        return None
+    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError:
+        catalog = {}
+    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
+    if "*" in scopes or scope in scopes or (scope == "interoperability:read" and ("interoperability:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "interoperability:write" and "repository:write" in scopes):
+        return None
+    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "module_interoperability_scope_required", "required_scope": scope})
+
+
+def module_interoperability_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "module_interoperability_contract": module_interoperability_contract()}
+
+
+def module_interoperability_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "module_interoperability": module_interoperability_template()}
+
+
+def module_interoperability_validate_endpoint(req: ModuleInteroperabilityValidateRequest):
+    return {"version": APP_VERSION, **validate_module_interoperability(req.interoperability, strict=req.strict)}
+
+
+def module_interoperability_get_endpoint(decision_id: str, request: Request):
+    auth = _module_interoperability_scope_error(request, "interoperability:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            document = ModuleInteroperabilityRepository(session, app_version=APP_VERSION).get(decision_id)
+            return {"ok": True, "version": APP_VERSION, "module_interoperability": document}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def module_interoperability_upsert_endpoint(decision_id: str, req: ModuleInteroperabilityUpsertRequest, request: Request):
+    auth = _module_interoperability_scope_error(request, "interoperability:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            document = ModuleInteroperabilityRepository(session, app_version=APP_VERSION).upsert(decision_id, req)
+            return {"ok": True, "version": APP_VERSION, "module_interoperability": document}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def module_interoperability_share_endpoint(decision_id: str, req: SharedEvidenceShareRequest, request: Request):
+    auth = _module_interoperability_scope_error(request, "interoperability:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            document = ModuleInteroperabilityRepository(session, app_version=APP_VERSION).share(decision_id, req)
+            return {"ok": True, "version": APP_VERSION, "module_interoperability": document}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def module_interoperability_evidence_endpoint(decision_id: str, evidence_ref: str, request: Request):
+    auth = _module_interoperability_scope_error(request, "interoperability:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            evidence = ModuleInteroperabilityRepository(session, app_version=APP_VERSION).evidence(decision_id, evidence_ref)
+            return {"ok": True, "version": APP_VERSION, **evidence}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def module_interoperability_diagnostics_endpoint(decision_id: str, request: Request):
+    auth = _module_interoperability_scope_error(request, "interoperability:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            diagnostics = ModuleInteroperabilityRepository(session, app_version=APP_VERSION).diagnostics(decision_id)
+            return {"ok": True, "version": APP_VERSION, "diagnostics": diagnostics}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
 def persistence_status_endpoint():
     status = database_status()
     return {"ok": (not status["required"] or (status["connected"] and status["schema_current"])), "version": APP_VERSION, "persistence": status}
@@ -6326,6 +6478,8 @@ def health():
         "cross_module_decision_composition_schema": CROSS_MODULE_COMPOSITION_SCHEMA,
         "module_artifact_schema": MODULE_ARTIFACT_SCHEMA,
         "module_provenance_schema": MODULE_PROVENANCE_SCHEMA,
+        "module_interoperability_schema": MODULE_INTEROPERABILITY_SCHEMA,
+        "shared_evidence_schema": SHARED_EVIDENCE_SCHEMA,
         "registered_decision_modules": module_registry()["module_count"],
         "persistence_schema": PERSISTENCE_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,

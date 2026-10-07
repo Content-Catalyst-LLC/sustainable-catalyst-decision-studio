@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Connected Decision Intelligence unifies the eight-stage decision lifecycle, readiness, cross-product routing, lineage, and human-controlled progression across the Sustainable Catalyst platform.
- * Version: 3.11.0
+ * Version: 3.12.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,9 +12,9 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '3.11.0';
-    const BUILD_FINGERPRINT = 'scds-v3.11.0-module-artifact-provenance-standard';
-    const SOURCE_COMMIT = 'release-v3.11.0';
+    const VERSION = '3.12.0';
+    const BUILD_FINGERPRINT = 'scds-v3.12.0-module-interoperability-shared-evidence';
+    const SOURCE_COMMIT = 'release-v3.12.0';
     const RELEASE_DATE = '2026-10-07';
     const DB_VERSION = '3.0.0';
     const DB_VERSION_OPTION = 'scds_db_version';
@@ -96,6 +96,8 @@ class Sustainable_Catalyst_Decision_Studio {
     const CROSS_MODULE_COMPOSITION_SCHEMA = 'scds-cross-module-decision-composition/1.0';
     const MODULE_ARTIFACT_SCHEMA = 'scds-module-artifact/1.0';
     const MODULE_PROVENANCE_SCHEMA = 'scds-module-provenance/1.0';
+    const MODULE_INTEROPERABILITY_SCHEMA = 'scds-module-interoperability/1.0';
+    const SHARED_EVIDENCE_SCHEMA = 'scds-shared-evidence-reference/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -2571,7 +2573,7 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
     public function rest_evidence_bundle_template_v220(){return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$this->evidence_bundle_template_local_v220()]);}
     public function rest_evidence_bundle_action_v220(WP_REST_Request $request){$payload=$request->get_json_params();if(!is_array($payload))$payload=[];$route=str_replace('/scds/v1','',(string)$request->get_route());if($this->settings()['backend_enabled']==='1'&&!empty($this->settings()['backend_url'])){$backend=$this->backend_request($route,$payload);if(!is_wp_error($backend)&&is_array($backend))return rest_ensure_response($backend);}$sources=is_array($payload['sources']??null)?$payload['sources']:[];$evidence=is_array($payload['evidence']??null)?$payload['evidence']:[];$packet=is_array($payload['packet']??null)?$payload['packet']:[];$object=is_array($payload['decisionObject']??null)?$payload['decisionObject']:[];$source_bundle=is_array($payload['sourceBundle']??null)?$payload['sourceBundle']:[];if(strpos($route,'source-bundle/build')!==false)return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'source_bundle'=>$this->source_bundle_build_local_v220($sources)]);if(strpos($route,'merge')!==false){$bundles=is_array($payload['bundles']??null)?$payload['bundles']:[];$sources=[];$evidence=[];foreach($bundles as $b){if(!is_array($b))continue;foreach(($b['source_bundle']['sources']??[]) as $src)$sources[]=is_array($src['raw']??null)?$src['raw']:$src;foreach(($b['evidence_records']??[]) as $ev)$evidence[]=is_array($ev['raw']??null)?$ev['raw']:$ev;}}$decision_id=(string)($object['decision_id']??($packet['decision_packet_id']??''));$bundle=is_array($payload['evidenceBundle']??null)&&(($payload['evidenceBundle']['schema']??'')===self::EVIDENCE_BUNDLE_SCHEMA)?$payload['evidenceBundle']:$this->evidence_bundle_build_local_v220($evidence,$sources,$decision_id,$source_bundle);if(strpos($route,'decision-object/evidence')!==false||strpos($route,'decision-packet/evidence-bundle')!==false){if(!$object)$object=$this->decision_object_from_packet_local_v210($packet);$object['evidence']=$bundle['evidence_records'];$object['evidence_bundles']=[$bundle];$object['source_bundles']=[$bundle['source_bundle']];$object['updated_at']=gmdate('c');if(strpos($route,'decision-packet/evidence-bundle')!==false){$packet['evidence_bundle']=$bundle;$packet['source_bundle']=$bundle['source_bundle'];$packet['evidence_registry']=$bundle['evidence_records'];$packet['decision_object']=$object;return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$bundle,'decision_object'=>$object,'decision_packet'=>$packet]);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$bundle,'decision_object'=>$object]);}return rest_ensure_response(['ok'=>true,'version'=>self::VERSION,'evidence_bundle'=>$bundle]);}
 
-    public function rest_health() { return rest_ensure_response(['ok'=>true,'ready'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio','build_fingerprint'=>self::BUILD_FINGERPRINT,'database_version'=>(string)get_option(self::DB_VERSION_OPTION,'not-recorded'),'installed_version'=>(string)get_option(self::INSTALLED_VERSION_OPTION,'not-recorded'),'limits'=>['max_request_bytes'=>self::MAX_PUBLIC_REQUEST_BYTES,'public_rate_limit'=>self::PUBLIC_RATE_LIMIT],'governance_schema'=>'scds-decision-governance/1.0','review_event_schema'=>'scds-review-event/1.0','scenario_studio_schema'=>'scds-scenario-studio/1.0','collaboration_room_schema'=>self::COLLABORATION_ROOM_SCHEMA,'collaboration_event_schema'=>self::COLLABORATION_EVENT_SCHEMA,'decision_pack_schema'=>self::DECISION_PACK_SCHEMA,'decision_pack_application_schema'=>self::DECISION_PACK_APPLICATION_SCHEMA,
+    public function rest_health() { return rest_ensure_response(['ok'=>true,'ready'=>true,'version'=>self::VERSION,'plugin'=>'sustainable-catalyst-decision-studio','build_fingerprint'=>self::BUILD_FINGERPRINT,'module_interoperability_schema'=>self::MODULE_INTEROPERABILITY_SCHEMA,'shared_evidence_schema'=>self::SHARED_EVIDENCE_SCHEMA,'database_version'=>(string)get_option(self::DB_VERSION_OPTION,'not-recorded'),'installed_version'=>(string)get_option(self::INSTALLED_VERSION_OPTION,'not-recorded'),'limits'=>['max_request_bytes'=>self::MAX_PUBLIC_REQUEST_BYTES,'public_rate_limit'=>self::PUBLIC_RATE_LIMIT],'governance_schema'=>'scds-decision-governance/1.0','review_event_schema'=>'scds-review-event/1.0','scenario_studio_schema'=>'scds-scenario-studio/1.0','collaboration_room_schema'=>self::COLLABORATION_ROOM_SCHEMA,'collaboration_event_schema'=>self::COLLABORATION_EVENT_SCHEMA,'decision_pack_schema'=>self::DECISION_PACK_SCHEMA,'decision_pack_application_schema'=>self::DECISION_PACK_APPLICATION_SCHEMA,
             'publication_studio_schema'=>self::PUBLICATION_STUDIO_SCHEMA,
             'outcome_monitoring_schema'=>self::OUTCOME_MONITORING_SCHEMA,
             'reassessment_event_schema'=>self::REASSESSMENT_EVENT_SCHEMA,

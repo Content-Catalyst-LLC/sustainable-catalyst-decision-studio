@@ -1,0 +1,42 @@
+{
+  "schema": "scds-module-interoperability/1.0",
+  "version": "1.0",
+  "shared_evidence_schema": "scds-shared-evidence-reference/1.0",
+  "role": "cross-module-interoperability-and-shared-evidence",
+  "canonical_modules": [
+    "canvas",
+    "finance",
+    "narrative-risk",
+    "global-impact"
+  ],
+  "storage_authority": "python-postgresql",
+  "evidence_identity_and_source_provenance_authority": "platform-core",
+  "sharing_and_usage_authority": "decision-studio-kernel",
+  "final_decision_authority": "human-governed",
+  "principles": {
+    "evidence_identity_is_shared_by_reference": true,
+    "evidence_payload_is_not_duplicated": true,
+    "owner_module_is_preserved": true,
+    "consumer_modules_are_explicit": true,
+    "module_specific_relations_are_preserved": true,
+    "source_provenance_is_preserved_by_reference": true,
+    "cross_module_usage_is_a_relationship_not_ownership_transfer": true,
+    "contradictions_are_visible_not_silently_reconciled": true,
+    "contradiction_annotations_are_explicit": true,
+    "shared_evidence_does_not_imply_shared_interpretation": true,
+    "evidence_reuse_does_not_imply_truth": true,
+    "evidence_reuse_does_not_imply_causality": true,
+    "evidence_reuse_does_not_imply_recommendation": true
+  },
+  "persistence": {
+    "document_table": "decision_objects",
+    "document_object_type": "module-interoperability-shared-evidence",
+    "usage_edge_table": "evidence_links",
+    "schema_migration_required": false
+  },
+  "security": {
+    "read_scope": "interoperability:read",
+    "write_scope": "interoperability:write",
+    "repository_key_also_authorized": true
+  }
+}

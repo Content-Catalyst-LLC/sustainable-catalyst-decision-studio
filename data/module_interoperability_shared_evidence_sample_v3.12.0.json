@@ -1,0 +1,82 @@
+{
+  "schema": "scds-module-interoperability/1.0",
+  "version": "1.0",
+  "decision_id": "decision-example",
+  "shared_evidence": [
+    {
+      "schema": "scds-shared-evidence-reference/1.0",
+      "evidence_ref": "platform-core:evidence:energy-price-series",
+      "owner_module": "canvas",
+      "consumer_modules": [
+        "canvas",
+        "finance",
+        "global-impact"
+      ],
+      "source_ref": "knowledge-library:source:energy-prices",
+      "source_provenance_ref": "platform-core:provenance:energy-prices",
+      "artifact_ref": null,
+      "usages": [
+        {
+          "usage_id": "seu_canvas",
+          "module_id": "canvas",
+          "relation": "supports",
+          "purpose": "Frame operating-cost exposure",
+          "claim_ref": "claim:operating-cost",
+          "provenance_ref": null,
+          "notes": []
+        },
+        {
+          "usage_id": "seu_finance",
+          "module_id": "finance",
+          "relation": "informs",
+          "purpose": "Reference energy-price assumption",
+          "claim_ref": "claim:operating-cost",
+          "provenance_ref": null,
+          "notes": []
+        },
+        {
+          "usage_id": "seu_impact",
+          "module_id": "global-impact",
+          "relation": "contextualizes",
+          "purpose": "Context for transition exposure",
+          "claim_ref": null,
+          "provenance_ref": null,
+          "notes": []
+        }
+      ],
+      "tags": [
+        "energy",
+        "shared-evidence"
+      ]
+    }
+  ],
+  "contradiction_annotations": [
+    {
+      "annotation_id": "contra_example",
+      "evidence_refs": [
+        "platform-core:evidence:energy-price-series"
+      ],
+      "module_ids": [
+        "finance",
+        "narrative-risk"
+      ],
+      "statement": "Finance and Narrative Risk use different interpretations of the same source context.",
+      "status": "open",
+      "provenance_ref": null,
+      "notes": [
+        "Visible disagreement; no automatic reconciliation."
+      ]
+    }
+  ],
+  "artifact_links": [],
+  "boundaries": {
+    "evidence_payload_duplicated": false,
+    "ownership_transfer_on_share": false,
+    "shared_evidence_implies_shared_interpretation": false,
+    "contradiction_is_automatically_resolved": false,
+    "truth_is_automatically_verified": false,
+    "causality_is_automatically_inferred": false,
+    "recommendation_is_automatic": false,
+    "final_decision_authority": "human-governed"
+  }
+}

@@ -1,0 +1,40 @@
+DECISION STUDIO v3.12.0 — MODULE INTEROPERABILITY & SHARED EVIDENCE
+
+MAC APPLY / TEST / PUSH
+=======================
+cd ~/Downloads
+rm -rf scds-v3.12.0-module-interoperability
+unzip -q sustainable-catalyst-decision-studio-v3.12.0-repository.zip -d scds-v3.12.0-module-interoperability
+cd scds-v3.12.0-module-interoperability/sustainable-catalyst-decision-studio
+chmod +x APPLY_AND_PUSH_DECISION_STUDIO_V3120.sh
+./APPLY_AND_PUSH_DECISION_STUDIO_V3120.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+VERIFY GIT
+==========
+cd ~/Downloads/sustainable-catalyst-decision-studio
+git status --short
+git log -1 --oneline
+git tag --points-at HEAD
+
+BACKEND DEPLOY
+==============
+cd ~/Downloads
+chmod +x deploy_decision_studio_v3_12_0_from_macos.sh upgrade_decision_studio_backend_v3_12_0_contabo.sh
+./deploy_decision_studio_v3_12_0_from_macos.sh
+
+PUBLIC VERIFY
+=============
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/module-interoperability/contract | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/module-artifacts/contract | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-module-registry/readiness | python3 -m json.tool
+
+EXPECTED
+========
+version: 3.12.0
+module_interoperability_schema: scds-module-interoperability/1.0
+shared_evidence_schema: scds-shared-evidence-reference/1.0
+persistence authority: python-postgresql
+schema revision: 0001_v330_pg_foundation
+table count: 20
+final decision authority: human-governed

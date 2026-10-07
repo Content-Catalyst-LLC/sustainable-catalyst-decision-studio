@@ -1,4 +1,12 @@
 
+## v3.12.0 — Module Interoperability & Shared Evidence
+- Canonical `scds-module-interoperability/1.0` contract.
+- Shared evidence by stable reference across Canvas, Finance, Narrative Risk, and Global Impact.
+- Explicit owner/consumer module relationships, provenance continuity, artifact references, and contradiction visibility.
+- Reuses `decision_objects` and `evidence_links`; no PostgreSQL schema migration.
+- Evidence reuse does not imply truth, causality, recommendation, approval, or ownership transfer.
+- Next: v3.13.0 — Collaboration & Decision Room Python Persistence.
+
 ## Decision Studio modernization line (v3.1+)
 
 - **v3.1.0 — Backend Service Decomposition** — built.

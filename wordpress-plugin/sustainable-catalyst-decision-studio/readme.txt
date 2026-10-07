@@ -4,7 +4,7 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 3.11.0
+Stable tag: 3.12.0
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
@@ -33,6 +33,12 @@ Process confidence summarizes documentation and analysis coverage. It is not a p
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 3.12.0 =
+* Module Interoperability & Shared Evidence: reuse evidence across Canvas, Finance, Narrative Risk, and Global Impact by stable reference without duplicating payloads or transferring ownership.
+* Adds explicit per-module usage relationships, provenance continuity, cross-module artifact links, contradiction annotations, and relation-disagreement diagnostics.
+* Reuses existing decision_objects and evidence_links tables; no PostgreSQL schema migration.
+* Evidence reuse does not imply shared interpretation, truth, causality, recommendation, or approval.
 
 = 3.11.0 =
 * Module Artifact & Provenance Standard: immutable module artifact revisions, SHA-256 integrity, ownership, lineage, evidence/source/computation references, and human-governed provenance.

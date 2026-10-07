@@ -1,0 +1,353 @@
+{
+  "release": "3.12.0",
+  "release_name": "Module Interoperability & Shared Evidence",
+  "release_date": "2026-10-07",
+  "build_fingerprint": "scds-v3.12.0-module-interoperability-shared-evidence",
+  "source_commit": "release-v3.12.0",
+  "backend": {
+    "application_composition": "app.main",
+    "service": "app.services.decision_service",
+    "router_package": "app.api.routes",
+    "route_count": 272,
+    "route_registry_count": 22,
+    "included_router_count": 23,
+    "legacy_route_count": 176,
+    "specialized_energy_runtime_routes": 2,
+    "previous_route_count": 264
+  },
+  "decision_kernel": {
+    "schema": "scds-decision-kernel/1.0",
+    "module_contract_schema": "scds-decision-module-contract/1.0",
+    "module_registry_schema": "scds-decision-module-registry/1.0",
+    "module_ids": [
+      "canvas",
+      "finance",
+      "narrative-risk",
+      "global-impact"
+    ],
+    "module_count": 4,
+    "storage_authority": "python-postgresql",
+    "final_decision_authority": "human-governed",
+    "canvas_domain_schema": "scds-canvas-domain/1.0",
+    "canvas_python_domain_authoritative": true,
+    "finance_domain_schema": "scds-finance-domain/1.0",
+    "finance_python_domain_authoritative": true,
+    "finance_compute_authority": "workbench",
+    "narrative_risk_domain_schema": "scds-narrative-risk-domain/1.0",
+    "narrative_risk_python_domain_authoritative": true,
+    "global_impact_domain_schema": "scds-global-impact-domain/1.0",
+    "global_impact_python_domain_authoritative": true,
+    "global_impact_compute_authority": "workbench",
+    "unified_module_registry_schema": "scds-unified-decision-module-registry/1.0",
+    "unified_module_registry_canonical": true,
+    "cross_module_composition_schema": "scds-cross-module-decision-composition/1.0",
+    "module_artifact_schema": "scds-module-artifact/1.0",
+    "module_provenance_schema": "scds-module-provenance/1.0",
+    "module_interoperability_schema": "scds-module-interoperability/1.0",
+    "shared_evidence_schema": "scds-shared-evidence-reference/1.0"
+  },
+  "repository": {
+    "schema": "scds-python-decision-repository/1.0",
+    "authority": "python-postgresql",
+    "live_write_authority": true,
+    "resources": [
+      "decision_projects",
+      "decisions",
+      "decision_objects",
+      "decision_module_bindings",
+      "snapshots",
+      "decision_events"
+    ],
+    "legacy_import": "idempotent",
+    "legacy_projection_reversible": true,
+    "legacy_wordpress_packet_storage": "compatibility-preserved",
+    "security": {
+      "read_scope": "repository:read",
+      "write_scope": "repository:write",
+      "dedicated_key_environment": "SCDS_REPOSITORY_API_KEY"
+    },
+    "canvas_domain_schema": "scds-canvas-domain/1.0",
+    "finance_domain_schema": "scds-finance-domain/1.0",
+    "narrative_risk_domain_schema": "scds-narrative-risk-domain/1.0",
+    "global_impact_domain_schema": "scds-global-impact-domain/1.0",
+    "unified_module_registry_schema": "scds-unified-decision-module-registry/1.0",
+    "cross_module_composition_schema": "scds-cross-module-decision-composition/1.0",
+    "module_artifact_schema": "scds-module-artifact/1.0",
+    "module_provenance_schema": "scds-module-provenance/1.0",
+    "module_interoperability_schema": "scds-module-interoperability/1.0",
+    "shared_evidence_schema": "scds-shared-evidence-reference/1.0"
+  },
+  "persistence": {
+    "schema": "scds-postgresql-persistence/1.0",
+    "contract_schema": "scds-persistence-authority-contract/1.0",
+    "authority": "python-postgresql",
+    "expected_schema_revision": "0001_v330_pg_foundation",
+    "table_count": 20,
+    "migration_tool": "alembic",
+    "orm": "sqlalchemy-2",
+    "driver": "psycopg-3",
+    "postgresql_live_authority": true,
+    "writes_enabled_in_production": true
+  },
+  "migration": {
+    "database_schema": false,
+    "authority_cutover": false,
+    "python_repository_authority": false,
+    "canvas_python_domain_authority": false,
+    "finance_python_domain_authority": false,
+    "finance_wordpress_domain_authority_changed": true,
+    "wordpress_legacy_packet_storage_preserved": true,
+    "schema_breaking_changes": false,
+    "narrative_risk_python_domain_authority": false,
+    "narrative_risk_wordpress_domain_authority_changed": true,
+    "global_impact_python_domain_authority": false,
+    "global_impact_wordpress_domain_authority_changed": true,
+    "unified_decision_module_registry": false,
+    "cross_module_decision_composition": false,
+    "module_artifact_provenance_standard": false,
+    "module_interoperability_shared_evidence": true
+  },
+  "next_release": "3.13.0 \u2014 Collaboration & Decision Room Python Persistence",
+  "canvas": {
+    "schema": "scds-canvas-domain/1.0",
+    "module_id": "canvas",
+    "status": "python-domain-authoritative",
+    "storage_authority": "python-postgresql",
+    "normalized_tables": [
+      "alternatives",
+      "criteria",
+      "assumptions",
+      "decision_objects",
+      "decision_module_bindings",
+      "decision_events"
+    ],
+    "legacy_import": "idempotent-source-preserving",
+    "security": {
+      "read_scope": "canvas:read",
+      "write_scope": "canvas:write",
+      "repository_key_also_authorized": true
+    },
+    "boundaries": {
+      "shared_decision_identity_owned_by_kernel": true,
+      "automatic_winner_selection": false,
+      "automatic_recommendation": false,
+      "automatic_approval": false,
+      "final_decision_authority": "human-governed"
+    }
+  },
+  "finance": {
+    "schema": "scds-finance-domain/1.0",
+    "module_id": "finance",
+    "status": "python-domain-authoritative",
+    "storage_authority": "python-postgresql",
+    "compute_authority": "workbench",
+    "normalized_tables": [
+      "assumptions",
+      "scenarios",
+      "scenario_variables",
+      "uncertainty_models",
+      "artifacts",
+      "decision_objects",
+      "decision_module_bindings",
+      "decision_events"
+    ],
+    "legacy_import": "idempotent-source-preserving",
+    "security": {
+      "read_scope": "finance:read",
+      "write_scope": "finance:write",
+      "repository_key_also_authorized": true
+    },
+    "boundaries": {
+      "shared_decision_identity_owned_by_kernel": true,
+      "decision_studio_executes_financial_models": false,
+      "model_output_is_automatic_recommendation": false,
+      "financial_score_is_final_decision_authority": false,
+      "automatic_approval": false,
+      "final_decision_authority": "human-governed"
+    }
+  },
+  "narrative_risk": {
+    "schema": "scds-narrative-risk-domain/1.0",
+    "module_id": "narrative-risk",
+    "status": "python-domain-authoritative",
+    "storage_authority": "python-postgresql",
+    "normalized_tables": [
+      "claims",
+      "evidence_links",
+      "artifacts",
+      "decision_objects",
+      "decision_module_bindings",
+      "decision_events"
+    ],
+    "legacy_import": "idempotent-source-preserving",
+    "security": {
+      "read_scope": "narrative-risk:read",
+      "write_scope": "narrative-risk:write",
+      "repository_key_also_authorized": true
+    },
+    "boundaries": {
+      "shared_decision_identity_owned_by_kernel": true,
+      "claim_is_not_fact_without_evidence": true,
+      "signal_is_not_causality": true,
+      "narrative_is_not_truth_verification": true,
+      "risk_likelihood_preserves_uncertainty": true,
+      "automatic_truth_verification": false,
+      "automatic_causality_inference": false,
+      "automatic_recommendation": false,
+      "automatic_escalation_or_action": false,
+      "final_decision_authority": "human-governed"
+    }
+  },
+  "global_impact": {
+    "schema": "scds-global-impact-domain/1.0",
+    "module_id": "global-impact",
+    "status": "python-domain-authoritative",
+    "storage_authority": "python-postgresql",
+    "compute_authority": "workbench",
+    "normalized_tables": [
+      "claims",
+      "evidence_links",
+      "artifacts",
+      "decision_objects",
+      "decision_module_bindings",
+      "decision_events"
+    ],
+    "legacy_import": "idempotent-source-preserving",
+    "security": {
+      "read_scope": "global-impact:read",
+      "write_scope": "global-impact:write",
+      "repository_key_also_authorized": true
+    },
+    "boundaries": {
+      "shared_decision_identity_owned_by_kernel": true,
+      "sdg_alignment_is_not_proof_of_impact": true,
+      "modeled_impact_is_not_observed_outcome": true,
+      "indicator_change_is_not_causal_attribution": true,
+      "decision_studio_executes_impact_models": false,
+      "automatic_impact_verification": false,
+      "automatic_sustainability_rating": false,
+      "automatic_recommendation": false,
+      "automatic_approval": false,
+      "final_decision_authority": "human-governed"
+    }
+  },
+  "unified_module_registry": {
+    "schema": "scds-unified-decision-module-registry/1.0",
+    "canonical": true,
+    "registry_authority": "decision-studio-kernel",
+    "module_count": 4,
+    "all_modules_authoritative": true,
+    "storage_authority": "python-postgresql",
+    "compute_authorities": {
+      "finance": "workbench",
+      "global-impact": "workbench"
+    },
+    "capability_index": true,
+    "provider_index": true,
+    "readiness_endpoint": true,
+    "validation_endpoint": true,
+    "legacy_decision_modules_endpoints_preserved": true,
+    "domain_contract_endpoints_preserved": true,
+    "public_api_breaking_change": false,
+    "final_decision_authority": "human-governed"
+  },
+  "cross_module_composition": {
+    "schema": "scds-cross-module-decision-composition/1.0",
+    "version": "1.0",
+    "role": "governed-cross-module-decision-composition",
+    "canonical_modules": [
+      "canvas",
+      "finance",
+      "narrative-risk",
+      "global-impact"
+    ],
+    "minimum_modules": 2,
+    "storage_authority": "python-postgresql",
+    "object_type": "cross-module-decision-composition",
+    "persistence_table": "decision_objects",
+    "database_schema_migration": false,
+    "explicit_cross_module_links": true,
+    "module_ownership_preserved": true,
+    "module_fingerprints": true,
+    "staleness_diagnostics": true,
+    "security": {
+      "read_scope": "composition:read",
+      "write_scope": "composition:write",
+      "repository_key_also_authorized": true
+    },
+    "boundaries": {
+      "composition_infers_truth": false,
+      "composition_infers_causality": false,
+      "composition_auto_selects_winner": false,
+      "composition_auto_recommends": false,
+      "composition_auto_approves": false,
+      "finance_compute_authority": "workbench",
+      "global_impact_compute_authority": "workbench",
+      "final_decision_authority": "human-governed"
+    }
+  },
+  "module_artifact_provenance": {
+    "artifact_schema": "scds-module-artifact/1.0",
+    "provenance_schema": "scds-module-provenance/1.0",
+    "canonical_modules": 4,
+    "storage_authority": "python-postgresql",
+    "artifact_table": "artifacts",
+    "event_table": "decision_events",
+    "immutable_revisions": true,
+    "stable_logical_artifact_identity": true,
+    "sha256_integrity": true,
+    "explicit_parent_lineage": true,
+    "evidence_identity_authority": "platform-core",
+    "compute_authorities": {
+      "finance": "workbench",
+      "global-impact": "workbench"
+    },
+    "database_migration": false,
+    "boundaries": {
+      "provenance_implies_truth": false,
+      "provenance_implies_causality": false,
+      "artifact_implies_recommendation": false,
+      "artifact_implies_approval": false,
+      "final_decision_authority": "human-governed"
+    }
+  },
+  "module_interoperability": {
+    "schema": "scds-module-interoperability/1.0",
+    "shared_evidence_schema": "scds-shared-evidence-reference/1.0",
+    "version": "1.0",
+    "role": "cross-module-interoperability-and-shared-evidence",
+    "canonical_modules": [
+      "canvas",
+      "finance",
+      "narrative-risk",
+      "global-impact"
+    ],
+    "storage_authority": "python-postgresql",
+    "evidence_identity_and_source_provenance_authority": "platform-core",
+    "sharing_and_usage_authority": "decision-studio-kernel",
+    "document_table": "decision_objects",
+    "document_object_type": "module-interoperability-shared-evidence",
+    "usage_edge_table": "evidence_links",
+    "database_schema_migration": false,
+    "shared_by_reference": true,
+    "payload_duplicated": false,
+    "owner_module_preserved": true,
+    "consumer_modules_explicit": true,
+    "module_specific_relations_preserved": true,
+    "source_provenance_preserved_by_reference": true,
+    "contradiction_visibility": true,
+    "contradictions_auto_resolved": false,
+    "security": {
+      "read_scope": "interoperability:read",
+      "write_scope": "interoperability:write",
+      "repository_key_also_authorized": true
+    },
+    "boundaries": {
+      "shared_evidence_implies_shared_interpretation": false,
+      "evidence_reuse_implies_truth": false,
+      "evidence_reuse_implies_causality": false,
+      "evidence_reuse_implies_recommendation": false,
+      "final_decision_authority": "human-governed"
+    }
+  }
+}

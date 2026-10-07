@@ -55,11 +55,11 @@ def _decision(monkeypatch, tmp_path, decision_id='dec-v380'):
 
 def test_v380_global_impact_contract_and_release_boundary():
     health = client.get('/health').json()
-    assert health['version'] == '3.11.0'
+    assert health['version'] == '3.12.0'
     assert health['global_impact_domain_schema'] == GLOBAL_IMPACT_DOMAIN_SCHEMA
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Module Artifact & Provenance Standard'
-    assert release['build_fingerprint'] == 'scds-v3.11.0-module-artifact-provenance-standard'
+    assert release['release_name'] == 'Module Interoperability & Shared Evidence'
+    assert release['build_fingerprint'] == 'scds-v3.12.0-module-interoperability-shared-evidence'
     assert release['backend_architecture']['database_migration'] is False
     assert release['backend_architecture']['global_impact_python_domain_migration'] is False
     assert release['decision_kernel']['global_impact_python_domain_authoritative'] is True
