@@ -208,6 +208,18 @@ from app.decision_kernel import (
     validate_module_contract,
 )
 
+from app.domains.canvas import (
+    CANVAS_DOMAIN_SCHEMA,
+    CanvasAlternativesReplace,
+    CanvasAssumptionsReplace,
+    CanvasCriteriaReplace,
+    CanvasDomainRepository,
+    CanvasLegacyImport,
+    CanvasStateUpsert,
+    canvas_domain_contract,
+    canvas_domain_template,
+)
+
 from app.persistence import (
     EXPECTED_SCHEMA_REVISION,
     PERSISTENCE_AUTHORITY,
@@ -250,9 +262,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.4.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.4.0-python-decision-repository-object-persistence")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.4.0")
+APP_VERSION = "3.5.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.5.0-canvas-python-domain-migration")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.5.0")
 RELEASE_DATE = "2026-10-06"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -327,7 +339,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Python Decision Repository & Object Persistence",
+        "release_name": "Canvas Python Domain Migration",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -404,6 +416,7 @@ def release_manifest() -> Dict[str, Any]:
         "persistence_schema": PERSISTENCE_SCHEMA,
         "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
+        "canvas_domain_schema": CANVAS_DOMAIN_SCHEMA,
         "backend_architecture": {
             "decomposition_release": True,
             "decision_kernel_foundation": True,
@@ -412,21 +425,24 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 14,
-            "included_router_count": 15,
-            "route_count": 198,
-            "previous_route_count": 185,
+            "router_registry_count": 15,
+            "included_router_count": 16,
+            "route_count": 209,
+            "previous_route_count": 198,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
             "database_migration": False,
             "persistence_schema_migration_preserved": True,
-            "repository_authority_migration": True,
+            "repository_authority_migration": False,
+            "canvas_python_domain_migration": True,
             "postgresql_persistence_foundation": True,
             "postgresql_live_authority": True,
             "persistence_authority": PERSISTENCE_AUTHORITY,
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": True,
+            "new_wordpress_authority_change_in_v3_5": False,
+            "canvas_wordpress_domain_authority_changed": True,
             "public_api_contract_breaking_changes": False,
         },
         "decision_kernel": {
@@ -442,6 +458,8 @@ def release_manifest() -> Dict[str, Any]:
             "wordpress_decision_object_authority_change": True,
             "wordpress_legacy_packet_storage_preserved": True,
             "final_decision_authority": "human-governed",
+            "canvas_domain_schema": CANVAS_DOMAIN_SCHEMA,
+            "canvas_python_domain_authoritative": True,
         },
         "persistence": {
             "schema": PERSISTENCE_SCHEMA,
@@ -455,6 +473,18 @@ def release_manifest() -> Dict[str, Any]:
             "writes_enabled_in_production": True,
             "v3_4_authority_cutover_complete": True,
             "legacy_wordpress_packet_storage_preserved": True,
+        },
+        "canvas": {
+            "schema": CANVAS_DOMAIN_SCHEMA,
+            "module_id": "canvas",
+            "status": "python-domain-authoritative",
+            "storage_authority": "python-postgresql",
+            "normalized_tables": ["alternatives", "criteria", "assumptions", "decision_objects", "decision_module_bindings", "decision_events"],
+            "legacy_catalyst_canvas_import": True,
+            "legacy_wordpress_source_preserved": True,
+            "automatic_winner_selection": False,
+            "automatic_recommendation": False,
+            "final_decision_authority": "human-governed",
         },
         "compatibility": {
             "wordpress_plugin": APP_VERSION,
@@ -592,6 +622,8 @@ def release_manifest() -> Dict[str, Any]:
             "v2_7_0_site_intelligence_context_preserved": True,
             "automatic_winner_selection": False,
             "automatic_recommendation": False,
+            "canvas_python_domain_migration": True,
+            "canvas_legacy_adapter_preserved": True,
             "backend_service_decomposition": True,
             "route_contracts_preserved_v3_0_0": True,
             "no_database_migration_v3_1_0": True,
@@ -5164,6 +5196,160 @@ def repository_import_decision_object_endpoint(req: DecisionObjectImport, reques
         }
 
 
+
+def _canvas_scope_error(request: Request, scope: str):
+    supplied = request.headers.get("x-scds-api-key", "").strip()
+    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
+    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
+        return None
+    super_key = os.getenv("SCDS_API_KEY", "").strip()
+    if supplied and super_key and secrets.compare_digest(supplied, super_key):
+        return None
+    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError:
+        catalog = {}
+    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
+    if "*" in scopes or scope in scopes or (scope == "canvas:read" and ("canvas:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "canvas:write" and "repository:write" in scopes):
+        return None
+    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "canvas_scope_required", "required_scope": scope})
+
+
+def canvas_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "canvas_contract": canvas_domain_contract()}
+
+
+def canvas_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "canvas": canvas_domain_template()}
+
+
+def canvas_get_endpoint(decision_id: str, request: Request):
+    auth = _canvas_scope_error(request, "canvas:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            domain = CanvasDomainRepository(session)
+            return {"ok": True, "version": APP_VERSION, "canvas": domain.get_canvas(decision_id)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+
+
+def canvas_put_endpoint(decision_id: str, req: CanvasStateUpsert, request: Request):
+    auth = _canvas_scope_error(request, "canvas:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            domain = CanvasDomainRepository(session)
+            return {"ok": True, "version": APP_VERSION, "canvas": domain.upsert_canvas(decision_id, req)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def canvas_alternatives_get_endpoint(decision_id: str, request: Request):
+    auth = _canvas_scope_error(request, "canvas:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = CanvasDomainRepository(session).list_alternatives(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "alternatives": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def canvas_alternatives_put_endpoint(decision_id: str, req: CanvasAlternativesReplace, request: Request):
+    auth = _canvas_scope_error(request, "canvas:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = CanvasDomainRepository(session).replace_alternatives(decision_id, req.alternatives)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "alternatives": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def canvas_criteria_get_endpoint(decision_id: str, request: Request):
+    auth = _canvas_scope_error(request, "canvas:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = CanvasDomainRepository(session).list_criteria(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "criteria": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def canvas_criteria_put_endpoint(decision_id: str, req: CanvasCriteriaReplace, request: Request):
+    auth = _canvas_scope_error(request, "canvas:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = CanvasDomainRepository(session).replace_criteria(decision_id, req.criteria)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "criteria": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def canvas_assumptions_get_endpoint(decision_id: str, request: Request):
+    auth = _canvas_scope_error(request, "canvas:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = CanvasDomainRepository(session).list_assumptions(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "assumptions": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def canvas_assumptions_put_endpoint(decision_id: str, req: CanvasAssumptionsReplace, request: Request):
+    auth = _canvas_scope_error(request, "canvas:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = CanvasDomainRepository(session).replace_assumptions(decision_id, req.assumptions)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "assumptions": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def canvas_legacy_import_endpoint(req: CanvasLegacyImport, request: Request):
+    auth = _canvas_scope_error(request, "canvas:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            state, created = CanvasDomainRepository(session).import_legacy(req)
+            return {"ok": True, "version": APP_VERSION, "created": created, "source_preserved": True, "canvas": state}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
 def health():
     persistence = database_status()
     persistence_ready = (not persistence["required"]) or bool(persistence.get("authority_ready"))
@@ -5232,6 +5418,7 @@ def health():
         "registered_decision_modules": module_registry()["module_count"],
         "persistence_schema": PERSISTENCE_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
+        "canvas_domain_schema": CANVAS_DOMAIN_SCHEMA,
         "persistence_authority": PERSISTENCE_AUTHORITY,
         "persistence": persistence,
         "release": release_manifest(),

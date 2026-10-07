@@ -1,3 +1,13 @@
+# v3.5.0 — Canvas Python Domain Migration (2026-10-06)
+
+- Migrated Canvas from a registered contract/legacy adapter into an authoritative Python/PostgreSQL domain over the v3.4 Decision Repository.
+- Added `scds-canvas-domain/1.0` with native problem framing, objective/constraints, stakeholder context, alternatives, criteria, assumptions, success measures, evidence/scenario references, and framing provenance.
+- Normalized Canvas alternatives, criteria, and assumptions into the existing PostgreSQL `alternatives`, `criteria`, and `assumptions` tables while maintaining a canonical Canvas domain object in `decision_objects`.
+- Added 11 scoped Canvas API routes with `canvas:read` and `canvas:write` authorization; the existing repository key remains authorized for domain operations.
+- Added source-preserving legacy Catalyst Canvas import into the authoritative Python repository.
+- Preserved the certified 20-table schema and Alembic revision `0001_v330_pg_foundation`; v3.5.0 adds no database migration.
+- Shared decision identity remains owned by the Decision Kernel; Canvas cannot auto-select a winner, auto-create a recommendation, or approve a decision. Final decision authority remains human-governed.
+
 # v3.4.0 — Python Decision Repository & Object Persistence (2026-10-06)
 
 - Promoted Python/PostgreSQL from a non-authoritative foundation to the live Decision Kernel persistence authority.

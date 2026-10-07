@@ -23,7 +23,7 @@ client = TestClient(app)
 
 def test_v331_migration_revision_remains_preserved_under_v340_authority():
     body = client.get('/health').json()
-    assert body['version'] == '3.4.0'
+    assert body['version'] == '3.5.0'
     assert body['persistence_schema'] == 'scds-postgresql-persistence/1.0'
     assert body['persistence_authority'] == 'python-postgresql'
     assert body['release']['backend_architecture']['database_migration'] is False

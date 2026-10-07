@@ -1,0 +1,59 @@
+{
+  "schema": "scds-canvas-domain/1.0",
+  "version": "1.0",
+  "module_id": "canvas",
+  "display_name": "Canvas",
+  "status": "python-domain-authoritative",
+  "storage_authority": "python-postgresql",
+  "kernel_contract_schema": "scds-decision-kernel/1.0",
+  "repository_schema": "scds-python-decision-repository/1.0",
+  "owns": [
+    "problem-framing",
+    "objective-and-constraints",
+    "stakeholder-context",
+    "alternatives",
+    "criteria",
+    "assumptions",
+    "success-measures",
+    "framing-provenance"
+  ],
+  "normalized_postgresql_tables": [
+    "alternatives",
+    "criteria",
+    "assumptions",
+    "decision_objects",
+    "decision_module_bindings",
+    "decision_events"
+  ],
+  "security": {
+    "read_scope": "canvas:read",
+    "write_scope": "canvas:write",
+    "repository_key_also_authorized": true
+  },
+  "compatibility": {
+    "legacy_catalyst_canvas_import": true,
+    "legacy_wordpress_source_preserved": true,
+    "typed_platform_artifact_adapter_preserved": true,
+    "decision_packet_projection_preserved": true
+  },
+  "boundaries": {
+    "shared_decision_identity_owned_by_kernel": true,
+    "automatic_winner_selection": false,
+    "automatic_recommendation": false,
+    "automatic_approval": false,
+    "final_decision_authority": "human-governed"
+  },
+  "endpoints": [
+    "GET /canvas/contract",
+    "GET /canvas/template",
+    "GET /canvas/decisions/{decision_id}",
+    "PUT /canvas/decisions/{decision_id}",
+    "GET /canvas/decisions/{decision_id}/alternatives",
+    "PUT /canvas/decisions/{decision_id}/alternatives",
+    "GET /canvas/decisions/{decision_id}/criteria",
+    "PUT /canvas/decisions/{decision_id}/criteria",
+    "GET /canvas/decisions/{decision_id}/assumptions",
+    "PUT /canvas/decisions/{decision_id}/assumptions",
+    "POST /canvas/import/legacy"
+  ]
+}

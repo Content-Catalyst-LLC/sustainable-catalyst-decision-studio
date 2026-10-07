@@ -1,0 +1,31 @@
+{
+  "schema": "scds-canvas-domain/1.0",
+  "version": "1.0",
+  "decision_id": "dec-example",
+  "problem_statement": "Select a defensible implementation pathway.",
+  "decision_question": "Which implementation pathway should be selected?",
+  "objective": "Choose a pathway using explicit evidence, constraints, and review criteria.",
+  "constraints": ["Budget ceiling", "Implementation window"],
+  "stakeholders": [{"role": "decision-owner", "name": "Program lead"}],
+  "success_measures": ["Evidence gaps visible", "Criteria traceable"],
+  "alternatives": [
+    {"id": "path-a", "name": "Pathway A", "status": "candidate"},
+    {"id": "path-b", "name": "Pathway B", "status": "candidate"}
+  ],
+  "criteria": [
+    {"id": "cost", "name": "Cost", "weight": 0.4, "direction": "lower"},
+    {"id": "impact", "name": "Impact", "weight": 0.6, "direction": "higher"}
+  ],
+  "assumptions": [
+    {"id": "schedule", "statement": "Permitting remains on schedule.", "status": "open", "confidence": "medium"}
+  ],
+  "evidence_refs": [],
+  "scenario_refs": [],
+  "notes": [],
+  "provenance": {"source": "canvas-python-domain", "legacy_source_preserved": true, "records": []},
+  "boundaries": {
+    "automatic_winner_selection": false,
+    "automatic_recommendation": false,
+    "final_decision_authority": "human-governed"
+  }
+}

@@ -44,7 +44,9 @@ MODULE_REGISTRY: Dict[str, Dict[str, Any]] = {
         "purpose": "General structured decision framing, comparison, review, and outcome architecture.",
         "module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
         "kernel_contract_schema": DECISION_KERNEL_SCHEMA,
-        "status": "foundation",
+        "status": "python-domain-authoritative",
+        "domain_schema": "scds-canvas-domain/1.0",
+        "storage_authority": "python-postgresql",
         "extends_kernel_objects": ["decision", "alternative", "criterion", "evidence_ref", "assumption", "scenario", "recommendation", "review", "outcome"],
         "capabilities": [
             "decision-framing", "objectives-and-constraints", "stakeholder-mapping",
@@ -52,6 +54,7 @@ MODULE_REGISTRY: Dict[str, Dict[str, Any]] = {
             "tradeoff-analysis", "recommendation-review", "outcome-recording",
         ],
         "providers": {
+            "persistence_authority": "python-postgresql",
             "evidence": ["knowledge-library", "research-librarian"],
             "compute": ["workbench", "workspace", "research-lab"],
             "context": ["site-intelligence"],
