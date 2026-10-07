@@ -1,0 +1,80 @@
+{
+  "schema": "scds-finance-domain/1.0",
+  "version": "1.0",
+  "decision_id": "decision-finance-sample",
+  "currency": "USD",
+  "base_year": 2026,
+  "horizon_years": 10,
+  "capital_context": {
+    "capex_ref": "workbench:input:capex"
+  },
+  "cost_context": {
+    "opex_ref": "workbench:input:opex"
+  },
+  "revenue_context": {
+    "revenue_ref": "workbench:input:revenue"
+  },
+  "discounting_context": {
+    "discount_rate_ref": "workbench:input:wacc"
+  },
+  "model_refs": [
+    "workbench:model:discounted-cash-flow"
+  ],
+  "valuation_refs": [
+    "workbench:result:npv"
+  ],
+  "cost_benefit_refs": [
+    "workbench:result:bcr"
+  ],
+  "assumptions": [
+    {
+      "id": "assumption-energy-price",
+      "statement": "Energy price remains within the modeled band.",
+      "confidence": "medium",
+      "metadata": {
+        "domain": "finance"
+      }
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "base",
+      "name": "Base case",
+      "variables": [
+        {
+          "name": "energy_price",
+          "value": {
+            "amount": 80,
+            "unit": "USD/MWh"
+          }
+        }
+      ]
+    }
+  ],
+  "uncertainty_models": [
+    {
+      "id": "capex-vol",
+      "model_type": "financial-input-uncertainty",
+      "specification": {
+        "variable": "capex",
+        "distribution": "triangular"
+      },
+      "computation_ref": "workbench:uncertainty:001"
+    }
+  ],
+  "workbench_receipts": [
+    {
+      "id": "valuation-run-001",
+      "uri": "workbench://jobs/valuation-run-001",
+      "metadata": {
+        "compute_authority": "workbench",
+        "receipt_only": true
+      }
+    }
+  ],
+  "authorities": {
+    "storage_authority": "python-postgresql",
+    "compute_authority": "workbench",
+    "final_decision_authority": "human-governed"
+  }
+}

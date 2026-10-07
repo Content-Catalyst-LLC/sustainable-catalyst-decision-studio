@@ -6,9 +6,10 @@
 - **v3.3.0 — PostgreSQL Persistence Foundation** — foundation release; PostgreSQL schema/migrations/repository seam are live but non-authoritative.
 - **v3.3.1 — PostgreSQL Migration Revision Repair** — built; corrected the Alembic revision-length production issue and certified the 20-table PostgreSQL foundation.
 - **v3.4.0 — Python Decision Repository & Object Persistence** — built; Python/PostgreSQL becomes authoritative for Decision Kernel project, decision, unified object, module-binding, snapshot, and audit-event persistence while final decisions remain human-governed.
-- **v3.5.0 — Canvas Python Domain Migration** — current release; Canvas framing, alternatives, criteria, assumptions, stakeholder context, and success measures are now authoritative in Python/PostgreSQL over the shared Decision Kernel.
-- **v3.6.0 — Finance Python Domain Migration** — next.
-- **v3.7.0–v3.8.0** — Narrative Risk and Global Impact Catalyst Python domain migrations.
+- **v3.5.0 — Canvas Python Domain Migration** — built; Canvas framing, alternatives, criteria, assumptions, stakeholder context, and success measures are now authoritative in Python/PostgreSQL over the shared Decision Kernel.
+- **v3.6.0 — Finance Python Domain Migration** — current release; Finance domain state is authoritative in Python/PostgreSQL while Workbench remains calculation authority.
+- **v3.7.0 — Narrative Risk Python Domain Migration** — next.
+- **v3.8.0 — Global Impact Catalyst Python Domain Migration** — planned.
 
 # Sustainable Catalyst Decision Studio Roadmap
 

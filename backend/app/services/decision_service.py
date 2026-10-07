@@ -220,6 +220,18 @@ from app.domains.canvas import (
     canvas_domain_template,
 )
 
+from app.domains.finance import (
+    FINANCE_DOMAIN_SCHEMA,
+    FinanceAssumptionsReplace,
+    FinanceDomainRepository,
+    FinanceLegacyImport,
+    FinanceScenariosReplace,
+    FinanceStateUpsert,
+    FinanceWorkbenchReceiptsReplace,
+    finance_domain_contract,
+    finance_domain_template,
+)
+
 from app.persistence import (
     EXPECTED_SCHEMA_REVISION,
     PERSISTENCE_AUTHORITY,
@@ -262,9 +274,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.5.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.5.0-canvas-python-domain-migration")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.5.0")
+APP_VERSION = "3.6.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.6.0-finance-python-domain-migration")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.6.0")
 RELEASE_DATE = "2026-10-06"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -339,7 +351,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Canvas Python Domain Migration",
+        "release_name": "Finance Python Domain Migration",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -417,6 +429,7 @@ def release_manifest() -> Dict[str, Any]:
         "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
         "canvas_domain_schema": CANVAS_DOMAIN_SCHEMA,
+        "finance_domain_schema": FINANCE_DOMAIN_SCHEMA,
         "backend_architecture": {
             "decomposition_release": True,
             "decision_kernel_foundation": True,
@@ -425,24 +438,26 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 15,
-            "included_router_count": 16,
-            "route_count": 209,
-            "previous_route_count": 198,
+            "router_registry_count": 16,
+            "included_router_count": 17,
+            "route_count": 220,
+            "previous_route_count": 209,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
             "database_migration": False,
             "persistence_schema_migration_preserved": True,
             "repository_authority_migration": False,
-            "canvas_python_domain_migration": True,
+            "canvas_python_domain_migration": False,
+            "finance_python_domain_migration": True,
             "postgresql_persistence_foundation": True,
             "postgresql_live_authority": True,
             "persistence_authority": PERSISTENCE_AUTHORITY,
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": True,
-            "new_wordpress_authority_change_in_v3_5": False,
+            "new_wordpress_authority_change_in_v3_6": False,
             "canvas_wordpress_domain_authority_changed": True,
+            "finance_wordpress_domain_authority_changed": True,
             "public_api_contract_breaking_changes": False,
         },
         "decision_kernel": {
@@ -460,6 +475,9 @@ def release_manifest() -> Dict[str, Any]:
             "final_decision_authority": "human-governed",
             "canvas_domain_schema": CANVAS_DOMAIN_SCHEMA,
             "canvas_python_domain_authoritative": True,
+            "finance_domain_schema": FINANCE_DOMAIN_SCHEMA,
+            "finance_python_domain_authoritative": True,
+            "finance_compute_authority": "workbench",
         },
         "persistence": {
             "schema": PERSISTENCE_SCHEMA,
@@ -484,6 +502,20 @@ def release_manifest() -> Dict[str, Any]:
             "legacy_wordpress_source_preserved": True,
             "automatic_winner_selection": False,
             "automatic_recommendation": False,
+            "final_decision_authority": "human-governed",
+        },
+        "finance": {
+            "schema": FINANCE_DOMAIN_SCHEMA,
+            "module_id": "finance",
+            "status": "python-domain-authoritative",
+            "storage_authority": "python-postgresql",
+            "compute_authority": "workbench",
+            "normalized_tables": ["assumptions", "scenarios", "scenario_variables", "uncertainty_models", "artifacts", "decision_objects", "decision_module_bindings", "decision_events"],
+            "legacy_catalyst_finance_import": True,
+            "legacy_wordpress_source_preserved": True,
+            "decision_studio_executes_financial_models": False,
+            "automatic_recommendation": False,
+            "financial_score_is_final_decision_authority": False,
             "final_decision_authority": "human-governed",
         },
         "compatibility": {
@@ -624,6 +656,9 @@ def release_manifest() -> Dict[str, Any]:
             "automatic_recommendation": False,
             "canvas_python_domain_migration": True,
             "canvas_legacy_adapter_preserved": True,
+            "finance_python_domain_migration": True,
+            "finance_legacy_adapter_preserved": True,
+            "finance_compute_authority_workbench": True,
             "backend_service_decomposition": True,
             "route_contracts_preserved_v3_0_0": True,
             "no_database_migration_v3_1_0": True,
@@ -5350,6 +5385,156 @@ def canvas_legacy_import_endpoint(req: CanvasLegacyImport, request: Request):
     except ValueError as exc:
         return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
 
+
+def _finance_scope_error(request: Request, scope: str):
+    supplied = request.headers.get("x-scds-api-key", "").strip()
+    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
+    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
+        return None
+    super_key = os.getenv("SCDS_API_KEY", "").strip()
+    if supplied and super_key and secrets.compare_digest(supplied, super_key):
+        return None
+    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError:
+        catalog = {}
+    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
+    if "*" in scopes or scope in scopes or (scope == "finance:read" and ("finance:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "finance:write" and "repository:write" in scopes):
+        return None
+    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "finance_scope_required", "required_scope": scope})
+
+
+def finance_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "finance_contract": finance_domain_contract()}
+
+
+def finance_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "finance": finance_domain_template()}
+
+
+def finance_get_endpoint(decision_id: str, request: Request):
+    auth = _finance_scope_error(request, "finance:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "finance": FinanceDomainRepository(session).get_finance(decision_id)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+
+
+def finance_put_endpoint(decision_id: str, req: FinanceStateUpsert, request: Request):
+    auth = _finance_scope_error(request, "finance:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "finance": FinanceDomainRepository(session).upsert_finance(decision_id, req)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def finance_assumptions_get_endpoint(decision_id: str, request: Request):
+    auth = _finance_scope_error(request, "finance:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = FinanceDomainRepository(session).list_assumptions(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "assumptions": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def finance_assumptions_put_endpoint(decision_id: str, req: FinanceAssumptionsReplace, request: Request):
+    auth = _finance_scope_error(request, "finance:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = FinanceDomainRepository(session).replace_assumptions(decision_id, req.assumptions)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "assumptions": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def finance_scenarios_get_endpoint(decision_id: str, request: Request):
+    auth = _finance_scope_error(request, "finance:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = FinanceDomainRepository(session).list_scenarios(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "scenarios": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def finance_scenarios_put_endpoint(decision_id: str, req: FinanceScenariosReplace, request: Request):
+    auth = _finance_scope_error(request, "finance:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = FinanceDomainRepository(session).replace_scenarios(decision_id, req.scenarios)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "scenarios": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def finance_workbench_receipts_get_endpoint(decision_id: str, request: Request):
+    auth = _finance_scope_error(request, "finance:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = FinanceDomainRepository(session).list_workbench_receipts(decision_id)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "workbench_receipts": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def finance_workbench_receipts_put_endpoint(decision_id: str, req: FinanceWorkbenchReceiptsReplace, request: Request):
+    auth = _finance_scope_error(request, "finance:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = FinanceDomainRepository(session).replace_workbench_receipts(decision_id, req.workbench_receipts)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "workbench_receipts": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def finance_legacy_import_endpoint(req: FinanceLegacyImport, request: Request):
+    auth = _finance_scope_error(request, "finance:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            state, created = FinanceDomainRepository(session).import_legacy(req)
+            return {"ok": True, "version": APP_VERSION, "created": created, "source_preserved": True, "finance": state}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
 def health():
     persistence = database_status()
     persistence_ready = (not persistence["required"]) or bool(persistence.get("authority_ready"))
@@ -5419,6 +5604,7 @@ def health():
         "persistence_schema": PERSISTENCE_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
         "canvas_domain_schema": CANVAS_DOMAIN_SCHEMA,
+        "finance_domain_schema": FINANCE_DOMAIN_SCHEMA,
         "persistence_authority": PERSISTENCE_AUTHORITY,
         "persistence": persistence,
         "release": release_manifest(),

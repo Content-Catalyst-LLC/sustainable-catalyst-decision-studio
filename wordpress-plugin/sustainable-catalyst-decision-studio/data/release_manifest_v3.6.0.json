@@ -1,0 +1,141 @@
+{
+  "release": "3.6.0",
+  "release_name": "Finance Python Domain Migration",
+  "release_date": "2026-10-06",
+  "build_fingerprint": "scds-v3.6.0-finance-python-domain-migration",
+  "source_commit": "release-v3.6.0",
+  "backend": {
+    "application_composition": "app.main",
+    "service": "app.services.decision_service",
+    "router_package": "app.api.routes",
+    "route_count": 220,
+    "route_registry_count": 16,
+    "included_router_count": 17,
+    "legacy_route_count": 176,
+    "specialized_energy_runtime_routes": 2,
+    "previous_route_count": 209
+  },
+  "decision_kernel": {
+    "schema": "scds-decision-kernel/1.0",
+    "module_contract_schema": "scds-decision-module-contract/1.0",
+    "module_registry_schema": "scds-decision-module-registry/1.0",
+    "module_ids": [
+      "canvas",
+      "finance",
+      "narrative-risk",
+      "global-impact"
+    ],
+    "module_count": 4,
+    "storage_authority": "python-postgresql",
+    "final_decision_authority": "human-governed",
+    "canvas_domain_schema": "scds-canvas-domain/1.0",
+    "canvas_python_domain_authoritative": true,
+    "finance_domain_schema": "scds-finance-domain/1.0",
+    "finance_python_domain_authoritative": true,
+    "finance_compute_authority": "workbench"
+  },
+  "repository": {
+    "schema": "scds-python-decision-repository/1.0",
+    "authority": "python-postgresql",
+    "live_write_authority": true,
+    "resources": [
+      "decision_projects",
+      "decisions",
+      "decision_objects",
+      "decision_module_bindings",
+      "snapshots",
+      "decision_events"
+    ],
+    "legacy_import": "idempotent",
+    "legacy_projection_reversible": true,
+    "legacy_wordpress_packet_storage": "compatibility-preserved",
+    "security": {
+      "read_scope": "repository:read",
+      "write_scope": "repository:write",
+      "dedicated_key_environment": "SCDS_REPOSITORY_API_KEY"
+    },
+    "canvas_domain_schema": "scds-canvas-domain/1.0",
+    "finance_domain_schema": "scds-finance-domain/1.0"
+  },
+  "persistence": {
+    "schema": "scds-postgresql-persistence/1.0",
+    "contract_schema": "scds-persistence-authority-contract/1.0",
+    "authority": "python-postgresql",
+    "expected_schema_revision": "0001_v330_pg_foundation",
+    "table_count": 20,
+    "migration_tool": "alembic",
+    "orm": "sqlalchemy-2",
+    "driver": "psycopg-3",
+    "postgresql_live_authority": true,
+    "writes_enabled_in_production": true
+  },
+  "migration": {
+    "database_schema": false,
+    "authority_cutover": false,
+    "python_repository_authority": false,
+    "canvas_python_domain_authority": false,
+    "finance_python_domain_authority": true,
+    "finance_wordpress_domain_authority_changed": true,
+    "wordpress_legacy_packet_storage_preserved": true,
+    "schema_breaking_changes": false
+  },
+  "next_release": "3.7.0 \u2014 Narrative Risk Python Domain Migration",
+  "canvas": {
+    "schema": "scds-canvas-domain/1.0",
+    "module_id": "canvas",
+    "status": "python-domain-authoritative",
+    "storage_authority": "python-postgresql",
+    "normalized_tables": [
+      "alternatives",
+      "criteria",
+      "assumptions",
+      "decision_objects",
+      "decision_module_bindings",
+      "decision_events"
+    ],
+    "legacy_import": "idempotent-source-preserving",
+    "security": {
+      "read_scope": "canvas:read",
+      "write_scope": "canvas:write",
+      "repository_key_also_authorized": true
+    },
+    "boundaries": {
+      "shared_decision_identity_owned_by_kernel": true,
+      "automatic_winner_selection": false,
+      "automatic_recommendation": false,
+      "automatic_approval": false,
+      "final_decision_authority": "human-governed"
+    }
+  },
+  "finance": {
+    "schema": "scds-finance-domain/1.0",
+    "module_id": "finance",
+    "status": "python-domain-authoritative",
+    "storage_authority": "python-postgresql",
+    "compute_authority": "workbench",
+    "normalized_tables": [
+      "assumptions",
+      "scenarios",
+      "scenario_variables",
+      "uncertainty_models",
+      "artifacts",
+      "decision_objects",
+      "decision_module_bindings",
+      "decision_events"
+    ],
+    "legacy_import": "idempotent-source-preserving",
+    "security": {
+      "read_scope": "finance:read",
+      "write_scope": "finance:write",
+      "repository_key_also_authorized": true
+    },
+    "boundaries": {
+      "shared_decision_identity_owned_by_kernel": true,
+      "decision_studio_executes_financial_models": false,
+      "model_output_is_automatic_recommendation": false,
+      "financial_score_is_final_decision_authority": false,
+      "automatic_approval": false,
+      "final_decision_authority": "human-governed"
+    }
+  }
+}

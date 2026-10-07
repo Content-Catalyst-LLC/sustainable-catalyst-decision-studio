@@ -1,3 +1,15 @@
+# Changelog
+
+## v3.6.0 — Finance Python Domain Migration
+
+- Migrated Finance domain state to authoritative Python/PostgreSQL persistence.
+- Preserved Workbench as the sole calculation/model execution authority for Finance.
+- Added Finance contracts, scoped API routes, source-preserving legacy import, and Workbench computation receipts.
+- Normalized Finance assumptions, scenarios, scenario variables, uncertainty models, and computation receipts into existing PostgreSQL tables.
+- Added explicit domain ownership metadata so Canvas and Finance can safely share the assumptions table without cross-domain deletion.
+- Preserved the 20-table schema and Alembic revision `0001_v330_pg_foundation`; no database schema migration.
+- Final decisions remain human-governed; financial/model output cannot auto-recommend or approve.
+
 # v3.5.0 — Canvas Python Domain Migration (2026-10-06)
 
 - Migrated Canvas from a registered contract/legacy adapter into an authoritative Python/PostgreSQL domain over the v3.4 Decision Repository.

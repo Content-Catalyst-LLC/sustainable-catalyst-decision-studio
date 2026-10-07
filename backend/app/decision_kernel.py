@@ -72,7 +72,9 @@ MODULE_REGISTRY: Dict[str, Dict[str, Any]] = {
         "purpose": "Financial assumptions, cash-flow, valuation, cost-benefit, capital, and financial-risk decision context.",
         "module_contract_schema": DECISION_MODULE_CONTRACT_SCHEMA,
         "kernel_contract_schema": DECISION_KERNEL_SCHEMA,
-        "status": "foundation",
+        "status": "python-domain-authoritative",
+        "domain_schema": "scds-finance-domain/1.0",
+        "storage_authority": "python-postgresql",
         "extends_kernel_objects": ["decision", "alternative", "criterion", "assumption", "scenario", "artifact_ref", "provenance_ref", "recommendation"],
         "capabilities": [
             "financial-assumptions", "cash-flow-model-reference", "valuation-reference",
@@ -80,14 +82,17 @@ MODULE_REGISTRY: Dict[str, Dict[str, Any]] = {
             "financial-scenarios", "financial-sensitivity", "cost-benefit-analysis",
         ],
         "providers": {
+            "persistence_authority": "python-postgresql",
             "compute_authority": "workbench",
             "datasets": ["workspace", "knowledge-library"],
             "research": ["research-librarian", "research-lab"],
         },
         "boundaries": [
+            "does-not-own-shared-decision-identity",
             "decision-studio-does-not-duplicate-workbench-calculation-runtime",
             "model-output-is-not-automatic-recommendation",
             "financial-score-is-not-final-decision-authority",
+            "does-not-bypass-human-review",
         ],
     },
     "narrative-risk": {

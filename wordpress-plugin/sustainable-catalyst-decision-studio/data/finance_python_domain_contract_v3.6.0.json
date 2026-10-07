@@ -1,0 +1,78 @@
+{
+  "schema": "scds-finance-domain/1.0",
+  "version": "1.0",
+  "module_id": "finance",
+  "display_name": "Finance",
+  "status": "python-domain-authoritative",
+  "storage_authority": "python-postgresql",
+  "compute_authority": "workbench",
+  "kernel_contract_schema": "scds-decision-kernel/1.0",
+  "repository_schema": "scds-python-decision-repository/1.0",
+  "owns": [
+    "financial-context",
+    "financial-assumptions",
+    "capital-and-discounting-context",
+    "cost-and-revenue-context",
+    "cash-flow-model-references",
+    "valuation-and-cost-benefit-references",
+    "financial-scenarios",
+    "financial-uncertainty",
+    "workbench-computation-receipts",
+    "financial-provenance"
+  ],
+  "normalized_postgresql_tables": [
+    "assumptions",
+    "scenarios",
+    "scenario_variables",
+    "uncertainty_models",
+    "artifacts",
+    "decision_objects",
+    "decision_module_bindings",
+    "decision_events"
+  ],
+  "providers": {
+    "compute_authority": "workbench",
+    "datasets": [
+      "workspace",
+      "knowledge-library"
+    ],
+    "research": [
+      "research-librarian",
+      "research-lab"
+    ]
+  },
+  "security": {
+    "read_scope": "finance:read",
+    "write_scope": "finance:write",
+    "repository_key_also_authorized": true
+  },
+  "compatibility": {
+    "legacy_catalyst_finance_import": true,
+    "legacy_wordpress_source_preserved": true,
+    "typed_platform_artifact_adapter_preserved": true,
+    "decision_packet_projection_preserved": true,
+    "workbench_handoff_contract_preserved": true
+  },
+  "boundaries": {
+    "shared_decision_identity_owned_by_kernel": true,
+    "workbench_is_compute_authority": true,
+    "decision_studio_executes_financial_models": false,
+    "model_output_is_automatic_recommendation": false,
+    "financial_score_is_final_decision_authority": false,
+    "automatic_approval": false,
+    "final_decision_authority": "human-governed"
+  },
+  "endpoints": [
+    "GET /finance/contract",
+    "GET /finance/template",
+    "GET /finance/decisions/{decision_id}",
+    "PUT /finance/decisions/{decision_id}",
+    "GET /finance/decisions/{decision_id}/assumptions",
+    "PUT /finance/decisions/{decision_id}/assumptions",
+    "GET /finance/decisions/{decision_id}/scenarios",
+    "PUT /finance/decisions/{decision_id}/scenarios",
+    "GET /finance/decisions/{decision_id}/workbench-receipts",
+    "PUT /finance/decisions/{decision_id}/workbench-receipts",
+    "POST /finance/import/legacy"
+  ]
+}

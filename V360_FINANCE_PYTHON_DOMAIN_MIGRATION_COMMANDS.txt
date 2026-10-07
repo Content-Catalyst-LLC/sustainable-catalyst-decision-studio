@@ -1,0 +1,39 @@
+DECISION STUDIO v3.6.0 — FINANCE PYTHON DOMAIN MIGRATION
+
+1) APPLY / TEST / PUSH ON MAC
+
+cd ~/Downloads
+rm -rf scds-v3.6.0-finance-domain
+unzip -q sustainable-catalyst-decision-studio-v3.6.0-repository.zip -d scds-v3.6.0-finance-domain
+cd scds-v3.6.0-finance-domain/sustainable-catalyst-decision-studio
+chmod +x APPLY_AND_PUSH_DECISION_STUDIO_V360.sh
+./APPLY_AND_PUSH_DECISION_STUDIO_V360.sh "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+2) VERIFY GIT
+
+cd ~/Downloads/sustainable-catalyst-decision-studio
+git status --short
+git log -1 --oneline
+git tag --points-at HEAD
+
+3) DEPLOY BACKEND FROM MAC
+
+cd ~/Downloads
+chmod +x deploy_decision_studio_v3_6_0_from_macos.sh upgrade_decision_studio_backend_v3_6_0_contabo.sh
+./deploy_decision_studio_v3_6_0_from_macos.sh
+
+4) PUBLIC VERIFY
+
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/finance/contract | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-modules/finance | python3 -m json.tool
+
+Expected:
+- version 3.6.0
+- finance_domain_schema scds-finance-domain/1.0
+- Finance status python-domain-authoritative
+- storage_authority python-postgresql
+- compute_authority workbench
+- schema_revision 0001_v330_pg_foundation
+- table_count 20
+- final_decision_authority human-governed

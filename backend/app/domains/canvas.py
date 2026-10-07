@@ -220,12 +220,19 @@ class CanvasDomainRepository:
         )
         return [self._criterion_dict(r) for r in rows]
 
+    @staticmethod
+    def _canvas_owned_assumption(row: Assumption) -> bool:
+        metadata = row.metadata_json or {}
+        domain = metadata.get("domain") if isinstance(metadata, dict) else None
+        # v3.5 Canvas rows predate explicit domain ownership and therefore have no marker.
+        return domain in (None, "", "canvas")
+
     def list_assumptions(self, decision_id: str) -> list[dict[str, Any]]:
         self._require_decision(decision_id)
-        rows = self.session.scalars(
+        rows = list(self.session.scalars(
             select(Assumption).where(Assumption.decision_id == decision_id).order_by(Assumption.created_at, Assumption.id)
-        )
-        return [self._assumption_dict(r) for r in rows]
+        ))
+        return [self._assumption_dict(r) for r in rows if self._canvas_owned_assumption(r)]
 
     def replace_alternatives(self, decision_id: str, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
         self._require_decision(decision_id)
@@ -242,7 +249,7 @@ class CanvasDomainRepository:
                 name=name[:300],
                 description=str(item.get("description") or "") or None,
                 status=str(item.get("status") or "candidate")[:64],
-                metadata_json={**deepcopy(item.get("metadata") or {}), **({"source_id": str(item.get("id"))} if item.get("id") not in (None, "") else {})},
+                metadata_json={**deepcopy(item.get("metadata") or {}), "domain": "canvas", **({"source_id": str(item.get("id"))} if item.get("id") not in (None, "") else {})},
             ))
         self.session.flush()
         self._refresh_object_lists(decision_id)
@@ -265,7 +272,7 @@ class CanvasDomainRepository:
                 name=name[:300],
                 weight=None if weight is None else str(weight)[:64],
                 direction=(str(item.get("direction"))[:32] if item.get("direction") is not None else None),
-                metadata_json={**deepcopy(item.get("metadata") or {}), **({"source_id": str(item.get("id"))} if item.get("id") not in (None, "") else {})},
+                metadata_json={**deepcopy(item.get("metadata") or {}), "domain": "canvas", **({"source_id": str(item.get("id"))} if item.get("id") not in (None, "") else {})},
             ))
         self.session.flush()
         self._refresh_object_lists(decision_id)
@@ -275,7 +282,8 @@ class CanvasDomainRepository:
     def replace_assumptions(self, decision_id: str, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
         self._require_decision(decision_id)
         for row in list(self.session.scalars(select(Assumption).where(Assumption.decision_id == decision_id))):
-            self.session.delete(row)
+            if self._canvas_owned_assumption(row):
+                self.session.delete(row)
         self.session.flush()
         for item in items:
             statement = str(item.get("statement") or item.get("text") or item.get("assumption") or "").strip()
@@ -288,7 +296,7 @@ class CanvasDomainRepository:
                 statement=statement,
                 status=str(item.get("status") or "open")[:64],
                 confidence=None if confidence is None else str(confidence)[:64],
-                metadata_json={**deepcopy(item.get("metadata") or {}), **({"source_id": str(item.get("id"))} if item.get("id") not in (None, "") else {})},
+                metadata_json={**deepcopy(item.get("metadata") or {}), "domain": "canvas", **({"source_id": str(item.get("id"))} if item.get("id") not in (None, "") else {})},
             ))
         self.session.flush()
         self._refresh_object_lists(decision_id)
