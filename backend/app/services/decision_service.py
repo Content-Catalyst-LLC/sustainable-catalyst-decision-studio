@@ -265,6 +265,17 @@ from app.cross_module_composition import (
     composition_template,
     validate_composition_document,
 )
+from app.module_artifact_provenance import (
+    MODULE_ARTIFACT_SCHEMA,
+    MODULE_PROVENANCE_SCHEMA,
+    ModuleArtifactCreateRequest,
+    ModuleArtifactRevisionRequest,
+    ModuleArtifactValidateRequest,
+    ModuleArtifactRepository,
+    module_artifact_contract,
+    module_artifact_template,
+    validate_module_artifact,
+)
 from app.domains.global_impact import (
     GLOBAL_IMPACT_DOMAIN_SCHEMA,
     GlobalImpactClaimsReplace,
@@ -319,10 +330,10 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.10.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.10.0-cross-module-decision-composition")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.10.0")
-RELEASE_DATE = "2026-10-06"
+APP_VERSION = "3.11.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.11.0-module-artifact-provenance-standard")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.11.0")
+RELEASE_DATE = "2026-10-07"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
 MODULE_HANDOFF_SCHEMA = "scds-catalyst-module-handoff/1.0"
@@ -396,7 +407,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Cross-Module Decision Composition",
+        "release_name": "Module Artifact & Provenance Standard",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -472,6 +483,8 @@ def release_manifest() -> Dict[str, Any]:
         "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
         "unified_decision_module_registry_schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
         "cross_module_decision_composition_schema": CROSS_MODULE_COMPOSITION_SCHEMA,
+        "module_artifact_schema": MODULE_ARTIFACT_SCHEMA,
+        "module_provenance_schema": MODULE_PROVENANCE_SCHEMA,
         "persistence_schema": PERSISTENCE_SCHEMA,
         "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
@@ -487,10 +500,10 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 20,
-            "included_router_count": 21,
-            "route_count": 256,
-            "previous_route_count": 249,
+            "router_registry_count": 21,
+            "included_router_count": 22,
+            "route_count": 264,
+            "previous_route_count": 256,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
             "database_migration": False,
@@ -506,6 +519,11 @@ def release_manifest() -> Dict[str, Any]:
             "legacy_module_registry_endpoints_preserved": True,
             "cross_module_decision_composition": True,
             "composition_schema": CROSS_MODULE_COMPOSITION_SCHEMA,
+            "module_artifact_provenance_standard": True,
+            "module_artifact_schema": MODULE_ARTIFACT_SCHEMA,
+            "module_provenance_schema": MODULE_PROVENANCE_SCHEMA,
+            "artifact_revisions_immutable": True,
+            "artifact_schema_migration": False,
             "composition_schema_migration": False,
             "composition_infers_truth": False,
             "composition_infers_causality": False,
@@ -517,7 +535,7 @@ def release_manifest() -> Dict[str, Any]:
             "expected_schema_revision": EXPECTED_SCHEMA_REVISION,
             "persistence_table_count": len(PERSISTENCE_TABLES),
             "wordpress_authority_change": True,
-            "new_wordpress_authority_change_in_v3_10": False,
+            "new_wordpress_authority_change_in_v3_11": False,
             "canvas_wordpress_domain_authority_changed": True,
             "finance_wordpress_domain_authority_changed": True,
             "narrative_risk_wordpress_domain_authority_changed": True,
@@ -580,6 +598,27 @@ def release_manifest() -> Dict[str, Any]:
             "composition_auto_selects_winner": False,
             "composition_auto_recommends": False,
             "composition_auto_approves": False,
+            "final_decision_authority": "human-governed",
+        },
+        "module_artifact_provenance": {
+            "artifact_schema": MODULE_ARTIFACT_SCHEMA,
+            "provenance_schema": MODULE_PROVENANCE_SCHEMA,
+            "canonical_modules": 4,
+            "storage_authority": "python-postgresql",
+            "artifact_table": "artifacts",
+            "event_table": "decision_events",
+            "immutable_revisions": True,
+            "stable_logical_artifact_identity": True,
+            "sha256_integrity": True,
+            "explicit_parent_lineage": True,
+            "evidence_identity_authority": "platform-core",
+            "finance_compute_authority": "workbench",
+            "global_impact_compute_authority": "workbench",
+            "database_migration": False,
+            "provenance_implies_truth": False,
+            "provenance_implies_causality": False,
+            "artifact_implies_recommendation": False,
+            "artifact_implies_approval": False,
             "final_decision_authority": "human-governed",
         },
         "persistence": {
@@ -805,6 +844,11 @@ def release_manifest() -> Dict[str, Any]:
             "legacy_decision_modules_endpoints_preserved": True,
             "cross_module_decision_composition": True,
             "composition_schema": CROSS_MODULE_COMPOSITION_SCHEMA,
+            "module_artifact_provenance_standard": True,
+            "module_artifact_schema": MODULE_ARTIFACT_SCHEMA,
+            "module_provenance_schema": MODULE_PROVENANCE_SCHEMA,
+            "artifact_revisions_immutable": True,
+            "artifact_schema_migration": False,
             "composition_schema_migration": False,
             "composition_infers_truth": False,
             "composition_infers_causality": False,
@@ -5255,6 +5299,106 @@ def composition_diagnostics_endpoint(decision_id: str, request: Request):
         return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc), "decision_id": decision_id})
 
 
+def _module_artifact_scope_error(request: Request, scope: str):
+    supplied = request.headers.get("x-scds-api-key", "").strip()
+    repository_key = os.getenv("SCDS_REPOSITORY_API_KEY", "").strip()
+    if supplied and repository_key and secrets.compare_digest(supplied, repository_key):
+        return None
+    super_key = os.getenv("SCDS_API_KEY", "").strip()
+    if supplied and super_key and secrets.compare_digest(supplied, super_key):
+        return None
+    raw = os.getenv("SCDS_INSTITUTIONAL_API_KEYS", "{}").strip() or "{}"
+    try:
+        catalog = json.loads(raw)
+    except json.JSONDecodeError:
+        catalog = {}
+    scopes = set(catalog.get(supplied, [])) if supplied and isinstance(catalog, dict) and isinstance(catalog.get(supplied, []), list) else set()
+    if "*" in scopes or scope in scopes or (scope == "artifacts:read" and ("artifacts:write" in scopes or "repository:read" in scopes or "repository:write" in scopes)) or (scope == "artifacts:write" and "repository:write" in scopes):
+        return None
+    return JSONResponse(status_code=403, content={"ok": False, "version": APP_VERSION, "error": "module_artifact_scope_required", "required_scope": scope})
+
+
+def module_artifact_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "module_artifact_contract": module_artifact_contract()}
+
+
+def module_artifact_template_endpoint():
+    return {"ok": True, "version": APP_VERSION, "module_artifact": module_artifact_template()}
+
+
+def module_artifact_validate_endpoint(req: ModuleArtifactValidateRequest):
+    return {"version": APP_VERSION, **validate_module_artifact(req.artifact, strict=req.strict)}
+
+
+def module_artifact_list_endpoint(decision_id: str, request: Request, module_id: str | None = None, current_only: bool = True):
+    auth = _module_artifact_scope_error(request, "artifacts:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            items = ModuleArtifactRepository(session, app_version=APP_VERSION).list(decision_id, module_id=module_id, current_only=current_only)
+            return {"ok": True, "version": APP_VERSION, "count": len(items), "module_artifacts": items}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def module_artifact_create_endpoint(decision_id: str, req: ModuleArtifactCreateRequest, request: Request):
+    auth = _module_artifact_scope_error(request, "artifacts:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            artifact = ModuleArtifactRepository(session, app_version=APP_VERSION).create(decision_id, req)
+            return {"ok": True, "version": APP_VERSION, "module_artifact": artifact}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def module_artifact_get_endpoint(decision_id: str, artifact_id: str, request: Request):
+    auth = _module_artifact_scope_error(request, "artifacts:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            artifact = ModuleArtifactRepository(session, app_version=APP_VERSION).get(decision_id, artifact_id)
+            return {"ok": True, "version": APP_VERSION, "module_artifact": artifact}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def module_artifact_revise_endpoint(decision_id: str, artifact_id: str, req: ModuleArtifactRevisionRequest, request: Request):
+    auth = _module_artifact_scope_error(request, "artifacts:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            artifact = ModuleArtifactRepository(session, app_version=APP_VERSION).revise(decision_id, artifact_id, req)
+            return {"ok": True, "version": APP_VERSION, "module_artifact": artifact}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+    except ValueError as exc:
+        return JSONResponse(status_code=422, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def module_artifact_lineage_endpoint(decision_id: str, artifact_id: str, request: Request):
+    auth = _module_artifact_scope_error(request, "artifacts:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            lineage = ModuleArtifactRepository(session, app_version=APP_VERSION).lineage(decision_id, artifact_id)
+            return {"ok": True, "version": APP_VERSION, "lineage": lineage}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
 def persistence_status_endpoint():
     status = database_status()
     return {"ok": (not status["required"] or (status["connected"] and status["schema_current"])), "version": APP_VERSION, "persistence": status}
@@ -6180,6 +6324,8 @@ def health():
         "decision_module_registry_schema": DECISION_MODULE_REGISTRY_SCHEMA,
         "unified_decision_module_registry_schema": UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA,
         "cross_module_decision_composition_schema": CROSS_MODULE_COMPOSITION_SCHEMA,
+        "module_artifact_schema": MODULE_ARTIFACT_SCHEMA,
+        "module_provenance_schema": MODULE_PROVENANCE_SCHEMA,
         "registered_decision_modules": module_registry()["module_count"],
         "persistence_schema": PERSISTENCE_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,

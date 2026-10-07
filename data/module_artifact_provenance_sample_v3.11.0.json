@@ -1,0 +1,47 @@
+{
+  "schema": "scds-module-artifact/1.0",
+  "version": "1.0",
+  "artifact_id": "ma_sample_finance",
+  "revision_id": "mart_sample_revision_1",
+  "revision_no": 1,
+  "decision_id": "dec_sample",
+  "module_id": "finance",
+  "artifact_type": "valuation-context",
+  "title": "Illustrative valuation context",
+  "status": "draft",
+  "uri": null,
+  "payload": {
+    "discount_rate": 0.08
+  },
+  "source_refs": [
+    "workspace:dataset-1"
+  ],
+  "evidence_refs": [
+    "evidence:source-1"
+  ],
+  "computation_refs": [
+    "workbench:run-1"
+  ],
+  "parent_artifact_ids": [],
+  "provenance": {
+    "schema": "scds-module-provenance/1.0",
+    "created_at": "2026-10-07T00:00:00Z",
+    "actor_ref": "human:sample",
+    "source_system": "decision-studio",
+    "source_version": "3.11.0",
+    "transformation_history": [],
+    "notes": [],
+    "truth_verified": false,
+    "causality_verified": false
+  },
+  "ownership": {
+    "module_id": "finance",
+    "storage_authority": "python-postgresql",
+    "compute_authority": "workbench",
+    "final_decision_authority": "human-governed"
+  },
+  "integrity": {
+    "algorithm": "sha256",
+    "content_sha256": "sample-generated-at-runtime"
+  }
+}

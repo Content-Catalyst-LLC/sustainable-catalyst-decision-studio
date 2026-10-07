@@ -4,7 +4,7 @@ Tags: decision intelligence, governance, lifecycle, evidence, monitoring, collab
 Requires at least: 6.4
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 3.10.0
+Stable tag: 3.11.0
 License: GPLv2 or later
 
 Uncertainty, sensitivity, and process-confidence layer for transparent robustness testing over Decision Studio tradeoff matrices, with explicit human-review boundaries.
@@ -33,6 +33,9 @@ Process confidence summarizes documentation and analysis coverage. It is not a p
 [sc_decision_studio mode="landing" title="Sustainable Catalyst Decision Studio"]
 
 == Changelog ==
+
+= 3.11.0 =
+* Module Artifact & Provenance Standard: immutable module artifact revisions, SHA-256 integrity, ownership, lineage, evidence/source/computation references, and human-governed provenance.
 
 = 3.10.0 =
 * Adds governed Cross-Module Decision Composition across Canvas, Finance, Narrative Risk, and Global Impact Catalyst.

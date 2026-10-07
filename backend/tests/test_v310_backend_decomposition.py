@@ -10,7 +10,7 @@ def test_v310_decomposition_preserved_under_current_release():
     client = TestClient(app)
     health = client.get("/health")
     assert health.status_code == 200
-    assert health.json()["version"] == "3.10.0"
+    assert health.json()["version"] == "3.11.0"
     release = client.get("/release").json()["release"]
     assert release["backend_architecture"]["decomposition_release"] is True
     assert release["backend_architecture"]["database_migration"] is False
@@ -39,4 +39,4 @@ def test_router_modules_are_decomposed():
     route_dir = ROOT / "backend/app/api/routes"
     modules = sorted(p for p in route_dir.glob("*.py") if p.name != "__init__.py")
     assert len(modules) >= 11
-    assert service.APP_VERSION == "3.10.0"
+    assert service.APP_VERSION == "3.11.0"

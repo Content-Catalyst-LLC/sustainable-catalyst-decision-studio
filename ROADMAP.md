@@ -9,8 +9,11 @@
 - **v3.5.0 — Canvas Python Domain Migration** — built; Canvas framing, alternatives, criteria, assumptions, stakeholder context, and success measures are now authoritative in Python/PostgreSQL over the shared Decision Kernel.
 - **v3.6.0 — Finance Python Domain Migration** — built; Finance domain state is authoritative in Python/PostgreSQL while Workbench remains calculation authority.
 - **v3.7.0 — Narrative Risk Python Domain Migration** — built; claims, evidence relationships, signals, actors, exposures, and competing narratives are authoritative in Python/PostgreSQL with explicit epistemic boundaries.
-- **v3.8.0 — Global Impact Catalyst Python Domain Migration** — current release; impact claims, evidence links, indicators, SDG/carbon/resource/distributional context, and provenance are authoritative in Python/PostgreSQL while Workbench remains compute authority.
-- **v3.9.0 — Unified Decision Module Registry** — next.
+- **v3.8.0 — Global Impact Catalyst Python Domain Migration** — built; impact claims, evidence links, indicators, SDG/carbon/resource/distributional context, and provenance are authoritative in Python/PostgreSQL while Workbench remains compute authority.
+- **v3.9.0 — Unified Decision Module Registry** — built.
+- **v3.10.0 — Cross-Module Decision Composition** — built.
+- **v3.11.0 — Module Artifact & Provenance Standard** — current build.
+- **v3.12.0 — Module Interoperability & Shared Evidence** — next.
 
 ## v2.8.0 — Decision Graph & Dependency Mapping
 
@@ -48,3 +51,13 @@ Status: built. Typed source-owned handoffs, bounded analysis/computation request
 - Preserve module ownership, explicit cross-module links, Workbench compute authority, provenance, and human final-decision authority.
 - Store compositions in the existing Python/PostgreSQL repository with no schema migration.
 - Next: v3.11.0 — Module Artifact & Provenance Standard.
+
+
+## v3.11.0 — Module Artifact & Provenance Standard
+
+- Canonical module-artifact envelope shared by Canvas, Finance, Narrative Risk, and Global Impact.
+- Immutable revision lineage with SHA-256 integrity and explicit parent/source/evidence/computation references.
+- Existing `artifacts` + `decision_events` persistence; no new schema migration.
+- Platform Core retains evidence identity/source provenance; Workbench retains Finance/Impact computation; final decisions remain human-governed.
+
+Next: **v3.12.0 — Module Interoperability & Shared Evidence**.

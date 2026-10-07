@@ -73,11 +73,11 @@ def _seed_four_domains():
 
 def test_v3100_release_identity_and_composition_schema():
     health = client.get('/health').json()
-    assert health['version'] == '3.10.0'
+    assert health['version'] == '3.11.0'
     assert health['cross_module_decision_composition_schema'] == CROSS_MODULE_COMPOSITION_SCHEMA
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Cross-Module Decision Composition'
-    assert release['build_fingerprint'] == 'scds-v3.10.0-cross-module-decision-composition'
+    assert release['release_name'] == 'Module Artifact & Provenance Standard'
+    assert release['build_fingerprint'] == 'scds-v3.11.0-module-artifact-provenance-standard'
     assert release['backend_architecture']['database_migration'] is False
     assert release['backend_architecture']['cross_module_decision_composition'] is True
     assert release['backend_architecture']['composition_infers_truth'] is False
@@ -192,13 +192,13 @@ def test_v3100_validation_rejects_implicit_or_invalid_composition():
 
 
 def test_v3100_composition_routes_and_v390_preservation():
-    current = json.loads((ROOT / 'data/backend_route_inventory_v3.10.0.json').read_text())
+    current = json.loads((ROOT / 'data/backend_route_inventory_v3.11.0.json').read_text())
     previous = json.loads((ROOT / 'data/backend_route_inventory_v3.9.0.json').read_text())
     current_routes = {(r['path'], r['method']) for routes in current['routers'].values() for r in routes}
     previous_routes = {(r['path'], r['method']) for routes in previous['routers'].values() for r in routes}
     assert previous_routes <= current_routes
-    assert current['route_count'] == 256
-    assert len(current['routers']) == 21
+    assert current['route_count'] == 264
+    assert len(current['routers']) == 22
     assert len(current['routers']['composition']) == 7
     assert ('PUT','/decision-composition/decisions/{decision_id}') in {(r['method'],r['path']) for r in current['routers']['composition']}
 

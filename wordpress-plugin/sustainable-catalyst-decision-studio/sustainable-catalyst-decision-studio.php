@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Connected Decision Intelligence unifies the eight-stage decision lifecycle, readiness, cross-product routing, lineage, and human-controlled progression across the Sustainable Catalyst platform.
- * Version: 3.10.0
+ * Version: 3.11.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,10 +12,10 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '3.10.0';
-    const BUILD_FINGERPRINT = 'scds-v3.10.0-cross-module-decision-composition';
-    const SOURCE_COMMIT = 'release-v3.10.0';
-    const RELEASE_DATE = '2026-10-06';
+    const VERSION = '3.11.0';
+    const BUILD_FINGERPRINT = 'scds-v3.11.0-module-artifact-provenance-standard';
+    const SOURCE_COMMIT = 'release-v3.11.0';
+    const RELEASE_DATE = '2026-10-07';
     const DB_VERSION = '3.0.0';
     const DB_VERSION_OPTION = 'scds_db_version';
     const INSTALLED_VERSION_OPTION = 'scds_installed_version';
@@ -94,6 +94,8 @@ class Sustainable_Catalyst_Decision_Studio {
     const CROSS_PRODUCT_ROUTE_PLAN_SCHEMA = 'scds-cross-product-route-plan/1.0';
     const UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA = 'scds-unified-decision-module-registry/1.0';
     const CROSS_MODULE_COMPOSITION_SCHEMA = 'scds-cross-module-decision-composition/1.0';
+    const MODULE_ARTIFACT_SCHEMA = 'scds-module-artifact/1.0';
+    const MODULE_PROVENANCE_SCHEMA = 'scds-module-provenance/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);
@@ -1951,6 +1953,8 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'platform_context_schema'=>self::PLATFORM_CONTEXT_SCHEMA,
             'decision_object_migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,
             'cross_module_decision_composition_schema'=>self::CROSS_MODULE_COMPOSITION_SCHEMA,
+            'module_artifact_schema'=>self::MODULE_ARTIFACT_SCHEMA,
+            'module_provenance_schema'=>self::MODULE_PROVENANCE_SCHEMA,
             'evidence_bundle_schema'=>self::EVIDENCE_BUNDLE_SCHEMA,
             'source_bundle_schema'=>self::SOURCE_BUNDLE_SCHEMA,
             'evidence_coverage_schema'=>self::EVIDENCE_COVERAGE_SCHEMA,
@@ -2576,6 +2580,8 @@ SCDS_OPENAI_MODEL=&lt;your-model&gt;</pre>';
             'accessibility_audit_schema'=>self::ACCESSIBILITY_AUDIT_SCHEMA,'offline_workspace_schema'=>self::OFFLINE_WORKSPACE_SCHEMA,'release_readiness_schema'=>self::RELEASE_READINESS_SCHEMA,'recovery_snapshot_schema'=>self::RECOVERY_SNAPSHOT_SCHEMA,'migration_assessment_schema'=>self::MIGRATION_ASSESSMENT_SCHEMA,
             'connected_platform_schema'=>self::CONNECTED_PLATFORM_SCHEMA,'lifecycle_assessment_schema'=>self::LIFECYCLE_ASSESSMENT_SCHEMA,'decision_intelligence_graph_schema'=>self::DECISION_INTELLIGENCE_GRAPH_SCHEMA,'action_queue_schema'=>self::ACTION_QUEUE_SCHEMA,'portfolio_index_schema'=>self::PORTFOLIO_INDEX_SCHEMA,'connected_exchange_schema'=>self::CONNECTED_EXCHANGE_SCHEMA,'lifecycle_event_schema'=>self::LIFECYCLE_EVENT_SCHEMA,'decision_object_schema'=>self::DECISION_OBJECT_SCHEMA,'platform_context_schema'=>self::PLATFORM_CONTEXT_SCHEMA,'decision_object_migration_schema'=>self::DECISION_OBJECT_MIGRATION_SCHEMA,
             'cross_module_decision_composition_schema'=>self::CROSS_MODULE_COMPOSITION_SCHEMA,
+            'module_artifact_schema'=>self::MODULE_ARTIFACT_SCHEMA,
+            'module_provenance_schema'=>self::MODULE_PROVENANCE_SCHEMA,
             'evidence_bundle_schema'=>self::EVIDENCE_BUNDLE_SCHEMA,'source_bundle_schema'=>self::SOURCE_BUNDLE_SCHEMA,'evidence_coverage_schema'=>self::EVIDENCE_COVERAGE_SCHEMA,
             'criteria_set_schema'=>self::CRITERIA_SET_SCHEMA,'alternatives_set_schema'=>self::ALTERNATIVES_SET_SCHEMA,'tradeoff_matrix_schema'=>self::TRADEOFF_MATRIX_SCHEMA,'tradeoff_diagnostics_schema'=>self::TRADEOFF_DIAGNOSTICS_SCHEMA,'uncertainty_register_schema'=>self::UNCERTAINTY_REGISTER_SCHEMA,'sensitivity_analysis_schema'=>self::SENSITIVITY_ANALYSIS_SCHEMA,'confidence_assessment_schema'=>self::CONFIDENCE_ASSESSMENT_SCHEMA,'scenario_set_schema'=>self::SCENARIO_SET_SCHEMA,'scenario_comparison_schema'=>self::SCENARIO_COMPARISON_V250_SCHEMA,'stress_test_suite_schema'=>self::STRESS_TEST_SUITE_SCHEMA,'analysis_handoff_schema'=>self::ANALYSIS_HANDOFF_SCHEMA,'computation_handoff_schema'=>self::COMPUTATION_HANDOFF_SCHEMA,'handoff_receipt_schema'=>self::HANDOFF_RECEIPT_SCHEMA,'analysis_request_schema'=>self::ANALYSIS_REQUEST_SCHEMA,
             'publication_handoff_schema'=>self::PUBLICATION_HANDOFF_SCHEMA,

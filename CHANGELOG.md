@@ -1,3 +1,18 @@
+## 3.11.0 — Module Artifact & Provenance Standard
+
+- Added canonical `scds-module-artifact/1.0` and `scds-module-provenance/1.0` contracts across all four authoritative Decision Studio modules.
+- Added immutable artifact revisions with stable logical artifact identity, SHA-256 integrity, explicit parent/source/evidence/computation references, and lineage reconstruction.
+- Reused the existing `artifacts` and `decision_events` tables; no Alembic schema migration.
+- Preserved Platform Core as evidence identity/source-provenance authority, Workbench as Finance/Global Impact compute authority, and human final-decision authority.
+- Added scoped module-artifact APIs with `artifacts:read` / `artifacts:write` authorization and repository-key compatibility.
+- Preserved v3.10 cross-module composition and all four Python/PostgreSQL authoritative domains.
+
+## 3.10.0 — Cross-Module Decision Composition
+
+- Added governed cross-module composition across Canvas, Finance, Narrative Risk, and Global Impact.
+- Preserved module ownership, explicit links, fingerprints/staleness diagnostics, Workbench compute boundaries, and human governance.
+- Reused `decision_objects`; no database schema migration.
+
 
 ## 3.9.0 — Unified Decision Module Registry
 

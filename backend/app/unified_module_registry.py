@@ -16,6 +16,7 @@ from app.domains.canvas import CANVAS_DOMAIN_SCHEMA, canvas_domain_contract
 from app.domains.finance import FINANCE_DOMAIN_SCHEMA, finance_domain_contract
 from app.domains.narrative_risk import NARRATIVE_RISK_DOMAIN_SCHEMA, narrative_risk_domain_contract
 from app.domains.global_impact import GLOBAL_IMPACT_DOMAIN_SCHEMA, global_impact_domain_contract
+from app.module_artifact_provenance import MODULE_ARTIFACT_SCHEMA, MODULE_PROVENANCE_SCHEMA
 
 UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA = "scds-unified-decision-module-registry/1.0"
 UNIFIED_DECISION_MODULE_REGISTRY_VERSION = "1.0"
@@ -93,6 +94,8 @@ def unified_module_entry(module_id: str) -> dict[str, Any] | None:
             "legacy_registry": DECISION_MODULE_REGISTRY_SCHEMA,
             "domain": domain.get("schema") or _DOMAIN_SCHEMAS[module_id],
             "repository": domain.get("repository_schema", "scds-python-decision-repository/1.0"),
+            "module_artifact": MODULE_ARTIFACT_SCHEMA,
+            "module_provenance": MODULE_PROVENANCE_SCHEMA,
         },
         "authority": {
             "registration": "decision-studio-kernel",
@@ -106,6 +109,12 @@ def unified_module_entry(module_id: str) -> dict[str, Any] | None:
         "normalized_postgresql_tables": deepcopy(domain.get("normalized_postgresql_tables") or []),
         "security": security,
         "compatibility": compatibility,
+        "artifact_standard": {
+            "artifact_schema": MODULE_ARTIFACT_SCHEMA,
+            "provenance_schema": MODULE_PROVENANCE_SCHEMA,
+            "immutable_revisions": True,
+            "integrity": "sha256",
+        },
         "boundaries": boundaries,
         "endpoints": {
             "domain_contract": f"{_ROUTE_PREFIXES[module_id]}/contract",

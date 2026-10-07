@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="3.10.0"
+VERSION="3.11.0"
 OUT="${1:-$ROOT/dist}"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 PLUGIN_DIR="$ROOT/wordpress-plugin/sustainable-catalyst-decision-studio"
@@ -21,17 +21,17 @@ find "$ROOT" -type f -name '*.pyc' -delete
   cd "$ROOT/wordpress-plugin"
   zip -qr "$OUT/sustainable-catalyst-decision-studio-plugin-v${VERSION}.zip" sustainable-catalyst-decision-studio -x '*/__pycache__/*' '*.pyc' '*/.DS_Store' '*/.venv*/*'
 )
-REPO_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-repository-v3100.XXXXXX")"
+REPO_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-repository-v3110.XXXXXX")"
 mkdir -p "$REPO_STAGE/sustainable-catalyst-decision-studio"
 rsync -a --exclude='.git/' --exclude='__pycache__/' --exclude='.pytest_cache/' --exclude='*.pyc' --exclude='dist/' --exclude='.DS_Store' --exclude='.venv/' --exclude='.venv-*/' --exclude='*.venv/' --include='.env.persistence-v330.example' --exclude='.env' --exclude='.env.*' "$ROOT/" "$REPO_STAGE/sustainable-catalyst-decision-studio/"
 (cd "$REPO_STAGE" && zip -qr "$OUT/sustainable-catalyst-decision-studio-v${VERSION}-repository.zip" sustainable-catalyst-decision-studio)
 rm -rf "$REPO_STAGE"
-BACKEND_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-backend-v3100.XXXXXX")"
+BACKEND_STAGE="$(mktemp -d "${TMPDIR:-/tmp}/scds-backend-v3110.XXXXXX")"
 trap 'rm -rf "$BACKEND_STAGE"' EXIT
 BASE="$BACKEND_STAGE/sustainable-catalyst-decision-studio-backend-v${VERSION}"
 mkdir -p "$BASE/backend"
 rsync -a --exclude='__pycache__/' --exclude='.pytest_cache/' --exclude='*.pyc' --exclude='.env' --exclude='.env.*' --exclude='.venv/' --exclude='.venv-*/' "$ROOT/backend/" "$BASE/backend/"
-cp "$ROOT/compose.yml" "$BASE/compose.v3.10.0.yml"
+cp "$ROOT/compose.yml" "$BASE/compose.v3.11.0.yml"
 cp "$ROOT/.env.persistence-v330.example" "$BASE/.env.persistence-v330.example"
 (cd "$BACKEND_STAGE" && zip -qr "$OUT/sustainable-catalyst-decision-studio-backend-v${VERSION}.zip" "sustainable-catalyst-decision-studio-backend-v${VERSION}")
 rm -rf "$BACKEND_STAGE"

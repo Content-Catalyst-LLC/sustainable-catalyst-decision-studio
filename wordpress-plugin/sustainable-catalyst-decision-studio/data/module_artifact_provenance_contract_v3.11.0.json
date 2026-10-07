@@ -1,0 +1,45 @@
+{
+  "schema": "scds-module-artifact/1.0",
+  "version": "1.0",
+  "provenance_schema": "scds-module-provenance/1.0",
+  "role": "canonical-module-artifact-and-provenance-standard",
+  "canonical_modules": [
+    "canvas",
+    "finance",
+    "narrative-risk",
+    "global-impact"
+  ],
+  "storage_authority": "python-postgresql",
+  "module_artifact_provenance_authority": "decision-studio-kernel",
+  "evidence_identity_and_source_provenance_authority": "platform-core",
+  "final_decision_authority": "human-governed",
+  "principles": {
+    "module_ownership_is_explicit": true,
+    "artifact_revisions_are_immutable": true,
+    "logical_artifact_identity_is_stable_across_revisions": true,
+    "every_revision_has_sha256_integrity": true,
+    "parent_artifacts_are_explicit": true,
+    "source_and_evidence_references_are_preserved": true,
+    "external_computation_receipts_are_references_not_recomputed": true,
+    "provenance_does_not_imply_truth": true,
+    "provenance_does_not_imply_causality": true,
+    "artifact_presence_does_not_imply_recommendation": true,
+    "artifact_presence_does_not_imply_approval": true
+  },
+  "compute_authorities": {
+    "finance": "workbench",
+    "global-impact": "workbench"
+  },
+  "persistence": {
+    "table": "artifacts",
+    "event_table": "decision_events",
+    "schema_migration_required": false,
+    "payload_storage": "artifacts.metadata_json",
+    "checksum_storage": "artifacts.checksum_sha256"
+  },
+  "security": {
+    "read_scope": "artifacts:read",
+    "write_scope": "artifacts:write",
+    "repository_key_also_authorized": true
+  }
+}

@@ -32,11 +32,11 @@ def _db(monkeypatch, tmp_path):
 
 def test_v390_release_and_health_publish_unified_registry_schema():
     health = client.get('/health').json()
-    assert health['version'] == '3.10.0'
+    assert health['version'] == '3.11.0'
     assert health['unified_decision_module_registry_schema'] == UNIFIED_DECISION_MODULE_REGISTRY_SCHEMA
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Cross-Module Decision Composition'
-    assert release['build_fingerprint'] == 'scds-v3.10.0-cross-module-decision-composition'
+    assert release['release_name'] == 'Module Artifact & Provenance Standard'
+    assert release['build_fingerprint'] == 'scds-v3.11.0-module-artifact-provenance-standard'
     assert release['backend_architecture']['database_migration'] is False
     assert release['backend_architecture']['unified_decision_module_registry'] is True
     assert release['backend_architecture']['unified_registry_canonical'] is True
@@ -130,12 +130,12 @@ def test_v390_registry_readiness_tracks_persistence(monkeypatch, tmp_path):
 
 
 def test_v390_route_inventory_preserves_v380_and_adds_registry_routes():
-    current = json.loads((ROOT / 'data/backend_route_inventory_v3.10.0.json').read_text())
+    current = json.loads((ROOT / 'data/backend_route_inventory_v3.11.0.json').read_text())
     previous = json.loads((ROOT / 'data/backend_route_inventory_v3.9.0.json').read_text())
     current_routes = {(r['path'], r['method']) for routes in current['routers'].values() for r in routes}
     previous_routes = {(r['path'], r['method']) for routes in previous['routers'].values() for r in routes}
     assert previous_routes <= current_routes
-    assert current['route_count'] == 256
+    assert current['route_count'] == 264
     assert len(current['routers']['module_registry']) == 7
     expected = {
         ('GET', '/decision-module-registry'),
