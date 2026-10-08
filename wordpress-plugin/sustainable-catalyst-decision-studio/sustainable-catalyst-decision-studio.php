@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Sustainable Catalyst Decision Studio
  * Description: Connected Decision Intelligence unifies the eight-stage decision lifecycle, readiness, cross-product routing, lineage, and human-controlled progression across the Sustainable Catalyst platform.
- * Version: 3.14.0
+ * Version: 3.15.0
  * Author: Content Catalyst LLC
  * Text Domain: sustainable-catalyst-decision-studio
  */
@@ -12,9 +12,9 @@ if (!defined('ABSPATH')) {
 }
 
 class Sustainable_Catalyst_Decision_Studio {
-    const VERSION = '3.14.0';
-    const BUILD_FINGERPRINT = 'scds-v3.14.0-global-authentication-authorization-integration';
-    const SOURCE_COMMIT = 'release-v3.14.0';
+    const VERSION = '3.15.0';
+    const BUILD_FINGERPRINT = 'scds-v3.15.0-decision-event-store-immutable-audit-ledger';
+    const SOURCE_COMMIT = 'release-v3.15.0';
     const RELEASE_DATE = '2026-10-07';
     const DB_VERSION = '3.0.0';
     const DB_VERSION_OPTION = 'scds_db_version';
@@ -104,6 +104,9 @@ class Sustainable_Catalyst_Decision_Studio {
     const GLOBAL_AUTH_SCHEMA = 'scds-global-authentication-authorization/1.0';
     const AUTHENTICATED_PRINCIPAL_SCHEMA = 'scds-authenticated-principal/1.0';
     const AUTHORIZATION_DECISION_SCHEMA = 'scds-authorization-decision/1.0';
+    const DECISION_EVENT_STORE_SCHEMA = 'scds-decision-event-store/1.0';
+    const IMMUTABLE_AUDIT_LEDGER_SCHEMA = 'scds-immutable-audit-ledger/1.0';
+    const AUDIT_EVENT_SCHEMA = 'scds-decision-audit-event/1.0';
 
     public function __construct() {
         add_action('init', [$this, 'register_assets']);

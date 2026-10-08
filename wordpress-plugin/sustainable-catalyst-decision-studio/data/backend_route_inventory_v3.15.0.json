@@ -1,0 +1,1599 @@
+{
+  "release": "3.15.0",
+  "release_name": "Decision Event Store & Immutable Audit Ledger",
+  "route_count": 308,
+  "routers": {
+    "energy_runtime": [
+      {
+        "method": "GET",
+        "path": "/v1/energy-runtime/consumer",
+        "endpoint": "energy_runtime_consumer_framework"
+      },
+      {
+        "method": "POST",
+        "path": "/v1/energy-runtime/consume",
+        "endpoint": "energy_runtime_consume"
+      }
+    ],
+    "system": [
+      {
+        "method": "GET",
+        "path": "/health",
+        "endpoint": "health"
+      },
+      {
+        "method": "GET",
+        "path": "/release",
+        "endpoint": "release_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/ai/status",
+        "endpoint": "ai_status"
+      },
+      {
+        "method": "POST",
+        "path": "/analyze",
+        "endpoint": "analyze_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/brief",
+        "endpoint": "brief_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/report",
+        "endpoint": "report_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/integrated-brief",
+        "endpoint": "integrated_brief_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/brief",
+        "endpoint": "decision_packet_brief_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/public/landing-template",
+        "endpoint": "public_landing_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/public/demo-template",
+        "endpoint": "public_demo_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/templates",
+        "endpoint": "templates"
+      }
+    ],
+    "integrations": [
+      {
+        "method": "GET",
+        "path": "/integrations/modules",
+        "endpoint": "integrations_modules_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/integrations/module-navigation",
+        "endpoint": "integrations_module_navigation_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/integrations/adapters",
+        "endpoint": "integrations_adapters_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/integrations/platform",
+        "endpoint": "integrations_platform_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/integrations/contracts",
+        "endpoint": "integrations_contracts_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/integrations/contracts/{product_id}",
+        "endpoint": "integrations_contract_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/integrations/validate",
+        "endpoint": "integrations_validate_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/integrations/import-batch",
+        "endpoint": "integrations_import_batch_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-packet/platform-handoffs",
+        "endpoint": "decision_packet_platform_handoffs_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/integrations/import",
+        "endpoint": "integrations_import_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/import",
+        "endpoint": "decision_packet_import_endpoint"
+      }
+    ],
+    "decision_lifecycle": [
+      {
+        "method": "GET",
+        "path": "/decision-packet/template",
+        "endpoint": "decision_packet_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/analyze",
+        "endpoint": "decision_packet_analyze_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/review/status-template",
+        "endpoint": "review_status_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/brief-readiness",
+        "endpoint": "brief_readiness_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/readiness",
+        "endpoint": "decision_packet_readiness_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/review/status",
+        "endpoint": "review_status_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/governance/states",
+        "endpoint": "governance_states_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/governance/template",
+        "endpoint": "governance_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/governance/evaluate",
+        "endpoint": "governance_evaluate_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/governance/transition",
+        "endpoint": "governance_transition_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/governance",
+        "endpoint": "decision_packet_governance_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/governance/history/verify",
+        "endpoint": "governance_history_verify_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-packs/catalog",
+        "endpoint": "decision_packs_catalog_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-packs/{pack_id}",
+        "endpoint": "decision_pack_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packs/validate",
+        "endpoint": "decision_pack_validate_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packs/apply",
+        "endpoint": "decision_pack_apply_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/domain-pack",
+        "endpoint": "decision_packet_domain_pack_endpoint"
+      }
+    ],
+    "collaboration": [
+      {
+        "method": "GET",
+        "path": "/collaboration/roles",
+        "endpoint": "collaboration_roles_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/collaboration/template",
+        "endpoint": "collaboration_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/collaboration/room",
+        "endpoint": "collaboration_room_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/collaboration/action",
+        "endpoint": "collaboration_action_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/collaboration/comment",
+        "endpoint": "collaboration_comment_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/collaboration/change-request",
+        "endpoint": "collaboration_change_request_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/collaboration/snapshot",
+        "endpoint": "collaboration_snapshot_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/collaboration/share",
+        "endpoint": "collaboration_share_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/collaboration/contact-handoff",
+        "endpoint": "collaboration_contact_handoff_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/collaboration",
+        "endpoint": "decision_packet_collaboration_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/publication-studio/template",
+        "endpoint": "publication_studio_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/publication-studio/generate",
+        "endpoint": "publication_studio_generate_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/publication-studio/redact",
+        "endpoint": "publication_studio_redact_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/publication-studio/handoff",
+        "endpoint": "publication_studio_handoff_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/publication",
+        "endpoint": "decision_packet_publication_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/outcomes/template",
+        "endpoint": "outcomes_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/outcomes/evaluate",
+        "endpoint": "outcomes_evaluate_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/outcomes/record-observation",
+        "endpoint": "outcomes_record_observation_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/outcomes/reassess",
+        "endpoint": "outcomes_reassess_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/outcomes/amend",
+        "endpoint": "outcomes_amend_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/outcomes/retire",
+        "endpoint": "outcomes_retire_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/outcomes",
+        "endpoint": "decision_packet_outcomes_endpoint"
+      }
+    ],
+    "institutional": [
+      {
+        "method": "GET",
+        "path": "/api/v1/capabilities",
+        "endpoint": "public_api_capabilities_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/sdk/contracts",
+        "endpoint": "public_api_sdk_contracts_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/public-dossier",
+        "endpoint": "public_api_dossier_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/embeds/readiness",
+        "endpoint": "public_api_readiness_embed_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/embeds/scenario",
+        "endpoint": "public_api_scenario_embed_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/packets/export",
+        "endpoint": "institutional_bulk_export_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/packets/import",
+        "endpoint": "institutional_bulk_import_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/archive",
+        "endpoint": "institutional_archive_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/platform-core/gateway",
+        "endpoint": "platform_core_gateway_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/events",
+        "endpoint": "institutional_event_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/institutional-integration",
+        "endpoint": "decision_packet_institutional_integration_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/release-hardening/template",
+        "endpoint": "release_hardening_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/release-hardening/accessibility-audit",
+        "endpoint": "release_hardening_accessibility_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/release-hardening/offline-manifest",
+        "endpoint": "release_hardening_offline_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/release-hardening/recovery-snapshot",
+        "endpoint": "release_hardening_snapshot_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/release-hardening/migration-assessment",
+        "endpoint": "release_hardening_migration_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/release-hardening/readiness",
+        "endpoint": "release_hardening_readiness_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/release-hardening",
+        "endpoint": "decision_packet_release_hardening_endpoint"
+      }
+    ],
+    "platform": [
+      {
+        "method": "GET",
+        "path": "/connected-platform/template",
+        "endpoint": "connected_platform_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/connected-platform/assess",
+        "endpoint": "connected_platform_assess_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/connected-platform/transition",
+        "endpoint": "connected_platform_transition_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/connected-platform/portfolio",
+        "endpoint": "connected_platform_portfolio_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/connected-platform/graph",
+        "endpoint": "connected_platform_graph_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/connected-platform/exchange",
+        "endpoint": "connected_platform_exchange_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/connected-platform",
+        "endpoint": "decision_packet_connected_platform_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/connected-platform/history/verify",
+        "endpoint": "connected_platform_history_verify_endpoint"
+      }
+    ],
+    "analysis": [
+      {
+        "method": "GET",
+        "path": "/audit/template",
+        "endpoint": "audit_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/audit/generate",
+        "endpoint": "audit_generate_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/scenario-comparison/template",
+        "endpoint": "scenario_comparison_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/scenario-comparison",
+        "endpoint": "scenario_comparison_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/scenario-comparison",
+        "endpoint": "decision_packet_scenario_comparison_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/scenario-studio/template",
+        "endpoint": "scenario_studio_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/scenario-studio/analyze",
+        "endpoint": "scenario_studio_analyze_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/scenario-studio/sensitivity",
+        "endpoint": "scenario_studio_sensitivity_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/scenario-studio/threshold",
+        "endpoint": "scenario_studio_threshold_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/scenario-studio",
+        "endpoint": "decision_packet_scenario_studio_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/workbench/handoffs",
+        "endpoint": "workbench_handoffs_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/workbench/handoff",
+        "endpoint": "workbench_handoff_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/workbench-handoff",
+        "endpoint": "decision_packet_workbench_handoff_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-packet/storage-template",
+        "endpoint": "decision_packet_storage_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/save-template",
+        "endpoint": "decision_packet_save_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/export-center/template",
+        "endpoint": "export_center_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/export-center/bundle",
+        "endpoint": "export_center_bundle_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/export-bundle",
+        "endpoint": "decision_packet_export_bundle_endpoint"
+      }
+    ],
+    "objects": [
+      {
+        "method": "GET",
+        "path": "/decision-object/template",
+        "endpoint": "decision_object_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/platform-context/template",
+        "endpoint": "platform_context_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/from-packet",
+        "endpoint": "decision_object_from_packet_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/normalize",
+        "endpoint": "decision_object_normalize_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/context",
+        "endpoint": "decision_object_context_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/to-packet",
+        "endpoint": "decision_object_to_packet_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/decision-object",
+        "endpoint": "decision_packet_decision_object_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/evidence",
+        "endpoint": "decision_object_evidence_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/tradeoffs",
+        "endpoint": "decision_object_tradeoffs_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/uncertainty-confidence",
+        "endpoint": "decision_object_uncertainty_confidence_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/scenario-stress",
+        "endpoint": "decision_object_scenario_stress_v250_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/native-handoff",
+        "endpoint": "decision_object_native_handoff_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/site-intelligence-context",
+        "endpoint": "decision_object_site_intelligence_context_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/dependency-graph",
+        "endpoint": "decision_object_dependency_graph_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/recommendation-review",
+        "endpoint": "decision_object_recommendation_review_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-object/connected-intelligence",
+        "endpoint": "decision_object_connected_intelligence_v300_endpoint"
+      }
+    ],
+    "evidence_analysis": [
+      {
+        "method": "GET",
+        "path": "/source-bundle/template",
+        "endpoint": "source_bundle_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/evidence-bundle/template",
+        "endpoint": "evidence_bundle_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/source-bundle/build",
+        "endpoint": "source_bundle_build_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/evidence-bundle/build",
+        "endpoint": "evidence_bundle_build_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/evidence-bundle/merge",
+        "endpoint": "evidence_bundle_merge_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/evidence-bundle",
+        "endpoint": "decision_packet_evidence_bundle_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/criteria/template",
+        "endpoint": "criteria_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/alternatives/template",
+        "endpoint": "alternatives_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/tradeoff-matrix/template",
+        "endpoint": "tradeoff_matrix_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/criteria/build",
+        "endpoint": "criteria_build_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/alternatives/build",
+        "endpoint": "alternatives_build_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/tradeoff-matrix/build",
+        "endpoint": "tradeoff_matrix_build_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/tradeoff-matrix",
+        "endpoint": "decision_packet_tradeoff_matrix_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/uncertainty-register/template",
+        "endpoint": "uncertainty_register_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/sensitivity-analysis/template",
+        "endpoint": "sensitivity_analysis_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/confidence-assessment/template",
+        "endpoint": "confidence_assessment_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/uncertainty-register/build",
+        "endpoint": "uncertainty_register_build_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/sensitivity-analysis/run",
+        "endpoint": "sensitivity_analysis_run_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/confidence-assessment/build",
+        "endpoint": "confidence_assessment_build_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/uncertainty-confidence",
+        "endpoint": "decision_packet_uncertainty_confidence_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/scenario-set/template",
+        "endpoint": "scenario_set_template_v250_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/scenario-analysis/template",
+        "endpoint": "scenario_comparison_template_v250_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/stress-test-suite/template",
+        "endpoint": "stress_test_suite_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/scenario-set/build",
+        "endpoint": "scenario_set_build_v250_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/scenario-analysis/compare",
+        "endpoint": "scenario_compare_v250_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/stress-test-suite/run",
+        "endpoint": "stress_test_suite_run_v250_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/scenario-stress",
+        "endpoint": "decision_packet_scenario_stress_v250_endpoint"
+      }
+    ],
+    "context_handoffs": [
+      {
+        "method": "GET",
+        "path": "/native-handoffs/contracts",
+        "endpoint": "native_handoff_contracts_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/native-handoffs/template",
+        "endpoint": "native_handoff_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/native-handoffs/receive",
+        "endpoint": "native_handoff_receive_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/native-handoffs/request",
+        "endpoint": "native_handoff_request_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/native-handoffs/return",
+        "endpoint": "native_handoff_return_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/native-handoff",
+        "endpoint": "decision_packet_native_handoff_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/site-intelligence-context/contracts",
+        "endpoint": "site_intelligence_context_contracts_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/site-intelligence-context/template",
+        "endpoint": "site_intelligence_context_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/site-intelligence-context/build",
+        "endpoint": "site_intelligence_context_build_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/site-intelligence-context/validate",
+        "endpoint": "site_intelligence_context_validate_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/site-intelligence-context",
+        "endpoint": "decision_packet_site_intelligence_context_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-dependency-graph/template",
+        "endpoint": "decision_dependency_graph_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-dependency-graph/build",
+        "endpoint": "decision_dependency_graph_build_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-dependency-graph/validate",
+        "endpoint": "decision_dependency_graph_validate_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-dependency-graph/impact",
+        "endpoint": "decision_dependency_graph_impact_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/dependency-graph",
+        "endpoint": "decision_packet_dependency_graph_endpoint"
+      }
+    ],
+    "recommendations": [
+      {
+        "method": "GET",
+        "path": "/recommendation-review/template",
+        "endpoint": "recommendation_review_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/recommendation-review/candidate",
+        "endpoint": "recommendation_review_candidate_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/recommendation-review/challenge",
+        "endpoint": "recommendation_review_challenge_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/recommendation-review/evaluate",
+        "endpoint": "recommendation_review_evaluate_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/recommendation-review/disposition",
+        "endpoint": "recommendation_review_disposition_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/recommendation-review",
+        "endpoint": "decision_packet_recommendation_review_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/connected-intelligence/template",
+        "endpoint": "connected_intelligence_template_v300_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/connected-intelligence/build",
+        "endpoint": "connected_intelligence_build_v300_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/connected-intelligence/validate",
+        "endpoint": "connected_intelligence_validate_v300_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-packet/connected-intelligence",
+        "endpoint": "decision_packet_connected_intelligence_v300_endpoint"
+      }
+    ],
+    "decision_kernel": [
+      {
+        "method": "GET",
+        "path": "/decision-kernel/contracts",
+        "endpoint": "decision_kernel_contracts_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-kernel/template",
+        "endpoint": "decision_kernel_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-kernel/validate",
+        "endpoint": "decision_kernel_validate_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-modules",
+        "endpoint": "decision_modules_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-modules/{module_id}",
+        "endpoint": "decision_module_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-modules/{module_id}/validate",
+        "endpoint": "decision_module_validate_endpoint"
+      }
+    ],
+    "persistence": [
+      {
+        "method": "GET",
+        "path": "/persistence/status",
+        "endpoint": "persistence_status_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/persistence/schema",
+        "endpoint": "persistence_schema_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/persistence/contract",
+        "endpoint": "persistence_contract_endpoint"
+      }
+    ],
+    "repository": [
+      {
+        "method": "GET",
+        "path": "/repository/authority",
+        "endpoint": "repository_authority_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/repository/projects",
+        "endpoint": "repository_create_project_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/repository/projects/{project_id}",
+        "endpoint": "repository_get_project_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/repository/decisions",
+        "endpoint": "repository_create_decision_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/repository/decisions",
+        "endpoint": "repository_list_decisions_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/repository/decisions/{decision_id}",
+        "endpoint": "repository_get_decision_endpoint"
+      },
+      {
+        "method": "PATCH",
+        "path": "/repository/decisions/{decision_id}",
+        "endpoint": "repository_patch_decision_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/repository/decisions/{decision_id}/object",
+        "endpoint": "repository_put_object_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/repository/decisions/{decision_id}/object",
+        "endpoint": "repository_get_object_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/repository/decisions/{decision_id}/modules/{module_id}",
+        "endpoint": "repository_bind_module_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/repository/decisions/{decision_id}/snapshots",
+        "endpoint": "repository_create_snapshot_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/repository/decisions/{decision_id}/snapshot",
+        "endpoint": "repository_get_snapshot_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/repository/import/decision-object",
+        "endpoint": "repository_import_decision_object_endpoint"
+      }
+    ],
+    "canvas": [
+      {
+        "method": "GET",
+        "path": "/canvas/contract",
+        "endpoint": "canvas_contract_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/canvas/template",
+        "endpoint": "canvas_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/canvas/decisions/{decision_id}",
+        "endpoint": "canvas_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/canvas/decisions/{decision_id}",
+        "endpoint": "canvas_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/canvas/decisions/{decision_id}/alternatives",
+        "endpoint": "canvas_alternatives_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/canvas/decisions/{decision_id}/alternatives",
+        "endpoint": "canvas_alternatives_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/canvas/decisions/{decision_id}/criteria",
+        "endpoint": "canvas_criteria_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/canvas/decisions/{decision_id}/criteria",
+        "endpoint": "canvas_criteria_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/canvas/decisions/{decision_id}/assumptions",
+        "endpoint": "canvas_assumptions_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/canvas/decisions/{decision_id}/assumptions",
+        "endpoint": "canvas_assumptions_put_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/canvas/import/legacy",
+        "endpoint": "canvas_legacy_import_endpoint"
+      }
+    ],
+    "finance": [
+      {
+        "method": "GET",
+        "path": "/finance/contract",
+        "endpoint": "finance_contract_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/finance/template",
+        "endpoint": "finance_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/finance/decisions/{decision_id}",
+        "endpoint": "finance_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/finance/decisions/{decision_id}",
+        "endpoint": "finance_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/finance/decisions/{decision_id}/assumptions",
+        "endpoint": "finance_assumptions_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/finance/decisions/{decision_id}/assumptions",
+        "endpoint": "finance_assumptions_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/finance/decisions/{decision_id}/scenarios",
+        "endpoint": "finance_scenarios_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/finance/decisions/{decision_id}/scenarios",
+        "endpoint": "finance_scenarios_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/finance/decisions/{decision_id}/workbench-receipts",
+        "endpoint": "finance_workbench_receipts_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/finance/decisions/{decision_id}/workbench-receipts",
+        "endpoint": "finance_workbench_receipts_put_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/finance/import/legacy",
+        "endpoint": "finance_legacy_import_endpoint"
+      }
+    ],
+    "narrative_risk": [
+      {
+        "method": "GET",
+        "path": "/narrative-risk/contract",
+        "endpoint": "narrative_risk_contract_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/narrative-risk/template",
+        "endpoint": "narrative_risk_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/narrative-risk/decisions/{decision_id}",
+        "endpoint": "narrative_risk_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/narrative-risk/decisions/{decision_id}",
+        "endpoint": "narrative_risk_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/narrative-risk/decisions/{decision_id}/claims",
+        "endpoint": "narrative_risk_claims_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/narrative-risk/decisions/{decision_id}/claims",
+        "endpoint": "narrative_risk_claims_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/narrative-risk/decisions/{decision_id}/signals",
+        "endpoint": "narrative_risk_signals_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/narrative-risk/decisions/{decision_id}/signals",
+        "endpoint": "narrative_risk_signals_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/narrative-risk/decisions/{decision_id}/evidence-links",
+        "endpoint": "narrative_risk_evidence_links_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/narrative-risk/decisions/{decision_id}/evidence-links",
+        "endpoint": "narrative_risk_evidence_links_put_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/narrative-risk/import/legacy",
+        "endpoint": "narrative_risk_legacy_import_endpoint"
+      }
+    ],
+    "global_impact": [
+      {
+        "method": "GET",
+        "path": "/global-impact/contract",
+        "endpoint": "global_impact_contract_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/global-impact/template",
+        "endpoint": "global_impact_template_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/global-impact/decisions/{decision_id}",
+        "endpoint": "global_impact_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/global-impact/decisions/{decision_id}",
+        "endpoint": "global_impact_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/global-impact/decisions/{decision_id}/impact-claims",
+        "endpoint": "global_impact_claims_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/global-impact/decisions/{decision_id}/impact-claims",
+        "endpoint": "global_impact_claims_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/global-impact/decisions/{decision_id}/indicators",
+        "endpoint": "global_impact_indicators_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/global-impact/decisions/{decision_id}/indicators",
+        "endpoint": "global_impact_indicators_put_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/global-impact/decisions/{decision_id}/evidence-links",
+        "endpoint": "global_impact_evidence_links_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/global-impact/decisions/{decision_id}/evidence-links",
+        "endpoint": "global_impact_evidence_links_put_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/global-impact/import/legacy",
+        "endpoint": "global_impact_legacy_import_endpoint"
+      }
+    ],
+    "module_registry": [
+      {
+        "method": "GET",
+        "path": "/decision-module-registry",
+        "endpoint": "unified_module_registry_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-module-registry/modules",
+        "endpoint": "unified_module_registry_modules_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-module-registry/modules/{module_id}",
+        "endpoint": "unified_module_registry_module_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-module-registry/capabilities",
+        "endpoint": "unified_module_registry_capabilities_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-module-registry/providers",
+        "endpoint": "unified_module_registry_providers_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-module-registry/readiness",
+        "endpoint": "unified_module_registry_readiness_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-module-registry/validate",
+        "endpoint": "unified_module_registry_validate_endpoint"
+      }
+    ],
+    "composition": [
+      {
+        "method": "GET",
+        "path": "/decision-composition/contract",
+        "endpoint": "composition_contract_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-composition/template",
+        "endpoint": "composition_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-composition/validate",
+        "endpoint": "composition_validate_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-composition/decisions/{decision_id}",
+        "endpoint": "composition_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/decision-composition/decisions/{decision_id}",
+        "endpoint": "composition_put_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-composition/decisions/{decision_id}/refresh",
+        "endpoint": "composition_refresh_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-composition/decisions/{decision_id}/diagnostics",
+        "endpoint": "composition_diagnostics_endpoint"
+      }
+    ],
+    "module_artifacts": [
+      {
+        "method": "GET",
+        "path": "/module-artifacts/contract",
+        "endpoint": "module_artifact_contract_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/module-artifacts/template",
+        "endpoint": "module_artifact_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/module-artifacts/validate",
+        "endpoint": "module_artifact_validate_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/module-artifacts/decisions/{decision_id}",
+        "endpoint": "module_artifact_list_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/module-artifacts/decisions/{decision_id}",
+        "endpoint": "module_artifact_create_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/module-artifacts/decisions/{decision_id}/{artifact_id}",
+        "endpoint": "module_artifact_get_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/module-artifacts/decisions/{decision_id}/{artifact_id}/revisions",
+        "endpoint": "module_artifact_revise_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/module-artifacts/decisions/{decision_id}/{artifact_id}/lineage",
+        "endpoint": "module_artifact_lineage_endpoint"
+      }
+    ],
+    "module_interoperability": [
+      {
+        "method": "GET",
+        "path": "/module-interoperability/contract",
+        "endpoint": "module_interoperability_contract_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/module-interoperability/template",
+        "endpoint": "module_interoperability_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/module-interoperability/validate",
+        "endpoint": "module_interoperability_validate_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/module-interoperability/decisions/{decision_id}",
+        "endpoint": "module_interoperability_get_endpoint"
+      },
+      {
+        "method": "PUT",
+        "path": "/module-interoperability/decisions/{decision_id}",
+        "endpoint": "module_interoperability_upsert_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/module-interoperability/decisions/{decision_id}/share",
+        "endpoint": "module_interoperability_share_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/module-interoperability/decisions/{decision_id}/evidence/{evidence_ref:path}",
+        "endpoint": "module_interoperability_evidence_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/module-interoperability/decisions/{decision_id}/diagnostics",
+        "endpoint": "module_interoperability_diagnostics_endpoint"
+      }
+    ],
+    "decision_rooms": [
+      {
+        "method": "GET",
+        "path": "/decision-rooms/contract",
+        "endpoint": "decision_rooms_contract_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-rooms/template",
+        "endpoint": "decision_rooms_template_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-rooms/validate",
+        "endpoint": "decision_rooms_validate_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-rooms/decisions/{decision_id}",
+        "endpoint": "decision_rooms_create_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-rooms/decisions/{decision_id}",
+        "endpoint": "decision_rooms_get_by_decision_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-rooms/{room_id}",
+        "endpoint": "decision_rooms_get_endpoint"
+      },
+      {
+        "method": "PATCH",
+        "path": "/decision-rooms/{room_id}",
+        "endpoint": "decision_rooms_patch_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-rooms/{room_id}/members",
+        "endpoint": "decision_rooms_members_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-rooms/{room_id}/members",
+        "endpoint": "decision_rooms_add_member_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-rooms/{room_id}/comments",
+        "endpoint": "decision_rooms_comments_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-rooms/{room_id}/comments",
+        "endpoint": "decision_rooms_add_comment_endpoint"
+      },
+      {
+        "method": "PATCH",
+        "path": "/decision-rooms/{room_id}/comments/{comment_id}",
+        "endpoint": "decision_rooms_patch_comment_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-rooms/{room_id}/change-requests",
+        "endpoint": "decision_rooms_change_requests_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-rooms/{room_id}/change-requests",
+        "endpoint": "decision_rooms_add_change_request_endpoint"
+      },
+      {
+        "method": "PATCH",
+        "path": "/decision-rooms/{room_id}/change-requests/{change_request_id}",
+        "endpoint": "decision_rooms_patch_change_request_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-rooms/{room_id}/snapshots",
+        "endpoint": "decision_rooms_snapshots_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-rooms/{room_id}/snapshots",
+        "endpoint": "decision_rooms_create_snapshot_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-rooms/{room_id}/share-grants",
+        "endpoint": "decision_rooms_share_grants_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-rooms/{room_id}/share-grants",
+        "endpoint": "decision_rooms_create_share_grant_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/decision-rooms/{room_id}/events",
+        "endpoint": "decision_rooms_events_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/decision-rooms/import",
+        "endpoint": "decision_rooms_import_endpoint"
+      }
+    ],
+    "global_auth": [
+      {
+        "method": "GET",
+        "path": "/auth/contract",
+        "endpoint": "global_auth_contract_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/auth/configuration",
+        "endpoint": "global_auth_configuration_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/auth/whoami",
+        "endpoint": "global_auth_whoami_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/authorize",
+        "endpoint": "global_auth_authorize_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/auth/scopes",
+        "endpoint": "global_auth_scopes_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/auth/decision-rooms/{room_id}/access",
+        "endpoint": "global_auth_room_access_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/auth/readiness",
+        "endpoint": "global_auth_readiness_endpoint"
+      }
+    ],
+    "audit_ledger": [
+      {
+        "method": "GET",
+        "path": "/audit-ledger/contract",
+        "endpoint": "audit_ledger_contract_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/audit-ledger/readiness",
+        "endpoint": "audit_ledger_readiness_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/audit-ledger/validate",
+        "endpoint": "audit_ledger_validate_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/audit-ledger/decisions/{decision_id}",
+        "endpoint": "audit_ledger_list_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/audit-ledger/decisions/{decision_id}/events/{event_id}",
+        "endpoint": "audit_ledger_event_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/audit-ledger/decisions/{decision_id}/verify",
+        "endpoint": "audit_ledger_verify_endpoint"
+      },
+      {
+        "method": "GET",
+        "path": "/audit-ledger/decisions/{decision_id}/replay",
+        "endpoint": "audit_ledger_replay_endpoint"
+      },
+      {
+        "method": "POST",
+        "path": "/audit-ledger/decisions/{decision_id}/events",
+        "endpoint": "audit_ledger_append_endpoint"
+      }
+    ]
+  }
+}

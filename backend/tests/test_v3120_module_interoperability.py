@@ -154,7 +154,7 @@ def test_api_contract_and_auth():
     client = TestClient(app)
     c = client.get('/module-interoperability/contract')
     assert c.status_code == 200
-    assert c.json()['version'] == '3.14.0'
+    assert c.json()['version'] == '3.15.0'
     assert c.json()['module_interoperability_contract']['schema'] == MODULE_INTEROPERABILITY_SCHEMA
     denied = client.get('/module-interoperability/decisions/does-not-exist')
     assert denied.status_code == 403

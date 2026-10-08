@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from contextvars import ContextVar
 import base64
 import hashlib
 import hmac
@@ -18,6 +19,7 @@ AUTHORIZATION_DECISION_SCHEMA = "scds-authorization-decision/1.0"
 GLOBAL_AUTH_VERSION = "1.0"
 DEFAULT_ISSUER = "sustainable-catalyst-auth"
 DEFAULT_AUDIENCE = "decision-studio"
+CURRENT_AUTH_PRINCIPAL: ContextVar[Any] = ContextVar("scds_current_auth_principal", default=None)
 
 # These are Decision Studio resource scopes. Global tokens may carry any subset.
 CANONICAL_SCOPES = [
@@ -31,6 +33,7 @@ CANONICAL_SCOPES = [
     "interoperability:read", "interoperability:write",
     "rooms:read", "rooms:write", "rooms:import",
     "auth:inspect",
+    "audit:read", "audit:write",
 ]
 
 
@@ -245,31 +248,45 @@ def authenticate_request(request: Request, *, allow_legacy: bool = True) -> Auth
     authorization = request.headers.get("authorization", "").strip()
     if authorization:
         if not authorization.lower().startswith("bearer "):
+            CURRENT_AUTH_PRINCIPAL.set(None)
             return AuthDecision(False, None, status_code=401, error="unsupported_authorization_scheme")
         token = authorization.split(" ", 1)[1].strip()
         principal, error = _bearer_principal(token)
         if error:
+            CURRENT_AUTH_PRINCIPAL.set(None)
             return AuthDecision(False, None, status_code=401, error=error)
+        CURRENT_AUTH_PRINCIPAL.set(principal)
         return AuthDecision(True, principal)
 
     service_key = request.headers.get("x-scds-service-key", "").strip()
     if service_key:
         principal, error = _service_principal(service_key)
         if error:
+            CURRENT_AUTH_PRINCIPAL.set(None)
             return AuthDecision(False, None, status_code=401, error=error)
+        CURRENT_AUTH_PRINCIPAL.set(principal)
         return AuthDecision(True, principal)
 
     legacy_key = request.headers.get("x-scds-api-key", "").strip()
     if legacy_key:
         if not allow_legacy:
+            CURRENT_AUTH_PRINCIPAL.set(None)
             return AuthDecision(False, None, status_code=401, error="legacy_api_key_not_allowed")
         principal, error = _legacy_principal(legacy_key)
         if error:
+            CURRENT_AUTH_PRINCIPAL.set(None)
             return AuthDecision(False, None, status_code=401, error=error)
+        CURRENT_AUTH_PRINCIPAL.set(principal)
         return AuthDecision(True, principal)
 
+    CURRENT_AUTH_PRINCIPAL.set(None)
     return AuthDecision(False, None, status_code=401, error="authentication_required")
 
+
+
+def current_auth_principal() -> AuthPrincipal | None:
+    value = CURRENT_AUTH_PRINCIPAL.get()
+    return value if isinstance(value, AuthPrincipal) else None
 
 def scope_granted(principal: AuthPrincipal, required_scope: str) -> bool:
     scopes = set(principal.scopes)

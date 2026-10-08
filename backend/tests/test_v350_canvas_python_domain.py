@@ -55,12 +55,12 @@ def _decision(monkeypatch, tmp_path, decision_id='dec-v350'):
 
 def test_v350_canvas_contract_and_release_boundary():
     health = client.get('/health').json()
-    assert health['version'] == '3.14.0'
+    assert health['version'] == '3.15.0'
     assert health['canvas_domain_schema'] == CANVAS_DOMAIN_SCHEMA
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Global Authentication & Authorization Integration'
-    assert release['build_fingerprint'] == 'scds-v3.14.0-global-authentication-authorization-integration'
-    assert release['backend_architecture']['database_migration'] is False
+    assert release['release_name'] == 'Decision Event Store & Immutable Audit Ledger'
+    assert release['build_fingerprint'] == 'scds-v3.15.0-decision-event-store-immutable-audit-ledger'
+    assert release['backend_architecture']['database_migration'] is True
     assert release['backend_architecture']['finance_python_domain_migration'] is False
     assert release['backend_architecture']['narrative_risk_python_domain_migration'] is False
     assert release['backend_architecture']['global_impact_python_domain_migration'] is False
@@ -201,4 +201,4 @@ def test_v350_route_inventory_preserves_v340_and_adds_canvas_routes():
 
 
 def test_v350_schema_revision_is_unchanged():
-    assert EXPECTED_SCHEMA_REVISION == '0002_v3130_collaboration'
+    assert EXPECTED_SCHEMA_REVISION == '0003_v3150_event_ledger'

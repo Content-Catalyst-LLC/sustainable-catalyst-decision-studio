@@ -16,12 +16,12 @@ client = TestClient(app)
 
 def test_v320_release_identity_and_migration_boundary():
     health = client.get('/health').json()
-    assert health['version'] == '3.14.0'
+    assert health['version'] == '3.15.0'
     assert health['decision_kernel_schema'] == DECISION_KERNEL_SCHEMA
     assert health['registered_decision_modules'] == 4
     release = client.get('/release').json()['release']
-    assert release['release_name'] == 'Global Authentication & Authorization Integration'
-    assert release['build_fingerprint'] == 'scds-v3.14.0-global-authentication-authorization-integration'
+    assert release['release_name'] == 'Decision Event Store & Immutable Audit Ledger'
+    assert release['build_fingerprint'] == 'scds-v3.15.0-decision-event-store-immutable-audit-ledger'
     assert release['decision_kernel']['module_count'] == 4
     assert release['decision_kernel']['database_migration'] is False
     assert release['decision_kernel']['wordpress_decision_object_authority_change'] is True

@@ -1,0 +1,45 @@
+DECISION STUDIO v3.15.0 — DECISION EVENT STORE & IMMUTABLE AUDIT LEDGER
+
+LOCAL APPLY
+===========
+cd ~/Downloads
+rm -rf scds-v3.15.0-event-ledger
+unzip -q \
+  sustainable-catalyst-decision-studio-v3.15.0-repository.zip \
+  -d scds-v3.15.0-event-ledger
+cd scds-v3.15.0-event-ledger/sustainable-catalyst-decision-studio
+chmod +x APPLY_AND_PUSH_DECISION_STUDIO_V3150.sh
+./APPLY_AND_PUSH_DECISION_STUDIO_V3150.sh \
+  "$HOME/Downloads/sustainable-catalyst-decision-studio"
+
+VERIFY GIT
+==========
+cd ~/Downloads/sustainable-catalyst-decision-studio
+git status --short
+git log -1 --oneline
+git tag --points-at HEAD
+
+DEPLOY BACKEND
+==============
+cd ~/Downloads
+chmod +x \
+  deploy_decision_studio_v3_15_0_from_macos.sh \
+  upgrade_decision_studio_backend_v3_15_0_contabo.sh
+./deploy_decision_studio_v3_15_0_from_macos.sh
+
+PUBLIC VERIFY
+=============
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/health | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/audit-ledger/contract | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/audit-ledger/readiness | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/auth/readiness | python3 -m json.tool
+curl -fsS https://decision-studio-api.sustainablecatalyst.com/decision-module-registry/readiness | python3 -m json.tool
+
+TARGET
+======
+version = 3.15.0
+schema_revision = 0003_v3150_event_ledger
+table_count = 27
+decision_event_store_schema = scds-decision-event-store/1.0
+immutable_audit_ledger_schema = scds-immutable-audit-ledger/1.0
+audit_event_schema = scds-decision-audit-event/1.0

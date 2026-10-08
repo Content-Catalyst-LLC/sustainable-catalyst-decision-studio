@@ -1,8 +1,11 @@
+### v3.15.0 — Decision Event Store & Immutable Audit Ledger — BUILT
+Canonical append-only cross-module audit ledger with authenticated actor identity, SHA-256 hash chaining, verification, and read-only replay.
+
 
 ### v3.14.0 — Global Authentication & Authorization Integration — BUILT
 Global bearer identity, institutional identity propagation, scoped resource authorization, service credentials, Decision Room membership enforcement, and legacy API-key compatibility. No database migration; v3.13 schema remains authoritative.
 
-**Next:** v3.15.0 — Decision Event Store & Immutable Audit Ledger.
+**Next:** v3.16.0 — Artifact Store & Snapshot Architecture.
 
 ## v3.12.0 — Module Interoperability & Shared Evidence
 - Canonical `scds-module-interoperability/1.0` contract.

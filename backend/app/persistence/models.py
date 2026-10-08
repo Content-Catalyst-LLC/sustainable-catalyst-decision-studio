@@ -200,6 +200,35 @@ class DecisionEvent(Base):
     __table_args__ = (Index("ix_decision_events_decision_sequence", "decision_id", "sequence_no"),)
 
 
+class DecisionAuditEvent(Base):
+    __tablename__ = "decision_audit_events"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    stream_id: Mapped[str] = mapped_column(String(96), nullable=False, index=True)
+    decision_id: Mapped[str | None] = mapped_column(ForeignKey("decisions.id", ondelete="CASCADE"), index=True)
+    sequence_no: Mapped[int] = mapped_column(Integer, nullable=False)
+    event_type: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    actor_subject: Mapped[str | None] = mapped_column(String(255), index=True)
+    actor_type: Mapped[str | None] = mapped_column(String(64))
+    institution_id: Mapped[str | None] = mapped_column(String(255), index=True)
+    authentication_method: Mapped[str | None] = mapped_column(String(96))
+    module_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    object_type: Mapped[str | None] = mapped_column(String(96), index=True)
+    object_id: Mapped[str | None] = mapped_column(String(255), index=True)
+    correlation_id: Mapped[str | None] = mapped_column(String(128), index=True)
+    causation_id: Mapped[str | None] = mapped_column(String(128), index=True)
+    event_payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    payload_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    provenance_refs: Mapped[list[Any]] = mapped_column(JSON, nullable=False, default=list)
+    previous_event_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    event_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, nullable=False, index=True)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    __table_args__ = (
+        UniqueConstraint("stream_id", "sequence_no", name="uq_decision_audit_event_stream_sequence"),
+        Index("ix_decision_audit_events_decision_sequence", "decision_id", "sequence_no"),
+    )
+
+
 class Artifact(Base, TimestampMixin):
     __tablename__ = "artifacts"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)

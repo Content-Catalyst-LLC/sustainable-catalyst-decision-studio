@@ -15,7 +15,7 @@ from .contracts import REPOSITORY_SCHEMA
 
 PERSISTENCE_SCHEMA = "scds-postgresql-persistence/1.0"
 PERSISTENCE_CONTRACT_SCHEMA = "scds-persistence-authority-contract/1.0"
-EXPECTED_SCHEMA_REVISION = "0002_v3130_collaboration"
+EXPECTED_SCHEMA_REVISION = "0003_v3150_event_ledger"
 PERSISTENCE_AUTHORITY = "python-postgresql"
 PERSISTENCE_TABLES = tuple(sorted(Base.metadata.tables.keys()))
 
@@ -149,6 +149,9 @@ def database_contract() -> dict[str, Any]:
             "schema_migration_present": True,
             "new_schema_migration_in_v3_4": False,
             "new_schema_migration_in_v3_13": True,
+            "new_schema_migration_in_v3_15": True,
+            "immutable_decision_audit_ledger": True,
+            "decision_audit_events_append_only": True,
             "collaboration_room_python_persistence": True,
             "wordpress_canonical_room_persistence": False,
             "writes_enabled_in_production": True,

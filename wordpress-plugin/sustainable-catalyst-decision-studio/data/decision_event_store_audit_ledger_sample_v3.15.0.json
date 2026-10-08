@@ -1,0 +1,25 @@
+{
+  "schema": "scds-decision-audit-event/1.0",
+  "event_id": "",
+  "stream_id": "decision:decision-example",
+  "decision_id": "decision-example",
+  "sequence_no": 1,
+  "event_type": "decision.updated",
+  "actor": {
+    "subject": null,
+    "type": null,
+    "institution_id": null,
+    "authentication_method": null
+  },
+  "module_id": null,
+  "object_type": null,
+  "object_id": null,
+  "correlation_id": null,
+  "causation_id": null,
+  "payload": {},
+  "payload_hash": "",
+  "provenance_refs": [],
+  "previous_event_hash": "GENESIS",
+  "event_hash": "",
+  "occurred_at": null
+}

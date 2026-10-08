@@ -51,8 +51,8 @@ def test_contract_schema_and_migration_boundary():
     assert c["principles"]["wordpress_is_not_canonical_room_persistence"] is True
     assert c["principles"]["room_events_are_hash_chained"] is True
     assert c["principles"]["ai_cannot_approve_or_sign"] is True
-    assert EXPECTED_SCHEMA_REVISION == "0002_v3130_collaboration"
-    assert len(PERSISTENCE_TABLES) == 26
+    assert EXPECTED_SCHEMA_REVISION == "0003_v3150_event_ledger"
+    assert len(PERSISTENCE_TABLES) == 27
     for t in ["decision_rooms","decision_room_members","decision_room_comments","decision_room_change_requests","decision_room_share_grants","decision_room_events"]:
         assert t in PERSISTENCE_TABLES
     template=decision_room_template("dec-1")
@@ -127,7 +127,7 @@ def test_api_contract_and_auth():
     client=TestClient(app)
     c=client.get('/decision-rooms/contract')
     assert c.status_code == 200
-    assert c.json()['version'] == '3.14.0'
+    assert c.json()['version'] == '3.15.0'
     assert c.json()['decision_room_contract']['schema'] == DECISION_ROOM_SCHEMA
     denied=client.get('/decision-rooms/does-not-exist')
     assert denied.status_code == 403

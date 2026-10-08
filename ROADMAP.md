@@ -1,9 +1,12 @@
+### v3.15.0 — Decision Event Store & Immutable Audit Ledger — BUILT
+Canonical append-only cross-module audit ledger with authenticated actor identity, SHA-256 hash chaining, verification, and read-only replay.
+
 
 ### v3.14.0 — Global Authentication & Authorization Integration — BUILT
 Global bearer identity, institutional identity propagation, scoped resource authorization, service credentials, Decision Room membership enforcement, and legacy API-key compatibility. No database migration; v3.13 schema remains authoritative.
 
-**Next:** v3.15.0 — Decision Event Store & Immutable Audit Ledger.
-# Current release: v3.13.0 — Collaboration & Decision Room Python Persistence
+**Next:** v3.16.0 — Artifact Store & Snapshot Architecture.
+# Current release: v3.15.0 — Decision Event Store & Immutable Audit Ledger
 
 
 ## Decision Studio modernization line (v3.1+)
@@ -21,8 +24,10 @@ Global bearer identity, institutional identity propagation, scoped resource auth
 - **v3.10.0 — Cross-Module Decision Composition** — built.
 - **v3.11.0 — Module Artifact & Provenance Standard** — built.
 - **v3.12.0 — Module Interoperability & Shared Evidence** — built.
-- **v3.13.0 — Collaboration & Decision Room Python Persistence** — current build.
-- **v3.14.0 — Global Authentication & Authorization Integration** — next.
+- **v3.13.0 — Collaboration & Decision Room Python Persistence** — built.
+- **v3.14.0 — Global Authentication & Authorization Integration** — built.
+- **v3.15.0 — Decision Event Store & Immutable Audit Ledger** — current build.
+- **v3.16.0 — Artifact Store & Snapshot Architecture** — next.
 
 ## v2.8.0 — Decision Graph & Dependency Mapping
 
@@ -69,7 +74,7 @@ Status: built. Typed source-owned handoffs, bounded analysis/computation request
 - Existing `artifacts` + `decision_events` persistence; no new schema migration.
 - Platform Core retains evidence identity/source provenance; Workbench retains Finance/Impact computation; final decisions remain human-governed.
 
-Next: **v3.14.0 — Global Authentication & Authorization Integration**.
+Next: **v3.16.0 — Artifact Store & Snapshot Architecture**.
 
 
 ## v3.12.0 — Module Interoperability & Shared Evidence
@@ -85,4 +90,4 @@ Next: **v3.14.0 — Global Authentication & Authorization Integration**.
 - Alembic advances to `0002_v3130_collaboration`; persistence table count becomes 26.
 - Legacy WordPress collaboration remains a compatibility projection; final authority remains human-governed.
 
-Next: **v3.14.0 — Global Authentication & Authorization Integration**.
+Next: **v3.16.0 — Artifact Store & Snapshot Architecture**.

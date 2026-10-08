@@ -1,4 +1,10 @@
-# Decision Studio v3.13.0 — Collaboration & Decision Room Python Persistence
+# Sustainable Catalyst Decision Studio Changelog
+## 3.15.0 — Decision Event Store & Immutable Audit Ledger
+- Adds authoritative `decision_audit_events` append-only ledger storage.
+- Adds Alembic revision `0003_v3150_event_ledger` and raises persistence to 27 tables.
+- Adds deterministic per-stream sequencing, SHA-256 payload fingerprints, event hash chains, actor/institution identity, correlation/causation IDs, verification, read-only replay, and legacy `decision_events` backfill.
+- Preserves v3.14 global authentication, v3.13 Decision Rooms, and all four authoritative decision modules.
+
 
 ## 3.14.0 — Global Authentication & Authorization Integration
 - Adds global bearer identity validation, institutional identity propagation, scoped authorization, and service credentials.

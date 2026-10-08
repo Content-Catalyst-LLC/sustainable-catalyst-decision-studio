@@ -1,0 +1,40 @@
+{
+  "schema": "scds-immutable-audit-ledger/1.0",
+  "event_store_schema": "scds-decision-event-store/1.0",
+  "event_schema": "scds-decision-audit-event/1.0",
+  "version": "1.0",
+  "role": "canonical-append-only-cross-module-decision-audit-history",
+  "storage_authority": "python-postgresql",
+  "identity_authority": "sustainable-catalyst-global-auth",
+  "table": "decision_audit_events",
+  "migration_revision": "0003_v3150_event_ledger",
+  "principles": {
+    "append_only": true,
+    "database_mutation_guard": true,
+    "deterministic_sequence_per_stream": true,
+    "sha256_payload_fingerprint": true,
+    "sha256_hash_chain": true,
+    "authenticated_actor_identity_is_recorded": true,
+    "institution_identity_is_recorded_when_available": true,
+    "correlation_and_causation_are_explicit": true,
+    "historical_decision_events_are_backfillable": true,
+    "replay_is_read_only": true,
+    "replay_does_not_reexecute_domain_mutations": true,
+    "audit_integrity_does_not_imply_truth": true,
+    "audit_integrity_does_not_imply_causality": true,
+    "audit_event_does_not_imply_approval": true
+  },
+  "covered_event_families": [
+    "decision.*",
+    "decision_module.*",
+    "canvas.*",
+    "finance.*",
+    "narrative_risk.*",
+    "global_impact.*",
+    "decision_composition.*",
+    "module_artifact.*",
+    "module_interoperability.*",
+    "decision_room.*"
+  ],
+  "final_decision_authority": "human-governed"
+}

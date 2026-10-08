@@ -81,8 +81,8 @@ def test_global_auth_contract_and_release_boundary():
     assert c["principles"]["decision_room_membership_is_enforced_for_user_principals"] is True
     assert c["principles"]["request_body_cannot_impersonate_authenticated_room_actor"] is True
     assert c["schema_migration_required"] is False
-    assert EXPECTED_SCHEMA_REVISION == "0002_v3130_collaboration"
-    assert len(Base.metadata.tables) == 26
+    assert EXPECTED_SCHEMA_REVISION == "0003_v3150_event_ledger"
+    assert len(Base.metadata.tables) == 27
 
 
 def test_bearer_identity_and_scope_authorization():

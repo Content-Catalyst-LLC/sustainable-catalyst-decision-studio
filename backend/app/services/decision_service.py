@@ -308,6 +308,17 @@ from app.decision_rooms import (
     decision_room_template as persisted_decision_room_template,
     validate_decision_room,
 )
+from app.audit_ledger import (
+    DECISION_EVENT_STORE_SCHEMA,
+    IMMUTABLE_AUDIT_LEDGER_SCHEMA,
+    AUDIT_EVENT_SCHEMA,
+    AuditEventAppendRequest,
+    AuditEventValidateRequest,
+    DecisionAuditLedgerRepository,
+    audit_ledger_contract,
+    audit_event_template,
+    validate_audit_event,
+)
 from app.global_auth import (
     GLOBAL_AUTH_SCHEMA,
     AUTHENTICATED_PRINCIPAL_SCHEMA,
@@ -374,9 +385,9 @@ from app.recommendation_review import (
 )
 
 
-APP_VERSION = "3.14.0"
-BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.14.0-global-authentication-authorization-integration")
-SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.14.0")
+APP_VERSION = "3.15.0"
+BUILD_FINGERPRINT = os.getenv("SCDS_BUILD_FINGERPRINT", "scds-v3.15.0-decision-event-store-immutable-audit-ledger")
+SOURCE_COMMIT = os.getenv("SCDS_SOURCE_COMMIT", "release-v3.15.0")
 RELEASE_DATE = "2026-10-07"
 DECISION_PACKET_SCHEMA = "scds-decision-packet/2.0"
 MODULE_NAVIGATION_SCHEMA = "scds-catalyst-module-navigation/1.0"
@@ -451,7 +462,7 @@ EXPENSIVE_PUBLIC_PATHS = {
 def release_manifest() -> Dict[str, Any]:
     return {
         "release": APP_VERSION,
-        "release_name": "Global Authentication & Authorization Integration",
+        "release_name": "Decision Event Store & Immutable Audit Ledger",
         "release_date": RELEASE_DATE,
         "build_fingerprint": BUILD_FINGERPRINT,
         "source_commit": SOURCE_COMMIT,
@@ -537,6 +548,9 @@ def release_manifest() -> Dict[str, Any]:
         "global_auth_schema": GLOBAL_AUTH_SCHEMA,
         "authenticated_principal_schema": AUTHENTICATED_PRINCIPAL_SCHEMA,
         "authorization_decision_schema": AUTHORIZATION_DECISION_SCHEMA,
+        "decision_event_store_schema": DECISION_EVENT_STORE_SCHEMA,
+        "immutable_audit_ledger_schema": IMMUTABLE_AUDIT_LEDGER_SCHEMA,
+        "audit_event_schema": AUDIT_EVENT_SCHEMA,
         "persistence_schema": PERSISTENCE_SCHEMA,
         "persistence_contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
         "repository_schema": REPOSITORY_SCHEMA,
@@ -552,17 +566,22 @@ def release_manifest() -> Dict[str, Any]:
             "application_composition_module": "app.main",
             "service_module": "app.services.decision_service",
             "router_package": "app.api.routes",
-            "router_registry_count": 24,
-            "included_router_count": 25,
-            "route_count": 300,
-            "previous_route_count": 293,
+            "router_registry_count": 25,
+            "included_router_count": 26,
+            "route_count": 308,
+            "previous_route_count": 300,
             "legacy_route_count": 176,
             "specialized_energy_runtime_routes": 2,
-            "database_migration": False,
-            "persistence_schema_migration_preserved": True,
+            "database_migration": True,
+            "persistence_schema_migration_preserved": False,
+            "decision_event_store_immutable_audit_ledger": True,
+            "decision_audit_tables_added": 1,
+            "append_only_database_trigger": True,
+            "historical_decision_event_backfill": True,
             "collaboration_room_python_persistence_migration": False,
             "collaboration_room_python_persistence_preserved": True,
             "global_authentication_authorization_integration": True,
+            "global_authentication_authorization_preserved": True,
             "global_auth_primary_user_credential": "bearer-jwt-hs256",
             "global_auth_service_credentials": True,
             "legacy_api_key_compatibility": True,
@@ -767,6 +786,29 @@ def release_manifest() -> Dict[str, Any]:
             "database_migration": False,
             "final_decision_authority": "human-governed",
         },
+        "decision_event_store": {
+            "schema": DECISION_EVENT_STORE_SCHEMA,
+            "ledger_schema": IMMUTABLE_AUDIT_LEDGER_SCHEMA,
+            "event_schema": AUDIT_EVENT_SCHEMA,
+            "status": "python-postgresql-authoritative",
+            "table": "decision_audit_events",
+            "migration_revision": "0003_v3150_event_ledger",
+            "append_only": True,
+            "database_mutation_guard": True,
+            "deterministic_sequence_per_stream": True,
+            "sha256_payload_fingerprint": True,
+            "sha256_hash_chain": True,
+            "authenticated_actor_identity": True,
+            "institution_identity": True,
+            "correlation_and_causation_ids": True,
+            "historical_decision_events_backfillable": True,
+            "read_only_replay": True,
+            "replay_reexecutes_domain_mutations": False,
+            "audit_integrity_implies_truth": False,
+            "audit_integrity_implies_causality": False,
+            "audit_event_implies_approval": False,
+            "final_decision_authority": "human-governed",
+        },
         "persistence": {
             "schema": PERSISTENCE_SCHEMA,
             "contract_schema": PERSISTENCE_CONTRACT_SCHEMA,
@@ -880,6 +922,11 @@ def release_manifest() -> Dict[str, Any]:
             "institution_identity_propagation": True,
             "decision_room_membership_authorization": True,
             "legacy_api_key_compatibility": True,
+            "decision_event_store": True,
+            "immutable_audit_ledger": True,
+            "append_only_audit_events": True,
+            "audit_hash_chain_verification": True,
+            "read_only_audit_replay": True,
             "public_safe_dossiers": True,
             "embeddable_readiness_and_scenarios": True,
             "signed_export_manifests": True,
@@ -1011,6 +1058,7 @@ def release_manifest() -> Dict[str, Any]:
             "route_contracts_preserved_v3_0_0": True,
             "no_database_migration_v3_1_0": True,
         },
+        "next_release": "3.16.0 — Artifact Store & Snapshot Architecture",
     }
 
 
@@ -5390,6 +5438,101 @@ def _request_principal(request: Request) -> AuthPrincipal | None:
     return None
 
 
+
+def _audit_scope_error(request: Request, scope: str):
+    return _global_scope_error(request, scope, "audit_scope_required")
+
+
+def audit_ledger_contract_endpoint():
+    return {"ok": True, "version": APP_VERSION, "audit_ledger_contract": audit_ledger_contract()}
+
+
+def audit_ledger_readiness_endpoint():
+    status = database_status()
+    return {
+        "ok": bool(status.get("connected") and status.get("schema_current")),
+        "version": APP_VERSION,
+        "audit_ledger": {
+            "schema": IMMUTABLE_AUDIT_LEDGER_SCHEMA,
+            "event_store_schema": DECISION_EVENT_STORE_SCHEMA,
+            "event_schema": AUDIT_EVENT_SCHEMA,
+            "append_only": True,
+            "database_mutation_guard": True,
+            "schema_revision": status.get("schema_revision"),
+            "table_present": "decision_audit_events" in PERSISTENCE_TABLES,
+            "ready": bool(status.get("connected") and status.get("schema_current") and "decision_audit_events" in PERSISTENCE_TABLES),
+        },
+    }
+
+
+def audit_ledger_validate_endpoint(req: AuditEventValidateRequest):
+    return {"version": APP_VERSION, **validate_audit_event(req.event, strict=req.strict)}
+
+
+def audit_ledger_list_endpoint(decision_id: str, request: Request, event_type: str | None = None, limit: int = 500):
+    auth = _audit_scope_error(request, "audit:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            repo = DecisionAuditLedgerRepository(session)
+            events = repo.list(decision_id, event_type=event_type, limit=limit)
+            return {"ok": True, "version": APP_VERSION, "decision_id": decision_id, "count": len(events), "events": events}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def audit_ledger_event_endpoint(decision_id: str, event_id: str, request: Request):
+    auth = _audit_scope_error(request, "audit:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    try:
+        with session_scope() as session:
+            return {"ok": True, "version": APP_VERSION, "event": DecisionAuditLedgerRepository(session).get(decision_id, event_id)}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
+def audit_ledger_verify_endpoint(decision_id: str, request: Request):
+    auth = _audit_scope_error(request, "audit:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    with session_scope() as session:
+        verification = DecisionAuditLedgerRepository(session).verify(decision_id)
+        return {"ok": verification["ok"], "version": APP_VERSION, "verification": verification}
+
+
+def audit_ledger_replay_endpoint(decision_id: str, request: Request):
+    auth = _audit_scope_error(request, "audit:read")
+    if auth: return auth
+    _, error = _repository_gate()
+    if error: return error
+    with session_scope() as session:
+        replay = DecisionAuditLedgerRepository(session).replay(decision_id)
+        return {"ok": replay["verification"]["ok"], "version": APP_VERSION, "replay": replay}
+
+
+def audit_ledger_append_endpoint(decision_id: str, req: AuditEventAppendRequest, request: Request):
+    auth = _audit_scope_error(request, "audit:write")
+    if auth: return auth
+    _, error = _repository_gate(require_write=True)
+    if error: return error
+    try:
+        with session_scope() as session:
+            event = DecisionAuditLedgerRepository(session).append(
+                decision_id=decision_id, event_type=req.event_type, payload=req.payload,
+                module_id=req.module_id, object_type=req.object_type, object_id=req.object_id,
+                correlation_id=req.correlation_id, causation_id=req.causation_id,
+                provenance_refs=req.provenance_refs, metadata={"explicit_audit_event": True},
+            )
+            return {"ok": True, "version": APP_VERSION, "event": event}
+    except LookupError as exc:
+        return JSONResponse(status_code=404, content={"ok": False, "version": APP_VERSION, "error": str(exc)})
+
+
 def _room_user_access(repo: DecisionRoomRepository, room_id: str, principal: AuthPrincipal, permission: str | None = None):
     room = repo.get(room_id)
     # Service principals are governed by scopes; user principals also require resource membership.
@@ -6902,6 +7045,9 @@ def health():
         "global_auth_schema": GLOBAL_AUTH_SCHEMA,
         "authenticated_principal_schema": AUTHENTICATED_PRINCIPAL_SCHEMA,
         "authorization_decision_schema": AUTHORIZATION_DECISION_SCHEMA,
+        "decision_event_store_schema": DECISION_EVENT_STORE_SCHEMA,
+        "immutable_audit_ledger_schema": IMMUTABLE_AUDIT_LEDGER_SCHEMA,
+        "audit_event_schema": AUDIT_EVENT_SCHEMA,
         "global_auth": global_auth_readiness(),
         "registered_decision_modules": module_registry()["module_count"],
         "persistence_schema": PERSISTENCE_SCHEMA,

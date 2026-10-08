@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .contracts import REPOSITORY_AUTHORITY, REPOSITORY_SCHEMA
+from app.audit_ledger import DecisionAuditLedgerRepository
 from .models import (
     Decision,
     DecisionEvent,
@@ -91,15 +92,22 @@ class PersistenceRepository:
         max_seq = self.session.scalar(
             select(func.max(DecisionEvent.sequence_no)).where(DecisionEvent.decision_id == decision_id)
         )
-        self.session.add(
-            DecisionEvent(
-                id=_id("evt"),
-                decision_id=decision_id,
-                event_type=event_type,
-                actor_ref=actor_ref,
-                event_payload=payload or {},
-                sequence_no=(max_seq or 0) + 1,
-            )
+        legacy_event = DecisionEvent(
+            id=_id("evt"),
+            decision_id=decision_id,
+            event_type=event_type,
+            actor_ref=actor_ref,
+            event_payload=payload or {},
+            sequence_no=(max_seq or 0) + 1,
+        )
+        self.session.add(legacy_event)
+        self.session.flush()
+        DecisionAuditLedgerRepository(self.session).append(
+            decision_id=decision_id,
+            event_type=event_type,
+            payload=payload or {},
+            actor_ref=actor_ref,
+            metadata={"compatibility_decision_event_id": legacy_event.id},
         )
 
     def get_project(self, project_id: str) -> DecisionProject | None:
