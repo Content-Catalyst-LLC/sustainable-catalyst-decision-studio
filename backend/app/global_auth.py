@@ -244,6 +244,11 @@ def _legacy_principal(key: str) -> tuple[AuthPrincipal | None, str | None]:
     ), None
 
 
+# Resolve exactly one bearer, service-key or explicitly permitted legacy-key
+# path and clear request-context identity on failure. This authenticates a
+# principal but does not by itself grant a decision/project scope; callers
+# must apply authorize_request and resource ownership checks. Failure returns
+# an AuthDecision with HTTP 401 semantics rather than raising here.
 def authenticate_request(request: Request, *, allow_legacy: bool = True) -> AuthDecision:
     authorization = request.headers.get("authorization", "").strip()
     if authorization:

@@ -88,6 +88,10 @@ class PersistenceRepository:
     def __init__(self, session: Session):
         self.session = session
 
+    # Write both the legacy sequenced event and the append-only audit ledger
+    # in the caller's SQLAlchemy session, preserving old readers while new
+    # consumers use ledger lineage. The caller owns the transaction commit;
+    # this helper flushes and can propagate database integrity errors.
     def _event(self, decision_id: str, event_type: str, payload: dict[str, Any] | None = None, actor_ref: str | None = None) -> None:
         max_seq = self.session.scalar(
             select(func.max(DecisionEvent.sequence_no)).where(DecisionEvent.decision_id == decision_id)
