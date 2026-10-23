@@ -262,6 +262,12 @@ def _criterion_map(criteria: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
     return {str(c.get("criterion_id")): c for c in criteria if c.get("criterion_id")}
 
 
+# Vary criterion weights by the configured percentage, then recalculate
+# alternative rankings; evaluation-bound scenarios are inspected separately.
+# Results describe sensitivity of the supplied trade-off matrix, not an
+# empirical probability of the preferred decision being correct. Inputs use
+# the matrix/register contracts; an invalid schema returns a diagnostic
+# template. No database state is changed by this calculation.
 def run_sensitivity_analysis(
     matrix: Dict[str, Any],
     uncertainty_register: Dict[str, Any],
