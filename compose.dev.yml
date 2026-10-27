@@ -1,0 +1,30 @@
+# Development override; requires Docker Compose supporting !override.
+services:
+  decision-studio-postgres:
+    image: postgres:16
+    container_name: sc-decision-studio-dev-postgres
+    env_file: !override [.env.dev]
+    mem_limit: 256m
+  decision-studio:
+    image: sc-decision-studio-dev:local
+    container_name: sc-decision-studio-dev
+    command: [sh, -c, 'alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8089']
+    env_file: !override [.env.dev]
+    environment:
+      SCDS_SOURCE_COMMIT: 8c6c02be3993a9460269c8161e6505ca1bfe54a2
+      SCDS_GLOBAL_AUTH_ISSUER: sc-development-auth
+    ports: !override ['127.0.0.1:18089:8089']
+    mem_limit: 512m
+    networks:
+      wordpress-dev:
+        aliases: [sc-dev-decision-api]
+      sc-internal:
+        aliases: [sc-decision-studio]
+volumes:
+  decision-studio-postgres-data:
+    name: sc-decision-studio-dev-postgres-data
+
+networks:
+  wordpress-dev:
+    external: true
+    name: ${SC_DEV_WP_NETWORK:?Set the existing private WordPress development network}
