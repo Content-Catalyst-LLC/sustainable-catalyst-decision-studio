@@ -12,3 +12,6 @@ app = FastAPI(
 )
 app.middleware("http")(service.production_request_guard)
 app.include_router(api_router)
+
+from app.scientific_evidence_review import router as scientific_evidence_review_router
+app.include_router(scientific_evidence_review_router)
